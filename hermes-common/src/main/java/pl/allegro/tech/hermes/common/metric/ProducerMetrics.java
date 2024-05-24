@@ -7,7 +7,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.ToDoubleFunction;
 
 import static pl.allegro.tech.hermes.common.metric.Gauges.INFLIGHT_REQUESTS;
-import static pl.allegro.tech.hermes.common.metric.HermesMetrics.escapeDots;
 
 public class ProducerMetrics {
     private final HermesMetrics hermesMetrics;
@@ -20,53 +19,53 @@ public class ProducerMetrics {
         this.gaugeRegistrar = new GaugeRegistrar(meterRegistry, hermesMetrics);
     }
 
-    public <T> void registerAckAllTotalBytesGauge(T stateObj, ToDoubleFunction<T> f) {
-        gaugeRegistrar.registerGauge(ACK_ALL_BUFFER_TOTAL_BYTES, stateObj, f);
+    public <T> void registerAckAllTotalBytesGauge(T stateObj, ToDoubleFunction<T> f, String sender, String datacenter) {
+        gaugeRegistrar.registerGauge(ACK_ALL_BUFFER_TOTAL_BYTES, stateObj, f, tags(sender, datacenter));
     }
 
-    public <T> void registerAckLeaderTotalBytesGauge(T stateObj, ToDoubleFunction<T> f) {
-        gaugeRegistrar.registerGauge(ACK_LEADER_BUFFER_TOTAL_BYTES, stateObj, f);
+    public <T> void registerAckLeaderTotalBytesGauge(T stateObj, ToDoubleFunction<T> f, String sender, String datacenter) {
+        gaugeRegistrar.registerGauge(ACK_LEADER_BUFFER_TOTAL_BYTES, stateObj, f, tags(sender, datacenter));
     }
 
-    public <T> void registerAckAllAvailableBytesGauge(T stateObj, ToDoubleFunction<T> f) {
-        gaugeRegistrar.registerGauge(ACK_ALL_BUFFER_AVAILABLE_BYTES, stateObj, f);
+    public <T> void registerAckAllAvailableBytesGauge(T stateObj, ToDoubleFunction<T> f, String sender, String datacenter) {
+        gaugeRegistrar.registerGauge(ACK_ALL_BUFFER_AVAILABLE_BYTES, stateObj, f, tags(sender, datacenter));
     }
 
-    public <T> void registerAckLeaderAvailableBytesGauge(T stateObj, ToDoubleFunction<T> f) {
-        gaugeRegistrar.registerGauge(ACK_LEADER_BUFFER_AVAILABLE_BYTES, stateObj, f);
+    public <T> void registerAckLeaderAvailableBytesGauge(T stateObj, ToDoubleFunction<T> f, String sender, String datacenter) {
+        gaugeRegistrar.registerGauge(ACK_LEADER_BUFFER_AVAILABLE_BYTES, stateObj, f, tags(sender, datacenter));
     }
 
-    public <T> void registerAckAllCompressionRateGauge(T stateObj, ToDoubleFunction<T> f) {
-        gaugeRegistrar.registerGauge(ACK_ALL_COMPRESSION_RATE, stateObj, f);
+    public <T> void registerAckAllCompressionRateGauge(T stateObj, ToDoubleFunction<T> f, String sender, String datacenter) {
+        gaugeRegistrar.registerGauge(ACK_ALL_COMPRESSION_RATE, stateObj, f, tags(sender, datacenter));
     }
 
-    public <T> void registerAckLeaderCompressionRateGauge(T stateObj, ToDoubleFunction<T> f) {
-        gaugeRegistrar.registerGauge(ACK_LEADER_COMPRESSION_RATE, stateObj, f);
+    public <T> void registerAckLeaderCompressionRateGauge(T stateObj, ToDoubleFunction<T> f, String sender, String datacenter) {
+        gaugeRegistrar.registerGauge(ACK_LEADER_COMPRESSION_RATE, stateObj, f, tags(sender, datacenter));
     }
 
-    public <T> void registerAckAllFailedBatchesGauge(T stateObj, ToDoubleFunction<T> f) {
-        gaugeRegistrar.registerGauge(ACK_ALL_FAILED_BATCHES_TOTAL, stateObj, f);
+    public <T> void registerAckAllFailedBatchesGauge(T stateObj, ToDoubleFunction<T> f, String sender, String datacenter) {
+        gaugeRegistrar.registerGauge(ACK_ALL_FAILED_BATCHES_TOTAL, stateObj, f, tags(sender, datacenter));
     }
 
-    public <T> void registerAckLeaderFailedBatchesGauge(T stateObj, ToDoubleFunction<T> f) {
-        gaugeRegistrar.registerGauge(ACK_LEADER_FAILED_BATCHES_TOTAL, stateObj, f);
+    public <T> void registerAckLeaderFailedBatchesGauge(T stateObj, ToDoubleFunction<T> f, String sender, String datacenter) {
+        gaugeRegistrar.registerGauge(ACK_LEADER_FAILED_BATCHES_TOTAL, stateObj, f, tags(sender, datacenter));
     }
 
-    public <T> void registerAckAllMetadataAgeGauge(T stateObj, ToDoubleFunction<T> f) {
-        registerTimeGauge(stateObj, f, ACK_ALL_METADATA_AGE, ACK_ALL_METADATA_AGE, Tags.empty(), TimeUnit.SECONDS);
+    public <T> void registerAckAllMetadataAgeGauge(T stateObj, ToDoubleFunction<T> f, String sender, String datacenter) {
+        registerTimeGauge(stateObj, f, ACK_ALL_METADATA_AGE, ACK_ALL_METADATA_AGE, tags(sender, datacenter), TimeUnit.SECONDS);
     }
 
-    public <T> void registerAckLeaderMetadataAgeGauge(T stateObj, ToDoubleFunction<T> f) {
-        registerTimeGauge(stateObj, f, ACK_LEADER_METADATA_AGE, ACK_LEADER_METADATA_AGE, Tags.empty(), TimeUnit.SECONDS);
+    public <T> void registerAckLeaderMetadataAgeGauge(T stateObj, ToDoubleFunction<T> f, String sender, String datacenter) {
+        registerTimeGauge(stateObj, f, ACK_LEADER_METADATA_AGE, ACK_LEADER_METADATA_AGE, tags(sender, datacenter), TimeUnit.SECONDS);
     }
 
-    public <T> void registerAckAllRecordQueueTimeMaxGauge(T stateObj, ToDoubleFunction<T> f) {
-        registerTimeGauge(stateObj, f, ACK_ALL_RECORD_QUEUE_TIME_MAX, ACK_ALL_RECORD_QUEUE_TIME_MAX, Tags.empty(), TimeUnit.MILLISECONDS);
+    public <T> void registerAckAllRecordQueueTimeMaxGauge(T stateObj, ToDoubleFunction<T> f, String sender, String datacenter) {
+        registerTimeGauge(stateObj, f, ACK_ALL_RECORD_QUEUE_TIME_MAX, ACK_ALL_RECORD_QUEUE_TIME_MAX, tags(sender, datacenter), TimeUnit.MILLISECONDS);
     }
 
-    public <T> void registerAckLeaderRecordQueueTimeMaxGauge(T stateObj, ToDoubleFunction<T> f) {
+    public <T> void registerAckLeaderRecordQueueTimeMaxGauge(T stateObj, ToDoubleFunction<T> f, String sender, String datacenter) {
         registerTimeGauge(stateObj, f, ACK_LEADER_RECORD_QUEUE_TIME_MAX,
-                ACK_LEADER_RECORD_QUEUE_TIME_MAX, Tags.empty(), TimeUnit.MILLISECONDS);
+                ACK_LEADER_RECORD_QUEUE_TIME_MAX, tags(sender, datacenter), TimeUnit.MILLISECONDS);
     }
 
     public double getBufferTotalBytes() {
@@ -79,37 +78,23 @@ public class ProducerMetrics {
                 + meterRegistry.get(ACK_LEADER_BUFFER_AVAILABLE_BYTES).gauge().value();
     }
 
+    public <T> void registerAckLeaderRecordSendCounter(T stateObj, ToDoubleFunction<T> f, String sender, String datacenter) {
+        registerCounter(ACK_LEADER_RECORD_SEND_TOTAL, tags(sender, datacenter), stateObj, f);
+    }
+
+    public <T> void registerAckAllRecordSendCounter(T stateObj, ToDoubleFunction<T> f, String sender, String datacenter) {
+        registerCounter(ACK_ALL_RECORD_SEND_TOTAL, tags(sender, datacenter), stateObj, f);
+    }
+
     public <T> void registerProducerInflightRequestGauge(T stateObj, ToDoubleFunction<T> f) {
         meterRegistry.gauge(INFLIGHT_REQUESTS, stateObj, f);
         hermesMetrics.registerProducerInflightRequest(() -> (int) f.applyAsDouble(stateObj));
     }
 
-    public <T> void registerAckAllMaxLatencyBrokerGauge(T stateObj, ToDoubleFunction<T> f, String brokerNodeId) {
-        registerLatencyPerBrokerGauge(stateObj, f, "request-latency-max", ACK_ALL, brokerNodeId);
+    private static Tags tags(String sender, String datacenter) {
+        return Tags.of("storageDc", datacenter, "sender", sender);
     }
 
-    public <T> void registerAckLeaderMaxLatencyPerBrokerGauge(T stateObj, ToDoubleFunction<T> f, String brokerNodeId) {
-        registerLatencyPerBrokerGauge(stateObj, f, "request-latency-max", ACK_LEADER, brokerNodeId);
-    }
-
-    public <T> void registerAckAllAvgLatencyPerBrokerGauge(T stateObj, ToDoubleFunction<T> f, String brokerNodeId) {
-        registerLatencyPerBrokerGauge(stateObj, f, "request-latency-avg", ACK_ALL, brokerNodeId);
-    }
-
-    public <T> void registerAckLeaderAvgLatencyPerBrokerGauge(T stateObj, ToDoubleFunction<T> f, String brokerNodeId) {
-        registerLatencyPerBrokerGauge(stateObj, f, "request-latency-avg", ACK_LEADER, brokerNodeId);
-    }
-
-    private <T> void registerLatencyPerBrokerGauge(T stateObj,
-                                                   ToDoubleFunction<T> f,
-                                                   String metricName,
-                                                   String producerName,
-                                                   String brokerNodeId) {
-        String baseMetricName = KAFKA_PRODUCER + producerName +  metricName;
-        String graphiteMetricName = baseMetricName + "." + escapeDots(brokerNodeId);
-
-        registerTimeGauge(stateObj, f, graphiteMetricName, baseMetricName, Tags.of("broker", brokerNodeId), TimeUnit.MILLISECONDS);
-    }
 
     private <T> void registerTimeGauge(T stateObj,
                                        ToDoubleFunction<T> f,
@@ -119,6 +104,10 @@ public class ProducerMetrics {
                                        TimeUnit timeUnit) {
         hermesMetrics.registerGauge(graphiteName, () -> f.applyAsDouble(stateObj));
         meterRegistry.more().timeGauge(prometheusName, tags, stateObj, timeUnit, f);
+    }
+
+    private <T> void registerCounter(String name, Tags tags, T stateObj, ToDoubleFunction<T> f) {
+        meterRegistry.more().counter(name, tags, stateObj, f);
     }
 
     private static final String KAFKA_PRODUCER = "kafka-producer.";
@@ -131,6 +120,7 @@ public class ProducerMetrics {
     private static final String ACK_ALL_RECORD_QUEUE_TIME_MAX = KAFKA_PRODUCER + ACK_ALL + "record-queue-time-max";
     private static final String ACK_ALL_COMPRESSION_RATE = KAFKA_PRODUCER + ACK_ALL + "compression-rate-avg";
     private static final String ACK_ALL_FAILED_BATCHES_TOTAL = KAFKA_PRODUCER + ACK_ALL + "failed-batches-total";
+    private static final String ACK_ALL_RECORD_SEND_TOTAL = KAFKA_PRODUCER + ACK_ALL + "record-send";
 
     private static final String ACK_LEADER_FAILED_BATCHES_TOTAL = KAFKA_PRODUCER + ACK_LEADER + "failed-batches-total";
     private static final String ACK_LEADER_BUFFER_TOTAL_BYTES = KAFKA_PRODUCER + ACK_LEADER + "buffer-total-bytes";
@@ -138,4 +128,6 @@ public class ProducerMetrics {
     private static final String ACK_LEADER_RECORD_QUEUE_TIME_MAX = KAFKA_PRODUCER + ACK_LEADER + "record-queue-time-max";
     private static final String ACK_LEADER_BUFFER_AVAILABLE_BYTES = KAFKA_PRODUCER + ACK_LEADER + "buffer-available-bytes";
     private static final String ACK_LEADER_COMPRESSION_RATE = KAFKA_PRODUCER + ACK_LEADER + "compression-rate-avg";
+    private static final String ACK_LEADER_RECORD_SEND_TOTAL = KAFKA_PRODUCER + ACK_LEADER + "record-send";
+
 }

@@ -23,25 +23,27 @@ class HybridPrometheusBasedSubscriptionMetricsRepositoryTest extends Specificati
     private SubscriptionLagSource lagSource = new NoOpSubscriptionLagSource()
 
     private VictoriaMetricsMetricsProvider prometheusMetricsProvider = new VictoriaMetricsMetricsProvider(
-            client, "hermes_consumers", "hermes_frontend", "service=~'hermes'");
+            client, "hermes_consumers", "hermes_frontend", "service=~'hermes'")
 
     private HybridSubscriptionMetricsRepository repository = new HybridSubscriptionMetricsRepository(prometheusMetricsProvider,
             summedSharedCounter, zookeeperPaths, lagSource)
 
-    private static final String query = "sum by (__name__,group,topic,subscription,status_code)" +
+    private static final String query = "sum by (__name__, group, topic, subscription, status_code) " +
             "(irate({__name__=~'hermes_consumers_subscription_delivered_total" +
             "|hermes_consumers_subscription_timeouts_total" +
+            "|hermes_consumers_subscription_retries_total" +
             "|hermes_consumers_subscription_throughput_bytes_total" +
             "|hermes_consumers_subscription_other_errors_total" +
             "|hermes_consumers_subscription_batches_total" +
-            "|hermes_consumers_subscription_http_status_codes_total'," +
-            "group='group',topic='topic',subscription='subscription', service=~'hermes'}[1m]) keep_metric_names)"
+            "|hermes_consumers_subscription_http_status_codes_total', " +
+            "group='group', topic='topic', subscription='subscription', service=~'hermes'}[1m]) keep_metric_names)"
 
     def "should read subscription metrics from multiple places"() {
         given:
         client.readMetrics(query) >> MonitoringMetricsContainer.createEmpty()
                 .addMetricValue("hermes_consumers_subscription_delivered_total", of('10'))
                 .addMetricValue("hermes_consumers_subscription_timeouts_total", of('100'))
+                .addMetricValue("hermes_consumers_subscription_retries_total", of('20'))
                 .addMetricValue("hermes_consumers_subscription_other_errors_total", of('1000'))
         summedSharedCounter.getValue('/hermes/groups/group/topics/topic/subscriptions/subscription/metrics/delivered') >> 100
         summedSharedCounter.getValue('/hermes/groups/group/topics/topic/subscriptions/subscription/metrics/discarded') >> 1
@@ -57,6 +59,7 @@ class HybridPrometheusBasedSubscriptionMetricsRepositoryTest extends Specificati
         metrics.discarded == 1
         metrics.volume == 16
         metrics.timeouts == of("100")
+        metrics.retries == of("20")
         metrics.otherErrors == of("1000")
         metrics.lag == MetricLongValue.of(-1)
     }

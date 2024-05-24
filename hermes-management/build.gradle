@@ -55,18 +55,28 @@ node {
     download = true
     workDir = file("${project.buildDir}/nodejs")
     npmWorkDir = file("${project.buildDir}/npm")
-    nodeModulesDir = file("${project.rootDir}/hermes-console-vue")
+    nodeModulesDir = file("${project.rootDir}/hermes-console")
 }
 
 yarnSetup.dependsOn(nodeSetup)
 yarn.dependsOn(npmSetup)
 
 task buildHermesConsole(type: YarnTask, dependsOn: yarn) {
+    def tasksThatDontRequireConsole = [
+            'integrationTest',
+            'slowIntegrationTest',
+            'check'
+    ]
+
+    onlyIf {
+        tasksThatDontRequireConsole.intersect(gradle.startParameter.taskNames).isEmpty()
+    }
+
     args = ['build-only']
 }
 
 task attachHermesConsole(type: Copy, dependsOn: 'buildHermesConsole') {
-    from '../hermes-console-vue/dist'
+    from '../hermes-console/dist'
     def staticDirectory = sourceSets.main.output.resourcesDir.path + '/static'
     // remove previous static dir if exists and start with clear setup
     delete staticDirectory
@@ -82,3 +92,6 @@ tasks.register('prepareIndexTemplate') {
 }
 
 jar.dependsOn(attachHermesConsole, 'prepareIndexTemplate')
+
+run.dependsOn(attachHermesConsole, 'prepareIndexTemplate')
+

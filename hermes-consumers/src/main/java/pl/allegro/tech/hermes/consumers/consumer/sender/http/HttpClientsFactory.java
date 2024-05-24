@@ -1,11 +1,11 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 
 import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.http.HttpClientTransportOverHTTP;
+import org.eclipse.jetty.client.transport.HttpClientTransportOverHTTP;
+import org.eclipse.jetty.http.HttpCookieStore;
 import org.eclipse.jetty.http2.client.HTTP2Client;
-import org.eclipse.jetty.http2.client.http.HttpClientTransportOverHTTP2;
+import org.eclipse.jetty.http2.client.transport.HttpClientTransportOverHTTP2;
 import org.eclipse.jetty.io.ClientConnector;
-import org.eclipse.jetty.util.HttpCookieStore;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
 
 import java.util.concurrent.ExecutorService;
@@ -36,7 +36,7 @@ public class HttpClientsFactory {
         client.setExecutor(executor);
         client.setMaxConnectionsPerDestination(http1ClientParameters.getMaxConnectionsPerDestination());
         client.setMaxRequestsQueuedPerDestination(http1ClientParameters.getMaxRequestsQueuedPerDestination());
-        client.setCookieStore(new HttpCookieStore.Empty());
+        client.setHttpCookieStore(new HttpCookieStore.Empty());
         client.setIdleTimeout(http1ClientParameters.getIdleTimeout().toMillis());
         client.setFollowRedirects(http1ClientParameters.isFollowRedirectsEnabled());
         client.setConnectTimeout(http1ClientParameters.getConnectionTimeout().toMillis());
@@ -62,7 +62,7 @@ public class HttpClientsFactory {
         HttpClient client = new HttpClient(transport);
 
         client.setMaxRequestsQueuedPerDestination(http2ClientParameters.getMaxRequestsQueuedPerDestination());
-        client.setCookieStore(new HttpCookieStore.Empty());
+        client.setHttpCookieStore(new HttpCookieStore.Empty());
         client.setIdleTimeout(http2ClientParameters.getIdleTimeout().toMillis());
         client.setFollowRedirects(http2ClientParameters.isFollowRedirectsEnabled());
         client.setConnectTimeout(http2ClientParameters.getConnectionTimeout().toMillis());

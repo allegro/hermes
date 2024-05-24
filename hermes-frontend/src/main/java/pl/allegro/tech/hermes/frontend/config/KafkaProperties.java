@@ -1,13 +1,13 @@
 package pl.allegro.tech.hermes.frontend.config;
 
-import pl.allegro.tech.hermes.common.config.KafkaAuthorizationProperties;
+import pl.allegro.tech.hermes.common.config.KafkaAuthenticationProperties;
 import pl.allegro.tech.hermes.common.kafka.KafkaParameters;
 
 import java.time.Duration;
 
 public class KafkaProperties implements KafkaParameters {
 
-    private KafkaAuthorizationProperties authorization = new KafkaAuthorizationProperties();
+    private KafkaAuthenticationProperties authentication = new KafkaAuthenticationProperties();
 
     private String datacenter = "dc";
 
@@ -15,12 +15,13 @@ public class KafkaProperties implements KafkaParameters {
 
     private Duration adminRequestTimeout = Duration.ofMinutes(5);
 
-    public KafkaAuthorizationProperties getAuthorization() {
-        return authorization;
+    @Deprecated
+    public void setAuthorization(KafkaAuthenticationProperties authorization) {
+        this.authentication = authorization;
     }
 
-    public void setAuthorization(KafkaAuthorizationProperties authorization) {
-        this.authorization = authorization;
+    public void setAuthentication(KafkaAuthenticationProperties authorization) {
+        this.authentication = authorization;
     }
 
     public String getDatacenter() {
@@ -32,28 +33,18 @@ public class KafkaProperties implements KafkaParameters {
     }
 
     @Override
-    public boolean isEnabled() {
-        return authorization.isEnabled();
+    public boolean isAuthenticationEnabled() {
+        return authentication.isEnabled();
     }
 
     @Override
-    public String getMechanism() {
-        return authorization.getMechanism();
+    public String getAuthenticationMechanism() {
+        return authentication.getMechanism();
     }
 
     @Override
-    public String getProtocol() {
-        return authorization.getProtocol();
-    }
-
-    @Override
-    public String getUsername() {
-        return authorization.getUsername();
-    }
-
-    @Override
-    public String getPassword() {
-        return authorization.getPassword();
+    public String getAuthenticationProtocol() {
+        return authentication.getProtocol();
     }
 
     public String getBrokerList() {
@@ -70,5 +61,11 @@ public class KafkaProperties implements KafkaParameters {
 
     public void setAdminRequestTimeout(Duration adminRequestTimeout) {
         this.adminRequestTimeout = adminRequestTimeout;
+    }
+
+
+    @Override
+    public String getJaasConfig() {
+        return authentication.getJaasConfig();
     }
 }

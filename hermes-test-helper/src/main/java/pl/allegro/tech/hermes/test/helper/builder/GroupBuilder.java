@@ -2,7 +2,11 @@ package pl.allegro.tech.hermes.test.helper.builder;
 
 import pl.allegro.tech.hermes.api.Group;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 public class GroupBuilder {
+
+    private static final AtomicLong sequence = new AtomicLong();
 
     private final String groupName;
 
@@ -16,5 +20,17 @@ public class GroupBuilder {
 
     public Group build() {
         return new Group(groupName);
+    }
+
+    public static GroupBuilder groupWithRandomName() {
+        return groupWithRandomNameEndedWith("");
+    }
+
+    public static GroupBuilder groupWithRandomNameEndedWith(String suffix) {
+        return group(GroupBuilder.class.getSimpleName() + "Group" + sequence.incrementAndGet() + suffix);
+    }
+
+    public static GroupBuilder groupWithRandomNameContaining(String string) {
+        return group(GroupBuilder.class.getSimpleName() + "Group" + string + sequence.incrementAndGet());
     }
 }

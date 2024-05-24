@@ -25,6 +25,7 @@ import pl.allegro.tech.hermes.frontend.publishing.handlers.end.TrackingHeadersEx
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageContentTypeEnforcer;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageFactory;
 import pl.allegro.tech.hermes.frontend.publishing.metadata.DefaultHeadersPropagator;
+import pl.allegro.tech.hermes.frontend.readiness.HealthCheckService;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
 import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
@@ -69,11 +70,10 @@ class HermesServerFactory {
                 hermesServerProperties,
                 metricsFacade,
                 httpHandler,
+                new HealthCheckService(),
                 new DisabledReadinessChecker(false),
                 new NoOpMessagePreviewPersister(),
                 throughputLimiter,
-                null,
-                false,
                 null,
                 null);
     }

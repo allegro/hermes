@@ -25,9 +25,9 @@ dependencies {
     testImplementation group: 'org.glassfish.jersey.core', name: 'jersey-client', version: versions.jersey
     testImplementation group: 'org.glassfish.jersey.inject', name: 'jersey-hk2', version: versions.jersey
     testImplementation group: 'org.springframework', name: 'spring-web', version: versions.spring_web
+    testImplementation group: 'org.springframework', name: 'spring-context', version: versions.spring_web
     testImplementation group: 'org.springframework', name: 'spring-webflux', version: versions.spring_web
     testImplementation group: 'com.squareup.okhttp3', name: 'okhttp', version: versions.okhttp
     testImplementation group: 'io.projectreactor.netty', name: 'reactor-netty', version: '1.0.25'
     testImplementation group: 'io.projectreactor', name: 'reactor-test', version: '3.4.25'
-
 }

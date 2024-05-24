@@ -22,6 +22,8 @@ public interface KafkaProducerParameters {
 
     int getMaxRequestSize();
 
+    Duration getDeliveryTimeout();
+
     Duration getLinger();
 
     Duration getMetricsSampleWindow();
@@ -29,4 +31,6 @@ public interface KafkaProducerParameters {
     int getMaxInflightRequestsPerConnection();
 
     boolean isReportNodeMetricsEnabled();
+
+    boolean isIdempotenceEnabled();
 }

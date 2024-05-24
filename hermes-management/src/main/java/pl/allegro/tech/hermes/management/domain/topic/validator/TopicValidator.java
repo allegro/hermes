@@ -3,6 +3,9 @@ package pl.allegro.tech.hermes.management.domain.topic.validator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.ContentType;
+import pl.allegro.tech.hermes.api.PublishingChaosPolicy;
+import pl.allegro.tech.hermes.api.PublishingChaosPolicy.ChaosMode;
+import pl.allegro.tech.hermes.api.PublishingChaosPolicy.ChaosPolicy;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
 import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
@@ -40,6 +43,15 @@ public class TopicValidator {
         checkContentType(created);
         checkTopicLabels(created);
 
+        if (created.isFallbackToRemoteDatacenterEnabled() && !createdBy.isAdmin()) {
+            throw new TopicValidationException("User is not allowed to enable fallback to remote datacenter");
+        }
+
+        if (created.getChaos().mode() != ChaosMode.DISABLED && !createdBy.isAdmin()) {
+            throw new TopicValidationException("User is not allowed to set chaos policy for this topic");
+        }
+        validateChaosPolicy(created.getChaos());
+
         if (created.wasMigratedFromJsonType()) {
             throw new TopicValidationException("Newly created topic cannot have migratedFromJsonType flag set to true");
         }
@@ -53,6 +65,15 @@ public class TopicValidator {
         apiPreconditions.checkConstraints(updated, modifiedBy.isAdmin());
         checkOwner(updated);
         checkTopicLabels(updated);
+
+        if (!previous.isFallbackToRemoteDatacenterEnabled() && updated.isFallbackToRemoteDatacenterEnabled() && !modifiedBy.isAdmin()) {
+            throw new TopicValidationException("User is not allowed to enable fallback to remote datacenter");
+        }
+
+        if (!previous.getChaos().equals(updated.getChaos()) && !modifiedBy.isAdmin()) {
+            throw new TopicValidationException("User is not allowed to update chaos policy for this topic");
+        }
+        validateChaosPolicy(updated.getChaos());
 
         if (migrationFromJsonTypeFlagChangedToTrue(updated, previous)) {
             if (updated.getContentType() != ContentType.AVRO) {
@@ -94,5 +115,24 @@ public class TopicValidator {
 
     private void checkTopicLabels(Topic checked) {
         topicLabelsValidator.check(checked.getLabels());
+    }
+
+    private void validateChaosPolicy(PublishingChaosPolicy chaosPolicy) {
+        for (ChaosPolicy policy : chaosPolicy.datacenterPolicies().values()) {
+            validate(policy);
+        }
+        validate(chaosPolicy.globalPolicy());
+    }
+
+    private void validate(ChaosPolicy chaosPolicy) {
+        if (chaosPolicy == null) {
+            return;
+        }
+        if (chaosPolicy.delayFrom() < 0 || chaosPolicy.delayTo() < 0 || chaosPolicy.delayFrom() > chaosPolicy.delayTo()) {
+            throw new TopicValidationException("Invalid chaos policy: 'delayFrom' and 'delayTo' must be >= 0, and 'delayFrom' <= 'delayTo'.");
+        }
+        if (chaosPolicy.probability() < 0 || chaosPolicy.probability() > 100) {
+            throw new TopicValidationException("Invalid chaos policy: 'probability' must be within the range 0 to 100");
+        }
     }
 }

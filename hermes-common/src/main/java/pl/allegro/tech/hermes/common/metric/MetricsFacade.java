@@ -11,17 +11,20 @@ import static pl.allegro.tech.hermes.common.metric.Counters.DELIVERED;
 import static pl.allegro.tech.hermes.common.metric.Counters.DISCARDED;
 import static pl.allegro.tech.hermes.common.metric.Counters.MAXRATE_FETCH_FAILURES;
 import static pl.allegro.tech.hermes.common.metric.Counters.MAXRATE_RATE_HISTORY_FAILURES;
+import static pl.allegro.tech.hermes.common.metric.Counters.RETRIES;
 import static pl.allegro.tech.hermes.common.metric.Gauges.MAX_RATE_ACTUAL_RATE_VALUE;
 import static pl.allegro.tech.hermes.common.metric.Gauges.MAX_RATE_VALUE;
 import static pl.allegro.tech.hermes.common.metric.Gauges.OUTPUT_RATE;
 import static pl.allegro.tech.hermes.common.metric.Meters.DISCARDED_SUBSCRIPTION_METER;
 import static pl.allegro.tech.hermes.common.metric.Meters.FAILED_METER_SUBSCRIPTION;
 import static pl.allegro.tech.hermes.common.metric.Meters.FILTERED_METER;
+import static pl.allegro.tech.hermes.common.metric.Meters.RETRIES_SUBSCRIPTION_METER;
 import static pl.allegro.tech.hermes.common.metric.Meters.SUBSCRIPTION_BATCH_METER;
 import static pl.allegro.tech.hermes.common.metric.Meters.SUBSCRIPTION_METER;
 import static pl.allegro.tech.hermes.common.metric.Meters.SUBSCRIPTION_THROUGHPUT_BYTES;
 import static pl.allegro.tech.hermes.common.metric.SubscriptionTagsFactory.subscriptionTags;
 import static pl.allegro.tech.hermes.common.metric.Timers.CONSUMER_IDLE_TIME;
+import static pl.allegro.tech.hermes.common.metric.Timers.RATE_LIMITER_ACQUIRE;
 import static pl.allegro.tech.hermes.common.metric.Timers.SUBSCRIPTION_LATENCY;
 
 public class MetricsFacade {
@@ -42,6 +45,7 @@ public class MetricsFacade {
     private final ConsumerSenderMetrics consumerSenderMetrics;
     private final OffsetCommitsMetrics offsetCommitsMetrics;
     private final MaxRateMetrics maxRateMetrics;
+    private final BrokerMetrics brokerMetrics;
 
     public MetricsFacade(MeterRegistry meterRegistry, HermesMetrics hermesMetrics) {
         this.meterRegistry = meterRegistry;
@@ -52,7 +56,7 @@ public class MetricsFacade {
         this.trackerElasticSearchMetrics = new TrackerElasticSearchMetrics(hermesMetrics, meterRegistry);
         this.persistentBufferMetrics = new PersistentBufferMetrics(hermesMetrics, meterRegistry);
         this.producerMetrics = new ProducerMetrics(hermesMetrics, meterRegistry);
-        this.executorMetrics = new ExecutorMetrics(hermesMetrics, meterRegistry);
+        this.executorMetrics = new ExecutorMetrics(meterRegistry);
         this.schemaClientMetrics = new SchemaClientMetrics(hermesMetrics, meterRegistry);
         this.undeliveredMessagesMetrics = new UndeliveredMessagesMetrics(hermesMetrics, meterRegistry);
         this.deserializationMetrics = new DeserializationMetrics(hermesMetrics, meterRegistry);
@@ -60,6 +64,7 @@ public class MetricsFacade {
         this.consumerSenderMetrics = new ConsumerSenderMetrics(hermesMetrics, meterRegistry);
         this.offsetCommitsMetrics = new OffsetCommitsMetrics(hermesMetrics, meterRegistry);
         this.maxRateMetrics = new MaxRateMetrics(hermesMetrics, meterRegistry);
+        this.brokerMetrics = new BrokerMetrics(meterRegistry);
     }
 
     public TopicMetrics topics() {
@@ -118,6 +123,10 @@ public class MetricsFacade {
         return maxRateMetrics;
     }
 
+    public BrokerMetrics broker() {
+        return brokerMetrics;
+    }
+
     public void unregisterAllMetricsRelatedTo(SubscriptionName subscription) {
         Collection<Meter> meters = Search.in(meterRegistry)
                 .tags(subscriptionTags(subscription))
@@ -126,11 +135,13 @@ public class MetricsFacade {
             meterRegistry.remove(meter);
         }
         hermesMetrics.unregister(DISCARDED_SUBSCRIPTION_METER, subscription);
+        hermesMetrics.unregister(RETRIES_SUBSCRIPTION_METER, subscription);
         hermesMetrics.unregister(FAILED_METER_SUBSCRIPTION, subscription);
         hermesMetrics.unregister(SUBSCRIPTION_BATCH_METER, subscription);
         hermesMetrics.unregister(SUBSCRIPTION_METER, subscription);
         hermesMetrics.unregister(DELIVERED, subscription);
         hermesMetrics.unregister(DISCARDED, subscription);
+        hermesMetrics.unregister(RETRIES, subscription);
         hermesMetrics.unregisterInflightGauge(subscription);
         hermesMetrics.unregisterInflightTimeHistogram(subscription);
         hermesMetrics.unregisterConsumerErrorsTimeoutMeter(subscription);
@@ -144,6 +155,7 @@ public class MetricsFacade {
         hermesMetrics.unregister(CONSUMER_IDLE_TIME, subscription);
         hermesMetrics.unregister(FILTERED_METER, subscription);
         hermesMetrics.unregister(SUBSCRIPTION_LATENCY, subscription);
+        hermesMetrics.unregister(RATE_LIMITER_ACQUIRE, subscription);
         hermesMetrics.unregister(SUBSCRIPTION_THROUGHPUT_BYTES, subscription);
     }
 }

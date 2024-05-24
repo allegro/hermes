@@ -1,7 +1,9 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 
 import com.google.common.collect.ImmutableList;
-import org.eclipse.jetty.client.api.Request;
+import org.eclipse.jetty.client.Request;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.ResilientMessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
@@ -14,6 +16,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.http.headers.HttpRequest
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.EndpointAddressResolutionException;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.ResolvableEndpointAddress;
 
+import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -21,6 +24,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class JettyBroadCastMessageSender implements MessageSender {
+
+    private static final Logger logger = LoggerFactory.getLogger(JettyBroadCastMessageSender.class);
 
     private final HttpRequestFactory requestFactory;
     private final ResolvableEndpointAddress endpoint;
@@ -70,11 +75,18 @@ public class JettyBroadCastMessageSender implements MessageSender {
 
         HttpRequestHeaders headers = requestHeadersProvider.getHeaders(message, requestData);
 
-        return endpoint.resolveAllFor(message).stream()
-                .filter(uri -> message.hasNotBeenSentTo(uri.toString()))
-                .map(uri -> requestFactory.buildRequest(message, uri, headers))
-                .map(this::processResponse)
-                .collect(Collectors.toList());
+        List<URI> resolvedUris = endpoint.resolveAllFor(message).stream()
+                .filter(uri -> message.hasNotBeenSentTo(uri.toString())).toList();
+
+        if (resolvedUris.isEmpty()) {
+            logger.debug("Empty resolved URIs for message: {}", message.getId());
+            return Collections.emptyList();
+        } else {
+            return resolvedUris.stream()
+                    .map(uri -> requestFactory.buildRequest(message, uri, headers))
+                    .map(this::processResponse)
+                    .collect(Collectors.toList());
+        }
     }
 
     private CompletableFuture<List<SingleMessageSendingResult>> mergeResults(List<CompletableFuture<SingleMessageSendingResult>> results) {

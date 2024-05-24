@@ -2,7 +2,8 @@ package pl.allegro.tech.hermes.frontend.server;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import pl.allegro.tech.hermes.frontend.services.HealthCheckService;
+import pl.allegro.tech.hermes.frontend.readiness.HealthCheckService;
+import pl.allegro.tech.hermes.frontend.readiness.ReadinessChecker;
 
 import static io.undertow.util.StatusCodes.OK;
 import static io.undertow.util.StatusCodes.SERVICE_UNAVAILABLE;

@@ -45,6 +45,6 @@ public class ReadinessEndpoint {
     @Produces(APPLICATION_JSON)
     @RolesAllowed(Roles.ADMIN)
     public List<DatacenterReadiness> getReadiness() {
-        return readinessService.getDatacentersReadinesses();
+        return readinessService.getDatacentersReadiness();
     }
 }

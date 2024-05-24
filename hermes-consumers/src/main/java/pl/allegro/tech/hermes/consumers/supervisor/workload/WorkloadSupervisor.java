@@ -170,8 +170,8 @@ public class WorkloadSupervisor implements SubscriptionCallback, TopicCallback, 
 
     @Override
     public void onRetransmissionStarts(SubscriptionName subscription) throws Exception {
-        logger.info("Triggering retransmission for subscription {}", subscription);
         if (assignmentCache.isAssignedTo(subscription)) {
+            logger.info("Triggering retransmission for subscription {}", subscription);
             supervisor.retransmit(subscription);
         }
     }

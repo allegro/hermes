@@ -13,7 +13,12 @@ public class InMemoryBrokerMessageProducer implements BrokerMessageProducer {
     }
 
     @Override
-    public boolean isTopicAvailable(CachedTopic topic) {
+    public boolean areAllTopicsAvailable() {
+        return true;
+    }
+
+    @Override
+    public boolean isTopicAvailable(CachedTopic cachedTopic) {
         return true;
     }
 }

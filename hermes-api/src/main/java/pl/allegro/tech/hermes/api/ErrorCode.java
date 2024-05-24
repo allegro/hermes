@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.api;
 
-import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.core.Response;
 
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
@@ -9,6 +8,7 @@ import static jakarta.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static jakarta.ws.rs.core.Response.Status.NOT_ACCEPTABLE;
 import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
 import static jakarta.ws.rs.core.Response.Status.REQUEST_TIMEOUT;
+import static jakarta.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
 
 public enum ErrorCode {
     TIMEOUT(REQUEST_TIMEOUT),
@@ -48,7 +48,6 @@ public enum ErrorCode {
     SUBSCRIPTION_ENDPOINT_ADDRESS_CHANGE_EXCEPTION(INTERNAL_SERVER_ERROR),
     OAUTH_PROVIDER_NOT_EXISTS(NOT_FOUND),
     OAUTH_PROVIDER_ALREADY_EXISTS(BAD_REQUEST),
-    CROWD_GROUPS_COULD_NOT_BE_LOADED(INTERNAL_SERVER_ERROR),
     TOPIC_BLACKLISTED(FORBIDDEN),
     THROUGHPUT_QUOTA_VIOLATION(429),
     TOPIC_NOT_UNBLACKLISTED(BAD_REQUEST),
@@ -63,7 +62,8 @@ public enum ErrorCode {
     UNKNOWN_MIGRATION(NOT_FOUND),
     INVALID_QUERY(BAD_REQUEST),
     IMPLEMENTATION_ABSENT(NOT_FOUND),
-    MOVING_SUBSCRIPTION_OFFSETS_VALIDATION_ERROR(BAD_REQUEST);
+    MOVING_SUBSCRIPTION_OFFSETS_VALIDATION_ERROR(BAD_REQUEST),
+    SENDING_TO_KAFKA_TIMEOUT(SERVICE_UNAVAILABLE);
 
     private final int httpCode;
 

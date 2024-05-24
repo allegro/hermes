@@ -2,9 +2,10 @@ package pl.allegro.tech.hermes.mock
 
 import org.apache.avro.Schema
 import org.apache.avro.reflect.ReflectData
-import wiremock.org.apache.hc.core5.http.HttpStatus;
+import org.springframework.util.MultiValueMap
+import org.springframework.util.MultiValueMapAdapter
+import pl.allegro.tech.hermes.test.helper.client.integration.FrontendTestClient
 import org.junit.ClassRule
-import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher
 import pl.allegro.tech.hermes.test.helper.util.Ports
 import spock.lang.Shared
 import spock.lang.Specification
@@ -19,7 +20,7 @@ class HermesMockTest extends Specification {
     @Shared
     HermesMockRule hermes = new HermesMockRule(port)
 
-    HermesPublisher publisher = new HermesPublisher("http://localhost:$port")
+    FrontendTestClient publisher = new FrontendTestClient(port)
 
     Schema schema = ReflectData.get().getSchema(TestMessage)
 
@@ -39,7 +40,7 @@ class HermesMockTest extends Specification {
 
         then:
             hermes.expect().singleMessageOnTopic(topicName)
-            response.status == HttpStatus.SC_CREATED
+            response.expectStatus().isCreated()
     }
 
     def "should receive 3 messages"() {
@@ -342,11 +343,12 @@ class HermesMockTest extends Specification {
     }
 
     def publish(String topic, String body) {
-        publisher.publish(topic, body)
+        MultiValueMap headers = new MultiValueMapAdapter<>(Map.of("Content-Type", List.of("application/json")))
+        publisher.publish(topic, body, headers)
     }
 
     def publishAvro(String topic, TestMessage message) {
-        publisher.publish(topic, asAvro(message))
+        publisher.publishAvroUntilSuccess(topic, asAvro(message))
     }
 
     def asAvro(TestMessage message) {

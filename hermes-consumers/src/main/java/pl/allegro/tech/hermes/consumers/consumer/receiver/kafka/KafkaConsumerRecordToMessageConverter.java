@@ -38,11 +38,8 @@ public class KafkaConsumerRecordToMessageConverter {
         KafkaTopic kafkaTopic = topics.get(record.topic());
         UnwrappedMessageContent unwrappedContent = messageContentReader.read(record, kafkaTopic.contentType());
 
-        Map<String, String> externalMetadata = kafkaHeaderExtractor.extractHTTPHeadersIfEnabled(record.headers());
-        // compatibility condition, can be removed when all messages have HTTP headers propagated via Kafka headers.
-        if (externalMetadata.isEmpty()) {
-          externalMetadata = unwrappedContent.getMessageMetadata().getExternalMetadata();
-        }
+        Map<String, String> externalMetadataFromBody = unwrappedContent.getMessageMetadata().getExternalMetadata();
+        Map<String, String> externalMetadata = kafkaHeaderExtractor.extractExternalMetadata(record.headers(), externalMetadataFromBody);
 
         return new Message(
                 kafkaHeaderExtractor.extractMessageId(record.headers()),

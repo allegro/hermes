@@ -4,6 +4,7 @@ import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.OfflineRetentionTime;
 import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.PublishingAuth;
+import pl.allegro.tech.hermes.api.PublishingChaosPolicy;
 import pl.allegro.tech.hermes.api.RetentionTime;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicDataOfflineStorage;
@@ -16,8 +17,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class TopicBuilder {
+
+    private static final AtomicLong sequence = new AtomicLong();
 
     private final TopicName name;
 
@@ -28,6 +32,10 @@ public class TopicBuilder {
     private boolean jsonToAvroDryRunEnabled = false;
 
     private Topic.Ack ack = Topic.Ack.LEADER;
+
+    private boolean fallbackToRemoteDatacenterEnabled = false;
+
+    private PublishingChaosPolicy chaos = PublishingChaosPolicy.disabled();
 
     private ContentType contentType = ContentType.JSON;
 
@@ -41,7 +49,7 @@ public class TopicBuilder {
 
     private int maxMessageSize = 1024 * 1024;
 
-    private List<String> publishers = new ArrayList<>();
+    private final List<String> publishers = new ArrayList<>();
 
     private boolean authEnabled = false;
 
@@ -55,6 +63,24 @@ public class TopicBuilder {
 
     private TopicBuilder(TopicName topicName) {
         this.name = topicName;
+    }
+
+    public static TopicBuilder topicWithRandomName() {
+        return topicWithRandomNameEndedWith("");
+    }
+
+    public static TopicBuilder topicWithRandomNameContaining(String string) {
+        return topic(
+                TopicBuilder.class.getSimpleName() + "Group" + sequence.incrementAndGet(),
+                TopicBuilder.class.getSimpleName() + "Topic" + string + sequence.incrementAndGet()
+        );
+    }
+
+    public static TopicBuilder topicWithRandomNameEndedWith(String suffix) {
+        return topic(
+                TopicBuilder.class.getSimpleName() + "Group" + sequence.incrementAndGet(),
+                TopicBuilder.class.getSimpleName() + "Topic" + sequence.incrementAndGet() + suffix
+        );
     }
 
     public static TopicBuilder randomTopic(String group, String topicNamePrefix) {
@@ -75,8 +101,8 @@ public class TopicBuilder {
 
     public Topic build() {
         return new Topic(
-                name, description, owner, retentionTime, migratedFromJsonType, ack, trackingEnabled, contentType,
-                jsonToAvroDryRunEnabled, schemaIdAwareSerialization, maxMessageSize,
+                name, description, owner, retentionTime, migratedFromJsonType, ack, fallbackToRemoteDatacenterEnabled,
+                chaos, trackingEnabled, contentType, jsonToAvroDryRunEnabled, schemaIdAwareSerialization, maxMessageSize,
                 new PublishingAuth(publishers, authEnabled, unauthenticatedAccessEnabled), subscribingRestricted,
                 offlineStorage, labels, null, null
         );
@@ -109,6 +135,11 @@ public class TopicBuilder {
 
     public TopicBuilder withAck(Topic.Ack ack) {
         this.ack = ack;
+        return this;
+    }
+
+    public TopicBuilder withFallbackToRemoteDatacenterEnabled() {
+        this.fallbackToRemoteDatacenterEnabled = true;
         return this;
     }
 
@@ -164,6 +195,11 @@ public class TopicBuilder {
 
     public TopicBuilder withLabels(Set<TopicLabel> labels) {
         this.labels = labels;
+        return this;
+    }
+
+    public TopicBuilder withPublishingChaosPolicy(PublishingChaosPolicy chaos) {
+        this.chaos = chaos;
         return this;
     }
 }

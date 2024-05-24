@@ -21,6 +21,7 @@ public class VictoriaMetricsMetricsProvider implements MonitoringSubscriptionMet
     private static final String SUBSCRIPTION_STATUS_CODES_2XX = SUBSCRIPTION_STATUS_CODES + "_2xx";
     private static final String SUBSCRIPTION_STATUS_CODES_4XX = SUBSCRIPTION_STATUS_CODES + "_4xx";
     private static final String SUBSCRIPTION_STATUS_CODES_5XX = SUBSCRIPTION_STATUS_CODES + "_5xx";
+    private static final String SUBSCRIPTION_RETRIES = "subscription_retries_total";
 
     private static final String TOPIC_RATE = "topic_requests_total";
     private static final String TOPIC_DELIVERY_RATE = "subscription_delivered_total";
@@ -39,9 +40,8 @@ public class VictoriaMetricsMetricsProvider implements MonitoringSubscriptionMet
         this.consumersMetricsPrefix = consumersMetricsPrefix.isEmpty() ? "" : consumersMetricsPrefix + "_";
         this.frontendMetricsPrefix = frontendMetricsPrefix.isEmpty() ? "" : frontendMetricsPrefix + "_";
         this.additionalFilters = additionalFilters;
-        this.subscriptionMetricsToQuery = Stream.of(SUBSCRIPTION_DELIVERED, SUBSCRIPTION_TIMEOUTS,
-                        SUBSCRIPTION_THROUGHPUT, SUBSCRIPTION_OTHER_ERRORS, SUBSCRIPTION_BATCHES,
-                        SUBSCRIPTION_STATUS_CODES)
+        this.subscriptionMetricsToQuery = Stream.of(SUBSCRIPTION_DELIVERED, SUBSCRIPTION_TIMEOUTS, SUBSCRIPTION_RETRIES,
+                        SUBSCRIPTION_THROUGHPUT, SUBSCRIPTION_OTHER_ERRORS, SUBSCRIPTION_BATCHES, SUBSCRIPTION_STATUS_CODES)
                 .map(this::consumerMetricName)
                 .collect(Collectors.joining("|"));
         this.topicMetricsToQuery = String.join("|", List.of(
@@ -57,8 +57,8 @@ public class VictoriaMetricsMetricsProvider implements MonitoringSubscriptionMet
         The query is based on MetricsQL, available only in VictoriaMetrics
         https://docs.victoriametrics.com/MetricsQL.html. Basic PromQL does not support `keep_metric_names` param.
          */
-        String queryFormat = "sum by (__name__,group,topic,subscription,status_code)"
-                + "(irate({__name__=~'%s',group='%s',topic='%s',subscription='%s', %s}[1m]) keep_metric_names)";
+        String queryFormat = "sum by (__name__, group, topic, subscription, status_code)"
+                + " (irate({__name__=~'%s', group='%s', topic='%s', subscription='%s', %s}[1m]) keep_metric_names)";
         String query = String.format(queryFormat, subscriptionMetricsToQuery, subscriptionName.getTopicName().getGroupName(),
                 subscriptionName.getTopicName().getName(), subscriptionName.getName(), additionalFilters);
         MonitoringMetricsContainer prometheusMetricsContainer = prometheusClient.readMetrics(query);
@@ -72,6 +72,7 @@ public class VictoriaMetricsMetricsProvider implements MonitoringSubscriptionMet
                 .withCodes2xx(prometheusMetricsContainer.metricValue(consumerMetricName(SUBSCRIPTION_STATUS_CODES_2XX)))
                 .withCode4xx(prometheusMetricsContainer.metricValue(consumerMetricName(SUBSCRIPTION_STATUS_CODES_4XX)))
                 .withCode5xx(prometheusMetricsContainer.metricValue(consumerMetricName(SUBSCRIPTION_STATUS_CODES_5XX)))
+                .withRetries(prometheusMetricsContainer.metricValue(consumerMetricName(SUBSCRIPTION_RETRIES)))
                 .build();
     }
 

@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.frontend.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.undertow.server.HttpHandler;
+import jakarta.inject.Named;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -46,7 +47,7 @@ public class FrontendPublishingConfiguration {
     @Bean
     public HttpHandler httpHandler(TopicsCache topicsCache, MessageErrorProcessor messageErrorProcessor,
                                    MessageEndProcessor messageEndProcessor, MessageFactory messageFactory,
-                                   BrokerMessageProducer brokerMessageProducer, MessagePreviewLog messagePreviewLog,
+                                   @Named("kafkaBrokerMessageProducer") BrokerMessageProducer brokerMessageProducer, MessagePreviewLog messagePreviewLog,
                                    ThroughputLimiter throughputLimiter, Optional<AuthenticationConfiguration> authConfig,
                                    MessagePreviewProperties messagePreviewProperties, HandlersChainProperties handlersChainProperties) {
         return new HandlersChainFactory(topicsCache, messageErrorProcessor, messageEndProcessor, messageFactory,

@@ -21,8 +21,12 @@ import pl.allegro.tech.hermes.api.TrackingMode;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class SubscriptionBuilder {
+
+    private static final AtomicLong sequence = new AtomicLong();
 
     private final TopicName topicName;
 
@@ -46,17 +50,21 @@ public class SubscriptionBuilder {
 
     private boolean http2Enabled = false;
 
+    private boolean profilingEnabled = false;
+
+    private long profilingThresholdMs = 0;
+
     private OwnerId owner = new OwnerId("Plaintext", "some team");
 
     private MonitoringDetails monitoringDetails = MonitoringDetails.EMPTY;
 
     private DeliveryType deliveryType = DeliveryType.SERIAL;
 
-    private List<MessageFilterSpecification> filters = new ArrayList<>();
+    private final List<MessageFilterSpecification> filters = new ArrayList<>();
 
     private SubscriptionMode mode = SubscriptionMode.ANYCAST;
 
-    private List<Header> headers = new ArrayList<>();
+    private final List<Header> headers = new ArrayList<>();
 
     private EndpointAddressResolverMetadata metadata = EndpointAddressResolverMetadata.empty();
     private SubscriptionOAuthPolicy oAuthPolicy;
@@ -74,6 +82,14 @@ public class SubscriptionBuilder {
     private SubscriptionBuilder(TopicName topicName, String subscriptionName) {
         this.topicName = topicName;
         this.name = subscriptionName;
+    }
+
+    public static SubscriptionBuilder subscriptionWithRandomName(TopicName topicName, String endpoint) {
+        return new SubscriptionBuilder(topicName, "subscription" + sequence.incrementAndGet(), EndpointAddress.of(endpoint));
+    }
+
+    public static SubscriptionBuilder subscriptionWithRandomName(TopicName topicName) {
+        return new SubscriptionBuilder(topicName, UUID.randomUUID().toString());
     }
 
     public static SubscriptionBuilder subscription(SubscriptionName subscriptionName) {
@@ -114,8 +130,8 @@ public class SubscriptionBuilder {
                     topicName, name, endpoint, state, description,
                     serialSubscriptionPolicy, trackingEnabled,
                     trackingMode, owner, monitoringDetails, contentType,
-                    filters, mode, headers, metadata, oAuthPolicy, http2Enabled,
-                    attachingIdentityHeadersEnabled, autoDeleteWithTopicEnabled
+                    filters, mode, headers, metadata, oAuthPolicy, http2Enabled, profilingEnabled,
+                    profilingThresholdMs, attachingIdentityHeadersEnabled, autoDeleteWithTopicEnabled
             );
         } else {
             return Subscription.createBatchSubscription(
@@ -181,6 +197,16 @@ public class SubscriptionBuilder {
 
     public SubscriptionBuilder withHttp2Enabled(boolean http2Enabled) {
         this.http2Enabled = http2Enabled;
+        return this;
+    }
+
+    public SubscriptionBuilder withProfilingEnabled(boolean profilingEnabled) {
+        this.profilingEnabled = profilingEnabled;
+        return this;
+    }
+
+    public SubscriptionBuilder withProfilingThresholdMs(long profilingThresholdMs) {
+        this.profilingThresholdMs = profilingThresholdMs;
         return this;
     }
 
