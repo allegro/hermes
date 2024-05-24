@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.frontend.producer.kafka
 
-import com.codahale.metrics.MetricRegistry
 import com.jayway.awaitility.Awaitility
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import org.apache.commons.lang3.tuple.ImmutablePair
@@ -17,7 +16,6 @@ import pl.allegro.tech.hermes.api.*
 import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId
 import pl.allegro.tech.hermes.common.kafka.JsonToAvroMigrationKafkaNamesMapper
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper
-import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.common.metric.MetricsFacade
 import pl.allegro.tech.hermes.frontend.config.HTTPHeadersProperties
 import pl.allegro.tech.hermes.frontend.config.KafkaHeaderNameProperties
@@ -26,7 +24,6 @@ import pl.allegro.tech.hermes.frontend.metric.CachedTopic
 import pl.allegro.tech.hermes.frontend.producer.BrokerLatencyReporter
 import pl.allegro.tech.hermes.frontend.publishing.avro.AvroMessage
 import pl.allegro.tech.hermes.frontend.server.CachedTopicsTestHelper
-import pl.allegro.tech.hermes.metrics.PathsCompiler
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder
 import pl.allegro.tech.hermes.test.helper.containers.ImageTags
@@ -85,10 +82,7 @@ class LocalDatacenterMessageProducerIntegrationTest extends Specification {
     String datacenter = "dc"
 
     @Shared
-    MetricsFacade metricsFacade = new MetricsFacade(
-            new SimpleMeterRegistry(),
-            new HermesMetrics(new MetricRegistry(), new PathsCompiler(""))
-    )
+    MetricsFacade metricsFacade = new MetricsFacade(new SimpleMeterRegistry())
 
     def setupSpec() {
         kafkaContainer.start()

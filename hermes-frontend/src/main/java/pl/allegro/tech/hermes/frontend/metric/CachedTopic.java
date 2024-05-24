@@ -10,7 +10,6 @@ import pl.allegro.tech.hermes.metrics.HermesHistogram;
 import pl.allegro.tech.hermes.metrics.HermesRateMeter;
 import pl.allegro.tech.hermes.metrics.HermesTimer;
 import pl.allegro.tech.hermes.metrics.HermesTimerContext;
-import pl.allegro.tech.hermes.metrics.counters.MeterBackedHermesCounter;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -36,8 +35,7 @@ public class CachedTopic {
     private final HermesHistogram topicMessageContentSize;
     private final HermesHistogram globalMessageContentSize;
 
-    private final MeterBackedHermesCounter topicThroughputMeter;
-    private final MeterBackedHermesCounter globalThroughputMeter;
+    private final ThroughputMeter throughputMeter;
 
     private final HermesCounter topicDuplicatedMessageCounter;
 
@@ -45,13 +43,18 @@ public class CachedTopic {
 
     private final Map<Integer, MetersPair> httpStatusCodesMeters = new ConcurrentHashMap<>();
 
-    public CachedTopic(Topic topic, MetricsFacade metricsFacade,
+    public CachedTopic(Topic topic,
+                       MetricsFacade metricsFacade,
+                       ThroughputRegistry throughputRegistry,
                        KafkaTopics kafkaTopics) {
-        this(topic, metricsFacade, kafkaTopics, false);
+        this(topic, metricsFacade, throughputRegistry, kafkaTopics, false);
     }
 
-    public CachedTopic(Topic topic, MetricsFacade metricsFacade,
-                       KafkaTopics kafkaTopics, boolean blacklisted) {
+    public CachedTopic(Topic topic,
+                       MetricsFacade metricsFacade,
+                       ThroughputRegistry throughputRegistry,
+                       KafkaTopics kafkaTopics,
+                       boolean blacklisted) {
         this.topic = topic;
         this.kafkaTopics = kafkaTopics;
         this.metricsFacade = metricsFacade;
@@ -66,8 +69,7 @@ public class CachedTopic {
         globalMessageContentSize = metricsFacade.topics().topicGlobalMessageContentSizeHistogram();
         topicMessageContentSize = metricsFacade.topics().topicMessageContentSizeHistogram(topic.getName());
 
-        globalThroughputMeter = metricsFacade.topics().topicGlobalThroughputBytes();
-        topicThroughputMeter = metricsFacade.topics().topicThroughputBytes(topic.getName());
+        throughputMeter = throughputRegistry.forTopic(topic.getName());
 
         if (Topic.Ack.ALL.equals(topic.getAck())) {
             globalProducerLatencyTimer = metricsFacade.topics().ackAllGlobalLatency();
@@ -134,8 +136,7 @@ public class CachedTopic {
     public void reportMessageContentSize(int size) {
         topicMessageContentSize.record(size);
         globalMessageContentSize.record(size);
-        topicThroughputMeter.increment(size);
-        globalThroughputMeter.increment(size);
+        throughputMeter.increment(size);
     }
 
     public void markDelayedProcessing() {
@@ -144,7 +145,7 @@ public class CachedTopic {
     }
 
     public HermesRateMeter getThroughput() {
-        return topicThroughputMeter;
+        return throughputMeter;
     }
 
     public void markMessageDuplicated() {

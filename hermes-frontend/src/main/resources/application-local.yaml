@@ -8,11 +8,6 @@ frontend:
     clusters:
       - datacenter: "dc"
         brokerList: "localhost:9092"
-  graphite:
-    host: "localhost"
-  metrics:
-    metric-registry:
-      graphiteReporterEnabled: true
   schema:
     cache:
       refreshAfterWrite: 1m

@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.consumers.supervisor.process
 
-import com.codahale.metrics.MetricRegistry
 import com.jayway.awaitility.Awaitility
 import com.jayway.awaitility.core.ConditionFactory
 import io.micrometer.core.instrument.MeterRegistry
@@ -10,11 +9,9 @@ import pl.allegro.tech.hermes.api.DeliveryType
 import pl.allegro.tech.hermes.api.Subscription
 import pl.allegro.tech.hermes.api.SubscriptionName
 import pl.allegro.tech.hermes.api.Topic
-import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.common.metric.MetricsFacade
 import pl.allegro.tech.hermes.consumers.config.CommonConsumerProperties
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersExecutorService
-import pl.allegro.tech.hermes.metrics.PathsCompiler
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -26,12 +23,7 @@ import java.time.ZoneId
 import java.util.function.Consumer
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS
-import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.COMMIT
-import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.RETRANSMIT
-import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.START
-import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.STOP
-import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.UPDATE_SUBSCRIPTION
-import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.UPDATE_TOPIC
+import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.*
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust
 
@@ -52,7 +44,6 @@ class ConsumerProcessSupervisorTest extends Specification {
 
     ConsumerProcessSupervisor supervisor
     MeterRegistry meterRegistry = new SimpleMeterRegistry()
-    MetricRegistry metricRegistry = new MetricRegistry()
     MetricsFacade metrics
     ConsumerStub consumer
 
@@ -70,10 +61,7 @@ class ConsumerProcessSupervisorTest extends Specification {
                 return new ConsumerProcess(startSignal, consumer, Stub(Retransmitter), clock, unhealthyAfter, onConsumerStopped)
         }
 
-        metrics = new MetricsFacade(
-                meterRegistry,
-                new HermesMetrics(metricRegistry, new PathsCompiler("localhost"))
-        )
+        metrics = new MetricsFacade(meterRegistry)
 
         supervisor = new ConsumerProcessSupervisor(
                 new ConsumersExecutorService(new CommonConsumerProperties().getThreadPoolSize(), metrics),
@@ -176,7 +164,6 @@ class ConsumerProcessSupervisorTest extends Specification {
         then:
         signalsToDrop.forEach {
             String signal = it.type.name()
-            assert metricRegistry.counter("supervisor.signal.dropped." + signal).getCount() == 1
             assert Search.in(meterRegistry)
                     .name {it.startsWith("signals.dropped")}
                     .tag("signal", signal)

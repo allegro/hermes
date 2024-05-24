@@ -3,7 +3,7 @@ plugins {
 }
 
 dependencies {
-    api group: 'io.dropwizard.metrics', name: 'metrics-graphite', version: versions.dropwizard_metrics
+    api group: 'io.dropwizard.metrics', name: 'metrics-core', version: versions.dropwizard_metrics
     api group: 'commons-lang', name: 'commons-lang', version: '2.6'
     api group: 'io.micrometer', name: 'micrometer-core', version: versions.micrometer_metrics
 

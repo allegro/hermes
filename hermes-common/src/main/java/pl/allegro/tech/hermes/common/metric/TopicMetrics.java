@@ -12,132 +12,110 @@ import pl.allegro.tech.hermes.metrics.HermesCounter;
 import pl.allegro.tech.hermes.metrics.HermesHistogram;
 import pl.allegro.tech.hermes.metrics.HermesTimer;
 import pl.allegro.tech.hermes.metrics.counters.HermesCounters;
-import pl.allegro.tech.hermes.metrics.counters.MeterBackedHermesCounter;
-
-import static pl.allegro.tech.hermes.common.metric.Meters.DELAYED_PROCESSING;
 
 public class TopicMetrics {
-    private final HermesMetrics hermesMetrics;
     private final MeterRegistry meterRegistry;
 
-    public TopicMetrics(HermesMetrics hermesMetrics, MeterRegistry meterRegistry) {
-        this.hermesMetrics = hermesMetrics;
+    public TopicMetrics(MeterRegistry meterRegistry) {
         this.meterRegistry = meterRegistry;
     }
 
     public HermesTimer ackAllGlobalLatency() {
         return HermesTimer.from(
-                meterRegistry.timer(TopicMetricsNames.TOPIC_ACK_ALL_GLOBAL_LATENCY),
-                hermesMetrics.timer(Timers.ACK_ALL_LATENCY)
+                meterRegistry.timer(TopicMetricsNames.TOPIC_ACK_ALL_GLOBAL_LATENCY)
         );
     }
 
     public HermesTimer ackAllTopicLatency(TopicName topic) {
         return HermesTimer.from(
-                micrometerTimer(TopicMetricsNames.TOPIC_ACK_ALL_LATENCY, topic),
-                hermesMetrics.timer(Timers.ACK_ALL_TOPIC_LATENCY, topic));
+                micrometerTimer(TopicMetricsNames.TOPIC_ACK_ALL_LATENCY, topic));
     }
 
     public HermesTimer ackAllBrokerLatency() {
         return HermesTimer.from(
-                meterRegistry.timer(TopicMetricsNames.TOPIC_ACK_ALL_BROKER_LATENCY),
-                hermesMetrics.timer(Timers.ACK_ALL_BROKER_LATENCY));
+                meterRegistry.timer(TopicMetricsNames.TOPIC_ACK_ALL_BROKER_LATENCY));
     }
 
     public HermesTimer ackLeaderGlobalLatency() {
         return HermesTimer.from(
-                meterRegistry.timer(TopicMetricsNames.TOPIC_ACK_LEADER_GLOBAL_LATENCY),
-                hermesMetrics.timer(Timers.ACK_LEADER_LATENCY));
+                meterRegistry.timer(TopicMetricsNames.TOPIC_ACK_LEADER_GLOBAL_LATENCY));
     }
 
     public HermesTimer ackLeaderTopicLatency(TopicName topic) {
         return HermesTimer.from(
-                micrometerTimer(TopicMetricsNames.TOPIC_ACK_LEADER_LATENCY, topic),
-                hermesMetrics.timer(Timers.ACK_LEADER_TOPIC_LATENCY, topic));
+                micrometerTimer(TopicMetricsNames.TOPIC_ACK_LEADER_LATENCY, topic));
     }
 
     public HermesTimer ackLeaderBrokerLatency() {
         return HermesTimer.from(
-                meterRegistry.timer(TopicMetricsNames.TOPIC_ACK_LEADER_BROKER_LATENCY),
-                hermesMetrics.timer(Timers.ACK_LEADER_BROKER_LATENCY));
+                meterRegistry.timer(TopicMetricsNames.TOPIC_ACK_LEADER_BROKER_LATENCY));
     }
 
-    public MeterBackedHermesCounter topicThroughputBytes(TopicName topicName) {
+    public HermesCounter topicThroughputBytes(TopicName topicName) {
         return HermesCounters.from(
-                micrometerCounter(TopicMetricsNames.TOPIC_THROUGHPUT, topicName),
-                hermesMetrics.meter(Meters.TOPIC_THROUGHPUT_BYTES, topicName)
+                micrometerCounter(TopicMetricsNames.TOPIC_THROUGHPUT, topicName)
         );
     }
 
-    public MeterBackedHermesCounter topicGlobalThroughputBytes() {
+    public HermesCounter topicGlobalThroughputBytes() {
         return HermesCounters.from(
-                meterRegistry.counter(TopicMetricsNames.TOPIC_GLOBAL_THROUGHPUT),
-                hermesMetrics.meter(Meters.THROUGHPUT_BYTES)
+                meterRegistry.counter(TopicMetricsNames.TOPIC_GLOBAL_THROUGHPUT)
         );
     }
 
     public HermesCounter topicPublished(TopicName topicName, String datacenter) {
         return HermesCounters.from(
-                micrometerCounter(TopicMetricsNames.TOPIC_PUBLISHED, topicName, Tag.of("storageDc", datacenter)),
-                hermesMetrics.counter(Counters.PUBLISHED, topicName)
+                micrometerCounter(TopicMetricsNames.TOPIC_PUBLISHED, topicName, Tag.of("storageDc", datacenter))
         );
     }
 
     public HermesCounter topicGlobalRequestCounter() {
         return HermesCounters.from(
-                meterRegistry.counter(TopicMetricsNames.TOPIC_GLOBAL_REQUESTS),
-                hermesMetrics.meter(Meters.METER)
+                meterRegistry.counter(TopicMetricsNames.TOPIC_GLOBAL_REQUESTS)
         );
     }
 
     public HermesCounter topicRequestCounter(TopicName topicName) {
         return HermesCounters.from(
-                micrometerCounter(TopicMetricsNames.TOPIC_REQUESTS, topicName),
-                hermesMetrics.meter(Meters.TOPIC_METER, topicName)
+                micrometerCounter(TopicMetricsNames.TOPIC_REQUESTS, topicName)
         );
     }
 
     public HermesCounter topicGlobalDelayedProcessingCounter() {
         return HermesCounters.from(
-                meterRegistry.counter(TopicMetricsNames.TOPIC_GLOBAL_DELAYED_PROCESSING),
-                hermesMetrics.meter(DELAYED_PROCESSING)
+                meterRegistry.counter(TopicMetricsNames.TOPIC_GLOBAL_DELAYED_PROCESSING)
         );
     }
 
     public HermesCounter topicDelayedProcessingCounter(TopicName topicName) {
         return HermesCounters.from(
-                micrometerCounter(TopicMetricsNames.TOPIC_DELAYED_PROCESSING, topicName),
-                hermesMetrics.meter(Meters.TOPIC_DELAYED_PROCESSING, topicName)
+                micrometerCounter(TopicMetricsNames.TOPIC_DELAYED_PROCESSING, topicName)
         );
     }
 
     public HermesCounter topicGlobalHttpStatusCodeCounter(int statusCode) {
         return HermesCounters.from(
-                meterRegistry.counter(TopicMetricsNames.TOPIC_GLOBAL_HTTP_STATUS_CODES, Tags.of("status_code", String.valueOf(statusCode))),
-                hermesMetrics.httpStatusCodeMeter(statusCode)
+                meterRegistry.counter(TopicMetricsNames.TOPIC_GLOBAL_HTTP_STATUS_CODES, Tags.of("status_code", String.valueOf(statusCode)))
         );
     }
 
     public HermesCounter topicHttpStatusCodeCounter(TopicName topicName, int statusCode) {
         return HermesCounters.from(
                 meterRegistry.counter(TopicMetricsNames.TOPIC_HTTP_STATUS_CODES, topicTags(topicName)
-                        .and("status_code", String.valueOf(statusCode))),
-                hermesMetrics.httpStatusCodeMeter(statusCode, topicName)
+                        .and("status_code", String.valueOf(statusCode)))
         );
     }
 
     public HermesCounter topicDuplicatedMessageCounter(TopicName topicName) {
         return HermesCounters.from(
-                micrometerCounter(TopicMetricsNames.TOPIC_DUPLICATED_MESSAGE, topicName),
-                hermesMetrics.meter(Meters.TOPIC_DUPLICATED_MESSAGE, topicName)
+                micrometerCounter(TopicMetricsNames.TOPIC_DUPLICATED_MESSAGE, topicName)
         );
     }
 
     public HermesHistogram topicGlobalMessageContentSizeHistogram() {
         return DefaultHermesHistogram.of(
                 DistributionSummary.builder(TopicMetricsNames.TOPIC_GLOBAL_MESSAGE_SIZE_BYTES)
-                        .register(meterRegistry),
-                hermesMetrics.messageContentSizeHistogram()
+                        .register(meterRegistry)
         );
     }
 
@@ -145,8 +123,7 @@ public class TopicMetrics {
         return DefaultHermesHistogram.of(
                 DistributionSummary.builder(TopicMetricsNames.TOPIC_MESSAGE_SIZE_BYTES)
                         .tags(topicTags(topicName))
-                        .register(meterRegistry),
-                hermesMetrics.messageContentSizeHistogram(topicName)
+                        .register(meterRegistry)
         );
     }
 

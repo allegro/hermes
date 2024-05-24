@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.common.metric.counter.zookeeper;
 
-import com.codahale.metrics.MetricRegistry;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.Before;
@@ -10,11 +9,9 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.common.util.InstanceIdResolver;
-import pl.allegro.tech.hermes.metrics.PathsCompiler;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -34,8 +31,7 @@ public class ZookeeperCounterReporterTest {
 
     private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
 
-    private final MetricsFacade metricsFacade = new MetricsFacade(
-            meterRegistry, new HermesMetrics(new MetricRegistry(), new PathsCompiler("localhost")));
+    private final MetricsFacade metricsFacade = new MetricsFacade(meterRegistry);
 
     @Mock
     private InstanceIdResolver instanceIdResolver;

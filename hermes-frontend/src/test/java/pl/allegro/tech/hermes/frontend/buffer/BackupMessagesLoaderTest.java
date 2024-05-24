@@ -71,9 +71,8 @@ public class BackupMessagesLoaderTest {
         tempDir = Files.createTempDir();
 
         Timer micrometerTimer = new SimpleMeterRegistry().timer("broker-latency");
-        com.codahale.metrics.Timer graphiteTimer = new com.codahale.metrics.Timer();
         when(cachedTopic.getTopic()).thenReturn(topic);
-        when(cachedTopic.startBrokerLatencyTimer()).thenReturn(HermesTimerContext.from(micrometerTimer, graphiteTimer));
+        when(cachedTopic.startBrokerLatencyTimer()).thenReturn(HermesTimerContext.from(micrometerTimer));
         when(topicsCache.getTopic(topic.getQualifiedName())).thenReturn(Optional.of(cachedTopic));
         when(producer.isTopicAvailable(cachedTopic)).thenReturn(true);
     }
