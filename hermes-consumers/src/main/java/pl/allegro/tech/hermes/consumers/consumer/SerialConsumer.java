@@ -11,6 +11,11 @@ import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResol
 import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
+import pl.allegro.tech.hermes.consumers.consumer.profiling.ConsumerProfiler;
+import pl.allegro.tech.hermes.consumers.consumer.profiling.ConsumerRun;
+import pl.allegro.tech.hermes.consumers.consumer.profiling.DefaultConsumerProfiler;
+import pl.allegro.tech.hermes.consumers.consumer.profiling.Measurement;
+import pl.allegro.tech.hermes.consumers.consumer.profiling.NoOpConsumerProfiler;
 import pl.allegro.tech.hermes.consumers.consumer.rate.AdjustableSemaphore;
 import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
@@ -62,7 +67,6 @@ public class SerialConsumer implements Consumer {
                           OffsetQueue offsetQueue,
                           ConsumerAuthorizationHandler consumerAuthorizationHandler,
                           SubscriptionLoadRecorder loadRecorder) {
-
         this.defaultInflight = commonConsumerParameters.getSerialConsumer().getInflightSize();
         this.signalProcessingInterval = commonConsumerParameters.getSerialConsumer().getSignalProcessingInterval();
         this.inflightSemaphore = new AdjustableSemaphore(calculateInflightSize(subscription));
@@ -96,13 +100,19 @@ public class SerialConsumer implements Consumer {
     @Override
     public void consume(Runnable signalsInterrupt) {
         try {
+            ConsumerProfiler profiler = subscription.isProfilingEnabled() ? new DefaultConsumerProfiler(subscription.getQualifiedName(), subscription.getProfilingThresholdMs()) : new NoOpConsumerProfiler();
+            profiler.startMeasurements(Measurement.SIGNALS_AND_SEMAPHORE_ACQUIRE);
             do {
                 loadRecorder.recordSingleOperation();
+                profiler.startPartialMeasurement(Measurement.SIGNALS_INTERRUPT_RUN);
                 signalsInterrupt.run();
+                profiler.stopPartialMeasurement();
             } while (!inflightSemaphore.tryAcquire(signalProcessingInterval.toMillis(), TimeUnit.MILLISECONDS));
 
+            profiler.measure(Measurement.MESSAGE_RECEIVER_NEXT);
             Optional<Message> maybeMessage = messageReceiver.next();
 
+            profiler.measure(Measurement.MESSAGE_CONVERSION);
             if (maybeMessage.isPresent()) {
                 Message message = maybeMessage.get();
 
@@ -114,9 +124,10 @@ public class SerialConsumer implements Consumer {
                 }
 
                 Message convertedMessage = messageConverterResolver.converterFor(message, subscription).convert(message, topic);
-                sendMessage(convertedMessage);
+                sendMessage(convertedMessage, profiler);
             } else {
                 inflightSemaphore.release();
+                profiler.flushMeasurements(ConsumerRun.EMPTY);
             }
         } catch (InterruptedException e) {
             logger.info("Restoring interrupted status {}", subscription.getQualifiedName(), e);
@@ -126,16 +137,18 @@ public class SerialConsumer implements Consumer {
         }
     }
 
-    private void sendMessage(Message message) {
+    private void sendMessage(Message message, ConsumerProfiler profiler) {
+        profiler.measure(Measurement.OFFER_INFLIGHT_OFFSET);
         offsetQueue.offerInflightOffset(
                 subscriptionPartitionOffset(subscription.getQualifiedName(),
                 message.getPartitionOffset(),
                 message.getPartitionAssignmentTerm())
         );
 
+        profiler.measure(Measurement.TRACKERS_LOG_INFLIGHT);
         trackers.get(subscription).logInflight(toMessageMetadata(message, subscription));
 
-        sender.sendAsync(message);
+        sender.sendAsync(message, profiler);
     }
 
     @Override

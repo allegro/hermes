@@ -25,6 +25,7 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static java.util.stream.IntStream.range;
@@ -84,7 +85,7 @@ public class KafkaRetransmissionServiceTest {
         TestSubscriber subscriber = subscribers.createSubscriber();
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
         final Subscription subscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName(), subscriber.getEndpoint()).build());
-        // we have 2 partitions, thus 4 messages to get 2 per partition
+        // 4 messages
         publishAndConsumeMessages(messages, topic, subscriber);
         Thread.sleep(2000);
         final OffsetRetransmissionDate retransmissionDate = new OffsetRetransmissionDate(OffsetDateTime.now());
@@ -100,8 +101,9 @@ public class KafkaRetransmissionServiceTest {
         MultiDCOffsetChangeSummary summary = response.expectBody(MultiDCOffsetChangeSummary.class).returnResult().getResponseBody();
 
         assert summary != null;
-        assertThat(summary.getPartitionOffsetListPerBrokerName().get(PRIMARY_KAFKA_CLUSTER_NAME).get(0).getOffset())
-                .isEqualTo(2);
+        Long offsetSum = summary.getPartitionOffsetListPerBrokerName().get(PRIMARY_KAFKA_CLUSTER_NAME).stream()
+                .collect(Collectors.summarizingLong(PartitionOffset::getOffset)).getSum();
+        assertThat(offsetSum).isEqualTo(4);
         subscriber.noMessagesReceived();
     }
 

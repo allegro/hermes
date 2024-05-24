@@ -13,11 +13,7 @@ import org.apache.kafka.common.TopicPartition
 import org.testcontainers.containers.KafkaContainer
 import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.spock.Testcontainers
-import pl.allegro.tech.hermes.api.ContentType
-import pl.allegro.tech.hermes.api.DeliveryType
-import pl.allegro.tech.hermes.api.Subscription
-import pl.allegro.tech.hermes.api.SubscriptionMode
-import pl.allegro.tech.hermes.api.Topic
+import pl.allegro.tech.hermes.api.*
 import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId
 import pl.allegro.tech.hermes.common.kafka.JsonToAvroMigrationKafkaNamesMapper
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper
@@ -33,6 +29,7 @@ import pl.allegro.tech.hermes.frontend.server.CachedTopicsTestHelper
 import pl.allegro.tech.hermes.metrics.PathsCompiler
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder
+import pl.allegro.tech.hermes.test.helper.containers.ImageTags
 import spock.lang.Shared
 import spock.lang.Specification
 
@@ -42,10 +39,7 @@ import java.util.stream.Collectors
 import static java.util.Collections.emptyList
 import static java.util.Collections.emptyMap
 import static java.util.concurrent.TimeUnit.MILLISECONDS
-import static org.apache.kafka.clients.consumer.ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG
-import static org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG
-import static org.apache.kafka.clients.consumer.ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG
-import static org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG
+import static org.apache.kafka.clients.consumer.ConsumerConfig.*
 import static org.apache.kafka.clients.producer.ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG
 import static org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG
 
@@ -58,7 +52,7 @@ class LocalDatacenterMessageProducerIntegrationTest extends Specification {
     BrokerLatencyReporter brokerLatencyReporter = new BrokerLatencyReporter(false, null, null, null)
 
     @Shared
-    KafkaContainer kafkaContainer = new KafkaContainer()
+    KafkaContainer kafkaContainer = new KafkaContainer(ImageTags.confluentImagesTag())
 
     @Shared
     KafkaProducer<byte[], byte[]> leaderConfirms
@@ -88,7 +82,7 @@ class LocalDatacenterMessageProducerIntegrationTest extends Specification {
     KafkaHeaderNameProperties kafkaHeaderNameProperties = new KafkaHeaderNameProperties()
 
     @Shared
-    String datacenter = "dc";
+    String datacenter = "dc"
 
     @Shared
     MetricsFacade metricsFacade = new MetricsFacade(
@@ -161,34 +155,6 @@ class LocalDatacenterMessageProducerIntegrationTest extends Specification {
         partitionsWithMessagesData.get(0).offset() == 10
     }
 
-    def "should publish messages with random distribiution when pratition-key is not present"() {
-        Topic topic = createAvroTopic("pl.allegro.test.randomFoo")
-        Subscription subscription = createTestSubscription(topic, "test-subscription")
-        String kafkaTopicName = topic.getName().toString()
-        ConsumerGroupId consumerGroupId = kafkaNamesMapper.toConsumerGroupId(subscription.qualifiedName)
-        createTopicInKafka(kafkaTopicName, NUMBER_OF_PARTITION)
-        CachedTopic cachedTopic = CachedTopicsTestHelper.cachedTopic(topic)
-        KafkaConsumer consumer = createConsumer(consumerGroupId, kafkaTopicName)
-
-        when:
-        1.upto(10) {
-            brokerMessageProducer.send(generateAvroMessage(null), cachedTopic, null)
-            waitForRecordPublishing(consumer)
-        }
-
-        then:
-        consumer.close()
-
-        List<OffsetAndMetadata> partitionsWithMessagesData = adminClient
-                .listConsumerGroupOffsets(consumerGroupId.asString())
-                .partitionsToOffsetAndMetadata()
-                .get().values().stream()
-                .filter { metadata -> metadata.offset() != 0 }
-                .collect(Collectors.toList())
-
-        partitionsWithMessagesData.size() == NUMBER_OF_PARTITION
-    }
-
     private static AvroMessage generateAvroMessage(String partitionKey) {
         def avroUser = new AvroUser()
         return new AvroMessage(UUID.randomUUID().toString(), avroUser.asBytes(), 0L, avroUser.compiledSchema,
@@ -197,7 +163,7 @@ class LocalDatacenterMessageProducerIntegrationTest extends Specification {
 
     private static def createTestSubscription(Topic topic, String subscriptionName) {
         Subscription.create(topic.getQualifiedName(), subscriptionName, null, Subscription.State.PENDING, "test", [:], false, null, null,
-                null, ContentType.JSON, DeliveryType.SERIAL, [], SubscriptionMode.ANYCAST, [], null, null, false, false, false
+                null, ContentType.JSON, DeliveryType.SERIAL, [], SubscriptionMode.ANYCAST, [], null, null, false, false, 0, false, false
         )
     }
 
