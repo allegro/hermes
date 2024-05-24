@@ -34,7 +34,7 @@ import java.time.Duration;
     To avoid problems described above we actually set requestTimeout and deliveryTimeout to be much higher than the
     maximum frontend request duration (frontend.handlers.maxPublishRequestDuration). This means that when
     maxPublishRequestDuration is exceeded for a message we received, a client will receive 5xx even tough the
-    corresponding message is still being processed in the producer. The message will eventually be ACKd by so upon client-side
+    corresponding message is still being processed in the producer. The message will eventually be ACKd by Kafka so upon client-side
     retry the message will be duplicated. This however, would likely also happen if the message was promptly timed-out by producer
     before maxPublishRequestDuration elapsed - the message was likely already sent to Kafka, there just haven't been a response yet.
 
