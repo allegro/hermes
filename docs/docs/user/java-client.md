@@ -19,7 +19,7 @@ At the moment there are four implementations of `HermesSender`:
   for asynchronous transmission
 * **WebClientHermesSender** - for services using [Spring WebFlux](https://docs.spring.io/spring-framework/docs/current/reference/html/web-reactive.html); 
   uses [WebClient](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/reactive/function/client/WebClient.html)
-* **JerseyHermesSender** - recommended for services using  [Jersey](<https://jersey.java.net/>)
+* **JerseyHermesSender** - recommended for services using  [Jersey](<https://eclipse-ee4j.github.io/jersey/>)
 * **OkHttpHermesSender** - supports both HTTP/1.1 and HTTP/2 protocols, uses [OkHttp3 client](http://square.github.io/okhttp/)
 
 
