@@ -38,8 +38,9 @@ import java.time.Duration;
     retry the message will be duplicated. This however, would likely also happen if the message was promptly timed-out by producer
     before maxPublishRequestDuration elapsed - the message was likely already sent to Kafka, there just haven't been a response yet.
 
-    So by using large requestTimeout we cause the first slow message to be duplicated, but we protect other inflight
-    messages from being duplicated, and we prevent connections from being frequently dropped and reestablished.
+    So by using large requestTimeout we cause the first slow message to be duplicated (by client-side retry) but:
+    - we protect other inflight messages from being duplicated,
+    - we prevent connections from being frequently dropped and reestablished.
  */
 public class FailFastLocalKafkaProducerProperties implements KafkaProducerParameters {
     private Duration maxBlock = Duration.ofMillis(500);
