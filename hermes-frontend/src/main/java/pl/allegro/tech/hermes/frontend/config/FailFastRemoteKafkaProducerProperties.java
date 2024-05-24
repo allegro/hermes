@@ -39,6 +39,8 @@ public class FailFastRemoteKafkaProducerProperties implements KafkaProducerParam
 
     private boolean idempotenceEnabled = false;
 
+    private int partitionerAvailabilityTimeoutMs = 0;
+
     @Override
     public Duration getMaxBlock() {
         return maxBlock;
@@ -172,5 +174,14 @@ public class FailFastRemoteKafkaProducerProperties implements KafkaProducerParam
 
     public void setIdempotenceEnabled(boolean idempotenceEnabled) {
         this.idempotenceEnabled = idempotenceEnabled;
+    }
+
+    @Override
+    public int getPartitionerAvailabilityTimeoutMs() {
+        return partitionerAvailabilityTimeoutMs;
+    }
+
+    public void setPartitionerAvailabilityTimeoutMs(int partitionerAvailabilityTimeoutMs) {
+        this.partitionerAvailabilityTimeoutMs = partitionerAvailabilityTimeoutMs;
     }
 }

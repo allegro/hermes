@@ -27,6 +27,7 @@ import static org.apache.kafka.clients.producer.ProducerConfig.MAX_IN_FLIGHT_REQ
 import static org.apache.kafka.clients.producer.ProducerConfig.MAX_REQUEST_SIZE_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.METADATA_MAX_AGE_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.METRICS_SAMPLE_WINDOW_MS_CONFIG;
+import static org.apache.kafka.clients.producer.ProducerConfig.PARTITIONER_AVAILABILITY_TIMEOUT_MS_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.RETRIES_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.RETRY_BACKOFF_MS_CONFIG;
@@ -120,6 +121,7 @@ public class KafkaMessageSendersFactory {
         props.put(METRICS_SAMPLE_WINDOW_MS_CONFIG, (int) kafkaProducerParameters.getMetricsSampleWindow().toMillis());
         props.put(MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, kafkaProducerParameters.getMaxInflightRequestsPerConnection());
         props.put(ENABLE_IDEMPOTENCE_CONFIG, kafkaProducerParameters.isIdempotenceEnabled());
+        props.put(PARTITIONER_AVAILABILITY_TIMEOUT_MS_CONFIG, kafkaProducerParameters.getPartitionerAvailabilityTimeoutMs());
         props.put(ACKS_CONFIG, acks);
 
         if (kafkaParameters.isAuthenticationEnabled()) {

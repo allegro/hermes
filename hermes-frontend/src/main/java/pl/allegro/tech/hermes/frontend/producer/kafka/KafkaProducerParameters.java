@@ -33,4 +33,6 @@ public interface KafkaProducerParameters {
     boolean isReportNodeMetricsEnabled();
 
     boolean isIdempotenceEnabled();
+
+    int getPartitionerAvailabilityTimeoutMs();
 }
