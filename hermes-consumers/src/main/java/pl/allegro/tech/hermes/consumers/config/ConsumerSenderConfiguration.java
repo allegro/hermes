@@ -262,11 +262,11 @@ public class ConsumerSenderConfiguration {
     @Bean
     public FutureAsyncTimeout futureAsyncTimeoutFactory(InstrumentedExecutorServiceFactory executorFactory,
                                                         SenderAsyncTimeoutProperties senderAsyncTimeoutProperties) {
-        ScheduledExecutorService timeoutExecutorService = executorFactory.getScheduledExecutorService(
-                "async-timeout",
-                senderAsyncTimeoutProperties.getThreadPoolSize(),
-                senderAsyncTimeoutProperties.isThreadPoolMonitoringEnabled()
-        );
+        ScheduledExecutorService timeoutExecutorService = executorFactory.scheduledExecutorBuilder(
+                        "async-timeout",
+                        senderAsyncTimeoutProperties.getThreadPoolSize()
+                ).withMonitoringEnabled(senderAsyncTimeoutProperties.isThreadPoolMonitoringEnabled())
+                .create();
         return new FutureAsyncTimeout(timeoutExecutorService);
     }
 }

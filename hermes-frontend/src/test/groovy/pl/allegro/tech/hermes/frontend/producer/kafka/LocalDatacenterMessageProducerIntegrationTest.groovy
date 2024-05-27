@@ -31,6 +31,8 @@ import spock.lang.Shared
 import spock.lang.Specification
 
 import java.time.Duration
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
 import java.util.stream.Collectors
 
 import static java.util.Collections.emptyList
@@ -82,6 +84,9 @@ class LocalDatacenterMessageProducerIntegrationTest extends Specification {
     String datacenter = "dc"
 
     @Shared
+    ScheduledExecutorService chaosScheduler = Executors.newSingleThreadScheduledExecutor();
+
+    @Shared
     MetricsFacade metricsFacade = new MetricsFacade(new SimpleMeterRegistry())
 
     def setupSpec() {
@@ -105,8 +110,8 @@ class LocalDatacenterMessageProducerIntegrationTest extends Specification {
                 topicMetadataLoadingExecutor,
                 minInSyncReplicasLoader,
                 new KafkaMessageSenders.Tuple(
-                        new KafkaMessageSender<byte[], byte[]>(leaderConfirms, brokerLatencyReporter, metricsFacade, datacenter),
-                        new KafkaMessageSender<byte[], byte[]>(everyoneConfirms, brokerLatencyReporter, metricsFacade, datacenter)
+                        new KafkaMessageSender<byte[], byte[]>(leaderConfirms, brokerLatencyReporter, metricsFacade, datacenter, chaosScheduler),
+                        new KafkaMessageSender<byte[], byte[]>(everyoneConfirms, brokerLatencyReporter, metricsFacade, datacenter, chaosScheduler)
                 ),
                 emptyList()
         )
