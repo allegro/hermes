@@ -13,9 +13,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
-import pl.allegro.tech.hermes.management.infrastructure.graphite.CachingGraphiteClient;
-import pl.allegro.tech.hermes.management.infrastructure.graphite.GraphiteClient;
-import pl.allegro.tech.hermes.management.infrastructure.graphite.RestTemplateGraphiteClient;
 import pl.allegro.tech.hermes.management.infrastructure.prometheus.CachingPrometheusClient;
 import pl.allegro.tech.hermes.management.infrastructure.prometheus.PrometheusClient;
 import pl.allegro.tech.hermes.management.infrastructure.prometheus.RestTemplatePrometheusClient;
@@ -29,20 +26,6 @@ import static com.google.common.base.Ticker.systemTicker;
 public class ExternalMonitoringConfiguration {
 
     @Bean
-    @ConditionalOnProperty(value = "graphite.client.enabled", havingValue = "true")
-    public GraphiteClient graphiteClient(@Qualifier("monitoringRestTemplate") RestTemplate graphiteRestTemplate,
-                                         GraphiteMonitoringMetricsProperties graphiteClientProperties) {
-        RestTemplateGraphiteClient underlyingGraphiteClient =
-                new RestTemplateGraphiteClient(graphiteRestTemplate, URI.create(graphiteClientProperties.getExternalMonitoringUrl()));
-        return new CachingGraphiteClient(
-                underlyingGraphiteClient,
-                systemTicker(),
-                graphiteClientProperties.getCacheTtlSeconds(),
-                graphiteClientProperties.getCacheSize()
-        );
-    }
-
-    @Bean
     @ConditionalOnProperty(value = "prometheus.client.enabled", havingValue = "true")
     public VictoriaMetricsMetricsProvider prometheusMetricsProvider(PrometheusClient prometheusClient,
                                                                     PrometheusMonitoringClientProperties properties) {
@@ -53,10 +36,10 @@ public class ExternalMonitoringConfiguration {
 
     @Bean
     @ConditionalOnProperty(value = "prometheus.client.enabled", havingValue = "true")
-    public PrometheusClient prometheusClient(@Qualifier("monitoringRestTemplate") RestTemplate graphiteRestTemplate,
+    public PrometheusClient prometheusClient(@Qualifier("monitoringRestTemplate") RestTemplate monitoringRestTemplate,
                                              PrometheusMonitoringClientProperties clientProperties) {
         RestTemplatePrometheusClient underlyingPrometheusClient =
-                new RestTemplatePrometheusClient(graphiteRestTemplate, URI.create(clientProperties.getExternalMonitoringUrl()));
+                new RestTemplatePrometheusClient(monitoringRestTemplate, URI.create(clientProperties.getExternalMonitoringUrl()));
         return new CachingPrometheusClient(
                 underlyingPrometheusClient,
                 systemTicker(),

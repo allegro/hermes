@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.tracker.elasticsearch.management;
 
-import com.codahale.metrics.MetricRegistry;
 import com.google.common.collect.ImmutableMap;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.testng.annotations.AfterSuite;
@@ -11,9 +10,7 @@ import pl.allegro.tech.hermes.api.PublishedMessageTrace;
 import pl.allegro.tech.hermes.api.PublishedMessageTraceStatus;
 import pl.allegro.tech.hermes.api.SentMessageTrace;
 import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
-import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.tracker.consumers.MessageMetadata;
 import pl.allegro.tech.hermes.tracker.consumers.TestMessageMetadata;
 import pl.allegro.tech.hermes.tracker.elasticsearch.ElasticsearchResource;
@@ -50,8 +47,7 @@ public class ElasticsearchLogRepositoryTest implements LogSchemaAware {
     private static final FrontendIndexFactory frontendIndexFactory = new FrontendDailyIndexFactory(clock);
     private static final ConsumersIndexFactory consumersIndexFactory = new ConsumersDailyIndexFactory(clock);
     private static final MetricsFacade metricsFacade = new MetricsFacade(
-            new SimpleMeterRegistry(),
-            new HermesMetrics(new MetricRegistry(), new PathsCompiler(""))
+            new SimpleMeterRegistry()
     );
 
     private static final ElasticsearchResource elasticsearch = new ElasticsearchResource();
