@@ -6,7 +6,7 @@ import org.apache.avro.reflect.ReflectData
 import org.springframework.util.MultiValueMap
 import org.springframework.util.MultiValueMapAdapter
 import pl.allegro.tech.hermes.test.helper.client.integration.FrontendTestClient
-import wiremock.org.apache.hc.core5.http.HttpStatus
+import org.apache.hc.core5.http.HttpStatus
 import org.junit.ClassRule
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader
 import pl.allegro.tech.hermes.test.helper.util.Ports

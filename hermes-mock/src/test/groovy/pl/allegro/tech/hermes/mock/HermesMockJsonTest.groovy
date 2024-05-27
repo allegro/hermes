@@ -3,7 +3,7 @@ package pl.allegro.tech.hermes.mock
 import org.springframework.util.MultiValueMap
 import org.springframework.util.MultiValueMapAdapter
 import pl.allegro.tech.hermes.test.helper.client.integration.FrontendTestClient
-import wiremock.org.apache.hc.core5.http.HttpStatus
+import org.apache.hc.core5.http.HttpStatus
 import org.junit.ClassRule
 import pl.allegro.tech.hermes.test.helper.util.Ports
 import spock.lang.Shared
