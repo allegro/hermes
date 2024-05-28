@@ -98,6 +98,7 @@ public class HermesServer {
         gracefulShutdown = new HermesShutdownHandler(handlers(), metricsFacade);
         Undertow.Builder builder = Undertow.builder()
                 .addHttpListener(hermesServerParameters.getPort(), hermesServerParameters.getHost())
+                .addHttpListener(hermesServerParameters.getPort2(), hermesServerParameters.getHost())
                 .setServerOption(REQUEST_PARSE_TIMEOUT, (int) hermesServerParameters.getRequestParseTimeout().toMillis())
                 .setServerOption(MAX_HEADERS, hermesServerParameters.getMaxHeaders())
                 .setServerOption(MAX_PARAMETERS, hermesServerParameters.getMaxParameters())

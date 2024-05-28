@@ -10,6 +10,8 @@ public class HermesServerProperties implements HermesServerParameters {
 
     private int port = 8080;
 
+    private int port2 = 8081;
+
     private String host = "0.0.0.0";
 
     private Duration readTimeout = Duration.ofMillis(2000);
@@ -47,8 +49,17 @@ public class HermesServerProperties implements HermesServerParameters {
         return port;
     }
 
+    @Override
+    public int getPort2() {
+        return port2;
+    }
+
     public void setPort(int port) {
         this.port = port;
+    }
+
+    public void setPort2(int port2) {
+        this.port2 = port2;
     }
 
     @Override

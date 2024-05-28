@@ -6,6 +6,8 @@ public interface HermesServerParameters {
 
     int getPort();
 
+    int getPort2();
+
     String getHost();
 
     Duration getReadTimeout();
