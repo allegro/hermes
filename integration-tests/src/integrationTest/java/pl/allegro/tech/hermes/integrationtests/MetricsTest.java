@@ -240,7 +240,7 @@ public class MetricsTest {
 
         // then
         subscriber.waitUntilReceived(unfiltered.body());
-        waitAtMost(Duration.TEN_SECONDS).until(() ->
+        waitAtMost(Duration.ofSeconds(10)).untilAsserted(() ->
                 hermes.api().getConsumersMetrics()
                         .expectStatus()
                         .isOk()

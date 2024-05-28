@@ -1,9 +1,9 @@
 package pl.allegro.tech.hermes.frontend.publishing.metric
 
 import com.codahale.metrics.MetricRegistry
-import com.jayway.awaitility.Duration
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import org.assertj.core.api.Assertions
+import org.awaitility.Awaitility
 import pl.allegro.tech.hermes.api.Topic
 import pl.allegro.tech.hermes.common.metric.MetricsFacade
 import pl.allegro.tech.hermes.frontend.metric.ThroughputMeter
@@ -11,7 +11,8 @@ import pl.allegro.tech.hermes.frontend.metric.ThroughputRegistry
 import spock.lang.Shared
 import spock.lang.Specification
 
-import static com.jayway.awaitility.Awaitility.await
+import java.time.Duration
+
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic
 
 class ThroughputRegistryTest extends Specification {
@@ -36,9 +37,9 @@ class ThroughputRegistryTest extends Specification {
         meter = throughputRegistry.forTopic(topicA.getName())
 
         then: "throughput is preserved"
-        await().atMost(Duration.TEN_SECONDS).until({
+        Awaitility.await().atMost(Duration.ofSeconds(10)).untilAsserted {
             Assertions.assertThat(meter.oneMinuteRate).isGreaterThan(0.0d)
-        })
+        }
     }
 
     def "global throughput should be shared for all topics"() {
@@ -53,13 +54,14 @@ class ThroughputRegistryTest extends Specification {
         topicCMeter.increment(1024)
 
         then: "global throughput is a sum of topic throughput"
-        await().atMost(Duration.TEN_SECONDS).until({
+        Awaitility.await().atMost(Duration.ofSeconds(10)).untilAsserted {
             def topicAValue = topicBMeter.oneMinuteRate
             def topicBValue = topicCMeter.oneMinuteRate
             def globalValue = throughputRegistry.globalThroughputOneMinuteRate
             Assertions.assertThat(topicAValue).isGreaterThan(0.0d)
             Assertions.assertThat(topicBValue).isGreaterThan(0.0d)
             Assertions.assertThat(globalValue).isGreaterThan(topicAValue)
-        })
+        }
     }
+
 }
