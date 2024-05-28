@@ -32,7 +32,7 @@ class HermesClientMicrometerTaggedMetricsTest extends Specification {
         metrics.counter("hermes-client.status", "code", String.valueOf(201), "topic", "com_group.topic").count() == 1
         def timer = metrics.timer("hermes-client.latency", "topic", "com_group.topic")
         timer.totalTime(TimeUnit.NANOSECONDS) >= Duration.ofMillis(100).get(ChronoUnit.NANOS)
-        timer.totalTime(TimeUnit.NANOSECONDS) < Duration.ofMillis(600).get(ChronoUnit.NANOS)
+        timer.totalTime(TimeUnit.NANOSECONDS) < Duration.ofMillis(500).get(ChronoUnit.NANOS)
     }
 
     def "should close timer on exceptional completion and log failure metric"() {
