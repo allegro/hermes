@@ -20,7 +20,6 @@ import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatchFactory;
 import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResolver;
 import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecordersRegistry;
 import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignmentState;
-import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimitSupervisor;
 import pl.allegro.tech.hermes.consumers.consumer.rate.calculator.OutputRateCalculatorFactory;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
@@ -264,7 +263,6 @@ public class SupervisorConfiguration {
                                            ConsumerRateLimitSupervisor consumerRateLimitSupervisor,
                                            OutputRateCalculatorFactory outputRateCalculatorFactory,
                                            Trackers trackers,
-                                           OffsetQueue offsetQueue,
                                            ConsumerMessageSenderFactory consumerMessageSenderFactory,
                                            TopicRepository topicRepository,
                                            MessageConverterResolver messageConverterResolver,
@@ -282,7 +280,6 @@ public class SupervisorConfiguration {
                 consumerRateLimitSupervisor,
                 outputRateCalculatorFactory,
                 trackers,
-                offsetQueue,
                 consumerMessageSenderFactory,
                 topicRepository,
                 messageConverterResolver,
@@ -306,18 +303,16 @@ public class SupervisorConfiguration {
     public ConsumersSupervisor nonblockingConsumersSupervisor(CommonConsumerProperties commonConsumerProperties,
                                                               ConsumersExecutorService executor,
                                                               ConsumerFactory consumerFactory,
-                                                              OffsetQueue offsetQueue,
                                                               ConsumerPartitionAssignmentState consumerPartitionAssignmentState,
                                                               Retransmitter retransmitter,
                                                               UndeliveredMessageLogPersister undeliveredMessageLogPersister,
                                                               SubscriptionRepository subscriptionRepository,
                                                               MetricsFacade metrics,
                                                               ConsumerMonitor monitor,
-                                                              Clock clock,
-                                                              CommitOffsetProperties commitOffsetProperties) {
-        return new NonblockingConsumersSupervisor(commonConsumerProperties, executor, consumerFactory, offsetQueue,
+                                                              Clock clock) {
+        return new NonblockingConsumersSupervisor(commonConsumerProperties, executor, consumerFactory,
                 consumerPartitionAssignmentState, retransmitter, undeliveredMessageLogPersister,
-                subscriptionRepository, metrics, monitor, clock, commitOffsetProperties.getPeriod());
+                subscriptionRepository, metrics, monitor, clock);
     }
 
     @Bean(initMethod = "start", destroyMethod = "shutdown")

@@ -1,25 +1,24 @@
 package pl.allegro.tech.hermes.consumers.consumer.offset;
 
 import com.google.common.collect.Sets;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.jctools.queues.MessagePassingQueue;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
-import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter;
 import pl.allegro.tech.hermes.metrics.HermesCounter;
 import pl.allegro.tech.hermes.metrics.HermesTimer;
 import pl.allegro.tech.hermes.metrics.HermesTimerContext;
-
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 
 /**
  * <p>Note on algorithm used to calculate offsets to actually commit.
@@ -70,20 +69,14 @@ import java.util.function.Function;
  * </ul>
  * <p>This algorithm is very simple, memory efficient, can be performed in single thread and introduces no locks.</p>
  */
-public class OffsetCommitter implements Runnable {
+public class OffsetCommitter {
 
 
     private static final Logger logger = LoggerFactory.getLogger(OffsetCommitter.class);
 
-    private final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor(
-            new ThreadFactoryBuilder().setNameFormat("offset-committer-%d").build());
-
-    private final int offsetCommitPeriodSeconds;
-
-    private final OffsetQueue offsetQueue;
-
     private final ConsumerPartitionAssignmentState partitionAssignmentState;
-    private final MessageCommitter messageCommitter;
+
+    private final SubscriptionName subscriptionName;
 
     private final HermesCounter obsoleteCounter;
     private final HermesCounter committedCounter;
@@ -93,33 +86,40 @@ public class OffsetCommitter implements Runnable {
     private final Map<SubscriptionPartition, Long> maxCommittedOffsets = new HashMap<>();
 
     public OffsetCommitter(
-            OffsetQueue offsetQueue,
             ConsumerPartitionAssignmentState partitionAssignmentState,
-            MessageCommitter messageCommitter,
-            int offsetCommitPeriodSeconds,
-            MetricsFacade metrics
+            MetricsFacade metrics,
+            SubscriptionName subscriptionName
     ) {
-        this.offsetQueue = offsetQueue;
         this.partitionAssignmentState = partitionAssignmentState;
-        this.messageCommitter = messageCommitter;
-        this.offsetCommitPeriodSeconds = offsetCommitPeriodSeconds;
         this.obsoleteCounter = metrics.offsetCommits().obsoleteCounter();
         this.committedCounter = metrics.offsetCommits().committedCounter();
+        this.subscriptionName = subscriptionName;
         this.timer = metrics.offsetCommits().duration();
     }
 
-    @Override
-    public void run() {
+    public Set<SubscriptionPartitionOffset> calculateOffsetsToBeCommitted(Map<SubscriptionPartitionOffset, MessageState> offsets) {
         try (HermesTimerContext ignored = timer.time()) {
-            // committed offsets need to be drained first so that there is no possibility of new committed offsets
-            // showing up after inflight queue is drained - this would lead to stall in committing offsets
-            ReducingConsumer committedOffsetsReducer = processCommittedOffsets();
+            // committed offsets need to be copied first so that there is no possibility of new committed offsets
+            // showing up after inflight queue is copied - this would lead to stall in committing offsets
+            List<SubscriptionPartitionOffset> deliveredOffsetsQueue = new ArrayList<>();
+            for (Map.Entry<SubscriptionPartitionOffset, MessageState> entry : offsets.entrySet()) {
+                if (entry.getValue() == MessageState.DELIVERED) {
+                    deliveredOffsetsQueue.add(entry.getKey());
+                }
+            }
+
+            List<SubscriptionPartitionOffset> inflightOffsetsQueue = new ArrayList<>();
+            for (Map.Entry<SubscriptionPartitionOffset, MessageState> entry : offsets.entrySet()) {
+                   inflightOffsetsQueue.add(entry.getKey());
+            }
+
+            ReducingConsumer committedOffsetsReducer = processCommittedOffsets(deliveredOffsetsQueue);
 
             // update stored max committed offsets with offsets drained from queue
             Map<SubscriptionPartition, Long> maxDrainedCommittedOffsets = committedOffsetsReducer.reduced;
             updateMaxCommittedOffsets(maxDrainedCommittedOffsets);
 
-            ReducingConsumer inflightOffsetReducer = processInflightOffsets(committedOffsetsReducer.all);
+            ReducingConsumer inflightOffsetReducer = processInflightOffsets(committedOffsetsReducer.all, inflightOffsetsQueue);
             Map<SubscriptionPartition, Long> minInflightOffsets = inflightOffsetReducer.reduced;
 
             int scheduledToCommitCount = 0;
@@ -151,23 +151,22 @@ public class OffsetCommitter implements Runnable {
                 }
             }
             committedOffsetToBeRemoved.forEach(maxCommittedOffsets::remove);
-            messageCommitter.commitOffsets(offsetsToCommit);
 
             obsoleteCounter.increment(obsoleteCount);
             committedCounter.increment(scheduledToCommitCount);
 
             cleanupStoredOffsetsWithObsoleteTerms();
+
+            return offsetsToCommit.batchFor(subscriptionName);
         } catch (Exception exception) {
             logger.error("Failed to run offset committer: {}", exception.getMessage(), exception);
         }
+        return Set.of();
     }
 
-    // | 1 | 2 | 3 | 7 | 10 | 11
-    // | 3 | 7 | 10 | 11
-
-    private ReducingConsumer processCommittedOffsets() {
+    private ReducingConsumer processCommittedOffsets(List<SubscriptionPartitionOffset> deliveredOffsetsQueue) {
         ReducingConsumer committedOffsetsReducer = new ReducingConsumer(Math::max, c -> c + 1);
-        offsetQueue.drainCommittedOffsets(committedOffsetsReducer);
+        drain(deliveredOffsetsQueue, committedOffsetsReducer);
         committedOffsetsReducer.resetModifierFunction();
         return committedOffsetsReducer;
     }
@@ -179,13 +178,15 @@ public class OffsetCommitter implements Runnable {
         );
     }
 
-    private ReducingConsumer processInflightOffsets(Set<SubscriptionPartitionOffset> deliveredOffsets) {
+    private ReducingConsumer processInflightOffsets(Set<SubscriptionPartitionOffset> deliveredOffsets,
+                                                    List<SubscriptionPartitionOffset> inflightOffsetsQueue) {
+        // smallest undelivered message
         ReducingConsumer inflightOffsetReducer = new ReducingConsumer(Math::min);
-        // najmniejsza niewysłana wiadomość
 
-        // process inflights z obecnej iteracji
-        offsetQueue.drainInflightOffsets(o -> reduceIfNotDelivered(o, inflightOffsetReducer, deliveredOffsets));
-        // process inflights z poprzedniej iteracji
+        // process inflights from the current iteration
+        drain(inflightOffsetsQueue, o -> reduceIfNotDelivered(o, inflightOffsetReducer, deliveredOffsets));
+
+        // process inflights from the previous iteration
         inflightOffsets.forEach(o -> reduceIfNotDelivered(o, inflightOffsetReducer, deliveredOffsets));
 
         inflightOffsets.clear();
@@ -207,19 +208,20 @@ public class OffsetCommitter implements Runnable {
         maxCommittedOffsets.entrySet().removeIf(entry -> !partitionAssignmentState.isAssignedPartitionAtCurrentTerm(entry.getKey()));
     }
 
-    public void start() {
-        scheduledExecutor.scheduleWithFixedDelay(this,
-                offsetCommitPeriodSeconds,
-                offsetCommitPeriodSeconds,
-                TimeUnit.SECONDS
-        );
+    private void drain(List<SubscriptionPartitionOffset> subscriptionPartitionOffsets, Consumer<SubscriptionPartitionOffset> consumer) {
+        int size = subscriptionPartitionOffsets.size();
+        for (int i = 0; i < size; i++) {
+            SubscriptionPartitionOffset element = subscriptionPartitionOffsets.get(i);
+            if (element != null) {
+                consumer.accept(element);
+            } else {
+                logger.warn("Unexpected null value while draining queue [idx={}, size={}]", i, size);
+                break;
+            }
+        }
     }
 
-    public void shutdown() {
-        scheduledExecutor.shutdown();
-    }
-
-    private static final class ReducingConsumer implements MessagePassingQueue.Consumer<SubscriptionPartitionOffset> {
+    private static final class ReducingConsumer implements Consumer<SubscriptionPartitionOffset> {
         private final BiFunction<Long, Long, Long> reductor;
         private Function<Long, Long> modifier;
         private final Map<SubscriptionPartition, Long> reduced = new HashMap<>();
@@ -238,27 +240,14 @@ public class OffsetCommitter implements Runnable {
             this.modifier = Function.identity();
         }
 
-        // new ReducingConsumer(Math::max, c -> c + 1);
-        // | 1 | 2 | 10 | 11 | 12 | 13
         @Override
         public void accept(SubscriptionPartitionOffset p) {
-            // p = 1
-            // p = 2
-            // p = 10
             all.add(p);
             reduced.compute(
                     p.getSubscriptionPartition(),
                     (k, v) -> {
-                        // offset = 2
-
-                        // v = 2
-                        // modifier =  c -> c + 1
                         long offset = modifier.apply(p.getOffset());
-                        // offset = 3
-                        // offset = 11
-                        // reductor = Math::max
                         return v == null ? offset : reductor.apply(v, offset);
-                        // reduced = 11
                     }
             );
         }

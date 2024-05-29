@@ -18,7 +18,6 @@ import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatchReceiver;
 import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatchingResult;
 import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResolver;
 import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
-import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.rate.BatchConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
@@ -51,7 +50,6 @@ public class BatchConsumer implements Consumer {
     private final SubscriptionLoadRecorder loadRecorder;
 
     private Topic topic;
-    private final OffsetQueue offsetQueue;
     private Subscription subscription;
 
     private volatile boolean consuming = true;
@@ -60,10 +58,10 @@ public class BatchConsumer implements Consumer {
     private final BatchConsumerMetrics metrics;
     private MessageBatchReceiver receiver;
 
+    // TODO change also BatchConsumer
     public BatchConsumer(ReceiverFactory messageReceiverFactory,
                          MessageBatchSender sender,
                          MessageBatchFactory batchFactory,
-                         OffsetQueue offsetQueue,
                          MessageConverterResolver messageConverterResolver,
                          CompositeMessageContentWrapper compositeMessageContentWrapper,
                          MetricsFacade metricsFacade,
@@ -75,7 +73,6 @@ public class BatchConsumer implements Consumer {
         this.messageReceiverFactory = messageReceiverFactory;
         this.sender = sender;
         this.batchFactory = batchFactory;
-        this.offsetQueue = offsetQueue;
         this.subscription = subscription;
         this.useTopicMessageSize = useTopicMessageSize;
         this.loadRecorder = loadRecorder;
@@ -135,7 +132,8 @@ public class BatchConsumer implements Consumer {
                 subscription,
                 new BatchConsumerRateLimiter(),
                 loadRecorder,
-                metricsFacade
+                metricsFacade,
+                null //TODO fix later
         );
 
         logger.debug("Consumer: preparing batch receiver for subscription {}", subscription.getQualifiedName());

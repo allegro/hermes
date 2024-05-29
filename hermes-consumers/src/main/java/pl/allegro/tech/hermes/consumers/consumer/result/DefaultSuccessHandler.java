@@ -4,7 +4,6 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
-import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.metrics.HermesCounter;
 import pl.allegro.tech.hermes.metrics.HermesHistogram;
@@ -14,7 +13,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
-import static pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset.subscriptionPartitionOffset;
 
 public class DefaultSuccessHandler implements SuccessHandler {
 

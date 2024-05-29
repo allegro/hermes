@@ -15,7 +15,6 @@ import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResol
 import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
 import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecordersRegistry;
 import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignmentState;
-import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimitSupervisor;
 import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.rate.calculator.OutputRateCalculatorFactory;
@@ -34,7 +33,6 @@ public class ConsumerFactory {
     private final MetricsFacade metrics;
     private final CommonConsumerParameters commonConsumerParameters;
     private final Trackers trackers;
-    private final OffsetQueue offsetQueue;
     private final ConsumerMessageSenderFactory consumerMessageSenderFactory;
     private final TopicRepository topicRepository;
     private final MessageConverterResolver messageConverterResolver;
@@ -52,7 +50,6 @@ public class ConsumerFactory {
                            ConsumerRateLimitSupervisor consumerRateLimitSupervisor,
                            OutputRateCalculatorFactory outputRateCalculatorFactory,
                            Trackers trackers,
-                           OffsetQueue offsetQueue,
                            ConsumerMessageSenderFactory consumerMessageSenderFactory,
                            TopicRepository topicRepository,
                            MessageConverterResolver messageConverterResolver,
@@ -69,7 +66,6 @@ public class ConsumerFactory {
         this.consumerRateLimitSupervisor = consumerRateLimitSupervisor;
         this.outputRateCalculatorFactory = outputRateCalculatorFactory;
         this.trackers = trackers;
-        this.offsetQueue = offsetQueue;
         this.consumerMessageSenderFactory = consumerMessageSenderFactory;
         this.topicRepository = topicRepository;
         this.messageConverterResolver = messageConverterResolver;
@@ -89,7 +85,6 @@ public class ConsumerFactory {
             return new BatchConsumer(messageReceiverFactory,
                     batchSenderFactory.create(subscription),
                     batchFactory,
-                    offsetQueue,
                     messageConverterResolver,
                     compositeMessageContentWrapper,
                     metrics,
