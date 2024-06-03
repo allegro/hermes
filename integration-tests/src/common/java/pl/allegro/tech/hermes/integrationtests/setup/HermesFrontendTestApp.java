@@ -111,7 +111,7 @@ public class HermesFrontendTestApp implements HermesTestApp {
 
         args.put(KAFKA_PRODUCER_METADATA_MAX_AGE, metadataMaxAge);
 
-        args.put(FRONTEND_FORCE_TOPIC_MAX_MESSAGE_SIZE,true);
+        args.put(FRONTEND_FORCE_TOPIC_MAX_MESSAGE_SIZE, true);
         args.put(FRONTEND_IDLE_TIMEOUT, Duration.ofSeconds(2));
 
         args.put(FRONTEND_THROUGHPUT_TYPE, "fixed");

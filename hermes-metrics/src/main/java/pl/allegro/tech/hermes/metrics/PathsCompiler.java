@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.metrics;
 
-import org.apache.commons.lang.text.StrBuilder;
+
+import org.apache.commons.text.TextStringBuilder;
 
 public class PathsCompiler {
 
@@ -22,7 +23,7 @@ public class PathsCompiler {
     }
 
     public String compile(String path, PathContext context) {
-        StrBuilder pathBuilder = new StrBuilder(path);
+        TextStringBuilder pathBuilder = new TextStringBuilder(path);
 
         context.getGroup().ifPresent(g -> pathBuilder.replaceAll(GROUP, g));
         context.getTopic().ifPresent(t -> pathBuilder.replaceAll(TOPIC, t));

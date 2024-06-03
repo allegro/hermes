@@ -1,11 +1,12 @@
 package pl.allegro.tech.hermes.integrationtests;
 
-import com.jayway.awaitility.Duration;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesExtension;
 
-import static com.jayway.awaitility.Awaitility.waitAtMost;
+import java.time.Duration;
+
+import static org.awaitility.Awaitility.waitAtMost;
 import static pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProvider.DEFAULT_DC_NAME;
 
 public class ReadinessCheckTest {
@@ -19,7 +20,7 @@ public class ReadinessCheckTest {
         hermes.api().setReadiness(DEFAULT_DC_NAME, false).expectStatus().isAccepted();
 
         // then
-        waitAtMost(Duration.FIVE_SECONDS).until(() ->
+        waitAtMost(Duration.ofSeconds(5)).untilAsserted(() ->
                 hermes.api()
                         .getFrontendReadiness()
                         .expectStatus().is5xxServerError()
@@ -30,7 +31,7 @@ public class ReadinessCheckTest {
         hermes.api().setReadiness(DEFAULT_DC_NAME, true).expectStatus().isAccepted();
 
         // then
-        waitAtMost(Duration.FIVE_SECONDS).until(() ->
+        waitAtMost(Duration.ofSeconds(5)).untilAsserted(() ->
                 hermes.api()
                         .getFrontendReadiness()
                         .expectStatus().isOk()

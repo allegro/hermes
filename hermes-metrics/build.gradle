@@ -4,7 +4,7 @@ plugins {
 
 dependencies {
     api group: 'io.dropwizard.metrics', name: 'metrics-core', version: versions.dropwizard_metrics
-    api group: 'commons-lang', name: 'commons-lang', version: '2.6'
+    api group: 'org.apache.commons', name: 'commons-text', version: '1.12.0'
     api group: 'io.micrometer', name: 'micrometer-core', version: versions.micrometer_metrics
 
     testImplementation group: 'org.spockframework', name: 'spock-core', version: versions.spock

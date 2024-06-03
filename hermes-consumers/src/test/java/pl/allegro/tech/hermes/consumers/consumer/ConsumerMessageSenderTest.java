@@ -4,7 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.metric.SubscriptionMetrics;
@@ -32,14 +32,14 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static pl.allegro.tech.hermes.api.SubscriptionOAuthPolicy.passwordGrantOAuthPolicy;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
@@ -134,10 +134,10 @@ public class ConsumerMessageSenderTest {
         verifySemaphoreReleased();
         verifyLatencyTimersCountedTimes(subscription, 1, 1);
         verifyRateLimiterAcquireTimersCountedTimes(subscription, 1, 1);
-        verifyZeroInteractions(errorHandler);
-        verifyZeroInteractions(failedMeter);
+        verifyNoInteractions(errorHandler);
+        verifyNoInteractions(failedMeter);
         verifyRateLimiterAcquired();
-        verifyZeroInteractions(retries);
+        verifyNoInteractions(retries);
     }
 
     @Test
@@ -171,11 +171,11 @@ public class ConsumerMessageSenderTest {
         // then
         verify(errorHandler, timeout(1000)).handleDiscarded(eq(message), eq(subscription), any(MessageSendingResult.class));
         verifySemaphoreReleased();
-        verifyZeroInteractions(successHandler);
+        verifyNoInteractions(successHandler);
         verifyLatencyTimersCountedTimes(subscription, 1, 1);
         verifyRateLimiterAcquireTimersCountedTimes(subscription, 1, 1);
         verifyRateLimiterAcquired();
-        verifyZeroInteractions(retries);
+        verifyNoInteractions(retries);
     }
 
     @Test
@@ -190,11 +190,11 @@ public class ConsumerMessageSenderTest {
         // then
         verify(errorHandler, timeout(1000)).handleDiscarded(eq(message), eq(subscription), any(MessageSendingResult.class));
         verifySemaphoreReleased();
-        verifyZeroInteractions(successHandler);
+        verifyNoInteractions(successHandler);
         verifyLatencyTimersCountedTimes(subscription, 1, 1);
         verifyRateLimiterAcquireTimersCountedTimes(subscription, 1, 1);
         verifyRateLimiterAcquired();
-        verifyZeroInteractions(retries);
+        verifyNoInteractions(retries);
     }
 
     @Test
@@ -276,11 +276,11 @@ public class ConsumerMessageSenderTest {
         // then
         verify(errorHandler, timeout(1000)).handleDiscarded(eq(message), eq(subscription), any(MessageSendingResult.class));
         verifySemaphoreReleased();
-        verifyZeroInteractions(successHandler);
+        verifyNoInteractions(successHandler);
         verifyLatencyTimersCountedTimes(subscription, 1, 1);
         verifyRateLimiterAcquireTimersCountedTimes(subscription, 1, 1);
         verifyRateLimiterAcquired();
-        verifyZeroInteractions(retries);
+        verifyNoInteractions(retries);
     }
 
     @Test
@@ -301,7 +301,7 @@ public class ConsumerMessageSenderTest {
         // then
         verify(otherMessageSender, timeout(1000)).send(message);
         verifyRateLimiterAcquired();
-        verifyZeroInteractions(retries);
+        verifyNoInteractions(retries);
     }
 
     @Test
@@ -322,7 +322,7 @@ public class ConsumerMessageSenderTest {
         // then
         verify(otherMessageSender, timeout(1000)).send(message);
         verifyRateLimiterAcquired();
-        verifyZeroInteractions(retries);
+        verifyNoInteractions(retries);
     }
 
     @Test
@@ -348,7 +348,7 @@ public class ConsumerMessageSenderTest {
         long sendingTime = System.currentTimeMillis() - sendingStartTime;
         assertThat(sendingTime).isGreaterThanOrEqualTo(500);
         verifyRateLimiterAcquired();
-        verifyZeroInteractions(retries);
+        verifyNoInteractions(retries);
     }
 
     @Test
@@ -374,7 +374,7 @@ public class ConsumerMessageSenderTest {
         long sendingTime = System.currentTimeMillis() - sendingStartTime;
         assertThat(sendingTime).isLessThan(300);
         verifyRateLimiterAcquired();
-        verifyZeroInteractions(retries);
+        verifyNoInteractions(retries);
     }
 
     @Test
@@ -394,7 +394,7 @@ public class ConsumerMessageSenderTest {
         Thread.sleep(backoff + (long) multiplier * backoff - 100);
 
         // then
-        verifyZeroInteractions(successHandler);
+        verifyNoInteractions(successHandler);
         verifyRateLimiterAcquired(expectedNumberOfFailures);
         verifyRetryCounted(expectedNumberOfFailures);
     }
@@ -438,7 +438,7 @@ public class ConsumerMessageSenderTest {
         Thread.sleep(backoff + (long) multiplier * backoff + 1000);
 
         //then
-        verifyZeroInteractions(successHandler);
+        verifyNoInteractions(successHandler);
         verifyRateLimiterAcquired(2);
         verifyRetryCounted();
     }

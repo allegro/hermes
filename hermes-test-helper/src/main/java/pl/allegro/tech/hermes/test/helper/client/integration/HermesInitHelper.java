@@ -1,14 +1,14 @@
 package pl.allegro.tech.hermes.test.helper.client.integration;
 
-import com.jayway.awaitility.Duration;
+import java.time.Duration;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.OAuthProvider;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicWithSchema;
 
-import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.waitAtMost;
 
 public class HermesInitHelper {
 
@@ -61,13 +61,13 @@ public class HermesInitHelper {
     }
 
     private void waitUntilGroupCreated(String groupName) {
-        waitAtMost(Duration.ONE_MINUTE)
+        waitAtMost(Duration.ofMinutes(1))
             .until(() -> managementTestClient.getGroups().contains(groupName));
     }
 
     private void waitUntilTopicCreated(String topicQualifiedName) {
-        waitAtMost(Duration.ONE_MINUTE)
-            .until(() -> managementTestClient.getTopic(topicQualifiedName)
+        waitAtMost(Duration.ofMinutes(1))
+            .untilAsserted(() -> managementTestClient.getTopic(topicQualifiedName)
                 .expectStatus()
                 .is2xxSuccessful());
     }
@@ -81,8 +81,8 @@ public class HermesInitHelper {
     }
 
     public void waitUntilSubscriptionIsActive(Subscription subscription) {
-        waitAtMost(Duration.TEN_SECONDS)
-            .until(() -> {
+        waitAtMost(Duration.ofSeconds(10))
+            .untilAsserted(() -> {
                 Subscription sub = managementTestClient.getSubscription(subscription.getQualifiedTopicName(), subscription.getName())
                     .expectStatus()
                     .is2xxSuccessful()

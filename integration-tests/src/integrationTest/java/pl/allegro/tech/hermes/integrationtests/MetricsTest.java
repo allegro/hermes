@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.integrationtests;
 
-import com.jayway.awaitility.Duration;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -20,12 +19,13 @@ import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscriber;
 import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscribersExtension;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
+import java.time.Duration;
 import java.util.Map;
 import java.util.UUID;
 
-import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static java.lang.Integer.MAX_VALUE;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.waitAtMost;
 import static pl.allegro.tech.hermes.api.BatchSubscriptionPolicy.Builder.batchSubscriptionPolicy;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
 import static pl.allegro.tech.hermes.integrationtests.assertions.HermesAssertions.assertThatMetrics;
@@ -61,7 +61,7 @@ public class MetricsTest {
         TestMessage message = TestMessage.simple();
         int attempts = hermes.api().publishUntilSuccess(topic.getQualifiedName(), message.body());
 
-        waitAtMost(Duration.TEN_SECONDS).until(() -> {
+        waitAtMost(Duration.ofSeconds(10)).untilAsserted(() -> {
             // when
             WebTestClient.ResponseSpec response = hermes.api().getTopicMetrics(topic.getQualifiedName());
 
@@ -87,7 +87,7 @@ public class MetricsTest {
         hermes.api().publishUntilSuccess(topic.getQualifiedName(), message.body());
         subscriber.waitUntilReceived(message.body());
 
-        waitAtMost(Duration.TEN_SECONDS).until(() -> {
+        waitAtMost(Duration.ofSeconds(10)).untilAsserted(() -> {
             // when
             WebTestClient.ResponseSpec response = hermes.api().getSubscriptionMetrics(topic.getQualifiedName(), subscription.getName());
 
@@ -240,7 +240,7 @@ public class MetricsTest {
 
         // then
         subscriber.waitUntilReceived(unfiltered.body());
-        waitAtMost(Duration.TEN_SECONDS).until(() ->
+        waitAtMost(Duration.ofSeconds(10)).untilAsserted(() ->
                 hermes.api().getConsumersMetrics()
                         .expectStatus()
                         .isOk()
