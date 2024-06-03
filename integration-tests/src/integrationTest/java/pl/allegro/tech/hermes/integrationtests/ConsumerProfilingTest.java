@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.integrationtests;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
-import com.jayway.awaitility.Duration;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,10 +19,11 @@ import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscriber;
 import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscribersExtension;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
+import java.time.Duration;
 import java.util.List;
 
-import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.waitAtMost;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscriptionWithRandomName;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
 
@@ -87,7 +87,7 @@ public class ConsumerProfilingTest {
                 .withProfilingEnabled(true).build());
 
         // then
-        waitAtMost(Duration.TEN_SECONDS).until(() -> {
+        waitAtMost(Duration.ofSeconds(10)).untilAsserted(() -> {
             List<ILoggingEvent> logsList = listAppender.list.stream()
                     .filter(log -> log.getFormattedMessage().contains(subscription.getQualifiedName().toString())).toList();
             assertThat(logsList).hasSizeGreaterThan(0);
@@ -137,7 +137,7 @@ public class ConsumerProfilingTest {
         subscriber.waitUntilReceived(message.body());
 
         // then
-        waitAtMost(Duration.TEN_SECONDS).until(() -> {
+        waitAtMost(Duration.ofSeconds(10)).untilAsserted(() -> {
             List<ILoggingEvent> logsList = listAppender.list.stream()
                     .filter(log -> log.getFormattedMessage().contains(ConsumerRun.DELIVERED.name())).toList();
             assertThat(logsList).hasSizeGreaterThan(0);
@@ -172,7 +172,7 @@ public class ConsumerProfilingTest {
         subscriber.waitUntilReceived(message.body());
 
         // then
-        waitAtMost(Duration.TEN_SECONDS).until(() -> {
+        waitAtMost(Duration.ofSeconds(10)).untilAsserted(() -> {
             List<ILoggingEvent> logsList = listAppender.list.stream()
                     .filter(log -> log.getFormattedMessage().contains(ConsumerRun.DISCARDED.name())).toList();
             assertThat(logsList).hasSizeGreaterThan(0);
@@ -204,10 +204,10 @@ public class ConsumerProfilingTest {
         hermes.api().publishUntilSuccess(topic.getQualifiedName(), message.body());
 
         // when
-        subscriber.waitUntilReceived(Duration.FIVE_SECONDS, 2);
+        subscriber.waitUntilReceived(Duration.ofSeconds(5), 2);
 
         // then
-        waitAtMost(Duration.TEN_SECONDS).until(() -> {
+        waitAtMost(Duration.ofSeconds(10)).untilAsserted(() -> {
             List<ILoggingEvent> retriedLogsList = listAppender.list.stream()
                     .filter(log -> log.getFormattedMessage().contains(ConsumerRun.RETRIED.name())).toList();
             assertThat(retriedLogsList).hasSizeGreaterThan(0);
@@ -228,7 +228,7 @@ public class ConsumerProfilingTest {
 
 
         // and
-        waitAtMost(Duration.TEN_SECONDS).until(() -> {
+        waitAtMost(Duration.ofSeconds(10)).untilAsserted(() -> {
             List<ILoggingEvent> processedLogsList = listAppender.list.stream()
                     .filter(log -> log.getFormattedMessage().contains(ConsumerRun.DELIVERED.name())).toList();
             assertThat(processedLogsList).hasSizeGreaterThan(0);

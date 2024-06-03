@@ -25,21 +25,21 @@ dependencies {
     api group: 'tech.allegro.schema.json2avro', name: 'converter', version: versions.json2avro
 
     api group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
-    implementation group: 'commons-codec', name: 'commons-codec', version: '1.9'
+    implementation group: 'commons-codec', name: 'commons-codec', version: '1.16.1'
     implementation group: 'com.google.guava', name: 'guava', version: versions.guava
 
     api group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: versions.jackson
     api group: 'org.apache.avro', name: 'avro', version: versions.avro
-    api group: 'com.jayway.jsonpath', name: 'json-path', version: '2.5.0'
+    api group: 'com.jayway.jsonpath', name: 'json-path', version: '2.9.0'
 
     implementation group: 'io.dropwizard.metrics', name: 'metrics-core', version: versions.dropwizard_metrics
 
-    implementation group: 'com.google.code.findbugs', name: 'annotations', version: '3.0.0'
+    implementation group: 'com.google.code.findbugs', name: 'annotations', version: '3.0.1'
     api group: 'io.micrometer', name: 'micrometer-core', version: versions.micrometer_metrics
     api group: 'io.micrometer', name: 'micrometer-registry-prometheus', version: versions.micrometer_metrics
 
-    implementation group: 'org.slf4j', name: 'log4j-over-slf4j', version: '2.0.4'
-    implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.4.7'
+    implementation group: 'org.slf4j', name: 'log4j-over-slf4j', version: '2.0.13'
+    implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.4.14'
     api(group: 'org.apache.kafka', name: 'kafka-clients', version: versions.kafka) {
         exclude group: 'net.sf.jopt-simple'
     }
@@ -48,12 +48,10 @@ dependencies {
 
     testImplementation project(':hermes-test-helper')
 
-    testImplementation group: 'javax.servlet', name: 'javax.servlet-api', version: '3.1.0'
+    testImplementation group: 'jakarta.servlet', name: 'jakarta.servlet-api', version: '6.0.0'
 
     testImplementation group: 'org.spockframework', name: 'spock-core', version: versions.spock
     testImplementation group: 'org.spockframework', name: 'spock-junit4', version: versions.spock
-    testImplementation (group: 'com.jayway.awaitility', name: 'awaitility-groovy', version: '1.7.0') {
-        exclude group: 'org.codehaus.groovy', module: 'groovy-all'
-    }
+    testImplementation group: 'org.awaitility', name: 'awaitility-groovy', version: '4.2.1'
     testRuntimeOnly group: 'org.junit.vintage', name: 'junit-vintage-engine', version: versions.junit_jupiter
 }

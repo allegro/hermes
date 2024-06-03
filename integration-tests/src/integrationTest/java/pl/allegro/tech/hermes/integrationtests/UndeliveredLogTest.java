@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.integrationtests;
 
-import com.jayway.awaitility.Duration;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -8,7 +7,9 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesExtension;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
-import static com.jayway.awaitility.Awaitility.waitAtMost;
+import java.time.Duration;
+
+import static org.awaitility.Awaitility.waitAtMost;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscriptionWithRandomName;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
 
@@ -29,7 +30,7 @@ public class UndeliveredLogTest {
         hermes.api().publishUntilSuccess(topic.getQualifiedName(), TestMessage.simple().body());
 
         // then
-        waitAtMost(Duration.TEN_SECONDS).until(() ->
+        waitAtMost(Duration.ofSeconds(10)).untilAsserted(() ->
                 hermes.api().getLatestUndeliveredMessage(topic.getQualifiedName(), subscription.getName()).expectStatus().is2xxSuccessful()
         );
     }

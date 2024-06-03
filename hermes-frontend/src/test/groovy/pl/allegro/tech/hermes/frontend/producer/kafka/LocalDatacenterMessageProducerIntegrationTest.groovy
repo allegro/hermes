@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.frontend.producer.kafka
 
-import com.jayway.awaitility.Awaitility
+import com.codahale.metrics.MetricRegistry
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import org.apache.commons.lang3.tuple.ImmutablePair
 import org.apache.kafka.clients.admin.AdminClient
@@ -9,6 +9,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.consumer.OffsetAndMetadata
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.common.TopicPartition
+import org.awaitility.Awaitility
 import org.testcontainers.containers.KafkaContainer
 import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.spock.Testcontainers

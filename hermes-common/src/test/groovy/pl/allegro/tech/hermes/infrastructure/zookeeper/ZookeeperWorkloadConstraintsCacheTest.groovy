@@ -5,6 +5,7 @@ import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.read.ListAppender
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.awaitility.Awaitility
 import org.slf4j.LoggerFactory
 import pl.allegro.tech.hermes.api.Constraints
 import pl.allegro.tech.hermes.api.SubscriptionName
@@ -14,8 +15,8 @@ import pl.allegro.tech.hermes.test.IntegrationTest
 
 import java.util.concurrent.TimeUnit
 
-import static com.jayway.awaitility.Awaitility.await
 import static java.util.Collections.emptyMap
+import static org.awaitility.Awaitility.await
 
 class ZookeeperWorkloadConstraintsCacheTest extends IntegrationTest {
 

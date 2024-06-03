@@ -20,8 +20,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.jayway.awaitility.Awaitility.await;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.awaitility.Awaitility.await;
 import static org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE;
 import static pl.allegro.tech.hermes.api.Topic.Ack.ALL;
 import static pl.allegro.tech.hermes.integrationtests.assertions.HermesAssertions.assertThat;
@@ -77,7 +77,7 @@ public class KafkaReadinessCheckTest {
 
         // then
         await().atMost(5, SECONDS)
-                .until(() -> getStatusReady(hermesFrontend).expectStatus().is2xxSuccessful());
+                .untilAsserted(() -> getStatusReady(hermesFrontend).expectStatus().is2xxSuccessful());
         getStatusHealth(hermesFrontend).expectStatus().is2xxSuccessful();
 
         // cleanup
@@ -129,7 +129,7 @@ public class KafkaReadinessCheckTest {
 
         // then
         await().atMost(5, SECONDS)
-                .until(() -> getStatusReady(hermesFrontend).expectStatus().is2xxSuccessful());
+                .untilAsserted(() -> getStatusReady(hermesFrontend).expectStatus().is2xxSuccessful());
         getStatusHealth(hermesFrontend).expectStatus().is2xxSuccessful();
 
         // cleanup
@@ -173,7 +173,7 @@ public class KafkaReadinessCheckTest {
 
         // then
         await().atMost(5, SECONDS)
-                .until(() -> getStatusReady(hermesFrontend).expectStatus().is2xxSuccessful());
+                .untilAsserted(() -> getStatusReady(hermesFrontend).expectStatus().is2xxSuccessful());
         getStatusHealth(hermesFrontend).expectStatus().is2xxSuccessful();
 
         // cleanup

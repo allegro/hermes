@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.integrationtests;
 
-import com.jayway.awaitility.Duration;
 import net.javacrumbs.jsonunit.core.Option;
 import org.apache.avro.Schema;
 import org.junit.jupiter.api.Test;
@@ -22,14 +21,15 @@ import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.util.Map;
 import java.util.UUID;
 
-import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN;
 import static java.util.Collections.singletonMap;
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.waitAtMost;
 import static pl.allegro.tech.hermes.api.AvroMediaType.AVRO_JSON;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.api.ContentType.JSON;
@@ -227,7 +227,7 @@ public class PublishingAvroTest {
         String message = "{\"__metadata\":null,\"name\":\"john\",\"age\":\"string instead of int\"}";
 
         // when / then
-        waitAtMost(Duration.TEN_SECONDS).until(() -> {
+        waitAtMost(Duration.ofSeconds(10)).untilAsserted(() -> {
             WebTestClient.ResponseSpec response = hermes.api().publish(topic.getQualifiedName(), message, createHeaders(Map.of("Content-Type", AVRO_JSON)));
             response.expectStatus().isBadRequest();
             response.expectBody(String.class).isEqualTo(
@@ -539,7 +539,7 @@ public class PublishingAvroTest {
     }
 
     private void waitUntilSubscriptionContentTypeChanged(Topic topic, String subscription, ContentType expected) {
-        waitAtMost(adjust(Duration.TEN_SECONDS)).until(() -> {
+        waitAtMost(adjust(Duration.ofSeconds(10))).until(() -> {
             ContentType actual = hermes.api().getSubscription(topic.getQualifiedName(), subscription).getContentType();
             logger.info("Expecting {} subscription endpoint address. Actual {}", expected, actual);
             return expected.equals(actual);
@@ -548,7 +548,7 @@ public class PublishingAvroTest {
 
     private void waitUntilConsumerCommitsOffset(Topic topic, String subscription) {
         long currentTime = clock.millis();
-        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() ->
+        waitAtMost(adjust(Duration.ofMinutes(1))).until(() ->
         hermes.api().getRunningSubscriptionsStatus().stream()
                 .filter(sub -> sub.getQualifiedName().equals(topic.getQualifiedName() + "$" + subscription))
                 .anyMatch(sub -> sub.getSignalTimesheet().getOrDefault(COMMIT, 0L) > currentTime));
@@ -556,7 +556,7 @@ public class PublishingAvroTest {
     }
 
     private void waitUntilConsumersUpdateSubscription(final long currentTime, Topic topic, String subscription) {
-        waitAtMost(adjust(Duration.TEN_SECONDS)).until(() ->
+        waitAtMost(adjust(Duration.ofSeconds(10))).until(() ->
                 hermes.api().getRunningSubscriptionsStatus().stream()
                         .filter(sub -> sub.getQualifiedName().equals(topic.getQualifiedName() + "$" + subscription))
                         .anyMatch(sub -> sub.getSignalTimesheet().getOrDefault(UPDATE_SUBSCRIPTION, 0L) > currentTime));

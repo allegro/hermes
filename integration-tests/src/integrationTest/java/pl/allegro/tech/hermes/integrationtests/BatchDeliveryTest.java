@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.integrationtests;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jayway.awaitility.Duration;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -16,6 +15,7 @@ import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
@@ -297,7 +297,7 @@ public class BatchDeliveryTest {
         // then
         // first request is retried because of timeout (with socket / idle timeout only, the request wouldn't be timed out because
         // there are chunks of response every 500ms which is smaller than 1s timeout)
-        subscriber.waitUntilReceived(Duration.FIVE_SECONDS, 2);
+        subscriber.waitUntilReceived(Duration.ofSeconds(5), 2);
         Assertions.assertThat(subscriber.getLastReceivedRequest().getHeader("Hermes-Retry-Count")).isEqualTo("1");
     }
 

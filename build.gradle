@@ -49,26 +49,27 @@ allprojects {
 
     project.ext.versions = [
             kafka             : '3.6.2',
-            guava             : '23.0',
-            jackson           : '2.15.2',
-            jersey            : '3.1.2',
-            jetty             : '12.0.7',
+            guava             : '33.1.0-jre',
+            jackson           : '2.17.0',
+            jersey            : '3.1.6',
+            jetty             : '12.0.8',
             curator           : '5.4.0',
-            dropwizard_metrics: '4.1.0',
-            micrometer_metrics: '1.11.1',
-            wiremock          : '3.3.1',
-            spock             : '2.4-M1-groovy-4.0',
-            groovy            : '4.0.12',
-            avro              : '1.9.1',
+            dropwizard_metrics: '4.2.25',
+            micrometer_metrics: '1.12.5',
+            wiremock          : '3.5.2',
+            spock             : '2.4-M4-groovy-4.0',
+            groovy            : '4.0.21',
+            avro              : '1.11.3',
             json2avro         : '0.2.14',
+            // TODO: newest version requires subject alternative name in a certificate during host verification, current test cert does not have a one
             okhttp            : '3.9.1',
-            undertow          : '2.0.29.Final',
-            spring_web        : '6.1.2',
-            failsafe          : '2.3.1',
-            junit_jupiter     : '5.9.1',
+            undertow          : '2.3.12.Final',
+            spring_web        : '6.1.6',
+            failsafe          : '2.4.4',
+            junit_jupiter     : '5.10.2',
             testcontainers    : '1.19.8',
-            spring            : '3.2.1',
-            assertj           : '3.24.2'
+            spring            : '3.2.4',
+            assertj           : '3.25.3'
     ]
 
     repositories {
@@ -77,15 +78,14 @@ allprojects {
 
     dependencies {
         implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.4'
-        implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
+        implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.14.0'
 
         testImplementation group: 'junit', name: 'junit', version: '4.11'
         testImplementation group: 'com.tngtech.java', name: 'junit-dataprovider', version: '1.10.0'
         testImplementation group: 'pl.pragmatists', name: 'JUnitParams', version: '1.0.2'
-        testImplementation group: 'org.mockito', name: 'mockito-all', version: '1.9.5'
+        testImplementation group: 'org.mockito', name: 'mockito-core', version: '5.11.0'
         testImplementation group: 'org.assertj', name: 'assertj-core', version: versions.assertj
-        testImplementation group: 'com.jayway.awaitility', name: 'awaitility', version: '1.6.1'
-        testImplementation group: 'com.googlecode.catch-exception', name: 'catch-exception', version: '1.2.0'
+        testImplementation group: 'org.awaitility', name: 'awaitility', version: '4.2.1'
 
         annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: versions.spring
     }

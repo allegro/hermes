@@ -18,41 +18,34 @@ dependencies {
     api group: 'org.springframework.boot', name: 'spring-boot-starter', version: versions.spring
     api group: 'org.eclipse.jetty', name: 'jetty-alpn-java-client', version: versions.jetty
     api group: 'org.eclipse.jetty.http2', name: 'jetty-http2-client-transport', version: versions.jetty
-
-    implementation group: 'org.jctools', name: 'jctools-core', version: '1.2'
-
-    api group: 'javax.jms', name: 'javax.jms-api', version: '2.0'
-    implementation group: 'joda-time', name: 'joda-time', version: '2.5'
-
+    implementation group: 'org.jctools', name: 'jctools-core', version: '4.0.3'
+    api group: 'jakarta.jms', name: 'jakarta.jms-api', version: '3.1.0'
+    implementation group: 'joda-time', name: 'joda-time', version: '2.12.7'
     implementation(group: 'com.github.rholder', name: 'guava-retrying', version: '2.0.0') {
         exclude module: 'guava'
     }
-
-    implementation group: 'org.agrona', name: 'agrona', version: '1.0.6'
-
+    implementation group: 'org.agrona', name: 'agrona', version: '1.21.1'
+    // TODO: can we update it ? Which version of server our clients use ?
     implementation(group: 'org.hornetq', name: 'hornetq-jms-client', version: '2.4.1.Final') {
         exclude module: 'hornetq-native'
     }
-
-    api(group: 'com.google.cloud', name: 'google-cloud-pubsub', version: '1.115.1')
+    api group: 'com.google.cloud', name: 'google-cloud-pubsub', version: '1.128.1'
+    api group: 'org.apache.httpcomponents.core5', name: 'httpcore5', version: '5.2.4'
 
     testImplementation project(':hermes-test-helper')
     testImplementation group: 'org.apache.curator', name: 'curator-test', version: versions.curator
-    testImplementation group: 'javax.servlet', name: 'javax.servlet-api', version: '3.1.0'
+    testImplementation group: 'jakarta.servlet', name: 'jakarta.servlet-api', version: '6.0.0'
 
     testImplementation project(':hermes-common')
 
-    testImplementation(group: 'com.jayway.awaitility', name: 'awaitility', version: '1.6.1') {
-        exclude group: 'com.jayway.jsonpath', module: 'json-path'
-    }
-
+    testImplementation(group: 'org.awaitility', name: 'awaitility-groovy', version: '4.2.1')
     testImplementation group: 'tech.allegro.schema.json2avro', name: 'converter', version: versions.json2avro
 
     testImplementation group: 'org.spockframework', name: 'spock-core', version: versions.spock
     testImplementation group: 'org.spockframework', name: 'spock-junit4', version: versions.spock
     testRuntimeOnly group: 'org.junit.vintage', name: 'junit-vintage-engine', version: versions.junit_jupiter
 
-    sbeClasspath group: 'uk.co.real-logic', name: 'sbe-all', version: '1.12.8'
+    sbeClasspath group: 'uk.co.real-logic', name: 'sbe-all', version: '1.31.1'
 }
 
 def generatedPath = "${buildDir}/generated/java/"
@@ -90,6 +83,6 @@ sourceSets {
     }
 }
 
-compileJava{
+compileJava {
     dependsOn(generateSbeStubs)
 }
