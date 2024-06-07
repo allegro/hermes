@@ -164,8 +164,8 @@ public class ZookeeperConsumerNodeLoadRegistry implements ConsumerNodeLoadRegist
         }
 
         @Override
-        public void recordSingleOperation() {
-            operationsCounter.increment();
+        public void recordSingleOperation(long weight) {
+            operationsCounter.add(weight);
         }
 
         @Override

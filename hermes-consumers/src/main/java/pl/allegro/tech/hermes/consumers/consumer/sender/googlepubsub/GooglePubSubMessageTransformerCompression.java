@@ -43,20 +43,29 @@ class GooglePubSubMessageTransformerCompression implements GooglePubSubMessageTr
 
     private PubsubMessage compressHermesMessage(Message message) {
         try {
-            var start = System.nanoTime();
+            var start = System.currentTimeMillis();
             final PubsubMessage pubsubMessage = PubsubMessage.newBuilder()
                     .setData(ByteString.copyFrom(
                             compressor.compress(message.getData())
                     )).build();
 
-            var end = System.nanoTime();
+            var end = System.currentTimeMillis();
+            var elapsed = end - start;
+            logger.debug("Compressed message for topic {} in {} ms", message.getTopic(), elapsed);
 
-            logger.info("Compressed message for topic {} in {} ns", message.getTopic(), end - start);
-
-            loadRecorder.recordSingleOperation();
+            if (elapsed <= 0) {
+                loadRecorder.recordSingleOperation();
+            } else {
+                var maxElapsed = 20;
+                var elapsedCapped = Math.min(elapsed, maxElapsed);
+                var maxLoad = 5;
+                var load = (elapsedCapped * maxLoad) / maxElapsed + 1;
+                loadRecorder.recordSingleOperation(load);
+            }
             return metadataAppender.append(pubsubMessage, message);
         } catch (IOException e) {
             throw new GooglePubSubMessageCompressionException("Error on PubSub message compression", e);
         }
     }
+
 }

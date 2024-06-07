@@ -4,7 +4,11 @@ public interface SubscriptionLoadRecorder {
 
     void initialize();
 
-    void recordSingleOperation();
+    default void recordSingleOperation() {
+        recordSingleOperation(1);
+    }
+
+    void recordSingleOperation(long weight);
 
     void shutdown();
 }
