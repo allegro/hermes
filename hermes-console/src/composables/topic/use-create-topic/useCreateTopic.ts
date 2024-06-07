@@ -103,7 +103,7 @@ function initializeForm(form: Ref<TopicForm>): void {
     trackingEnabled: false,
     contentType: loadedConfig.value.topic.defaults.contentType,
     maxMessageSize: defaultMaxMessageSize,
-    ack: loadedConfig.value.topic.defaults.ack,
+    ack: '',
     schema: '',
   };
 }

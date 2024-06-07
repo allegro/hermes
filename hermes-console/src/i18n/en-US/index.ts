@@ -327,10 +327,10 @@ const en_US = {
       modificationDate: 'Modification date',
       tooltips: {
         acknowledgement:
-          'Specifies the strength of guarantees that acknowledged message was indeed persisted. In ' +
-          '"Leader" mode ACK is required only from topic leader, which is fast and gives 99.99999% guarantee. It might ' +
-          'be not enough when cluster is unstable. "All" mode means message needs to be saved on all replicas before ' +
-          'sending ACK, which is quite slow but gives 100% guarantee that message has been persisted.',
+          'Specifies the strength of guarantees that acknowledged message was indeed persisted. ' +
+          'With `ACK leader` message writes are replicated asynchronously, thus the acknowledgment latency will be low. However, message write may be lost when there is a topic leadership change - e.g. due to rebalance or broker restart. ' +
+          'With `ACK all` messages writes are synchronously replicated to replicas. Write acknowledgement latency will be much higher than with leader ACK,' +
+          ' it will also have higher variance due to tail latency. However, messages will be persisted as long as the whole replica set does not go down simultaneously.',
         retentionTime:
           'For how many hours/days message is available for subscribers after being published.',
         authorizedPublishers:
