@@ -10,6 +10,7 @@ import pl.allegro.tech.hermes.api.EndpointAddressResolverMetadata;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionMode;
 import pl.allegro.tech.hermes.consumers.consumer.ResilientMessageSender;
+import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.SingleRecipientMessageSenderAdapter;
@@ -67,7 +68,7 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
     }
 
     @Override
-    public MessageSender create(Subscription subscription, ResilientMessageSender resilientMessageSender) {
+    public MessageSender create(Subscription subscription, ResilientMessageSender resilientMessageSender, SubscriptionLoadRecorder loadRecorder) {
         EndpointAddress endpoint = subscription.getEndpoint();
         EndpointAddressResolverMetadata endpointAddressResolverMetadata = subscription.getEndpointAddressResolverMetadata();
         ResolvableEndpointAddress resolvableEndpoint =

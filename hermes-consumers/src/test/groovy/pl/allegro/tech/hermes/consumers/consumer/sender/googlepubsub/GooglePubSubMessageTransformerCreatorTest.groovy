@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub
 
 import com.google.pubsub.v1.TopicName
+import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -21,7 +22,7 @@ class GooglePubSubMessageTransformerCreatorTest extends Specification {
                 .build()
 
         when:
-        def transformer = creator.getTransformerForTargetEndpoint(target)
+        def transformer = creator.getTransformerForTargetEndpoint(target, Mock(SubscriptionLoadRecorder))
 
         then:
         transformer instanceof GooglePubSubMessageTransformerCompression == shouldCompress

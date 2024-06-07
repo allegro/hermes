@@ -8,6 +8,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.metric.SubscriptionMetrics;
+import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
 import pl.allegro.tech.hermes.consumers.consumer.profiling.ConsumerProfiler;
 import pl.allegro.tech.hermes.consumers.consumer.profiling.NoOpConsumerProfiler;
 import pl.allegro.tech.hermes.consumers.consumer.rate.AdjustableSemaphore;
@@ -290,7 +291,7 @@ public class ConsumerMessageSenderTest {
         Subscription subscriptionWithModfiedEndpoint = subscriptionWithEndpoint("http://somewhere:9876");
         MessageSender otherMessageSender = mock(MessageSender.class);
 
-        when(messageSenderFactory.create(eq(subscriptionWithModfiedEndpoint), any(ResilientMessageSender.class)))
+        when(messageSenderFactory.create(eq(subscriptionWithModfiedEndpoint), any(ResilientMessageSender.class), any(SubscriptionLoadRecorder.class)))
                 .thenReturn(otherMessageSender);
         when(otherMessageSender.send(message)).thenReturn(success());
 
@@ -311,7 +312,7 @@ public class ConsumerMessageSenderTest {
         Subscription subscriptionWithModifiedTimeout = subscriptionWithRequestTimeout(2000);
         MessageSender otherMessageSender = mock(MessageSender.class);
 
-        when(messageSenderFactory.create(eq(subscriptionWithModifiedTimeout), any(ResilientMessageSender.class)))
+        when(messageSenderFactory.create(eq(subscriptionWithModifiedTimeout), any(ResilientMessageSender.class), any(SubscriptionLoadRecorder.class)))
                 .thenReturn(otherMessageSender);
         when(otherMessageSender.send(message)).thenReturn(success());
 
@@ -444,7 +445,7 @@ public class ConsumerMessageSenderTest {
     }
 
     private ConsumerMessageSender consumerMessageSender(Subscription subscription) {
-        when(messageSenderFactory.create(eq(subscription), any(ResilientMessageSender.class))).thenReturn(messageSender);
+        when(messageSenderFactory.create(eq(subscription), any(ResilientMessageSender.class), any(SubscriptionLoadRecorder.class))).thenReturn(messageSender);
         ConsumerMessageSender sender = new ConsumerMessageSender(
                 subscription,
                 messageSenderFactory,

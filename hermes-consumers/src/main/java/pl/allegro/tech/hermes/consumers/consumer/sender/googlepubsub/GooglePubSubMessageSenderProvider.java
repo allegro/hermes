@@ -8,6 +8,7 @@ import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.common.collect.ImmutableSet;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.consumers.consumer.ResilientMessageSender;
+import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.SingleRecipientMessageSenderAdapter;
@@ -43,10 +44,10 @@ public class GooglePubSubMessageSenderProvider implements ProtocolMessageSenderP
     }
 
     @Override
-    public MessageSender create(final Subscription subscription, ResilientMessageSender resilientMessageSender) {
+    public MessageSender create(final Subscription subscription, ResilientMessageSender resilientMessageSender, SubscriptionLoadRecorder loadRecorder) {
         final GooglePubSubSenderTarget resolvedTarget = resolver.resolve(subscription.getEndpoint());
         try {
-            GooglePubSubMessageTransformer messageTransformer = messageTransformerCreator.getTransformerForTargetEndpoint(resolvedTarget);
+            GooglePubSubMessageTransformer messageTransformer = messageTransformerCreator.getTransformerForTargetEndpoint(resolvedTarget, loadRecorder);
             GooglePubSubMessageSender sender = new GooglePubSubMessageSender(resolvedTarget, clientsPool, messageTransformer);
             return new SingleRecipientMessageSenderAdapter(sender, resilientMessageSender);
         } catch (IOException e) {

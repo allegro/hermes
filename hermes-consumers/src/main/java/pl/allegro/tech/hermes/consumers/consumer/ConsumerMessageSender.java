@@ -173,7 +173,7 @@ public class ConsumerMessageSender {
         );
 
         return this.messageSenderFactory.create(
-                subscription, resilientMessageSender
+                subscription, resilientMessageSender, loadRecorder
         );
     }
 
