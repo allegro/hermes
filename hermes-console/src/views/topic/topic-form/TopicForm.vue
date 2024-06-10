@@ -218,8 +218,19 @@
       :label="$t('topicForm.fields.retentionTime.duration')"
     />
 
+    <console-alert
+      :title="$t('topicForm.fields.ackHelpTitle')"
+      :text="$t('topicForm.fields.ackHelpText')"
+      type="info"
+      class="mb-4"
+      :link="$t('topicForm.fields.ackHelpLink')"
+      :link-description="$t('topicForm.fields.ackHelpLinkDescription')"
+    >
+    </console-alert>
+
     <select-field
       v-model="form.ack"
+      :rules="validators.ack"
       :label="$t('topicForm.fields.ack')"
       :items="dataSources.ackModes"
     />
