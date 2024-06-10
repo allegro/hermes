@@ -2,6 +2,8 @@ package pl.allegro.tech.hermes.frontend.publishing.handlers;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback;
@@ -20,6 +22,8 @@ class PublishingHandler implements HttpHandler {
     private final MessageErrorProcessor messageErrorProcessor;
     private final MessageEndProcessor messageEndProcessor;
 
+    private static final Logger logger = LoggerFactory.getLogger(PublishingHandler.class);
+
     PublishingHandler(BrokerMessageProducer brokerMessageProducer, MessageErrorProcessor messageErrorProcessor,
                       MessageEndProcessor messageEndProcessor) {
         this.brokerMessageProducer = brokerMessageProducer;
@@ -35,6 +39,7 @@ class PublishingHandler implements HttpHandler {
             try {
                 handle(exchange);
             } catch (RuntimeException e) {
+                logger.error("Publishing handler exception: {}", e.getMessage(), e);
                 messageErrorProcessor.sendAndLog(exchange, "Exception while publishing message to a broker.", e);
             }
         });
