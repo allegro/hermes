@@ -218,12 +218,16 @@
       :label="$t('topicForm.fields.retentionTime.duration')"
     />
 
-    <p class="font-weight-light">
-      {{ $t('topicForm.fields.ackHelp') }}
-      <a :href="$t('topicForm.fields.ackHelpLink')" target="_blank">
-        {{ $t('topicForm.fields.ackHelpLinkDescription') }}
-      </a>
-    </p>
+    <console-alert
+      :title="$t('topicForm.fields.ackHelpTitle')"
+      :text="$t('topicForm.fields.ackHelpText')"
+      type="info"
+      class="mb-4"
+      :link="$t('topicForm.fields.ackHelpLink')"
+      :link-description="$t('topicForm.fields.ackHelpLinkDescription')"
+    >
+    </console-alert>
+
     <select-field
       v-model="form.ack"
       :rules="validators.ack"
