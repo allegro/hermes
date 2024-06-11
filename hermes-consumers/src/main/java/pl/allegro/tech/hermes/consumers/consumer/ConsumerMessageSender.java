@@ -118,6 +118,7 @@ public class ConsumerMessageSender {
     }
 
     private void sendAsync(Message message, int delayMillis, ConsumerProfiler profiler) {
+        profiler.measure(Measurement.SCHEDULE_MESSAGE_SENDING);
         retrySingleThreadExecutor.schedule(() -> sendMessage(message, profiler), delayMillis, TimeUnit.MILLISECONDS);
     }
 
