@@ -30,6 +30,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSu
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubMessageTransformerCreator;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubSenderTargetResolver;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.BatchHttpRequestFactory;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultAuthorityResolver;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultBatchHttpRequestFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultHttpMetadataAppender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.DefaultHttpRequestFactoryProvider;
@@ -43,6 +44,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpHeadersProvider
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpMessageBatchSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpRequestFactoryProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.JettyHttpMessageSenderProvider;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.AuthorityResolver;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.SendingResultHandlers;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.SslContextFactoryProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.auth.HttpAuthorizationProviderFactory;
@@ -160,7 +162,8 @@ public class ConsumerSenderConfiguration {
                                                                         HttpAuthorizationProviderFactory authorizationProviderFactory,
                                                                         HttpHeadersProvidersFactory httpHeadersProviderFactory,
                                                                         SendingResultHandlers sendingResultHandlers,
-                                                                        HttpRequestFactoryProvider requestFactoryProvider) {
+                                                                        HttpRequestFactoryProvider requestFactoryProvider,
+                                                                        AuthorityResolver authorityResolver) {
         return new JettyHttpMessageSenderProvider(
                 httpClient,
                 http2ClientHolder,
@@ -170,7 +173,8 @@ public class ConsumerSenderConfiguration {
                 httpHeadersProviderFactory,
                 sendingResultHandlers,
                 requestFactoryProvider,
-                ImmutableSet.of("http", "https")
+                ImmutableSet.of("http", "https"),
+                authorityResolver
         );
     }
 
@@ -257,6 +261,11 @@ public class ConsumerSenderConfiguration {
     @Bean
     public EndpointAddressResolver interpolatingEndpointAddressResolver(UriInterpolator interpolator) {
         return new InterpolatingEndpointAddressResolver(interpolator);
+    }
+
+    @Bean
+    public AuthorityResolver originResolver() {
+        return new DefaultAuthorityResolver();
     }
 
     @Bean

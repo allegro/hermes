@@ -44,6 +44,7 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
     private final SendingResultHandlers sendingResultHandlers;
     private final HttpRequestFactoryProvider requestFactoryProvider;
     private final Set<String> supportedProtocols;
+    private final AuthorityResolver authorityResolver;
 
     public JettyHttpMessageSenderProvider(
             HttpClient httpClient,
@@ -54,7 +55,7 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
             HttpHeadersProvidersFactory httpHeadersProviderFactory,
             SendingResultHandlers sendingResultHandlers,
             HttpRequestFactoryProvider requestFactoryProvider,
-            Set<String> supportedProtocols) {
+            Set<String> supportedProtocols, AuthorityResolver authorityResolver) {
         this.httpClient = httpClient;
         this.http2ClientHolder = http2ClientHolder;
         this.endpointAddressResolver = endpointAddressResolver;
@@ -64,6 +65,7 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
         this.sendingResultHandlers = sendingResultHandlers;
         this.requestFactoryProvider = requestFactoryProvider;
         this.supportedProtocols = supportedProtocols;
+        this.authorityResolver = authorityResolver;
     }
 
     @Override
@@ -87,7 +89,9 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
                     requestFactory,
                     resolvableEndpoint,
                     getHttpRequestHeadersProvider(subscription),
-                    sendingResultHandlers);
+                    sendingResultHandlers,
+                    authorityResolver,
+                    httpClient);
             return new SingleRecipientMessageSenderAdapter(jettyMessageSender, resilientMessageSender);
         }
     }
