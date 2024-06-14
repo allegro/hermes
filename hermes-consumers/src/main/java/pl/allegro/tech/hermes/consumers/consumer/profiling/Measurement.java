@@ -8,6 +8,7 @@ public class Measurement {
     public static final String MESSAGE_CONVERSION = "messageConverter.convert";
     public static final String OFFER_INFLIGHT_OFFSET = "offsetQueue.offerInflightOffset";
     public static final String TRACKERS_LOG_INFLIGHT = "trackers.logInflight";
+    public static final String SCHEDULE_MESSAGE_SENDING = "retrySingleThreadExecutor.schedule";
     public static final String ACQUIRE_RATE_LIMITER = "acquireRateLimiter";
     public static final String MESSAGE_SENDER_SEND = "messageSender.send";
     public static final String HANDLERS = "handlers";
