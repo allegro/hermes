@@ -264,7 +264,7 @@ public class ConsumerSenderConfiguration {
     }
 
     @Bean
-    public AuthorityResolver originResolver() {
+    public AuthorityResolver authorityResolver() {
         return new DefaultAuthorityResolver();
     }
 
