@@ -1,7 +1,5 @@
 package pl.allegro.tech.hermes.integrationtests;
 
-import com.jayway.awaitility.Duration;
-import org.apache.commons.codec.binary.Base64;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.http.HttpHeaders;
@@ -12,9 +10,11 @@ import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 import pl.allegro.tech.hermes.utils.Headers;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.Base64;
 import java.util.Map;
 
-import static com.jayway.awaitility.Awaitility.waitAtMost;
+import static org.awaitility.Awaitility.waitAtMost;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.AUTH_PASSWORD;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.AUTH_USERNAME;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_AUTHENTICATION_ENABLED;
@@ -42,7 +42,7 @@ public class PublishingAuthenticationTest {
         //given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
 
-        waitAtMost(Duration.TEN_SECONDS).until(() -> {
+        waitAtMost(Duration.ofSeconds(10)).untilAsserted(() -> {
             // when
             WebTestClient.ResponseSpec response = hermes.api().publish(
                     topic.getQualifiedName(),
@@ -60,7 +60,7 @@ public class PublishingAuthenticationTest {
         //given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
 
-        waitAtMost(Duration.TEN_SECONDS).until(() -> {
+        waitAtMost(Duration.ofSeconds(10)).untilAsserted(() -> {
             // when
             WebTestClient.ResponseSpec response = hermes.api().publish(
                     topic.getQualifiedName(),
@@ -78,7 +78,7 @@ public class PublishingAuthenticationTest {
         //given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
 
-        waitAtMost(Duration.TEN_SECONDS).until(() -> {
+        waitAtMost(Duration.ofSeconds(10)).untilAsserted(() -> {
             // when
             WebTestClient.ResponseSpec response = hermes.api().publish(topic.getQualifiedName(), MESSAGE);
 
@@ -90,7 +90,7 @@ public class PublishingAuthenticationTest {
     private static HttpHeaders createAuthorizationHeader(String username, String password) {
         String credentials = username + ":" + password;
         Map<String, String> headers = Map.of(
-                "Authorization", "Basic " + Base64.encodeBase64String(credentials.getBytes(StandardCharsets.UTF_8))
+                "Authorization", "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8))
         );
         return Headers.createHeaders(headers);
     }

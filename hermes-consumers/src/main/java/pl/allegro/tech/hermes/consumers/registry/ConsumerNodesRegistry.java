@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.consumers.registry;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.PathChildrenCache;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
@@ -23,7 +23,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.stream.Collectors.toList;
-import static org.apache.commons.lang.StringUtils.substringAfterLast;
+import static org.apache.commons.lang3.StringUtils.substringAfterLast;
 import static org.apache.zookeeper.CreateMode.EPHEMERAL;
 
 public class ConsumerNodesRegistry extends PathChildrenCache implements PathChildrenCacheListener {

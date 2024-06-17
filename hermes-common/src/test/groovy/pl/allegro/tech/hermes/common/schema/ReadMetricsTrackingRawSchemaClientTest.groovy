@@ -1,16 +1,12 @@
 package pl.allegro.tech.hermes.common.schema
 
-import com.codahale.metrics.MetricRegistry
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Timer
 import io.micrometer.core.instrument.search.Search
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import pl.allegro.tech.hermes.api.RawSchema
 import pl.allegro.tech.hermes.api.TopicName
-import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.common.metric.MetricsFacade
-import pl.allegro.tech.hermes.common.metric.Timers
-import pl.allegro.tech.hermes.metrics.PathsCompiler
 import pl.allegro.tech.hermes.schema.RawSchemaClient
 import pl.allegro.tech.hermes.schema.SchemaVersion
 import pl.allegro.tech.hermes.test.helper.metrics.MicrometerUtils
@@ -29,9 +25,8 @@ class ReadMetricsTrackingRawSchemaClientTest extends Specification {
     RawSchema schema = RawSchema.valueOf("some_schema")
 
     MeterRegistry meterRegistry = new SimpleMeterRegistry()
-    HermesMetrics hermesMetrics = new HermesMetrics(new MetricRegistry(), new PathsCompiler(""))
 
-    MetricsFacade metricsFacade = new MetricsFacade(meterRegistry, hermesMetrics)
+    MetricsFacade metricsFacade = new MetricsFacade(meterRegistry)
 
     RawSchemaClient rawSchemaClient = Mock()
 
@@ -91,17 +86,15 @@ class ReadMetricsTrackingRawSchemaClientTest extends Specification {
     }
 
     private long getSchemaCounterValue() {
-        return getCounterValue("schema.get-schema", Timers.GET_SCHEMA_LATENCY)
+        return getCounterValue("schema.get-schema")
     }
 
     private long getVersionsCounterValue() {
-        return getCounterValue("schema.get-versions", Timers.GET_SCHEMA_VERSIONS_LATENCY)
+        return getCounterValue("schema.get-versions")
     }
 
-    private long getCounterValue(String meterRegistryName, String hermesMetricsName) {
+    private long getCounterValue(String meterRegistryName) {
         def meterRegistryCount = MicrometerUtils.metricValue(meterRegistry, meterRegistryName, Search.&timer, Timer.&count).orElse(0L);
-        def hermesMetricsCount = hermesMetrics.schemaTimer(hermesMetricsName).count
-        assert meterRegistryCount == hermesMetricsCount
         return meterRegistryCount
     }
 }

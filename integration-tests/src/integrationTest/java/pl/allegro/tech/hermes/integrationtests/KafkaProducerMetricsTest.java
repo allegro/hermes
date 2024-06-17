@@ -8,7 +8,7 @@ import pl.allegro.tech.hermes.integrationtests.setup.HermesExtension;
 
 import java.util.concurrent.TimeUnit;
 
-import static com.jayway.awaitility.Awaitility.await;
+import static org.awaitility.Awaitility.await;
 import static pl.allegro.tech.hermes.integrationtests.assertions.HermesAssertions.assertThatMetrics;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
 
@@ -28,7 +28,7 @@ public class KafkaProducerMetricsTest {
         hermes.api().publish(topic.getQualifiedName(), "hello world");
 
         // then
-        await().atMost(10, TimeUnit.SECONDS).until(() ->
+        await().atMost(10, TimeUnit.SECONDS).untilAsserted(() ->
                 assertMetricsContainTotalSendMetric().withValue(initialMetricValue + 2.0));
     }
 

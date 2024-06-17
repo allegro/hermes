@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.integrationtests;
 
-import com.jayway.awaitility.Duration;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
@@ -14,7 +13,9 @@ import pl.allegro.tech.hermes.integrationtests.setup.InfrastructureExtension;
 import pl.allegro.tech.hermes.test.helper.client.integration.FrontendTestClient;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
-import static com.jayway.awaitility.Awaitility.waitAtMost;
+import java.time.Duration;
+
+import static org.awaitility.Awaitility.waitAtMost;
 import static pl.allegro.tech.hermes.integrationtests.assertions.HermesAssertions.assertThatMetrics;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
 
@@ -56,7 +57,7 @@ public class BrokerLatencyReportingTest {
         frontendTestClient.publishUntilSuccess(topic.getQualifiedName(), message.body());
 
         // then
-        waitAtMost(Duration.FIVE_SECONDS).until(() -> {
+        waitAtMost(Duration.ofSeconds(5)).untilAsserted(() -> {
             frontendTestClient.getMetrics()
                     .expectStatus()
                     .isOk()

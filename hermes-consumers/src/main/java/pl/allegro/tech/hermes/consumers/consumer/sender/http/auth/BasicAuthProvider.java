@@ -1,9 +1,9 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.http.auth;
 
-import org.apache.commons.codec.binary.Base64;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Optional;
 
 public class BasicAuthProvider implements HttpAuthorizationProvider {
@@ -12,7 +12,7 @@ public class BasicAuthProvider implements HttpAuthorizationProvider {
 
     public BasicAuthProvider(EndpointAddress endpoint) {
         String credentials = endpoint.getUsername() + ":" + endpoint.getPassword();
-        String encodedCredentials = Base64.encodeBase64String(credentials.getBytes(StandardCharsets.UTF_8));
+        String encodedCredentials = Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
         this.token = "Basic " + encodedCredentials;
     }
 

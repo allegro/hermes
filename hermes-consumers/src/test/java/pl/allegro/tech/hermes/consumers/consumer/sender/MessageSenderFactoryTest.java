@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.consumers.consumer.sender;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.googlecode.catchexception.CatchException;
 import org.junit.Test;
 import org.mockito.Mockito;
 import pl.allegro.tech.hermes.api.EndpointAddress;
@@ -12,8 +11,8 @@ import pl.allegro.tech.hermes.consumers.consumer.ResilientMessageSender;
 
 import java.util.Set;
 
-import static com.googlecode.catchexception.CatchException.catchException;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertThrows;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 
 public class MessageSenderFactoryTest {
@@ -43,12 +42,8 @@ public class MessageSenderFactoryTest {
         MessageSenderFactory factory = new MessageSenderFactory(ImmutableList.of());
         Subscription subscription = subscription("group.topic", "subscription", "unknown://localhost:8080/test").build();
 
-        // when
-        catchException(factory).create(subscription, resilientMessageSender);
-
         // then
-        assertThat(CatchException.<EndpointProtocolNotSupportedException>caughtException())
-                .isInstanceOf(EndpointProtocolNotSupportedException.class);
+        assertThrows(EndpointProtocolNotSupportedException.class, () -> factory.create(subscription, resilientMessageSender));
     }
 
     private ProtocolMessageSenderProvider protocolMessageSenderProviderReturning(Object createdMessageSender, String protocol) {

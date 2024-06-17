@@ -16,8 +16,6 @@ public class FailFastKafkaProducerProperties {
 
     private FallbackSchedulerProperties fallbackScheduler = new FallbackSchedulerProperties();
 
-    private ChaosSchedulerProperties chaosScheduler = new ChaosSchedulerProperties();
-
     public Duration getSpeculativeSendDelay() {
         return speculativeSendDelay;
     }
@@ -50,38 +48,7 @@ public class FailFastKafkaProducerProperties {
         this.remote = remote;
     }
 
-    public ChaosSchedulerProperties getChaosScheduler() {
-        return chaosScheduler;
-    }
-
-    public void setChaosScheduler(ChaosSchedulerProperties chaosScheduler) {
-        this.chaosScheduler = chaosScheduler;
-    }
-
     public static class FallbackSchedulerProperties {
-
-        private int threadPoolSize = 16;
-
-        private boolean threadPoolMonitoringEnabled = false;
-
-        public int getThreadPoolSize() {
-            return threadPoolSize;
-        }
-
-        public void setThreadPoolSize(int threadPoolSize) {
-            this.threadPoolSize = threadPoolSize;
-        }
-
-        public boolean isThreadPoolMonitoringEnabled() {
-            return threadPoolMonitoringEnabled;
-        }
-
-        public void setThreadPoolMonitoringEnabled(boolean threadPoolMonitoringEnabled) {
-            this.threadPoolMonitoringEnabled = threadPoolMonitoringEnabled;
-        }
-    }
-
-    public static class ChaosSchedulerProperties {
 
         private int threadPoolSize = 16;
 

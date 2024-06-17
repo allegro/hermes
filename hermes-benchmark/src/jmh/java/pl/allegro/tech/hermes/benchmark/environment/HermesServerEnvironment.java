@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.benchmark.environment;
 
-import com.codahale.metrics.MetricRegistry;
 import org.apache.commons.io.IOUtils;
 import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Scope;
@@ -23,7 +22,6 @@ public class HermesServerEnvironment {
     public static final String BENCHMARK_TOPIC = "bench.topic";
 
     private HermesPublisher publisher;
-    private MetricRegistry metricRegistry;
 
     private HermesServer hermesServer;
 
@@ -39,10 +37,9 @@ public class HermesServerEnvironment {
 
     @Setup(Level.Trial)
     public void setupPublisher() throws Exception {
-        metricRegistry = new MetricRegistry();
 
         String messageBody = loadMessageResource("completeMessage");
-        publisher = new HermesPublisher(MAX_CONNECTIONS_PER_ROUTE, "http://localhost:8080/topics/" + BENCHMARK_TOPIC, messageBody, metricRegistry);
+        publisher = new HermesPublisher(MAX_CONNECTIONS_PER_ROUTE, "http://localhost:8080/topics/" + BENCHMARK_TOPIC, messageBody);
     }
 
     @TearDown(Level.Trial)
@@ -52,7 +49,6 @@ public class HermesServerEnvironment {
 
     @TearDown(Level.Trial)
     public void shutdownPublisherAndReportMetrics() throws Exception {
-        reportMetrics();
         publisher.stop();
     }
 
@@ -65,7 +61,4 @@ public class HermesServerEnvironment {
             .getResourceAsStream(String.format("/message/%s.json", name))));
     }
 
-    private void reportMetrics() {
-        metricRegistry.getCounters().forEach((key, value) -> logger.info(key + ": " + value.getCount()));
-    }
 }

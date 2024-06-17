@@ -8,11 +8,6 @@ frontend:
     clusters:
       - datacenter: "dc"
         brokerList: "kafka:29092"
-  graphite:
-    host: "graphite"
-  metrics:
-    metric-registry:
-      graphiteReporterEnabled: true
   schema:
     cache:
       refreshAfterWrite: 1m

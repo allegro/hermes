@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.frontend.publishing.message;
 
 import org.apache.avro.Schema;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.message.wrapper.UnsupportedContentTypeException;
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter;

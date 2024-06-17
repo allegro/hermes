@@ -26,9 +26,8 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.UUID;
 
-import static com.jayway.awaitility.Awaitility.waitAtMost;
-import static com.jayway.awaitility.Duration.TEN_SECONDS;
 import static jakarta.ws.rs.core.Response.Status.CREATED;
+import static org.awaitility.Awaitility.waitAtMost;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
 import static pl.allegro.tech.hermes.integrationtests.assertions.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
@@ -110,7 +109,7 @@ public class PublishingAndConsumingTest {
         hermes.api().publishUntilSuccess(topic.getQualifiedName(), message.body());
 
         // then
-        waitAtMost(TEN_SECONDS).until(() -> {
+        waitAtMost(Duration.ofSeconds(10)).untilAsserted(() -> {
             long discarded = hermes.api()
                     .getSubscriptionMetrics(topic.getQualifiedName(), "subscription")
                     .expectBody(SubscriptionMetrics.class).returnResult().getResponseBody().getDiscarded();

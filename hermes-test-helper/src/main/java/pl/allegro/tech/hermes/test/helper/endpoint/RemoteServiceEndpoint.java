@@ -4,7 +4,7 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import com.google.common.collect.Iterables;
-import com.jayway.awaitility.Duration;
+import java.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
@@ -22,10 +22,10 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
-import static com.jayway.awaitility.Awaitility.await;
 import static java.util.stream.Collectors.toList;
 import static jakarta.ws.rs.core.Response.Status.MOVED_PERMANENTLY;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
 public class RemoteServiceEndpoint {
@@ -77,9 +77,9 @@ public class RemoteServiceEndpoint {
         receivedRequests.clear();
         expectedMessages = messages;
         messages.forEach(m -> listener
-            .register(
-                post(urlEqualTo(path))
-                .willReturn(aResponse().withStatus(returnedStatusCode).withFixedDelay(delay))));
+                .register(
+                        post(urlEqualTo(path))
+                                .willReturn(aResponse().withStatus(returnedStatusCode).withFixedDelay(delay))));
     }
 
     public void redirectMessage(String message) {
@@ -88,10 +88,10 @@ public class RemoteServiceEndpoint {
         expectedMessages = Collections.singletonList(message);
 
         listener.register(
-            post(urlEqualTo(path))
-            .willReturn(aResponse()
-                .withStatus(MOVED_PERMANENTLY.getStatusCode())
-                .withHeader("Location", "http://localhost:" + service.port())));
+                post(urlEqualTo(path))
+                        .willReturn(aResponse()
+                                .withStatus(MOVED_PERMANENTLY.getStatusCode())
+                                .withHeader("Location", "http://localhost:" + service.port())));
     }
 
     public void retryMessage(String message, int delay) {
@@ -149,7 +149,7 @@ public class RemoteServiceEndpoint {
 
     public void waitUntilReceived(long seconds) {
         logger.info("Expecting to receive {} messages", expectedMessages.size());
-        await().atMost(adjust(new Duration(seconds, TimeUnit.SECONDS))).until(() ->
+        await().atMost(adjust(Duration.ofSeconds(seconds))).untilAsserted(() ->
                 assertThat(receivedRequests.size()).isGreaterThanOrEqualTo(expectedMessages.size()));
         synchronized (receivedRequests) {
             assertThat(receivedRequests.stream().map(LoggedRequest::getBodyAsString).collect(toList())).containsAll(expectedMessages);
@@ -157,7 +157,8 @@ public class RemoteServiceEndpoint {
     }
 
     public void waitUntilReceived(long seconds, int numberOfExpectedMessages) {
-        waitUntilReceived(seconds, numberOfExpectedMessages, body -> {});
+        waitUntilReceived(seconds, numberOfExpectedMessages, body -> {
+        });
     }
 
     public void waitUntilReceived(Consumer<String> requestBodyConsumer) {
@@ -170,7 +171,7 @@ public class RemoteServiceEndpoint {
 
     public void waitUntilReceived(long seconds, int numberOfExpectedMessages, Consumer<LoggedRequest> requestBodyConsumer) {
         logger.info("Expecting to receive {} messages", numberOfExpectedMessages);
-        await().atMost(adjust(new Duration(seconds, TimeUnit.SECONDS))).until(() ->
+        await().atMost(adjust(Duration.ofSeconds(seconds))).untilAsserted(() ->
                 assertThat(receivedRequests.size()).isGreaterThanOrEqualTo(numberOfExpectedMessages));
         synchronized (receivedRequests) {
             receivedRequests.forEach(requestBodyConsumer);
@@ -179,7 +180,7 @@ public class RemoteServiceEndpoint {
 
     public void waitUntilReceived(Duration duration, int numberOfExpectedMessages, Consumer<LoggedRequest> requestBodyConsumer) {
         logger.info("Expecting to receive {} messages", numberOfExpectedMessages);
-        await().atMost(duration).until(() -> assertThat(receivedRequests.size()).isEqualTo(numberOfExpectedMessages));
+        await().atMost(duration).untilAsserted(() -> assertThat(receivedRequests.size()).isEqualTo(numberOfExpectedMessages));
         synchronized (receivedRequests) {
             receivedRequests.forEach(requestBodyConsumer);
         }

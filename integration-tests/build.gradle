@@ -16,9 +16,10 @@ dependencies {
     testImplementation group: 'com.squareup.okhttp3', name: 'okhttp', version: versions.okhttp
     testImplementation group: 'org.springframework', name: 'spring-webflux', version: versions.spring_web
     testImplementation group: 'org.springframework', name: 'spring-test', version: versions.spring_web
-    testImplementation group: 'org.eclipse.jetty', name: 'jetty-reactive-httpclient', version: '4.0.2'
+    testImplementation group: 'org.eclipse.jetty', name: 'jetty-reactive-httpclient', version: '4.0.3'
     testImplementation group: 'org.awaitility', name: 'awaitility', version: '4.2.0'
     testImplementation group: 'org.reactivestreams', name: 'reactive-streams', version: '1.0.4'
+    // TODO: can we update it ? Which version of server our clients use ?
     testImplementation(group: 'org.hornetq', name: 'hornetq-jms-server', version: '2.4.1.Final') {
         exclude module: 'hornetq-native'
     }

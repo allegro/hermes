@@ -13,33 +13,27 @@ import static pl.allegro.tech.hermes.common.metric.Gauges.CONSUMER_SENDER_HTTP_2
 
 public class ConsumerSenderMetrics {
 
-    private final HermesMetrics hermesMetrics;
     private final MeterRegistry meterRegistry;
     private final GaugeRegistrar gaugeRegistrar;
 
-    ConsumerSenderMetrics(HermesMetrics hermesMetrics, MeterRegistry meterRegistry) {
-        this.hermesMetrics = hermesMetrics;
+    ConsumerSenderMetrics(MeterRegistry meterRegistry) {
         this.meterRegistry = meterRegistry;
-        this.gaugeRegistrar = new GaugeRegistrar(meterRegistry, hermesMetrics);
+        this.gaugeRegistrar = new GaugeRegistrar(meterRegistry);
     }
 
     public <T> void registerRequestQueueSizeGauge(T obj, ToDoubleFunction<T> f) {
-        hermesMetrics.registerConsumerSenderRequestQueueSize(() -> (int) f.applyAsDouble(obj));
         meterRegistry.gauge("http-clients.request-queue-size", obj, f);
     }
 
     public <T> void registerHttp1SerialClientRequestQueueSizeGauge(T obj, ToDoubleFunction<T> f) {
-        hermesMetrics.registerConsumerSenderHttp1SerialClientRequestQueueSize(() -> (int) f.applyAsDouble(obj));
         meterRegistry.gauge("http-clients.serial.http1.request-queue-size", obj, f);
     }
 
     public <T> void registerHttp1BatchClientRequestQueueSizeGauge(T obj, ToDoubleFunction<T> f) {
-        hermesMetrics.registerConsumerSenderHttp1BatchClientRequestQueueSize(() -> (int) f.applyAsDouble(obj));
         meterRegistry.gauge("http-clients.batch.http1.request-queue-size", obj, f);
     }
 
     public <T> void registerHttp2RequestQueueSizeGauge(T obj, ToDoubleFunction<T> f) {
-        hermesMetrics.registerConsumerSenderHttp2RequestQueueSize(() -> (int) f.applyAsDouble(obj));
         meterRegistry.gauge("http-clients.serial.http2.request-queue-size", obj, f);
     }
 

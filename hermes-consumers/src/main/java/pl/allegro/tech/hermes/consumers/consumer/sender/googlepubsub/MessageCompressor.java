@@ -17,15 +17,18 @@ class MessageCompressor {
         Codec codec = codecFactory.createInstance();
 
         ByteBuffer compressed = codec.compress(ByteBuffer.wrap(data));
+        byte[] compressedBytes = new byte[compressed.limit()];
+        compressed.get(compressedBytes);
 
-        return compressed.array();
+        return compressedBytes;
     }
 
     byte[] decompress(byte[] data) throws IOException {
         Codec codec = codecFactory.createInstance();
 
         ByteBuffer decompressed = codec.decompress(ByteBuffer.wrap(data));
-
-        return decompressed.array();
+        byte[] decompressedBytes = new byte[decompressed.limit()];
+        decompressed.get(decompressedBytes);
+        return decompressedBytes;
     }
 }

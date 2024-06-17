@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.management;
 
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.SecurityContext;
-import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.NotImplementedException;
 import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.management.api.auth.SecurityProvider;
 

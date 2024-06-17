@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.common.schema;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.schema.RawSchemaClient;
 import pl.allegro.tech.hermes.schema.SubjectNamingStrategy;

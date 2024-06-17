@@ -35,6 +35,15 @@ const toFiltersJSON = (
   };
 };
 
+// https://stackoverflow.com/a/30106551
+function b64EncodeUnicode(str: string): string {
+  return btoa(
+    encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function (match, p1) {
+      return String.fromCharCode(parseInt(p1, 16));
+    }),
+  );
+}
+
 export function useSubscriptionFiltersDebug(): UseSubscriptionFiltersDebug {
   const notificationStore = useNotificationsStore();
   const status: Ref<VerificationStatus | undefined> = ref();
@@ -52,7 +61,7 @@ export function useSubscriptionFiltersDebug(): UseSubscriptionFiltersDebug {
       );
       const response = (
         await verifyFilters(topicName, {
-          message: btoa(message),
+          message: b64EncodeUnicode(message),
           filters: filtersJSON,
         })
       ).data;

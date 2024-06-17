@@ -17,11 +17,6 @@ kafka:
       connectionTimeout: 3000
       bootstrapKafkaServer: kafka:29092
 
-graphite:
-  client:
-    enabled: true
-    externalMonitoringUrl: graphite:8082
-
 server:
   port: 8090
 

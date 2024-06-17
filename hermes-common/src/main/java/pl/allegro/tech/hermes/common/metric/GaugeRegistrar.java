@@ -8,40 +8,22 @@ import java.util.function.ToDoubleFunction;
 
 public class GaugeRegistrar {
     private final MeterRegistry meterRegistry;
-    private final HermesMetrics hermesMetrics;
 
-    public GaugeRegistrar(MeterRegistry meterRegistry, HermesMetrics hermesMetrics) {
+    public GaugeRegistrar(MeterRegistry meterRegistry) {
         this.meterRegistry = meterRegistry;
-        this.hermesMetrics = hermesMetrics;
-    }
-
-    public <T> void registerGauge(String graphiteName,
-                                  String prometheusName,
-                                  T stateObj,
-                                  ToDoubleFunction<T> f,
-                                  Iterable<Tag> tags) {
-        meterRegistry.gauge(prometheusName, tags, stateObj, f);
-        hermesMetrics.registerGauge(graphiteName, () -> f.applyAsDouble(stateObj));
-    }
-
-    public <T> void registerGauge(String graphiteName,
-                                  String prometheusName,
-                                  T stateObj,
-                                  ToDoubleFunction<T> f) {
-        registerGauge(graphiteName, prometheusName, stateObj, f, Tags.empty());
     }
 
     public <T> void registerGauge(String name,
                                   T stateObj,
                                   ToDoubleFunction<T> f) {
-        registerGauge(name, name, stateObj, f);
+        registerGauge(name, stateObj, f, Tags.empty());
     }
 
     public <T> void registerGauge(String name,
                                   T stateObj,
                                   ToDoubleFunction<T> f,
                                   Iterable<Tag> tags) {
-        registerGauge(name, name, stateObj, f, tags);
+        meterRegistry.gauge(name, tags, stateObj, f);
     }
 }
 

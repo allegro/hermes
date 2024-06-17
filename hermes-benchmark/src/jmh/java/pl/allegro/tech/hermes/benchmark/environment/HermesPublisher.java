@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.benchmark.environment;
 
-import com.codahale.metrics.MetricRegistry;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.config.CookieSpecs;
@@ -28,14 +27,12 @@ public class HermesPublisher {
     private static final Logger logger = LoggerFactory.getLogger(HermesPublisher.class);
 
     private final CloseableHttpAsyncClient httpClient;
-    private final MetricRegistry metricRegistry;
     private final URI targetUrl;
     private final HttpEntity body;
 
-    public HermesPublisher(int maxConnectionsPerRoute, String targetUrl, String body, MetricRegistry metricRegistry)
+    public HermesPublisher(int maxConnectionsPerRoute, String targetUrl, String body)
             throws IOReactorException, UnsupportedEncodingException {
         this.targetUrl = URI.create(targetUrl);
-        this.metricRegistry = metricRegistry;
 
         RequestConfig requestConfig = RequestConfig.custom()
                 .setCookieSpec(CookieSpecs.IGNORE_COOKIES)
@@ -71,9 +68,7 @@ public class HermesPublisher {
         try {
             Future<HttpResponse> future = httpClient.execute(httpPost, null);
             response = future.get().getStatusLine().getStatusCode();
-            metricRegistry.counter("response." + response).inc();
         } catch (RuntimeException | InterruptedException | ExecutionException exception) {
-            metricRegistry.counter("client.exceptions").inc();
             logger.error("Client exception", exception);
         }
         return response;

@@ -32,6 +32,12 @@ const messages = {
       days: 'DAYS',
     },
     ack: 'Kafka ACK level',
+    ackHelpTitle: 'ACK level is very important',
+    ackHelpText:
+      'Set ACK level according to your durability and latency requirements, see: ',
+    ackHelpLink:
+      'https://hermes-pubsub.readthedocs.io/en/latest/user/publishing/#acknowledgment-level',
+    ackHelpLinkDescription: 'ACK docs.',
     contentType: 'Content type',
     maxMessageSize: {
       label: 'Max message size',

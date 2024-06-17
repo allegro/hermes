@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.tracker.elasticsearch;
 
-import com.codahale.metrics.Timer;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.client.Client;

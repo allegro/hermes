@@ -17,12 +17,6 @@ frontend:
     http2Enabled: true
   handlers:
     idleTimeout: 2000ms
-  metrics:
-    metric-registry:
-      graphiteReporterEnabled: true
-      reportPeriod: 1s
-  graphite:
-    port: 18023
   zookeeper:
     clusters:
       -

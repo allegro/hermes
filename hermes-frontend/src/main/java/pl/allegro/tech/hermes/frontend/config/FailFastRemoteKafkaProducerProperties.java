@@ -4,6 +4,10 @@ import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaProducerParameters;
 
 import java.time.Duration;
 
+/**
+ * See {@link pl.allegro.tech.hermes.frontend.config.FailFastLocalKafkaProducerProperties}
+ * for the explanation of default values used.
+ */
 public class FailFastRemoteKafkaProducerProperties implements KafkaProducerParameters {
     private Duration maxBlock = Duration.ofMillis(250);
 
@@ -15,9 +19,9 @@ public class FailFastRemoteKafkaProducerProperties implements KafkaProducerParam
 
     private Duration retryBackoff = Duration.ofMillis(50);
 
-    private Duration requestTimeout = Duration.ofMillis(250);
+    private Duration requestTimeout = Duration.ofSeconds(30);
 
-    private Duration deliveryTimeout = Duration.ofMillis(250);
+    private Duration deliveryTimeout = Duration.ofSeconds(30);
 
     private int batchSize = 16 * 1024;
 

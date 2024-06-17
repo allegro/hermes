@@ -84,7 +84,7 @@ abstract class CompressionCodecFactory {
 
         @Override
         Codec createInstance() {
-            return new ZstandardCodec(compressionLevel, true);
+            return new ZstandardCodec(compressionLevel, true, ZstandardCodec.DEFAULT_USE_BUFFERPOOL);
         }
     }
 }

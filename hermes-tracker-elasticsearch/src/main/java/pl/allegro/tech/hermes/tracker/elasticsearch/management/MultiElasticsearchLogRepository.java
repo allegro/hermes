@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 public class MultiElasticsearchLogRepository implements LogRepository, LogSchemaAware {
 
-    private List<ElasticsearchLogRepository> elasticsearchLogRepositories;
+    private final List<ElasticsearchLogRepository> elasticsearchLogRepositories;
 
     public MultiElasticsearchLogRepository(List<Client> elasticClients) {
         elasticsearchLogRepositories = elasticClients.stream()

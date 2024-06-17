@@ -7,8 +7,8 @@ import io.micrometer.core.instrument.search.Search;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
+import pl.allegro.tech.hermes.metrics.PathsCompiler;
 
 import java.util.Collection;
 import java.util.concurrent.Executors;
@@ -101,6 +101,6 @@ public class ZookeeperCounterReporter {
     }
 
     private static String escapeMetricsReplacementChar(String value) {
-        return value.replaceAll(HermesMetrics.REPLACEMENT_CHAR, "\\.");
+        return value.replaceAll(PathsCompiler.REPLACEMENT_CHAR, "\\.");
     }
 }

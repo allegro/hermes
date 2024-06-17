@@ -35,6 +35,9 @@ class PublishingHandler implements HttpHandler {
             try {
                 handle(exchange);
             } catch (RuntimeException e) {
+                AttachmentContent attachment = exchange.getAttachment(AttachmentContent.KEY);
+                MessageState messageState = attachment.getMessageState();
+                messageState.setErrorInSendingToKafka();
                 messageErrorProcessor.sendAndLog(exchange, "Exception while publishing message to a broker.", e);
             }
         });

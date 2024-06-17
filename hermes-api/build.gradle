@@ -4,19 +4,19 @@ plugins {
 }
 
 dependencies {
-    api group: 'org.hibernate.validator', name: 'hibernate-validator', version: '8.0.0.Final'
+    api group: 'org.hibernate.validator', name: 'hibernate-validator', version: '8.0.1.Final'
 
     api group: 'jakarta.ws.rs', name: 'jakarta.ws.rs-api', version: '3.1.0'
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: versions.jackson
     api group: 'com.fasterxml.jackson.jakarta.rs', name: 'jackson-jakarta-rs-json-provider', version: versions.jackson
     api group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: versions.jackson
     implementation group: 'com.google.guava', name: 'guava', version: versions.guava
-    api group: 'com.damnhandy', name: 'handy-uri-templates', version: '2.0.2'
+    api group: 'com.damnhandy', name: 'handy-uri-templates', version: '2.1.8'
     api group: 'jakarta.xml.bind', name: 'jakarta.xml.bind-api', version: '4.0.0'
 
-    implementation group: 'com.sun.xml.bind', name: 'jaxb-core', version: '4.0.3'
-    implementation group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '4.0.3'
-    implementation group: 'jakarta.annotation', name: 'jakarta.annotation-api', version: '2.1.1'
+    implementation group: 'com.sun.xml.bind', name: 'jaxb-core', version: '4.0.5'
+    implementation group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '4.0.5'
+    implementation group: 'jakarta.annotation', name: 'jakarta.annotation-api', version: '3.0.0'
 
 
     testImplementation group: 'org.spockframework', name: 'spock-core', version: versions.spock

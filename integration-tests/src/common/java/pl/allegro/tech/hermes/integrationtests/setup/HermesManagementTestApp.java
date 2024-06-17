@@ -23,8 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.waitAtMost;
 import static pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProvider.DEFAULT_DC_NAME;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
@@ -79,7 +79,7 @@ public class HermesManagementTestApp implements HermesTestApp {
                     .build();
             HttpClient httpClient = HttpClient.newHttpClient();
 
-            waitAtMost(adjust(240), TimeUnit.SECONDS).until(() -> {
+            waitAtMost(adjust(240), TimeUnit.SECONDS).untilAsserted(() -> {
                 try {
                     HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
                     assertThat(response.body()).isEqualTo("readWrite");

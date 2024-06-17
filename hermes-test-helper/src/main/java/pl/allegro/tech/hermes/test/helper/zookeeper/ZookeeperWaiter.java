@@ -5,7 +5,8 @@ import org.apache.curator.framework.imps.CuratorFrameworkState;
 
 import java.util.concurrent.TimeUnit;
 
-import static com.jayway.awaitility.Awaitility.await;
+import static org.awaitility.Awaitility.await;
+
 
 public class ZookeeperWaiter {
 

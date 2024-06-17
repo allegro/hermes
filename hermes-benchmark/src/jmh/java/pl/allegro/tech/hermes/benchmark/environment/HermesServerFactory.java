@@ -1,12 +1,10 @@
 package pl.allegro.tech.hermes.benchmark.environment;
 
-import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.undertow.server.HttpHandler;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.config.HTTPHeadersProperties;
@@ -28,7 +26,6 @@ import pl.allegro.tech.hermes.frontend.publishing.metadata.DefaultHeadersPropaga
 import pl.allegro.tech.hermes.frontend.readiness.HealthCheckService;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
 import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
-import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.schema.DirectCompiledSchemaRepository;
 import pl.allegro.tech.hermes.schema.DirectSchemaVersionsRepository;
 import pl.allegro.tech.hermes.schema.RawSchemaClient;
@@ -52,8 +49,7 @@ class HermesServerFactory {
 
     static HermesServer provideHermesServer() throws IOException {
         ThroughputLimiter throughputLimiter = (exampleTopic, throughput) -> quotaConfirmed();
-        HermesMetrics hermesMetrics = new HermesMetrics(new MetricRegistry(), new PathsCompiler(""));
-        MetricsFacade metricsFacade = new MetricsFacade(new SimpleMeterRegistry(), hermesMetrics);
+        MetricsFacade metricsFacade = new MetricsFacade(new SimpleMeterRegistry());
         TopicsCache topicsCache = new InMemoryTopicsCache(metricsFacade, topic);
         BrokerMessageProducer brokerMessageProducer = new InMemoryBrokerMessageProducer();
         RawSchemaClient rawSchemaClient = new InMemorySchemaClient(topic.getName(), loadMessageResource("schema"), 1, 1);

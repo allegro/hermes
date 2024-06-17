@@ -1,13 +1,14 @@
 package pl.allegro.tech.hermes.consumers.consumer.rate;
 
 import com.google.common.util.concurrent.AtomicDouble;
-import org.apache.commons.lang.math.Fraction;
+import org.apache.commons.lang3.math.Fraction;
 
 import java.time.Clock;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.apache.commons.lang.math.Fraction.getFraction;
+import static org.apache.commons.lang3.math.Fraction.getFraction;
+
 
 public class SendCounters {
 

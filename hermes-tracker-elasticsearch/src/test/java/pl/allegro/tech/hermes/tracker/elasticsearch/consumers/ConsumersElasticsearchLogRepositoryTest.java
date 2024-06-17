@@ -1,16 +1,13 @@
 package pl.allegro.tech.hermes.tracker.elasticsearch.consumers;
 
-import com.codahale.metrics.MetricRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
-import org.testng.annotations.AfterSuite;
-import org.testng.annotations.BeforeSuite;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
-import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.tracker.consumers.AbstractLogRepositoryTest;
 import pl.allegro.tech.hermes.tracker.consumers.LogRepository;
 import pl.allegro.tech.hermes.tracker.elasticsearch.ElasticsearchResource;
@@ -20,12 +17,12 @@ import pl.allegro.tech.hermes.tracker.elasticsearch.frontend.FrontendDailyIndexF
 import pl.allegro.tech.hermes.tracker.elasticsearch.frontend.FrontendIndexFactory;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 
-import static com.jayway.awaitility.Awaitility.await;
-import static com.jayway.awaitility.Duration.ONE_MINUTE;
+import static org.awaitility.Awaitility.await;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.elasticsearch.index.query.QueryBuilders.termQuery;
 
@@ -37,22 +34,21 @@ public class ConsumersElasticsearchLogRepositoryTest extends AbstractLogReposito
     private static final ConsumersIndexFactory indexFactory = new ConsumersDailyIndexFactory(clock);
     private static final FrontendIndexFactory frontendIndexFactory = new FrontendDailyIndexFactory(clock);
     private static final MetricsFacade metricsFacade = new MetricsFacade(
-            new SimpleMeterRegistry(),
-            new HermesMetrics(new MetricRegistry(), new PathsCompiler(""))
+            new SimpleMeterRegistry()
     );
 
 
-    private static ElasticsearchResource elasticsearch = new ElasticsearchResource();
-    private SchemaManager schemaManager;
+    private static final ElasticsearchResource elasticsearch = new ElasticsearchResource();
+    private static SchemaManager schemaManager;
 
-    @BeforeSuite
-    public void before() throws Throwable {
+    @BeforeClass
+    public static void beforeAll() throws Throwable {
         elasticsearch.before();
         schemaManager = new SchemaManager(elasticsearch.client(), frontendIndexFactory, indexFactory, false);
     }
 
-    @AfterSuite
-    public void after() {
+    @AfterClass
+    public static void afterAll() {
         elasticsearch.after();
     }
 
@@ -77,7 +73,7 @@ public class ConsumersElasticsearchLogRepositoryTest extends AbstractLogReposito
     }
 
     private void awaitUntilPersisted(QueryBuilder query) {
-        await().atMost(ONE_MINUTE).until(() -> {
+        await().atMost(Duration.ofMinutes(1)).until(() -> {
             SearchResponse response = elasticsearch.client().prepareSearch(indexFactory.createIndex())
                     .setTypes(SchemaManager.SENT_TYPE)
                     .setQuery(query)

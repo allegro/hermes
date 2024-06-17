@@ -10,6 +10,7 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ScheduledExecutorService;
 
 import static org.apache.kafka.clients.CommonClientConfigs.SECURITY_PROTOCOL_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.ACKS_CONFIG;
@@ -46,6 +47,7 @@ public class KafkaMessageSendersFactory {
     private final BrokerLatencyReporter brokerLatencyReporter;
     private final MetricsFacade metricsFacade;
     private final long bufferedSizeBytes;
+    private final ScheduledExecutorService chaosScheduler;
 
     public KafkaMessageSendersFactory(KafkaParameters kafkaParameters,
                                       List<KafkaParameters> remoteKafkaParameters,
@@ -57,7 +59,8 @@ public class KafkaMessageSendersFactory {
                                       Duration retryInterval,
                                       int threadPoolSize,
                                       long bufferedSizeBytes,
-                                      Duration metadataMaxAge) {
+                                      Duration metadataMaxAge,
+                                      ScheduledExecutorService chaosScheduler) {
         this.topicMetadataLoadingExecutor = new TopicMetadataLoadingExecutor(topicsCache, retryCount, retryInterval, threadPoolSize);
         this.localMinInSyncReplicasLoader = new MinInSyncReplicasLoader(localAdminClient, metadataMaxAge);
         this.bufferedSizeBytes = bufferedSizeBytes;
@@ -65,6 +68,7 @@ public class KafkaMessageSendersFactory {
         this.remoteKafkaParameters = remoteKafkaParameters;
         this.metricsFacade = metricsFacade;
         this.brokerLatencyReporter = brokerLatencyReporter;
+        this.chaosScheduler = chaosScheduler;
     }
 
 
@@ -123,11 +127,13 @@ public class KafkaMessageSendersFactory {
             props.put(SECURITY_PROTOCOL_CONFIG, kafkaParameters.getAuthenticationProtocol());
             props.put(SASL_JAAS_CONFIG, kafkaParameters.getJaasConfig());
         }
+
         return new KafkaMessageSender<>(
                 new org.apache.kafka.clients.producer.KafkaProducer<>(props),
                 brokerLatencyReporter,
                 metricsFacade,
-                kafkaParameters.getDatacenter()
+                kafkaParameters.getDatacenter(),
+                chaosScheduler
         );
     }
 

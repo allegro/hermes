@@ -16,7 +16,7 @@ Hermes integrates with multiple systems, each having different role.
 
 * **Message Store** - stores and routes messages, current implementation: Kafka
 * **Metadata Store** - shared metadata storage for all Hermes modules, current implementation: Zookeeper
-* **Metrics Store** *[optional]* - stores metrics gathered by Hermes, current implementation: Graphite
+* **Metrics Store** *[optional]* - stores metrics gathered by Hermes, currently Hermes exposes metrics in Prometheus format
 * **Tracking Store** *[optional]* - stores tracking (message trace) information, current implementation: ElasticSearch
 
 ## Message flow

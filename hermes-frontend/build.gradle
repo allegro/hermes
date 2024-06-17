@@ -13,24 +13,19 @@ dependencies {
 
     api group: 'org.springframework.boot', name: 'spring-boot-starter', version: versions.spring
     api group: 'io.undertow', name: 'undertow-core', version: versions.undertow
-    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
-    api (group: 'net.openhft', name: 'chronicle-map', version: '3.22.9') {
+    // Did not update that as we're trying to abandon buffers
+    api(group: 'net.openhft', name: 'chronicle-map', version: '3.22.9') {
         exclude group: 'net.openhft', module: 'chronicle-analytics'
     }
-    implementation group: 'commons-io', name: 'commons-io', version: '2.4'
+    implementation group: 'commons-io', name: 'commons-io', version: '2.16.1'
     implementation group: 'net.jodah', name: 'failsafe', version: versions.failsafe
+
+    testImplementation project(':hermes-test-helper')
 
     testImplementation group: 'org.spockframework', name: 'spock-core', version: versions.spock
     testImplementation group: 'org.apache.groovy', name: 'groovy-json', version: versions.groovy
-
-    testImplementation(group: 'com.jayway.awaitility', name: 'awaitility-groovy', version: '1.7.0') {
-        exclude group: 'org.codehaus.groovy', module: 'groovy-all'
-    }
-
-    testImplementation project(':hermes-test-helper')
-    testImplementation(group: 'com.jayway.awaitility', name: 'awaitility', version: '1.6.1') {
-        exclude group: 'com.jayway.jsonpath', module: 'json-path'
-    }
+    testImplementation group: 'org.awaitility', name: 'awaitility-groovy', version: '4.2.1'
+    testImplementation group: 'org.awaitility', name: 'awaitility', version: '4.2.1'
     testImplementation group: 'org.testcontainers', name: 'spock', version: versions.testcontainers
     testImplementation group: 'org.testcontainers', name: 'kafka', version: versions.testcontainers
     testRuntimeOnly group: 'org.junit.vintage', name: 'junit-vintage-engine', version: versions.junit_jupiter

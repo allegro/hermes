@@ -2,18 +2,18 @@
 
 ## HTTP Sender
 
-Option                                               | Description                                                 | Default value
----------------------------------------------------- | ----------------------------------------------------------- | -------------
-consumer.http-client.serial.http1.threadPoolSize                  | size of thread pool for sender threads (global)             | 30
-consumer.http-client.serial.http1.maxConnectionsPerDestination    | max connections per remote host                             | 100
+| Option                                                         | Description                                     | Default value |
+|----------------------------------------------------------------|-------------------------------------------------|---------------|
+| consumer.http-client.serial.http1.threadPoolSize               | size of thread pool for sender threads (global) | 30            |
+| consumer.http-client.serial.http1.maxConnectionsPerDestination | max connections per remote host                 | 100           |
 
 ## Consumers core
 
-Option                        | Description                                                              | Default value
------------------------------ | ------------------------------------------------------------------------ | -------------
-consumer.commit.offset.period | interval between committing offsets to Kafka                             | 60s
-consumer.threadPoolSize       | thread pool for threads involved in consuming, 1 thread per subscription | 500
-consumer.serialConsumer.inflightSize         | how many messages can be kept in send queue, per subscription            | 100
+| Option                               | Description                                                              | Default value |
+|--------------------------------------|--------------------------------------------------------------------------|---------------|
+| consumer.commit.offset.period        | interval between committing offsets to Kafka                             | 60s           |
+| consumer.threadPoolSize              | thread pool for threads involved in consuming, 1 thread per subscription | 500           |
+| consumer.serialConsumer.inflightSize | how many messages can be kept in send queue, per subscription            | 100           |
 
 ## Workload constraints management
 
@@ -26,10 +26,10 @@ subscriptions assigned to itself.
 
 These numbers can be configured:
 
-Option                                              | Description                               | Default value
---------------------------------------------------- | ----------------------------------------- | ---------------------
-consumer.workload.consumersPerSubscription          | Number of consumers to which the subscription will be assigned. If this value is greater than the number of available consumers, Hermes will assign the subscription to all available consumers. | 2
-consumer.workload.maxSubscriptionsPerConsumer       | The maximum number of subscriptions assigned to a single consumer. If all consumers have the maximum number of subscriptions assigned, a new subscription will not be activated until a new consumer is added or another subscription is unassigned. | 200
+| Option                                        | Description                                                                                                                                                                                                                                          | Default value |
+|-----------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------|
+| consumer.workload.consumersPerSubscription    | Number of consumers to which the subscription will be assigned. If this value is greater than the number of available consumers, Hermes will assign the subscription to all available consumers.                                                     | 2             |
+| consumer.workload.maxSubscriptionsPerConsumer | The maximum number of subscriptions assigned to a single consumer. If all consumers have the maximum number of subscriptions assigned, a new subscription will not be activated until a new consumer is added or another subscription is unassigned. | 200           |
 
 Additionally, Hermes allows to configure the property `consumer.workload.consumersPerSubscription` for specific
 topics or subscriptions in the runtime via REST API.

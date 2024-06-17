@@ -77,7 +77,6 @@ public class HermesConsumersTestApp implements HermesTestApp {
                 "--consumer.commit.offset.period=" + Duration.ofSeconds(1),
                 "--consumer.metrics.micrometer.reportPeriod=" + Duration.ofSeconds(5),
                 "--consumer.schema.cache.enabled=true",
-                "--consumer.metrics.metric-registry.graphiteReporterEnabled=false",
                 "--consumer.google.pubsub.sender.transportChannelProviderAddress=" + getGooglePubSubEndpoint()
         );
     }

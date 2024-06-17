@@ -16,6 +16,7 @@ import pl.allegro.tech.hermes.frontend.buffer.PersistentBufferExtension;
 import pl.allegro.tech.hermes.frontend.cache.topic.NotificationBasedTopicsCache;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
+import pl.allegro.tech.hermes.frontend.metric.ThroughputRegistry;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
 import pl.allegro.tech.hermes.frontend.validator.TopicMessageValidator;
@@ -41,11 +42,12 @@ public class FrontendConfiguration {
                                                     GroupRepository groupRepository,
                                                     TopicRepository topicRepository,
                                                     MetricsFacade metricsFacade,
+                                                    ThroughputRegistry throughputRegistry,
                                                     KafkaNamesMapper kafkaNamesMapper,
                                                     BlacklistZookeeperNotifyingCache blacklistZookeeperNotifyingCache) {
 
         return new NotificationBasedTopicsCache(internalNotificationsBus, blacklistZookeeperNotifyingCache,
-                groupRepository, topicRepository, metricsFacade, kafkaNamesMapper);
+                groupRepository, topicRepository, metricsFacade, throughputRegistry, kafkaNamesMapper);
     }
 
     @Bean

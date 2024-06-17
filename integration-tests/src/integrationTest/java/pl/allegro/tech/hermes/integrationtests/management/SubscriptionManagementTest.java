@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.integrationtests.management;
 
 import com.google.common.collect.ImmutableMap;
-import com.jayway.awaitility.Duration;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -28,14 +27,15 @@ import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscribersExtensi
 import pl.allegro.tech.hermes.management.TestSecurityProvider;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.waitAtMost;
 import static pl.allegro.tech.hermes.api.PatchData.patchData;
 import static pl.allegro.tech.hermes.api.SubscriptionHealth.Status.NO_DATA;
 import static pl.allegro.tech.hermes.api.SubscriptionHealth.Status.UNHEALTHY;
@@ -200,7 +200,7 @@ public class SubscriptionManagementTest {
 
         // then
         response.expectStatus().isOk();
-        waitAtMost(Duration.TEN_SECONDS)
+        waitAtMost(Duration.ofSeconds(10))
                 .until(() -> hermes.api().getSubscriptionResponse(topic.getQualifiedName(), subscription.getName())
                         .expectStatus()
                         .is2xxSuccessful()
@@ -705,13 +705,13 @@ public class SubscriptionManagementTest {
         hermes.api().deleteSubscription(topic.getQualifiedName(), subscription.getName());
 
         // when
-        waitAtMost(Duration.TEN_SECONDS)
-                .until(() -> hermes.api()
+        waitAtMost(Duration.ofSeconds(10))
+                .untilAsserted(() -> hermes.api()
                         .moveOffsetsToTheEnd(topic.getQualifiedName(), subscription.getName()).expectStatus().isOk());
 
         // then
-        waitAtMost(Duration.TEN_SECONDS)
-                .until(() -> assertThat(allConsumerGroupOffsetsMovedToTheEnd(subscription)).isTrue());
+        waitAtMost(Duration.ofSeconds(10))
+                .untilAsserted(() -> assertThat(allConsumerGroupOffsetsMovedToTheEnd(subscription)).isTrue());
     }
 
     private boolean allConsumerGroupOffsetsMovedToTheEnd(Subscription subscription) {

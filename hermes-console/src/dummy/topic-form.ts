@@ -46,6 +46,7 @@ export const dummyTopicFormValidator = {
   retentionTimeDuration: [required(), min(0), max(7)],
   maxMessageSize: [required(), min(0)],
   offlineRetentionTime: [required(), min(0)],
+  ack: [required()],
 };
 
 export const dummyContentTypes = [
@@ -123,7 +124,7 @@ export const dummyInitializedTopicForm = {
   trackingEnabled: false,
   contentType: dummyAppConfig.topic.defaults.contentType,
   maxMessageSize: defaultMaxMessageSize,
-  ack: dummyAppConfig.topic.defaults.ack,
+  ack: '',
   schema: '',
 };
 

@@ -1,24 +1,23 @@
 package pl.allegro.tech.hermes.integrationtests.subscriber;
 
-import com.jayway.awaitility.Duration;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSContext;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.Topic;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
-import static com.jayway.awaitility.Awaitility.await;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
 public class TestJmsSubscriber {
@@ -80,7 +79,7 @@ public class TestJmsSubscriber {
     }
 
     private void awaitWithSyncRequests(Runnable runnable) {
-        await().atMost(adjust(new Duration(DEFAULT_WAIT_TIME_IN_SEC, SECONDS))).until(() -> {
+        await().atMost(adjust(Duration.ofSeconds(DEFAULT_WAIT_TIME_IN_SEC))).untilAsserted(() -> {
             synchronized (receivedRequests) {
                 runnable.run();
             }

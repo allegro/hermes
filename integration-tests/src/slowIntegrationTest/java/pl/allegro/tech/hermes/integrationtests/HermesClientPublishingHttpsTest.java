@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.integrationtests;
 
-import com.jayway.awaitility.Duration;
 import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -22,6 +21,7 @@ import pl.allegro.tech.hermes.integrationtests.setup.InfrastructureExtension;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import java.net.URI;
+import java.time.Duration;
 import javax.net.ssl.X509TrustManager;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -71,7 +71,7 @@ public class HermesClientPublishingHttpsTest {
         OkHttpHermesSender okHttpHermesSender = new OkHttpHermesSender(getOkHttpClientWithSslContextConfigured());
         HermesClient client = hermesClient(okHttpHermesSender)
                 .withRetries(5)
-                .withRetrySleep(Duration.FIVE_SECONDS.getValueInMS(), Duration.TEN_SECONDS.getValueInMS())
+                .withRetrySleep(Duration.ofSeconds(5).toMillis(), Duration.ofSeconds(10).toMillis())
                 .withURI(URI.create("https://localhost:" + frontend.getSSLPort()))
                 .build();
 

@@ -50,6 +50,10 @@ public class SubscriptionBuilder {
 
     private boolean http2Enabled = false;
 
+    private boolean profilingEnabled = false;
+
+    private long profilingThresholdMs = 0;
+
     private OwnerId owner = new OwnerId("Plaintext", "some team");
 
     private MonitoringDetails monitoringDetails = MonitoringDetails.EMPTY;
@@ -126,8 +130,8 @@ public class SubscriptionBuilder {
                     topicName, name, endpoint, state, description,
                     serialSubscriptionPolicy, trackingEnabled,
                     trackingMode, owner, monitoringDetails, contentType,
-                    filters, mode, headers, metadata, oAuthPolicy, http2Enabled,
-                    attachingIdentityHeadersEnabled, autoDeleteWithTopicEnabled
+                    filters, mode, headers, metadata, oAuthPolicy, http2Enabled, profilingEnabled,
+                    profilingThresholdMs, attachingIdentityHeadersEnabled, autoDeleteWithTopicEnabled
             );
         } else {
             return Subscription.createBatchSubscription(
@@ -193,6 +197,16 @@ public class SubscriptionBuilder {
 
     public SubscriptionBuilder withHttp2Enabled(boolean http2Enabled) {
         this.http2Enabled = http2Enabled;
+        return this;
+    }
+
+    public SubscriptionBuilder withProfilingEnabled(boolean profilingEnabled) {
+        this.profilingEnabled = profilingEnabled;
+        return this;
+    }
+
+    public SubscriptionBuilder withProfilingThresholdMs(long profilingThresholdMs) {
+        this.profilingThresholdMs = profilingThresholdMs;
         return this;
     }
 

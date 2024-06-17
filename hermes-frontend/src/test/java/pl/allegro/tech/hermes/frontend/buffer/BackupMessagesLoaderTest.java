@@ -35,8 +35,8 @@ import java.util.Optional;
 import static java.time.LocalDateTime.now;
 import static java.time.ZoneOffset.UTC;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -71,9 +71,8 @@ public class BackupMessagesLoaderTest {
         tempDir = Files.createTempDir();
 
         Timer micrometerTimer = new SimpleMeterRegistry().timer("broker-latency");
-        com.codahale.metrics.Timer graphiteTimer = new com.codahale.metrics.Timer();
         when(cachedTopic.getTopic()).thenReturn(topic);
-        when(cachedTopic.startBrokerLatencyTimer()).thenReturn(HermesTimerContext.from(micrometerTimer, graphiteTimer));
+        when(cachedTopic.startBrokerLatencyTimer()).thenReturn(HermesTimerContext.from(micrometerTimer));
         when(topicsCache.getTopic(topic.getQualifiedName())).thenReturn(Optional.of(cachedTopic));
         when(producer.isTopicAvailable(cachedTopic)).thenReturn(true);
     }

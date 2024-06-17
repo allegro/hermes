@@ -2,9 +2,9 @@ package pl.allegro.tech.hermes.integrationtests.subscriber;
 
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import com.google.common.collect.Streams;
-import com.jayway.awaitility.Duration;
 
 import java.net.URI;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -13,9 +13,8 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import static com.jayway.awaitility.Awaitility.await;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
 public class TestSubscriber {
@@ -53,13 +52,14 @@ public class TestSubscriber {
             ).isNotEmpty());
     }
 
-    public void waitUntilAnyMessageReceived() {
-        await().atMost(adjust(new Duration(DEFAULT_WAIT_TIME_IN_SEC, SECONDS))).until(() ->
-            assertThat(receivedRequests.size()).isPositive());
-    }
     public void waitUntilReceived(Duration duration, int numberOfExpectedMessages) {
-        await().atMost(adjust(duration)).until(() ->
+        await().atMost(adjust(duration)).untilAsserted(() ->
                 assertThat(receivedRequests.size()).isEqualTo(numberOfExpectedMessages));
+    }
+
+    public void waitUntilAnyMessageReceived() {
+        await().atMost(adjust(Duration.ofSeconds(DEFAULT_WAIT_TIME_IN_SEC))).untilAsserted(() ->
+            assertThat(receivedRequests.size()).isPositive());
     }
 
     public void waitUntilRequestReceived(Consumer<LoggedRequest> requestConsumer) {
@@ -71,7 +71,7 @@ public class TestSubscriber {
     }
 
     public void waitUntilRequestsReceived(Consumer<List<LoggedRequest>> requestsConsumer) {
-        await().atMost(adjust(new Duration(DEFAULT_WAIT_TIME_IN_SEC, SECONDS))).until(
+        await().atMost(adjust(Duration.ofSeconds(DEFAULT_WAIT_TIME_IN_SEC))).untilAsserted(
                 () -> {
                     synchronized (receivedRequests) {
                         requestsConsumer.accept(receivedRequests);
@@ -100,7 +100,7 @@ public class TestSubscriber {
     }
 
     private void awaitWithSyncRequests(Runnable runnable) {
-        await().atMost(adjust(new Duration(DEFAULT_WAIT_TIME_IN_SEC, SECONDS))).until(() -> {
+        await().atMost(adjust(Duration.ofSeconds(DEFAULT_WAIT_TIME_IN_SEC))).untilAsserted(() -> {
             synchronized (receivedRequests) {
                 runnable.run();
             }
