@@ -74,6 +74,7 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
         EndpointAddressResolverMetadata endpointAddressResolverMetadata = subscription.getEndpointAddressResolverMetadata();
         ResolvableEndpointAddress resolvableEndpoint =
                 new ResolvableEndpointAddress(endpoint, endpointAddressResolver, endpointAddressResolverMetadata);
+        HttpClient subscriptionHttpClient = getHttpClient(subscription);
         HttpRequestFactory requestFactory =
                 requestFactoryProvider.provideRequestFactory(subscription, getHttpClient(subscription), metadataAppender);
 
@@ -91,7 +92,7 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
                     getHttpRequestHeadersProvider(subscription),
                     sendingResultHandlers,
                     authorityResolver,
-                    httpClient);
+                    subscriptionHttpClient);
             return new SingleRecipientMessageSenderAdapter(jettyMessageSender, resilientMessageSender);
         }
     }
