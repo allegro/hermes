@@ -60,8 +60,12 @@ public class LocalDatacenterMessageProducerTest {
 
     private final MockProducer<byte[], byte[]> leaderConfirmsProducer = new MockProducer<>(true, serializer, serializer);
     private final MockProducer<byte[], byte[]> everyoneConfirmProducer = new MockProducer<>(true, serializer, serializer);
-    private final KafkaMessageSender<byte[], byte[]> leaderConfirmsProduceWrapper = new KafkaMessageSender<>(leaderConfirmsProducer, brokerLatencyReporter, metricsFacade, datacenter, chaosScheduler);
-    private final KafkaMessageSender<byte[], byte[]> everyoneConfirmsProduceWrapper = new KafkaMessageSender<>(everyoneConfirmProducer, brokerLatencyReporter, metricsFacade, datacenter, chaosScheduler);
+    private final KafkaMessageSender<byte[], byte[]> leaderConfirmsProduceWrapper = new KafkaMessageSender<>(
+            leaderConfirmsProducer, brokerLatencyReporter, metricsFacade, datacenter, chaosScheduler, "local-sender"
+    );
+    private final KafkaMessageSender<byte[], byte[]> everyoneConfirmsProduceWrapper = new KafkaMessageSender<>(
+            everyoneConfirmProducer, brokerLatencyReporter, metricsFacade, datacenter, chaosScheduler, "local-sender"
+    );
 
     private final KafkaHeaderNameProperties kafkaHeaderNameProperties = new KafkaHeaderNameProperties();
     private final HTTPHeadersPropagationAsKafkaHeadersProperties httpHeadersPropagationAsKafkaHeadersProperties =
