@@ -96,7 +96,7 @@ public class KafkaMessageSender<K, V> {
 
     private static RecordMetadata exceptionalRecordMetadata(CachedTopic cachedTopic) {
         var tp = new TopicPartition(cachedTopic.getKafkaTopics().getPrimary().name().asString(), RecordMetadata.UNKNOWN_PARTITION);
-        return new RecordMetadata(tp, -1, -1, RecordBatch.NO_TIMESTAMP, -1, -1);
+        return new RecordMetadata(tp, -1, -1, RecordBatch.NO_TIMESTAMP, -1L, -1, -1);
     }
 
     List<PartitionInfo> loadPartitionMetadataFor(String topic) {
