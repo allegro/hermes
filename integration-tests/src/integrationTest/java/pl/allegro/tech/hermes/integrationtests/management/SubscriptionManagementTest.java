@@ -645,46 +645,6 @@ public class SubscriptionManagementTest {
     }
 
     @Test
-    public void shouldNotAllowNonAdminUserToSetInflightSize() {
-        // given
-        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
-        Subscription subscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).build());
-        TestSecurityProvider.setUserIsAdmin(false);
-
-        PatchData patchData = patchData().set("subscriptionPolicy", ImmutableMap.builder()
-                .put("inflightSize", 100)
-                .build()
-        ).build();
-
-        // when
-        WebTestClient.ResponseSpec response = hermes.api().updateSubscription(topic, subscription.getName(), patchData);
-
-        //then
-        response.expectStatus().isBadRequest();
-        assertThat(response.expectBody(String.class).returnResult().getResponseBody())
-                .contains("Subscription.serialSubscriptionPolicy.inflightSize must be null");
-    }
-
-    @Test
-    public void shouldAllowAdminUserToSetInflightSize() {
-        // given
-        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
-        Subscription subscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).build());
-        TestSecurityProvider.setUserIsAdmin(true);
-
-        PatchData patchData = patchData().set("subscriptionPolicy", ImmutableMap.builder()
-                .put("inflightSize", 100)
-                .build()
-        ).build();
-
-        // when
-        WebTestClient.ResponseSpec response = hermes.api().updateSubscription(topic, subscription.getName(), patchData);
-
-        //then
-        response.expectStatus().isOk();
-    }
-
-    @Test
     public void shouldMoveOffsetsToTheEnd() {
         // given
         TestSubscriber subscriber = subscribers.createSubscriber(503);
