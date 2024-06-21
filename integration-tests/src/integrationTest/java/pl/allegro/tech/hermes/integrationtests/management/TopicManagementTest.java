@@ -766,6 +766,22 @@ public class TopicManagementTest {
     }
 
     @Test
+    public void shouldNotAllowNonAdminUserToEnableChaos2() {
+        // given
+        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().withFallbackToRemoteDatacenterEnabled().build());
+        TestSecurityProvider.setUserIsAdmin(false);
+        PatchData patchData = PatchData.from(ImmutableMap.of("description", "a"));
+
+        // when
+        WebTestClient.ResponseSpec response = hermes.api().updateTopic(topic.getQualifiedName(), patchData);
+
+        //then
+        response.expectStatus().isOk();
+        Topic t = hermes.api().getTopicResponse(topic.getQualifiedName()).returnResult(Topic.class).getResponseBody().blockFirst();
+        System.out.println("Aaa");
+    }
+
+    @Test
     public void shouldAllowAdminUserToEnableChaos() {
         // given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());

@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class TopicTest {
 
-    private final ObjectMapper objectMapper = createObjectMapper();
+    private final ObjectMapper objectMapper = createObjectMapper(false);
 
     @Test
     public void shouldDeserializeTopicWithDefaults() throws Exception {
@@ -65,11 +65,42 @@ public class TopicTest {
         assertThat(topic.getName().getName()).isEqualTo("bar");
     }
 
-    private ObjectMapper createObjectMapper() {
+    @Test
+    public void shouldDeserializeFallbackToRemoteDatacenterWithDefaults() throws Exception {
+        // given
+        String json = "{\"name\":\"foo.bar\", \"description\": \"description\"}";
+
+        // when
+        Topic topic = objectMapper.readValue(json, Topic.class);
+
+        // then
+        assertThat(topic.isFallbackToRemoteDatacenterEnabled()).isEqualTo(false);
+
+        // and when
+        Topic topic2 = createObjectMapper(true).readValue(json, Topic.class);
+
+        // then
+        assertThat(topic2.isFallbackToRemoteDatacenterEnabled()).isEqualTo(true);
+    }
+
+    @Test
+    public void shouldDeserializeFallbackToRemoteDatacenter() throws Exception {
+        // given
+        String json = "{\"name\":\"foo.bar\", \"description\": \"description\", \"fallbackToRemoteDatacenterEnabled\": true}";
+
+        // when
+        Topic topic = objectMapper.readValue(json, Topic.class);
+
+        // then
+        assertThat(topic.isFallbackToRemoteDatacenterEnabled()).isEqualTo(true);
+    }
+
+    private ObjectMapper createObjectMapper(boolean fallbackToRemoteDatacenterEnabled) {
         ObjectMapper mapper = new ObjectMapper();
 
         final InjectableValues defaultSchemaIdAwareSerializationEnabled = new InjectableValues
-            .Std().addValue(Topic.DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY, true);
+            .Std().addValue(Topic.DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY, true)
+                .addValue(Topic.DEFAULT_FALLBACK_TO_REMOTE_DATACENTER_KEY, fallbackToRemoteDatacenterEnabled);
 
         mapper.setInjectableValues(defaultSchemaIdAwareSerializationEnabled);
         mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);

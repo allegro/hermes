@@ -83,7 +83,8 @@ import static io.micrometer.core.instrument.Clock.SYSTEM;
         ZookeeperClustersProperties.class,
         KafkaClustersProperties.class,
         ContentRootProperties.class,
-        DatacenterNameProperties.class
+        DatacenterNameProperties.class,
+        TopicDefaultsProperties.class
 })
 public class CommonConfiguration {
 
@@ -183,8 +184,8 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public ObjectMapper objectMapper(SchemaProperties schemaProperties) {
-        return new ObjectMapperFactory(schemaProperties.isIdSerializationEnabled()).provide();
+    public ObjectMapper objectMapper(SchemaProperties schemaProperties, TopicDefaultsProperties topicDefaults) {
+        return new ObjectMapperFactory(schemaProperties.isIdSerializationEnabled(), topicDefaults.isFallbackToRemoteDatacenterEnabled()).provide();
     }
 
     @Bean

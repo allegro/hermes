@@ -46,7 +46,8 @@ public class ManagementConfiguration {
 
         final InjectableValues defaultSchemaIdAwareSerializationEnabled = new InjectableValues.Std().addValue(
                 Topic.DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY,
-                topicProperties.isDefaultSchemaIdAwareSerializationEnabled());
+                topicProperties.isDefaultSchemaIdAwareSerializationEnabled())
+                .addValue(Topic.DEFAULT_FALLBACK_TO_REMOTE_DATACENTER_KEY, topicProperties.isDefaultFallbackToRemoteDatacenterEnabled());
 
         mapper.setInjectableValues(defaultSchemaIdAwareSerializationEnabled);
 

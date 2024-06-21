@@ -176,7 +176,11 @@ public class CommonConfiguration {
 
     @Bean
     public ObjectMapper objectMapper(SchemaProperties schemaProperties) {
-        return new ObjectMapperFactory(schemaProperties.isIdSerializationEnabled()).provide();
+        return new ObjectMapperFactory(
+                schemaProperties.isIdSerializationEnabled(),
+                /* fallbackToRemoteDatacenter is frontend specific property, we so don't expose consumer side property for it */
+                false
+        ).provide();
     }
 
 
