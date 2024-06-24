@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.management.domain.subscription.validator;
 
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionPolicy;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionAlreadyExistsException;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
@@ -11,6 +12,7 @@ import pl.allegro.tech.hermes.management.domain.owner.validator.OwnerIdValidator
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 
 import java.util.List;
+import java.util.Objects;
 
 public class SubscriptionValidator {
 
@@ -45,6 +47,7 @@ public class SubscriptionValidator {
         checkOwner(toCheck);
         checkEndpoint(toCheck);
         checkPermissionsToManageSubscription(toCheck, createdBy);
+        ensureCreatedSubscriptionInflightIsValid(toCheck, createdBy);
         Topic topic = topicService.getTopicDetails(toCheck.getTopicName());
         checkFilters(toCheck, topic);
         checkIfSubscribingToTopicIsAllowed(toCheck, topic, createdBy);
@@ -58,6 +61,7 @@ public class SubscriptionValidator {
         checkOwner(toCheck);
         checkEndpoint(toCheck);
         checkPermissionsToManageSubscription(toCheck, modifiedBy);
+        ensureUpdatedSubscriptionInflightIsValid(previous, toCheck, modifiedBy);
         Topic topic = topicService.getTopicDetails(toCheck.getTopicName());
         checkFilters(toCheck, topic);
         if (!toCheck.getEndpoint().equals(previous.getEndpoint())) {
@@ -109,6 +113,40 @@ public class SubscriptionValidator {
             throw new SubscriptionValidationException(
                     "Provide an owner that includes you, you would not be able to manage this subscription later"
             );
+        }
+    }
+
+    private void ensureCreatedSubscriptionInflightIsValid(Subscription subscription, RequestUser requester) {
+        if (requester.isAdmin()) {
+            return;
+        }
+        SubscriptionPolicy subscriptionPolicy = subscription.getSerialSubscriptionPolicy();
+        if (subscriptionPolicy == null) {
+            return;
+        }
+        if (subscriptionPolicy.getInflightSize() != null) {
+            throw new SubscriptionValidationException(
+                    "Inflight size can't be set by non admin users"
+            );
+        }
+    }
+
+    private void ensureUpdatedSubscriptionInflightIsValid(Subscription previous, Subscription updated, RequestUser requester) {
+        if (requester.isAdmin()) {
+            return;
+        }
+
+        SubscriptionPolicy updatedSubscriptionPolicy = updated.getSerialSubscriptionPolicy();
+        if (updatedSubscriptionPolicy == null) {
+            return;
+        }
+        Integer updatedInflight = updatedSubscriptionPolicy.getInflightSize();
+
+        SubscriptionPolicy previousSubscriptionPolicy = previous.getSerialSubscriptionPolicy();
+        Integer previousInflight = previousSubscriptionPolicy == null ? null : previousSubscriptionPolicy.getInflightSize();
+
+        if (!Objects.equals(previousInflight, updatedInflight)) {
+            throw new SubscriptionValidationException(String.format("Inflight size can't be changed by non admin users. Changed from: %s, to: %s", previousInflight, updatedInflight));
         }
     }
 }
