@@ -138,6 +138,10 @@ public class Message implements FilterableMessage {
         return id;
     }
 
+    public synchronized Set<String> getSucceededUris() {
+        return succeededUris;
+    }
+
     @Override
     public Map<String, String> getExternalMetadata() {
         return externalMetadata;
