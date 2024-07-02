@@ -11,9 +11,11 @@ import pl.allegro.tech.hermes.api.Topic;
 public class ObjectMapperFactory {
 
     private final boolean schemaIdSerializationEnabled;
+    private final boolean fallbackToRemoteDatacenterEnabled;
 
-    public ObjectMapperFactory(boolean schemaIdSerializationEnabled) {
+    public ObjectMapperFactory(boolean schemaIdSerializationEnabled, boolean fallbackToRemoteDatacenterEnabled) {
         this.schemaIdSerializationEnabled = schemaIdSerializationEnabled;
+        this.fallbackToRemoteDatacenterEnabled = fallbackToRemoteDatacenterEnabled;
     }
 
     public ObjectMapper provide() {
@@ -23,8 +25,9 @@ public class ObjectMapperFactory {
         objectMapper.disable(SerializationFeature.WRITE_NULL_MAP_VALUES);
         objectMapper.registerModule(new JavaTimeModule());
 
-        final InjectableValues defaultSchemaIdAwareSerializationEnabled = new InjectableValues
-                .Std().addValue(Topic.DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY, schemaIdSerializationEnabled);
+        final InjectableValues defaultSchemaIdAwareSerializationEnabled = new InjectableValues.Std()
+                .addValue(Topic.DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY, schemaIdSerializationEnabled)
+                .addValue(Topic.DEFAULT_FALLBACK_TO_REMOTE_DATACENTER_KEY, fallbackToRemoteDatacenterEnabled);
         objectMapper.setInjectableValues(defaultSchemaIdAwareSerializationEnabled);
 
         return objectMapper;

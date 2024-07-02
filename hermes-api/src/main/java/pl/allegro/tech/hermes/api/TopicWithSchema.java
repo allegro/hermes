@@ -32,7 +32,9 @@ public class TopicWithSchema extends Topic {
                            @JsonProperty("retentionTime") RetentionTime retentionTime,
                            @JsonProperty("jsonToAvroDryRun") boolean jsonToAvroDryRunEnabled,
                            @JsonProperty("ack") Ack ack,
-                           @JsonProperty("fallbackToRemoteDatacenterEnabled") boolean fallbackToRemoteDatacenterEnabled,
+                           @JsonProperty("fallbackToRemoteDatacenterEnabled")
+                           @JacksonInject(value = DEFAULT_FALLBACK_TO_REMOTE_DATACENTER_KEY, useInput = OptBoolean.TRUE)
+                           boolean fallbackToRemoteDatacenterEnabled,
                            @JsonProperty("chaos") PublishingChaosPolicy chaos,
                            @JsonProperty("trackingEnabled") boolean trackingEnabled,
                            @JsonProperty("migratedFromJsonType") boolean migratedFromJsonType,

@@ -37,7 +37,8 @@ public class Topic {
     private boolean jsonToAvroDryRunEnabled = false;
     @NotNull
     private Ack ack;
-    private boolean fallbackToRemoteDatacenterEnabled;
+    public static final String DEFAULT_FALLBACK_TO_REMOTE_DATACENTER_KEY = "defaultFallbackToRemoteDatacenterEnabled";
+    private final boolean fallbackToRemoteDatacenterEnabled;
     private PublishingChaosPolicy chaos;
     @NotNull
     private ContentType contentType;
@@ -58,8 +59,10 @@ public class Topic {
     private Instant modifiedAt;
 
     public Topic(TopicName name, String description, OwnerId owner, RetentionTime retentionTime,
-                 boolean migratedFromJsonType, Ack ack, boolean fallbackToRemoteDatacenterEnabled, PublishingChaosPolicy chaos,
-                 boolean trackingEnabled, ContentType contentType, boolean jsonToAvroDryRunEnabled,
+                 boolean migratedFromJsonType, Ack ack,
+                 @JacksonInject(value = DEFAULT_FALLBACK_TO_REMOTE_DATACENTER_KEY, useInput = OptBoolean.TRUE)
+                 Boolean fallbackToRemoteDatacenterEnabled,
+                 PublishingChaosPolicy chaos, boolean trackingEnabled, ContentType contentType, boolean jsonToAvroDryRunEnabled,
                  @JacksonInject(value = DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY, useInput = OptBoolean.TRUE)
                  Boolean schemaIdAwareSerializationEnabled,
                  int maxMessageSize, PublishingAuth publishingAuth, boolean subscribingRestricted,
@@ -93,7 +96,8 @@ public class Topic {
             @JsonProperty("retentionTime") RetentionTime retentionTime,
             @JsonProperty("jsonToAvroDryRun") boolean jsonToAvroDryRunEnabled,
             @JsonProperty("ack") Ack ack,
-            @JsonProperty("fallbackToRemoteDatacenterEnabled") boolean fallbackToRemoteDatacenterEnabled,
+            @JacksonInject(value = DEFAULT_FALLBACK_TO_REMOTE_DATACENTER_KEY, useInput = OptBoolean.TRUE)
+            @JsonProperty("fallbackToRemoteDatacenterEnabled") Boolean fallbackToRemoteDatacenterEnabled,
             @JsonProperty("chaos") PublishingChaosPolicy chaos,
             @JsonProperty("trackingEnabled") boolean trackingEnabled,
             @JsonProperty("migratedFromJsonType") boolean migratedFromJsonType,

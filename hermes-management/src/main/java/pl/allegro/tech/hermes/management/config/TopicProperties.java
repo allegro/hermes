@@ -34,6 +34,8 @@ public class TopicProperties {
 
     private boolean defaultSchemaIdAwareSerializationEnabled = false;
 
+    private boolean defaultFallbackToRemoteDatacenterEnabled = false;
+
     private boolean avroContentTypeMetadataRequired = true;
 
     /**
@@ -153,6 +155,14 @@ public class TopicProperties {
 
     public void setDefaultSchemaIdAwareSerializationEnabled(boolean defaultSchemaIdAwareSerializationEnabled) {
         this.defaultSchemaIdAwareSerializationEnabled = defaultSchemaIdAwareSerializationEnabled;
+    }
+
+    public boolean isDefaultFallbackToRemoteDatacenterEnabled() {
+        return defaultFallbackToRemoteDatacenterEnabled;
+    }
+
+    public void setDefaultFallbackToRemoteDatacenterEnabled(boolean defaultFallbackToRemoteDatacenterEnabled) {
+        this.defaultFallbackToRemoteDatacenterEnabled = defaultFallbackToRemoteDatacenterEnabled;
     }
 
     public boolean isAvroContentTypeMetadataRequired() {

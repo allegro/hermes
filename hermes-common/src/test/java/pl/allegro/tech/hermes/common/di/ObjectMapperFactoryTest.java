@@ -14,7 +14,7 @@ public class ObjectMapperFactoryTest {
 
     @Before
     public void init() {
-        ObjectMapperFactory factory = new ObjectMapperFactory(false);
+        ObjectMapperFactory factory = new ObjectMapperFactory(false, false);
         mapper = factory.provide();
     }
 
