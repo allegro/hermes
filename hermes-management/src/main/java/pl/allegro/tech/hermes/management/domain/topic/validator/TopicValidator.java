@@ -9,6 +9,7 @@ import pl.allegro.tech.hermes.api.PublishingChaosPolicy.ChaosPolicy;
 import pl.allegro.tech.hermes.api.RetentionTime;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
+import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 import pl.allegro.tech.hermes.management.domain.owner.validator.OwnerIdValidator;
 import pl.allegro.tech.hermes.management.domain.topic.CreatorRights;
@@ -27,18 +28,21 @@ public class TopicValidator {
     private final TopicLabelsValidator topicLabelsValidator;
     private final SchemaRepository schemaRepository;
     private final ApiPreconditions apiPreconditions;
+    private final TopicProperties topicProperties;
 
     @Autowired
     public TopicValidator(OwnerIdValidator ownerIdValidator,
                           ContentTypeValidator contentTypeValidator,
                           TopicLabelsValidator topicLabelsValidator,
                           SchemaRepository schemaRepository,
-                          ApiPreconditions apiPreconditions) {
+                          ApiPreconditions apiPreconditions,
+                          TopicProperties topicProperties) {
         this.ownerIdValidator = ownerIdValidator;
         this.contentTypeValidator = contentTypeValidator;
         this.topicLabelsValidator = topicLabelsValidator;
         this.schemaRepository = schemaRepository;
         this.apiPreconditions = apiPreconditions;
+        this.topicProperties = topicProperties;
     }
 
     public void ensureCreatedTopicIsValid(Topic created, RequestUser createdBy, CreatorRights creatorRights) {
@@ -47,8 +51,8 @@ public class TopicValidator {
         checkContentType(created);
         checkTopicLabels(created);
 
-        if (created.isFallbackToRemoteDatacenterEnabled() && !createdBy.isAdmin()) {
-            throw new TopicValidationException("User is not allowed to enable fallback to remote datacenter");
+        if ((created.isFallbackToRemoteDatacenterEnabled() != topicProperties.isDefaultFallbackToRemoteDatacenterEnabled()) && !createdBy.isAdmin()) {
+            throw new TopicValidationException("User is not allowed to set non-default fallback to remote datacenter for this topic");
         }
 
         if (created.getChaos().mode() != ChaosMode.DISABLED && !createdBy.isAdmin()) {
@@ -72,8 +76,8 @@ public class TopicValidator {
         checkOwner(updated);
         checkTopicLabels(updated);
 
-        if (!previous.isFallbackToRemoteDatacenterEnabled() && updated.isFallbackToRemoteDatacenterEnabled() && !modifiedBy.isAdmin()) {
-            throw new TopicValidationException("User is not allowed to enable fallback to remote datacenter");
+        if ((previous.isFallbackToRemoteDatacenterEnabled() != updated.isFallbackToRemoteDatacenterEnabled()) && !modifiedBy.isAdmin()) {
+            throw new TopicValidationException("User is not allowed to update fallback to remote datacenter for this topic");
         }
 
         if (!previous.getChaos().equals(updated.getChaos()) && !modifiedBy.isAdmin()) {
