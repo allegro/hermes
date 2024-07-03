@@ -603,7 +603,7 @@ public class TopicManagementTest {
     }
 
     @Test
-    public void shouldNotAllowNonAdminUserCreateTopicWithNonDefaultFallbackToRemoteDatacenter() {
+    public void shouldNotAllowNonAdminUserCreateTopicWithFallbackToRemoteDatacenterEnabled() {
         // given
         TestSecurityProvider.setUserIsAdmin(false);
         TopicWithSchema topic = topicWithSchema(
@@ -619,11 +619,11 @@ public class TopicManagementTest {
         //then
         response.expectStatus().isBadRequest();
         assertThat(response.expectBody(String.class).returnResult().getResponseBody())
-                .contains("User is not allowed to set non-default fallback to remote datacenter");
+                .contains("User is not allowed to enable fallback to remote datacenter");
     }
 
     @Test
-    public void shouldAllowAdminUserCreateTopicWithNonDefaultFallbackToRemoteDatacenterEnabled() {
+    public void shouldAllowAdminUserCreateTopicWithFallbackToRemoteDatacenterEnabled() {
         // given
         TestSecurityProvider.setUserIsAdmin(true);
         TopicWithSchema topic = topicWithSchema(
@@ -641,12 +641,11 @@ public class TopicManagementTest {
     }
 
     @Test
-    public void shouldNotAllowNonAdminUserToChangeFallbackToRemoteDatacenter() {
+    public void shouldNotAllowNonAdminUserToEnableFallbackToRemoteDatacenter() {
         // given
-        Topic topic = hermes.initHelper().createTopic(topicWithRandomName()
-                .withFallbackToRemoteDatacenterEnabled().build());
+        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
         TestSecurityProvider.setUserIsAdmin(false);
-        PatchData patchData = PatchData.from(ImmutableMap.of("fallbackToRemoteDatacenterEnabled", false));
+        PatchData patchData = PatchData.from(ImmutableMap.of("fallbackToRemoteDatacenterEnabled", true));
 
         // when
         WebTestClient.ResponseSpec response = hermes.api().updateTopic(topic.getQualifiedName(), patchData);
@@ -654,17 +653,15 @@ public class TopicManagementTest {
         //then
         response.expectStatus().isBadRequest();
         assertThat(response.expectBody(String.class).returnResult().getResponseBody())
-                .contains("User is not allowed to update fallback to remote datacenter for this topic");
+                .contains("User is not allowed to enable fallback to remote datacenter");
     }
 
     @Test
-    public void shouldAllowAdminUserToChangeFallbackToRemoteDatacenter() {
+    public void shouldAllowAdminUserToEnableFallbackToRemoteDatacenter() {
         // given
-        Topic topic = hermes.initHelper().createTopic(topicWithRandomName()
-                .withFallbackToRemoteDatacenterEnabled()
-                .build());
+        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
         TestSecurityProvider.setUserIsAdmin(true);
-        PatchData patchData = PatchData.from(ImmutableMap.of("fallbackToRemoteDatacenterEnabled", false));
+        PatchData patchData = PatchData.from(ImmutableMap.of("fallbackToRemoteDatacenterEnabled", true));
 
         // when
         WebTestClient.ResponseSpec response = hermes.api().updateTopic(topic.getQualifiedName(), patchData);
