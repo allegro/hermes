@@ -30,7 +30,7 @@ class DefaultErrorHandlerTest extends Specification {
             .withTrackingMode(TrackingMode.TRACK_ALL).build()
 
     private DefaultErrorHandler handler = new DefaultErrorHandler(
-            offsetQueue, Stub(MetricsFacade), undeliveredLog, Clock.systemUTC(), trackers, "cluster", subscription.qualifiedName)
+            Stub(MetricsFacade), undeliveredLog, Clock.systemUTC(), trackers, "cluster", subscription.qualifiedName)
 
     def "should save tracking information on message failure but not commit message"() {
         given:

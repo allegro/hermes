@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.integrationtests;
 
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimaps;
-import com.jayway.awaitility.Duration;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -12,7 +11,6 @@ import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
-import pl.allegro.tech.hermes.consumers.supervisor.process.RunningSubscriptionStatus;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesExtension;
 import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscriber;
 import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscribersExtension;
@@ -20,29 +18,22 @@ import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCOffsetChang
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
-import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static java.util.stream.IntStream.range;
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.api.PatchData.patchData;
-import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.COMMIT;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscriptionWithRandomName;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
-import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
 public class KafkaRetransmissionServiceTest {
 
     private static final String PRIMARY_KAFKA_CLUSTER_NAME = "primary-dc";
 
     private final AvroUser avroUser = new AvroUser();
-
-    private final Clock clock = Clock.systemDefaultZone();
 
     private final List<String> messages = new ArrayList<>() {{
         range(0, 4).forEach(i -> add(TestMessage.random().body()));
@@ -69,7 +60,7 @@ public class KafkaRetransmissionServiceTest {
         final OffsetRetransmissionDate retransmissionDate = new OffsetRetransmissionDate(OffsetDateTime.now());
         Thread.sleep(1000);
         publishAndConsumeMessages(messages2, topic, subscriber);
-        waitUntilConsumerCommitsOffset(topic.getQualifiedName(), subscription.getName());
+        hermes.api().waitUntilConsumerCommitsOffset(topic.getQualifiedName(), subscription.getName());
 
         // when
         WebTestClient.ResponseSpec response = hermes.api().retransmit(topic.getQualifiedName(), subscription.getName(), retransmissionDate, false);
@@ -90,7 +81,7 @@ public class KafkaRetransmissionServiceTest {
         Thread.sleep(2000);
         final OffsetRetransmissionDate retransmissionDate = new OffsetRetransmissionDate(OffsetDateTime.now());
         publishAndConsumeMessages(messages2, topic, subscriber);
-        waitUntilConsumerCommitsOffset(topic.getQualifiedName(), subscription.getName());
+        hermes.api().waitUntilConsumerCommitsOffset(topic.getQualifiedName(), subscription.getName());
         subscriber.reset();
 
         // when
@@ -115,13 +106,13 @@ public class KafkaRetransmissionServiceTest {
         Subscription subscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName(), subscriber.getEndpoint()).build());
 
         hermes.api().publish(topic.getQualifiedName(), TestMessage.simple().body());
-        waitUntilConsumerCommitsOffset(topic.getQualifiedName(), subscription.getName());
+        hermes.api().waitUntilConsumerCommitsOffset(topic.getQualifiedName(), subscription.getName());
 
         Thread.sleep(1000); //wait 1s because our date time format has seconds precision
         final OffsetRetransmissionDate retransmissionDate = new OffsetRetransmissionDate(OffsetDateTime.now());
 
         hermes.api().publish(topic.getQualifiedName(), TestMessage.simple().body());
-        waitUntilConsumerCommitsOffset(topic.getQualifiedName(), subscription.getName());
+        hermes.api().waitUntilConsumerCommitsOffset(topic.getQualifiedName(), subscription.getName());
 
         PatchData patch = patchData()
                 .set("contentType", ContentType.AVRO)
@@ -132,7 +123,7 @@ public class KafkaRetransmissionServiceTest {
         hermes.api().updateTopic(topic.getQualifiedName(), patch).expectStatus().isOk();
 
         hermes.api().publishAvroUntilSuccess(topic.getQualifiedName(), avroUser.asBytes());
-        waitUntilConsumerCommitsOffset(topic.getQualifiedName(), subscription.getName());
+        hermes.api().waitUntilConsumerCommitsOffset(topic.getQualifiedName(), subscription.getName());
 
         // when
         WebTestClient.ResponseSpec response = hermes.api().retransmit(topic.getQualifiedName(), subscription.getName(), retransmissionDate, true);
@@ -151,19 +142,6 @@ public class KafkaRetransmissionServiceTest {
     private void publishAndConsumeMessages(List<String> messages, Topic topic, TestSubscriber subscriber) {
         messages.forEach(message -> hermes.api().publish(topic.getQualifiedName(), message));
         messages.forEach(subscriber::waitUntilReceived);
-    }
-
-    private void waitUntilConsumerCommitsOffset(String topicQualifiedName, String subscription) {
-        long currentTime = clock.millis();
-        until(Duration.ONE_MINUTE, topicQualifiedName, subscription, sub ->
-                sub.getSignalTimesheet().getOrDefault(COMMIT, 0L) > currentTime);
-    }
-
-    private void until(Duration duration, String topicQualifiedName, String subscription, Predicate<RunningSubscriptionStatus> predicate) {
-        waitAtMost(adjust(duration)).until(() ->
-                hermes.api().getRunningSubscriptionsStatus().stream()
-                        .filter(sub -> sub.getQualifiedName().equals(topicQualifiedName + "$" + subscription))
-                        .anyMatch(predicate));
     }
 
     private record PartitionOffsetsPerKafkaTopic(List<PartitionOffset> avroPartitionOffsets,

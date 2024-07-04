@@ -272,7 +272,8 @@ public class SupervisorConfiguration {
                                            ConsumerAuthorizationHandler consumerAuthorizationHandler,
                                            Clock clock,
                                            SubscriptionLoadRecordersRegistry subscriptionLoadRecordersRegistry,
-                                           ConsumerPartitionAssignmentState consumerPartitionAssignmentState) {
+                                           ConsumerPartitionAssignmentState consumerPartitionAssignmentState,
+                                           CommitOffsetProperties commitOffsetProperties) {
         return new ConsumerFactory(
                 messageReceiverFactory,
                 metrics,
@@ -289,7 +290,9 @@ public class SupervisorConfiguration {
                 consumerAuthorizationHandler,
                 clock,
                 subscriptionLoadRecordersRegistry,
-                consumerPartitionAssignmentState
+                consumerPartitionAssignmentState,
+                commitOffsetProperties.getPeriod(),
+                commitOffsetProperties.getQueuesSize()
         );
     }
 

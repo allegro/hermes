@@ -17,10 +17,10 @@ public class Signal {
     private final long id;
 
     public enum SignalType {
-        START, STOP, RETRANSMIT, UPDATE_SUBSCRIPTION, UPDATE_TOPIC, COMMIT
+        START, STOP, RETRANSMIT, UPDATE_SUBSCRIPTION, UPDATE_TOPIC
     }
 
-    private static AtomicLong SIGNALS_COUNTER = new AtomicLong();
+    private static final AtomicLong SIGNALS_COUNTER = new AtomicLong();
 
     private Signal(SignalType type, SubscriptionName target, Object payload, long executeAfterTimestamp, long id) {
         this.type = type;
@@ -77,10 +77,9 @@ public class Signal {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof Signal)) {
+        if (!(o instanceof Signal signal)) {
             return false;
         }
-        Signal signal = (Signal) o;
         return type == signal.type
                 && Objects.equals(target, signal.target);
     }

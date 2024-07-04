@@ -8,7 +8,6 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetsSlots;
-import pl.allegro.tech.hermes.consumers.consumer.rate.InflightsPool;
 import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.result.ErrorHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.SuccessHandler;

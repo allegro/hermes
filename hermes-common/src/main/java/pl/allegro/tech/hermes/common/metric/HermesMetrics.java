@@ -116,6 +116,10 @@ public class HermesMetrics {
         registerGauge(metricRegistryName(Gauges.INFLIGHT, subscription.getTopicName(), subscription.getName()), gauge);
     }
 
+    public void registerOffsetQueueGauge(SubscriptionName subscription, Gauge<?> gauge) {
+        registerGauge(metricRegistryName(Gauges.OFFSET_QUEUE, subscription.getTopicName(), subscription.getName()), gauge);
+    }
+
     public void unregisterInflightGauge(SubscriptionName subscription) {
         unregister(Gauges.INFLIGHT, subscription);
     }

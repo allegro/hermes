@@ -34,4 +34,5 @@ public class Gauges {
     public static final String CONSUMER_SENDER_HTTP_2_SERIAL_CLIENT_PENDING_CONNECTIONS = "http-clients.serial.http2.pending-connections";
 
     public static final String INFLIGHT = "inflight." + GROUP + "." + TOPIC + "." + SUBSCRIPTION + ".count";
+    public static final String OFFSET_QUEUE = "offset-queue." + GROUP + "." + TOPIC + "." + SUBSCRIPTION + ".count";
 }

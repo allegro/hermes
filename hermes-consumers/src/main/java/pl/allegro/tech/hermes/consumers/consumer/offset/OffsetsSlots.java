@@ -1,5 +1,10 @@
 package pl.allegro.tech.hermes.consumers.consumer.offset;
 
+import pl.allegro.tech.hermes.api.SubscriptionName;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
+import pl.allegro.tech.hermes.consumers.consumer.rate.AdjustableSemaphore;
+
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -8,40 +13,54 @@ import java.util.concurrent.Semaphore;
 public class OffsetsSlots {
 
     private final ConcurrentHashMap<SubscriptionPartitionOffset, MessageState> slots = new ConcurrentHashMap<>();
-    private final Semaphore inflightSemaphore = new Semaphore(60);
-    private final Semaphore totalOffsetsCountSemaphore = new Semaphore(20_000);
+    private final AdjustableSemaphore inflightSemaphore;
+    private final Semaphore totalOffsetsCountSemaphore;
 
-    // used by sender thread
+    public OffsetsSlots(SubscriptionName subscriptionName, MetricsFacade metrics, int offsetQueueSize, int inflightQueueSize) {
+        this.totalOffsetsCountSemaphore = new Semaphore(offsetQueueSize);
+        this.inflightSemaphore = new AdjustableSemaphore(inflightQueueSize);
+        metrics.subscriptions().registerOffsetsQueueGauge(subscriptionName, totalOffsetsCountSemaphore,  slots -> (double) slots.availablePermits() / offsetQueueSize);
+    }
+
+    public void setInflightSize(int inflightQueueSize) {
+        this.inflightSemaphore.setMaxPermits(inflightQueueSize);
+    }
+
+    /**
+     * This method is used by message sender
+     */
     public void markAsSent(SubscriptionPartitionOffset subscriptionPartitionOffset) {
         inflightSemaphore.release();
         slots.put(subscriptionPartitionOffset, MessageState.DELIVERED);
     }
 
-    public boolean hasSpace() throws InterruptedException {
+    /**
+     * This method is used by consumer
+     */
+    public boolean hasSpace(Duration processingInterval) throws InterruptedException {
         int inflightPermits = inflightSemaphore.availablePermits();
         int totalPermits = totalOffsetsCountSemaphore.availablePermits();
 
         if (inflightPermits == 0 || totalPermits == 0) {
-            Thread.sleep(100);
+            Thread.sleep(processingInterval.toMillis());
             return false;
         } else {
             return true;
         }
     }
 
-//            inflightSemaphore.acquire();
-//            deliveredSemaphore.acquire();
-
-    // used by consumer thread
+    /**
+     * This method is used by consumer
+     */
     public void addSlot(SubscriptionPartitionOffset subscriptionPartitionOffset) throws InterruptedException {
         totalOffsetsCountSemaphore.acquire();
         inflightSemaphore.acquire();
         slots.put(subscriptionPartitionOffset, MessageState.INFLIGHT);
     }
 
-
-    // used by consumer thread
-    // lists have to be sorted in ascending order
+    /**
+     * This method is used by consumer
+     */
     public Map<SubscriptionPartitionOffset, MessageState> offsetSnapshot() {
         int permitsReleased = 0;
         Map<SubscriptionPartitionOffset, MessageState> offsetSnapshot = new HashMap<>();
@@ -57,24 +76,3 @@ public class OffsetsSlots {
         return offsetSnapshot;
     }
 }
-
-
-// inflight = [1, 2, 3, 4, 5] deliveredQueue = [........................................]
-// inflight = [1, 2, 4] deliveredQueue = [3, 5] -> [], maxDelivered = 5
-// inflight = [1, 2] deliveredQueue = [4] -> [], maxDelivered = 5
-// inflight = [2] deliveredQueue = [1] -> [], maxDelivered = 5, min(2, maxDelivered) = 2
-
-// jest kompresja deliveredOffsets, ale nie ma kompresji dla inflights
-
-
-
-
-// OffsetSlots:      { [1, Del], [2, Inf], [3, Inf], [4, Del], [5, Del] }
-// OffsetCommitter:  inflight = { [2, Inf], [3, Inf] }, delivered = { [1, Del], [4, Del], [5, Del] }
-
-// OffsetSlots:      { [2, Inf], [3, Inf] }
-// OffsetCommitter:  inflight = { [2, Inf], [3, Inf] }, maxDelivered = [5, Del]
-
-// OffsetSlots:      { [2, Inf], [3, Del] }
-// OffsetCommitter:  inflight = { [2, Inf] }, delivered = { [3, Del] }, maxDelivered = [5, Del]
-

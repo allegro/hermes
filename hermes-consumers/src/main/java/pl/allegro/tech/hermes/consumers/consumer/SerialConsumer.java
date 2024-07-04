@@ -13,7 +13,6 @@ import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignm
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetCommitter;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetsSlots;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
-import pl.allegro.tech.hermes.consumers.consumer.rate.AdjustableSemaphore;
 import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
@@ -21,6 +20,7 @@ import pl.allegro.tech.hermes.consumers.consumer.receiver.UninitializedMessageRe
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
 
@@ -40,9 +40,9 @@ public class SerialConsumer implements Consumer {
     private final boolean useTopicMessageSizeEnabled;
     private final OffsetsSlots offsetsSlots;
     private final ConsumerAuthorizationHandler consumerAuthorizationHandler;
-    private final AdjustableSemaphore inflightSemaphore;
     private final SubscriptionLoadRecorder loadRecorder;
     private final OffsetCommitter offsetCommitter;
+    private final Duration commitPeriod;
 
     private final int defaultInflight;
     private final Duration signalProcessingInterval;
@@ -51,6 +51,8 @@ public class SerialConsumer implements Consumer {
     private Subscription subscription;
 
     private MessageReceiver messageReceiver;
+
+    private Instant lastCommitTime;
 
     public SerialConsumer(ReceiverFactory messageReceiverFactory,
                           MetricsFacade metrics,
@@ -63,24 +65,24 @@ public class SerialConsumer implements Consumer {
                           CommonConsumerParameters commonConsumerParameters,
                           ConsumerAuthorizationHandler consumerAuthorizationHandler,
                           SubscriptionLoadRecorder loadRecorder,
-                          ConsumerPartitionAssignmentState consumerPartitionAssignmentState) {
-
+                          ConsumerPartitionAssignmentState consumerPartitionAssignmentState,
+                          Duration commitPeriod,
+                          int offsetQueueSize) {
         this.defaultInflight = commonConsumerParameters.getSerialConsumer().getInflightSize();
         this.signalProcessingInterval = commonConsumerParameters.getSerialConsumer().getSignalProcessingInterval();
-        this.inflightSemaphore = new AdjustableSemaphore(calculateInflightSize(subscription));
         this.messageReceiverFactory = messageReceiverFactory;
         this.metrics = metrics;
         this.subscription = subscription;
         this.rateLimiter = rateLimiter;
         this.useTopicMessageSizeEnabled = commonConsumerParameters.isUseTopicMessageSizeEnabled();
-        this.offsetsSlots = new OffsetsSlots();
+        this.offsetsSlots = new OffsetsSlots(subscription.getQualifiedName(), metrics, offsetQueueSize, calculateInflightSize(subscription));
         this.consumerAuthorizationHandler = consumerAuthorizationHandler;
         this.trackers = trackers;
         this.messageConverterResolver = messageConverterResolver;
         this.loadRecorder = loadRecorder;
         this.messageReceiver = new UninitializedMessageReceiver();
         this.topic = topic;
-        this.offsetCommitter = new OffsetCommitter(consumerPartitionAssignmentState, metrics, subscription.getQualifiedName());
+        this.offsetCommitter = new OffsetCommitter(consumerPartitionAssignmentState, metrics);
         this.sender = consumerMessageSenderFactory.create(
                 subscription,
                 rateLimiter,
@@ -88,6 +90,8 @@ public class SerialConsumer implements Consumer {
                 loadRecorder,
                 metrics
         );
+        this.commitPeriod = commitPeriod;
+        this.lastCommitTime = Instant.now();
     }
 
     private int calculateInflightSize(Subscription subscription) {
@@ -101,13 +105,8 @@ public class SerialConsumer implements Consumer {
             do {
                 loadRecorder.recordSingleOperation();
                 signalsInterrupt.run();
-                if (isReadyToCommit()) { // check if last commit was earlier than X, then commit
-                    Set<SubscriptionPartitionOffset> offsetsToCommit = offsetCommitter.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot());
-                    if (offsetsToCommit != null) {
-                        commit(offsetsToCommit);
-                    }
-                }
-            } while (!offsetsSlots.hasSpace());
+                commitIfReady();
+            } while (!offsetsSlots.hasSpace(signalProcessingInterval));
 
             Optional<Message> maybeMessage = messageReceiver.next();
 
@@ -132,8 +131,21 @@ public class SerialConsumer implements Consumer {
         }
     }
 
+    private void commitIfReady() {
+        if (isReadyToCommit()) {
+            Set<SubscriptionPartitionOffset> offsetsToCommit = offsetCommitter.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot());
+            if (offsetsToCommit != null) {
+                commit(offsetsToCommit);
+            }
+        }
+    }
+
     private boolean isReadyToCommit() {
-        return true;
+        if (Duration.between(lastCommitTime, Instant.now()).toMillis() > commitPeriod.toMillis()) {
+            lastCommitTime = Instant.now();
+            return true;
+        }
+        return false;
     }
 
     private void sendMessage(Message message) throws InterruptedException {
@@ -178,7 +190,7 @@ public class SerialConsumer implements Consumer {
     @Override
     public void updateSubscription(Subscription newSubscription) {
         logger.info("Updating consumer for subscription {}", subscription.getQualifiedName());
-        inflightSemaphore.setMaxPermits(calculateInflightSize(newSubscription));
+        offsetsSlots.setInflightSize(calculateInflightSize(newSubscription));
         rateLimiter.updateSubscription(newSubscription);
         sender.updateSubscription(newSubscription);
         messageReceiver.update(newSubscription);

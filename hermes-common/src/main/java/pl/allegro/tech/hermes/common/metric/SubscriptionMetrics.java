@@ -86,6 +86,11 @@ public class SubscriptionMetrics {
         meterRegistry.gauge(SubscriptionMetricsNames.SUBSCRIPTION_INFLIGHT, subscriptionTags(subscription), obj, f);
     }
 
+    public <T> void registerOffsetsQueueGauge(SubscriptionName subscription, T obj, ToDoubleFunction<T> f) {
+        hermesMetrics.registerOffsetQueueGauge(subscription, () -> (int) f.applyAsDouble(obj));
+        meterRegistry.gauge(SubscriptionMetricsNames.SUBSCRIPTION_OFFSET_QUEUE, subscriptionTags(subscription), obj, f);
+    }
+
     public HermesTimer consumerIdleTimer(SubscriptionName subscription) {
         return HermesTimer.from(
                 meterRegistry.timer(SubscriptionMetricsNames.SUBSCRIPTION_IDLE_DURATION, subscriptionTags(subscription)),
@@ -154,6 +159,7 @@ public class SubscriptionMetrics {
         public static final String SUBSCRIPTION_LATENCY = "subscription.latency";
         public static final String SUBSCRIPTION_RATE_LIMITER_ACQUIRE = "subscription.rate-limiter-acquire";
         public static final String SUBSCRIPTION_INFLIGHT = "subscription.inflight";
+        public static final String SUBSCRIPTION_OFFSET_QUEUE = "subscription.offset-queue";
         public static final String SUBSCRIPTION_IDLE_DURATION = "subscription.idle-duration";
         public static final String SUBSCRIPTION_FILTERED_OUT = "subscription.filtered-out";
         public static final String SUBSCRIPTION_HTTP_STATUS_CODES = "subscription.http-status-codes";

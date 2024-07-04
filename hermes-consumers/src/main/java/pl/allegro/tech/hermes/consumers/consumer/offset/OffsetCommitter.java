@@ -14,7 +14,6 @@ import java.util.function.Function;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.metrics.HermesCounter;
 import pl.allegro.tech.hermes.metrics.HermesTimer;
@@ -76,8 +75,6 @@ public class OffsetCommitter {
 
     private final ConsumerPartitionAssignmentState partitionAssignmentState;
 
-    private final SubscriptionName subscriptionName;
-
     private final HermesCounter obsoleteCounter;
     private final HermesCounter committedCounter;
     private final HermesTimer timer;
@@ -87,13 +84,11 @@ public class OffsetCommitter {
 
     public OffsetCommitter(
             ConsumerPartitionAssignmentState partitionAssignmentState,
-            MetricsFacade metrics,
-            SubscriptionName subscriptionName
+            MetricsFacade metrics
     ) {
         this.partitionAssignmentState = partitionAssignmentState;
         this.obsoleteCounter = metrics.offsetCommits().obsoleteCounter();
         this.committedCounter = metrics.offsetCommits().committedCounter();
-        this.subscriptionName = subscriptionName;
         this.timer = metrics.offsetCommits().duration();
     }
 
@@ -127,7 +122,7 @@ public class OffsetCommitter {
 
             Set<SubscriptionPartition> committedOffsetToBeRemoved = new HashSet<>();
 
-            OffsetsToCommit offsetsToCommit = new OffsetsToCommit();
+            Set<SubscriptionPartitionOffset> offsetsToCommit = new HashSet<>();
             for (SubscriptionPartition partition : Sets.union(minInflightOffsets.keySet(), maxCommittedOffsets.keySet())) {
                 if (partitionAssignmentState.isAssignedPartitionAtCurrentTerm(partition)) {
                     long minInflight = minInflightOffsets.getOrDefault(partition, Long.MAX_VALUE);
@@ -157,7 +152,7 @@ public class OffsetCommitter {
 
             cleanupStoredOffsetsWithObsoleteTerms();
 
-            return offsetsToCommit.batchFor(subscriptionName);
+            return offsetsToCommit;
         } catch (Exception exception) {
             logger.error("Failed to run offset committer: {}", exception.getMessage(), exception);
         }

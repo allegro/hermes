@@ -24,6 +24,7 @@ import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import java.time.Clock;
+import java.time.Duration;
 
 public class ConsumerFactory {
 
@@ -43,6 +44,8 @@ public class ConsumerFactory {
     private final Clock clock;
     private final SubscriptionLoadRecordersRegistry subscriptionLoadRecordersRegistry;
     private final ConsumerPartitionAssignmentState consumerPartitionAssignmentState;
+    private final Duration commitPeriod;
+    private final int offsetQueueSize;
 
     public ConsumerFactory(ReceiverFactory messageReceiverFactory,
                            MetricsFacade metrics,
@@ -59,7 +62,9 @@ public class ConsumerFactory {
                            ConsumerAuthorizationHandler consumerAuthorizationHandler,
                            Clock clock,
                            SubscriptionLoadRecordersRegistry subscriptionLoadRecordersRegistry,
-                           ConsumerPartitionAssignmentState consumerPartitionAssignmentState) {
+                           ConsumerPartitionAssignmentState consumerPartitionAssignmentState,
+                           Duration commitPeriod,
+                           int offsetQueueSize) {
         this.messageReceiverFactory = messageReceiverFactory;
         this.metrics = metrics;
         this.commonConsumerParameters = commonConsumerParameters;
@@ -76,6 +81,8 @@ public class ConsumerFactory {
         this.clock = clock;
         this.subscriptionLoadRecordersRegistry = subscriptionLoadRecordersRegistry;
         this.consumerPartitionAssignmentState = consumerPartitionAssignmentState;
+        this.commitPeriod = commitPeriod;
+        this.offsetQueueSize = offsetQueueSize;
     }
 
     public Consumer createConsumer(Subscription subscription) {
@@ -92,7 +99,10 @@ public class ConsumerFactory {
                     subscription,
                     topic,
                     commonConsumerParameters.isUseTopicMessageSizeEnabled(),
-                    loadRecorder
+                    loadRecorder,
+                    consumerPartitionAssignmentState,
+                    commitPeriod,
+                    offsetQueueSize
             );
         } else {
             SerialConsumerRateLimiter consumerRateLimiter = new SerialConsumerRateLimiter(subscription,
@@ -110,7 +120,9 @@ public class ConsumerFactory {
                     commonConsumerParameters,
                     consumerAuthorizationHandler,
                     loadRecorder,
-                    consumerPartitionAssignmentState
+                    consumerPartitionAssignmentState,
+                    commitPeriod,
+                    offsetQueueSize
             );
         }
     }

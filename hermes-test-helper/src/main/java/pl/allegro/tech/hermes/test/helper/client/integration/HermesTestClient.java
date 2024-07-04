@@ -20,8 +20,11 @@ import pl.allegro.tech.hermes.consumers.supervisor.process.RunningSubscriptionSt
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static com.jayway.awaitility.Awaitility.waitAtMost;
+import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
 public class HermesTestClient {
@@ -135,6 +138,28 @@ public class HermesTestClient {
                                     .equals("Empty");
                         }
                 );
+    }
+
+    public void waitUntilConsumerCommitsOffset(String topicQualifiedName, String subscriptionName) {
+        long committedMessagesCount = calculateCommittedMessages(topicQualifiedName, subscriptionName);
+        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() -> {
+                    long currentCommittedMessagesCount = calculateCommittedMessages(topicQualifiedName, subscriptionName);
+                    assertThat(currentCommittedMessagesCount).isGreaterThan(committedMessagesCount);
+                }
+        );
+    }
+
+    private long calculateCommittedMessages(String topicQualifiedName, String subscription) {
+        AtomicLong messagesCommittedCount = new AtomicLong(0);
+        List<ConsumerGroup> consumerGroups = getConsumerGroupsDescription(topicQualifiedName, subscription)
+                .expectBodyList(ConsumerGroup.class)
+                .returnResult().getResponseBody();
+        Objects.requireNonNull(consumerGroups).forEach(consumerGroup ->
+                consumerGroup.getMembers().forEach(member ->
+                        member.getPartitions().forEach(partition ->
+                                messagesCommittedCount.addAndGet(partition.getCurrentOffset())
+                        )));
+        return messagesCommittedCount.get();
     }
 
     public int publishUntilSuccess(String topicQualifiedName, String body) {
@@ -392,10 +417,6 @@ public class HermesTestClient {
 
     public WebTestClient.ResponseSpec updateOAuthProvider(String name, PatchData patch) {
         return managementTestClient.updateOAuthProvider(name, patch);
-    }
-
-    public WebTestClient.ResponseSpec searchOwners(String source, String searchString) {
-        return managementTestClient.searchOwners(source, searchString);
     }
 
     public WebTestClient.ResponseSpec setMode(String mode) {
