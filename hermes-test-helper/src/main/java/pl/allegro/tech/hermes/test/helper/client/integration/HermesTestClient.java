@@ -146,7 +146,7 @@ public class HermesTestClient {
 
     public void waitUntilConsumerCommitsOffset(String topicQualifiedName, String subscriptionName) {
         long committedMessagesCount = calculateCommittedMessages(topicQualifiedName, subscriptionName);
-        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() -> {
+        waitAtMost(adjust(Duration.ofMinutes(1))).untilAsserted(() -> {
                     long currentCommittedMessagesCount = calculateCommittedMessages(topicQualifiedName, subscriptionName);
                     assertThat(currentCommittedMessagesCount).isGreaterThan(committedMessagesCount);
                 }

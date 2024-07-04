@@ -62,7 +62,6 @@ public class SubscriptionMetrics {
     }
 
     public <T> void registerOffsetsQueueGauge(SubscriptionName subscription, T obj, ToDoubleFunction<T> f) {
-        hermesMetrics.registerOffsetQueueGauge(subscription, () -> (int) f.applyAsDouble(obj));
         meterRegistry.gauge(SubscriptionMetricsNames.SUBSCRIPTION_OFFSET_QUEUE, subscriptionTags(subscription), obj, f);
     }
 
