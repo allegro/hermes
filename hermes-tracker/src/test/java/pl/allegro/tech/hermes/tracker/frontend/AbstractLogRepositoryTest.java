@@ -1,32 +1,18 @@
 package pl.allegro.tech.hermes.tracker.frontend;
 
 import com.google.common.collect.ImmutableMap;
-import org.testng.ITestContext;
-import org.testng.ITestNGMethod;
-import org.testng.annotations.BeforeSuite;
-import org.testng.annotations.BeforeTest;
-import org.testng.annotations.Listeners;
-import org.testng.annotations.Test;
-import pl.allegro.tech.hermes.test.helper.retry.Retry;
-import pl.allegro.tech.hermes.test.helper.retry.RetryListener;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.Map;
 
 import static java.lang.System.currentTimeMillis;
 
-@Listeners({RetryListener.class})
 public abstract class AbstractLogRepositoryTest {
 
     private LogRepository logRepository;
 
-    @BeforeSuite
-    public void setUpRetry(ITestContext context) {
-        for (ITestNGMethod method : context.getAllTestMethods()) {
-            method.setRetryAnalyzerClass(Retry.class);
-        }
-    }
-
-    @BeforeTest
+    @Before
     public void setup() {
         logRepository = createRepository();
     }
@@ -80,13 +66,13 @@ public abstract class AbstractLogRepositoryTest {
     }
 
     protected abstract void awaitUntilSuccessMessageIsPersisted(
-        String topic,
-        String id,
-        String remoteHostname,
-        String storageDatacenter,
-        String... extraRequestHeadersKeywords
+            String topic,
+            String id,
+            String remoteHostname,
+            String storageDatacenter,
+            String... extraRequestHeadersKeywords
     )
-        throws Exception;
+            throws Exception;
 
     protected abstract void awaitUntilInflightMessageIsPersisted(
             String topic,
@@ -98,11 +84,11 @@ public abstract class AbstractLogRepositoryTest {
 
 
     protected abstract void awaitUntilErrorMessageIsPersisted(
-        String topic,
-        String id,
-        String reason,
-        String remoteHostname,
-        String... extraRequestHeadersKeywords
+            String topic,
+            String id,
+            String reason,
+            String remoteHostname,
+            String... extraRequestHeadersKeywords
     )
-        throws Exception;
+            throws Exception;
 }

@@ -1,4 +1,4 @@
-# Publishing buffer persistence
+# Publishing buffer persistence [deprecated]
 
 Hermes Frontend API has option to register callbacks triggered during different phases of message lifetime:
 
@@ -15,7 +15,7 @@ to disk. Map structure is continuously persisted to disk, as it is stored in off
 
 When Hermes Frontend starts up it scans filesystem in search of existing persisted map. If found, it is read and any
 persisted events are sent to Message Store. This way recovering after crash is fully automatic. If Hermes process or
-server crashes, nothing is lost.
+server crashes, events that were flushed to disk are recovered. 
 
 There is additional protection against flooding subscribers with outdated events. When reading events from persisted
 storage, Hermes filters out messages older than N hours, where N is a system parameter and is set to 3 days by default.

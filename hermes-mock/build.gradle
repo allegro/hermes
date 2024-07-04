@@ -5,9 +5,9 @@ plugins {
 }
 
 dependencies {
-    implementation group: 'junit', name: 'junit', version: '4.11'
+    implementation group: 'junit', name: 'junit', version: '4.13.2'
     api group: 'org.wiremock', name: 'wiremock-standalone', version: versions.wiremock
-    implementation group: 'com.jayway.awaitility', name: 'awaitility', version: '1.6.1'
+    implementation group: 'org.awaitility', name: 'awaitility', version: '4.2.1'
     api group: 'org.apache.avro', name: 'avro', version: versions.avro
     implementation group: 'tech.allegro.schema.json2avro', name: 'converter', version: versions.json2avro
     implementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: versions.junit_jupiter
@@ -18,9 +18,9 @@ dependencies {
     testImplementation group: 'org.apache.groovy', name: 'groovy-json', version: versions.groovy
     testImplementation group: 'org.glassfish.jersey.core', name: 'jersey-client', version: versions.jersey
     testImplementation group: 'org.glassfish.jersey.inject', name: 'jersey-hk2', version: versions.jersey
-    testImplementation group: 'org.junit.jupiter', name :'junit-jupiter', version: versions.junit_jupiter
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter', version: versions.junit_jupiter
     testImplementation group: 'org.springframework', name: 'spring-test', version: versions.spring_web
-    testRuntimeOnly group: 'org.junit.vintage', name : 'junit-vintage-engine', version: versions.junit_jupiter
+    testRuntimeOnly group: 'org.junit.vintage', name: 'junit-vintage-engine', version: versions.junit_jupiter
 }
 
 test {

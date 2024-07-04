@@ -1,20 +1,17 @@
 package pl.allegro.tech.hermes.consumers.supervisor.process
 
-import com.codahale.metrics.MetricRegistry
-import com.jayway.awaitility.Awaitility
-import com.jayway.awaitility.core.ConditionFactory
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.search.Search
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
+import org.awaitility.Awaitility
+import org.awaitility.core.ConditionFactory
 import pl.allegro.tech.hermes.api.DeliveryType
 import pl.allegro.tech.hermes.api.Subscription
 import pl.allegro.tech.hermes.api.SubscriptionName
 import pl.allegro.tech.hermes.api.Topic
-import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.common.metric.MetricsFacade
 import pl.allegro.tech.hermes.consumers.config.CommonConsumerProperties
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersExecutorService
-import pl.allegro.tech.hermes.metrics.PathsCompiler
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -50,7 +47,6 @@ class ConsumerProcessSupervisorTest extends Specification {
 
     ConsumerProcessSupervisor supervisor
     MeterRegistry meterRegistry = new SimpleMeterRegistry()
-    MetricRegistry metricRegistry = new MetricRegistry()
     MetricsFacade metrics
     ConsumerStub consumer
 
@@ -68,10 +64,7 @@ class ConsumerProcessSupervisorTest extends Specification {
                 return new ConsumerProcess(startSignal, consumer, Stub(Retransmitter), clock, unhealthyAfter, onConsumerStopped)
         }
 
-        metrics = new MetricsFacade(
-                meterRegistry,
-                new HermesMetrics(metricRegistry, new PathsCompiler("localhost"))
-        )
+        metrics = new MetricsFacade(meterRegistry)
 
         supervisor = new ConsumerProcessSupervisor(
                 new ConsumersExecutorService(new CommonConsumerProperties().getThreadPoolSize(), metrics),
@@ -116,7 +109,7 @@ class ConsumerProcessSupervisorTest extends Specification {
         }
 
         then:
-        await().until {
+        await().untilAsserted {
             supervisor.run()
             assert !supervisor.runningSubscriptionsStatus().isEmpty()
             assert supervisor.runningSubscriptionsStatus().first().signalTimesheet[signals.start.type] == currentTime
@@ -135,7 +128,7 @@ class ConsumerProcessSupervisorTest extends Specification {
         }
 
         then:
-        await().until {
+        await().untilAsserted {
             assert consumer.tearDownCount > 0
             assert consumer.wasInterrupted
         }
@@ -151,7 +144,7 @@ class ConsumerProcessSupervisorTest extends Specification {
         runAndWait(supervisor)
 
         then:
-        await().until {
+        await().untilAsserted {
             assert !supervisor.runningSubscriptionsStatus().isEmpty()
             signalsToPass.forEach {
                 assert supervisor.runningSubscriptionsStatus().first().signalTimesheet[it.type] == currentTime
@@ -174,7 +167,6 @@ class ConsumerProcessSupervisorTest extends Specification {
         then:
         signalsToDrop.forEach {
             String signal = it.type.name()
-            assert metricRegistry.counter("supervisor.signal.dropped." + signal).getCount() == 1
             assert Search.in(meterRegistry)
                     .name {it.startsWith("signals.dropped")}
                     .tag("signal", signal)

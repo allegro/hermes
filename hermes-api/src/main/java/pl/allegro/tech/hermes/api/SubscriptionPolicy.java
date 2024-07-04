@@ -5,8 +5,6 @@ import com.google.common.base.MoreObjects;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.Null;
-import pl.allegro.tech.hermes.api.constraints.AdminPermitted;
 import pl.allegro.tech.hermes.api.helpers.Patch;
 
 import java.util.Map;
@@ -42,7 +40,6 @@ public class SubscriptionPolicy {
     private int socketTimeout = DEFAULT_SOCKET_TIMEOUT;
 
     @Min(1)
-    @Null(groups = AdminPermitted.class)
     private Integer inflightSize;
 
     @Min(0)

@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.integrationtests;
 
-import com.jayway.awaitility.Duration;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -8,8 +7,10 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesExtension;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
-import static com.jayway.awaitility.Awaitility.waitAtMost;
+import java.time.Duration;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.waitAtMost;
 import static pl.allegro.tech.hermes.api.BlacklistStatus.BLACKLISTED;
 import static pl.allegro.tech.hermes.api.BlacklistStatus.NOT_BLACKLISTED;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
@@ -27,7 +28,7 @@ public class TopicBlacklistTest {
 
         // when
         hermes.api().blacklistTopic(topic.getQualifiedName());
-        waitAtMost(Duration.TEN_SECONDS).until(() -> {
+        waitAtMost(Duration.ofSeconds(10)).untilAsserted(() -> {
             WebTestClient.ResponseSpec response = hermes.api().publish(topic.getQualifiedName(), message.body());
 
             // then
@@ -44,7 +45,7 @@ public class TopicBlacklistTest {
 
         // when
         hermes.api().unblacklistTopic(topic.getQualifiedName());
-        waitAtMost(Duration.TEN_SECONDS).until(() -> {
+        waitAtMost(Duration.ofSeconds(10)).untilAsserted(() -> {
             WebTestClient.ResponseSpec response = hermes.api().publish(topic.getQualifiedName(), message.body());
 
             // then

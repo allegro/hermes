@@ -134,22 +134,21 @@ Failure statuses:
 Each topic can define level of acknowledgement (ACK):
 
 * leader ACK - only one Kafka node (leader) needs to acknowledge reception of message
-* all ACK - all nodes that hold copy of message need to acknowledge reception of message
+* all ACK - at least [min.insync.replicas](https://kafka.apache.org/documentation/#brokerconfigs_min.insync.replicas) nodes must acknowledge reception of message
 
-For most of the topic leader ACK is enough. This guarantees roughly 99.999..% reception rate. Only in rare cases, during
-Kafka cluster rebalancing or nodes outage Kafka might confirm that message was received, while it was not saved and it
-will be lost.
+ACK configuration has the following consequences:
 
-What does it mean in practice? Numbers differ per case and they are affected by multiple factors like frequency of
-rebalancing taking place on Kafka clusters, Kafka version etc. In our production environment using ACK leader means we falsely
-believe message was received by Kafka once per 20 million events. This is a very rough estimate that should show you
-the scale, if you need numbers to base your decision on - please conduct own measurements.
+- with `ACK leader` message writes are replicated asynchronously, thus the acknowledgment latency will be low. However, message write may be lost 
+when there is a topic leadership change - e.g. due to rebalance or broker restart.
+- with `ACK all` messages writes are synchronously replicated to replicas. Write acknowledgement latency will be much higher than with leader ACK,
+it will also have higher variance due to tail latency. However, messages will be persisted as long as the whole replica set does not go down simultaneously. 
 
-If you need 100% guarantee that message was saved, force all replicas to send ACK. The downside of this is much longer
-response times, they tend to vary a lot as well. Thanks to Hermes buffering (described in paragraphs below), we are able
-to guarantee some sane response times to our clients even in *ACK all* mode.
+Publishers are advised to select topic ACK level based on their latency and durability requirements. 
 
-## Buffering
+Hermes also provides a feature called Buffering (described in paragraphs below) which provides consistent write latency 
+despite long Kafka response times. Note that, however, this mode may decrease message durability for `ACK all` setting.
+
+## Buffering [deprecated]
 
 Hermes administrator can set maximum time, for which Hermes will wait for Kafka acknowledgment. By default, it is set to
 65ms. After that time, **202** response is sent to client. Event is kept in Kafka producer buffer and it's delivery will
@@ -161,13 +160,53 @@ Kafka is back online.
 
 ### Buffer persistence
 
-By default events are buffered in memory only. This raises the question about what happens in case of Hermes node failure
+By default, events are buffered in memory only. This raises the question about what happens in case of Hermes node failure
 (or force kill of process). Hermes Frontend API exposes callbacks that can be used to implement persistence model of
 buffered events.
 
 Default implementation uses [OpenHFT ChronicleMap](https://github.com/OpenHFT/Chronicle-Map) to persist unsent messages
 to disk. Map structure is continuously persisted to disk, as it is stored in offheap memory as
 [memory mapped file](https://en.wikipedia.org/wiki/Memory-mapped_file).
+
+Using buffering with ACK all setting means that durability of events may be lowered when **202** status code is received. If Hermes instance
+is killed before message is spilled to disk or the data on disk becomes corrupted, the message is gone. Thus `ACK all` with **202** status code
+is similar to `ACK leader` because a single node failure could cause the message be lost.
+
+### Deprecation notice
+The buffering mechanism in Hermes is considered deprecated and is set to be removed in the future.
+
+## Remote DC fallback
+
+Hermes supports a remote datacenter fallback mechanism for [multi datacenter deployments](https://hermes-pubsub.readthedocs.io/en/latest/configuration/kafka-and-zookeeper/#multiple-kafka-and-zookeeper-clusters).
+
+Fallback is configured on per topic basis, using a `fallbackToRemoteDatacenterEnabled` property:
+
+```http request
+PUT /topics/my.group.my-topic
+
+{
+  "fallbackToRemoteDatacenterEnabled": true,
+}
+```
+
+Using this setting automatically disables buffering mechanism for a topic.
+
+When using this setting for a topic, Hermes will try to send a message to a local datacenter Kafka first and will fall back to remote datacenter Kafka 
+if the local send fails. 
+
+Hermes also provides a speculative fallback mechanism which will send messages to remote Kafka if the local Kafka is not responding in a timely manner. 
+Speculative send is performed after `frontend.kafka.fail-fast-producer.speculativeSendDelay` elapses.
+
+When using remote DC fallback, Hermes attempts to send a message to Kafka for the duration of `frontend.handlers.maxPublishRequestDuration` property. If after
+`maxPublishRequestDuration` Hermes has not received an acknowledgment from Kafka, it will respond with **500** status code to the client.
+
+Table below summarizes remote fallback configuration options:
+
+| Option                                                 | Scope  | Default value |
+|--------------------------------------------------------|--------|---------------|
+| fallbackToRemoteDatacenterEnabled                      | topic  | false         |
+| frontend.kafka.fail-fast-producer.speculativeSendDelay | global | 250ms         |
+| frontend.handlers.maxPublishRequestDuration            | global | 500ms         |
 
 ## Partition assignment
 `Partition-Key` header can be used by publishers to specify Kafka `key` which will be used for partition assignment for a message. This will ensure 

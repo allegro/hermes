@@ -6,14 +6,19 @@ import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.PublishingChaosPolicy;
 import pl.allegro.tech.hermes.api.PublishingChaosPolicy.ChaosMode;
 import pl.allegro.tech.hermes.api.PublishingChaosPolicy.ChaosPolicy;
+import pl.allegro.tech.hermes.api.RetentionTime;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
+import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 import pl.allegro.tech.hermes.management.domain.owner.validator.OwnerIdValidator;
 import pl.allegro.tech.hermes.management.domain.topic.CreatorRights;
 import pl.allegro.tech.hermes.schema.CouldNotLoadSchemaException;
 import pl.allegro.tech.hermes.schema.SchemaNotFoundException;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
+
+import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class TopicValidator {
@@ -23,18 +28,21 @@ public class TopicValidator {
     private final TopicLabelsValidator topicLabelsValidator;
     private final SchemaRepository schemaRepository;
     private final ApiPreconditions apiPreconditions;
+    private final TopicProperties topicProperties;
 
     @Autowired
     public TopicValidator(OwnerIdValidator ownerIdValidator,
                           ContentTypeValidator contentTypeValidator,
                           TopicLabelsValidator topicLabelsValidator,
                           SchemaRepository schemaRepository,
-                          ApiPreconditions apiPreconditions) {
+                          ApiPreconditions apiPreconditions,
+                          TopicProperties topicProperties) {
         this.ownerIdValidator = ownerIdValidator;
         this.contentTypeValidator = contentTypeValidator;
         this.topicLabelsValidator = topicLabelsValidator;
         this.schemaRepository = schemaRepository;
         this.apiPreconditions = apiPreconditions;
+        this.topicProperties = topicProperties;
     }
 
     public void ensureCreatedTopicIsValid(Topic created, RequestUser createdBy, CreatorRights creatorRights) {
@@ -43,8 +51,8 @@ public class TopicValidator {
         checkContentType(created);
         checkTopicLabels(created);
 
-        if (created.isFallbackToRemoteDatacenterEnabled() && !createdBy.isAdmin()) {
-            throw new TopicValidationException("User is not allowed to enable fallback to remote datacenter");
+        if ((created.isFallbackToRemoteDatacenterEnabled() != topicProperties.isDefaultFallbackToRemoteDatacenterEnabled()) && !createdBy.isAdmin()) {
+            throw new TopicValidationException("User is not allowed to set non-default fallback to remote datacenter for this topic");
         }
 
         if (created.getChaos().mode() != ChaosMode.DISABLED && !createdBy.isAdmin()) {
@@ -59,6 +67,8 @@ public class TopicValidator {
         if (!creatorRights.allowedToManage(created)) {
             throw new TopicValidationException("Provide an owner that includes you, you would not be able to manage this topic later");
         }
+
+        ensureCreatedTopicRetentionTimeValid(created, createdBy);
     }
 
     public void ensureUpdatedTopicIsValid(Topic updated, Topic previous, RequestUser modifiedBy) {
@@ -66,8 +76,8 @@ public class TopicValidator {
         checkOwner(updated);
         checkTopicLabels(updated);
 
-        if (!previous.isFallbackToRemoteDatacenterEnabled() && updated.isFallbackToRemoteDatacenterEnabled() && !modifiedBy.isAdmin()) {
-            throw new TopicValidationException("User is not allowed to enable fallback to remote datacenter");
+        if ((previous.isFallbackToRemoteDatacenterEnabled() != updated.isFallbackToRemoteDatacenterEnabled()) && !modifiedBy.isAdmin()) {
+            throw new TopicValidationException("User is not allowed to update fallback to remote datacenter for this topic");
         }
 
         if (!previous.getChaos().equals(updated.getChaos()) && !modifiedBy.isAdmin()) {
@@ -90,6 +100,49 @@ public class TopicValidator {
                     "Cannot change content type, except for migration to Avro with setting migratedFromJsonType flag.");
         } else if (migrationFromJsonTypeFlagChangedToFalse(updated, previous)) {
             throw new TopicValidationException("Cannot migrate back to JSON!");
+        }
+
+        ensureUpdatedTopicRetentionTimeValid(updated, previous, modifiedBy);
+    }
+
+    private void ensureCreatedTopicRetentionTimeValid(Topic created, RequestUser modifiedBy) {
+        if (modifiedBy.isAdmin()) {
+            return;
+        }
+
+        checkTopicRetentionTimeUnit(created.getRetentionTime().getRetentionUnit());
+
+        long seconds = created.getRetentionTime().getRetentionUnit().toSeconds(created.getRetentionTime().getDuration());
+
+        checkTopicRetentionLimit(seconds);
+    }
+
+    private void ensureUpdatedTopicRetentionTimeValid(Topic updated, Topic previous, RequestUser modifiedBy) {
+        if (modifiedBy.isAdmin()) {
+            return;
+        }
+
+        checkTopicRetentionTimeUnit(updated.getRetentionTime().getRetentionUnit());
+
+        long updatedSeconds = updated.getRetentionTime().getRetentionUnit().toSeconds(updated.getRetentionTime().getDuration());
+        long previousSeconds = previous.getRetentionTime().getRetentionUnit().toSeconds(previous.getRetentionTime().getDuration());
+
+        if (updatedSeconds == previousSeconds) {
+            return;
+        }
+
+        checkTopicRetentionLimit(updatedSeconds);
+    }
+
+    private void checkTopicRetentionTimeUnit(TimeUnit toCheck) {
+        if (!RetentionTime.allowedUnits.contains(toCheck)) {
+            throw new TopicValidationException("Retention time unit must be one of: " + Arrays.toString(RetentionTime.allowedUnits.toArray()));
+        }
+    }
+
+    private void checkTopicRetentionLimit(long retentionSeconds) {
+        if (retentionSeconds > RetentionTime.MAX.getRetentionUnit().toSeconds(RetentionTime.MAX.getDuration())) {
+            throw new TopicValidationException("Retention time larger than 7 days can't be configured by non admin users");
         }
     }
 

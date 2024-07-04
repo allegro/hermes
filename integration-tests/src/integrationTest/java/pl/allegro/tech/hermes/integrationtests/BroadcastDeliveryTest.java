@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.integrationtests;
 
-import com.jayway.awaitility.Duration;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -14,14 +13,14 @@ import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscriber;
 import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscribersExtension;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static com.jayway.awaitility.Awaitility.waitAtMost;
-import static com.jayway.awaitility.Duration.TEN_SECONDS;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.waitAtMost;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
@@ -75,7 +74,7 @@ public class BroadcastDeliveryTest {
 
         // then
         subscribers.forEach(s -> s.waitUntilReceived(message.body()));
-        retryingSubscriber.waitUntilReceived(Duration.ONE_MINUTE, 2);
+        retryingSubscriber.waitUntilReceived(Duration.ofMinutes(1), 2);
         Assertions.assertThat(retryingSubscriber.getLastReceivedRequest().getHeader("Hermes-Retry-Count")).isEqualTo("1");
     }
 
@@ -100,7 +99,7 @@ public class BroadcastDeliveryTest {
 
         // then
         subscribers.forEach(s -> s.waitUntilReceived(message.body()));
-        waitAtMost(TEN_SECONDS).until(() -> {
+        waitAtMost(Duration.ofSeconds(10)).untilAsserted(() -> {
             long discarded = hermes.api()
                     .getSubscriptionMetrics(topic.getQualifiedName(), "subscription")
                     .expectBody(SubscriptionMetrics.class).returnResult().getResponseBody().getDiscarded();

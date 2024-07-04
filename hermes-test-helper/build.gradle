@@ -10,7 +10,7 @@ dependencies {
     implementation group: 'org.glassfish.jersey.core', name: 'jersey-client', version: versions.jersey
     implementation group: 'org.glassfish.jersey.inject', name: 'jersey-hk2', version: versions.jersey
     implementation group: 'org.glassfish.jersey.ext', name: 'jersey-proxy-client', version: versions.jersey
-    api group: 'commons-io', name: 'commons-io', version: '2.4'
+    api group: 'commons-io', name: 'commons-io', version: '2.16.1'
     api group: 'org.wiremock', name: 'wiremock-standalone', version: versions.wiremock
     api (group: 'org.apache.curator', name: 'curator-test', version: versions.curator) {
         exclude module: 'slf4j-log4j12'
@@ -24,14 +24,13 @@ dependencies {
         exclude module: 'slf4j-log4j12'
         exclude module: 'log4j'
     }
-    implementation group: 'com.google.code.findbugs', name: 'annotations', version: '3.0.0'
-    implementation group: 'com.jayway.awaitility', name: 'awaitility', version: '1.6.1'
+    implementation group: 'com.github.spotbugs', name: 'spotbugs-annotations', version: '4.8.4'
+    implementation group: 'org.awaitility', name: 'awaitility-groovy', version: '4.2.1'
     implementation group: 'org.assertj', name: 'assertj-core', version: versions.assertj
-    api group: 'net.javacrumbs.json-unit', name: 'json-unit-fluent', version: '1.5.5'
-    implementation group: 'junit', name: 'junit', version: '4.11'
-    api group: 'org.testng', name: 'testng', version: '7.4.0'
-    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13'
-    implementation group: 'com.jayway.jsonpath', name: 'json-path', version: '2.5.0'
+    api group: 'net.javacrumbs.json-unit', name: 'json-unit-fluent', version: '3.2.7'
+    implementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.10.2'
+    implementation group: 'org.apache.httpcomponents.client5', name: 'httpclient5', version: '5.3.1'
+    implementation group: 'com.jayway.jsonpath', name: 'json-path', version: '2.9.0'
     implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: versions.jackson
     implementation group: 'org.springframework', name: 'spring-test', version: versions.spring_web
     implementation group: 'org.springframework', name: 'spring-webflux', version: versions.spring_web

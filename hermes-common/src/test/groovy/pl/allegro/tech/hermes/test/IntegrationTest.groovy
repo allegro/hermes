@@ -31,7 +31,7 @@ abstract class IntegrationTest extends Specification {
 
     protected RepositoryWaiter wait = new RepositoryWaiter(zookeeperResource.curator(), paths)
 
-    protected ObjectMapper mapper = new ObjectMapperFactory(true).provide()
+    protected ObjectMapper mapper = new ObjectMapperFactory(true, false).provide()
 
     protected ZookeeperGroupRepository groupRepository = new ZookeeperGroupRepository(zookeeper(), mapper, paths)
 

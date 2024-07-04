@@ -17,8 +17,12 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.EndpointAddress
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.ResolvableEndpointAddress;
 
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -58,17 +62,35 @@ public class JettyBroadCastMessageSender implements MessageSender {
 
     private CompletableFuture<List<SingleMessageSendingResult>> sendMessage(Message message) {
         try {
-            List<CompletableFuture<SingleMessageSendingResult>> results = collectResults(message);
+            Set<CompletableFuture<SingleMessageSendingResult>> results = collectResults(message);
             return mergeResults(results);
         } catch (EndpointAddressResolutionException exception) {
             return CompletableFuture.completedFuture(Collections.singletonList(exceptionMapper.apply(exception)));
         }
     }
 
-    private List<CompletableFuture<SingleMessageSendingResult>> collectResults(
+    private Set<CompletableFuture<SingleMessageSendingResult>> collectResults(
             Message message
     ) throws EndpointAddressResolutionException {
+        var currentResults = sendPendingMessages(message);
+        var results = new HashSet<>(currentResults);
 
+        // add previously succeeded uris to the result set so that successful uris from all attempts are retained.
+        // this way a MessageSendingResult can be considered successful even when the last send attempt
+        // did not send to any uri, e.g. because all uris returned by endpoint resolver were already sent to in the past.
+        for (String succeededUri : message.getSucceededUris()) {
+            try {
+                var uri = new URI(succeededUri);
+                var result = MessageSendingResult.succeededResult(uri);
+                results.add(CompletableFuture.completedFuture(result));
+            } catch (URISyntaxException exception) {
+                logger.error("Error while parsing already sent broadcast URI {}", succeededUri, exception);
+            }
+        }
+        return results;
+    }
+
+    private Set<CompletableFuture<SingleMessageSendingResult>> sendPendingMessages(Message message) throws EndpointAddressResolutionException {
         final HttpRequestData requestData = new HttpRequestDataBuilder()
                 .withRawAddress(endpoint.getRawAddress())
                 .build();
@@ -80,16 +102,16 @@ public class JettyBroadCastMessageSender implements MessageSender {
 
         if (resolvedUris.isEmpty()) {
             logger.debug("Empty resolved URIs for message: {}", message.getId());
-            return Collections.emptyList();
+            return Collections.emptySet();
         } else {
             return resolvedUris.stream()
                     .map(uri -> requestFactory.buildRequest(message, uri, headers))
                     .map(this::processResponse)
-                    .collect(Collectors.toList());
+                    .collect(Collectors.toSet());
         }
     }
 
-    private CompletableFuture<List<SingleMessageSendingResult>> mergeResults(List<CompletableFuture<SingleMessageSendingResult>> results) {
+    private CompletableFuture<List<SingleMessageSendingResult>> mergeResults(Set<CompletableFuture<SingleMessageSendingResult>> results) {
         return CompletableFuture.allOf(results.toArray(new CompletableFuture[results.size()]))
                 .thenApply(v -> results.stream()
                         .map(CompletableFuture::join)

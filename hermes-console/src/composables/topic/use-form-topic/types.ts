@@ -53,6 +53,7 @@ export interface FormValidators {
   retentionTimeDuration: FieldValidator<number>[];
   maxMessageSize: FieldValidator<number>[];
   offlineRetentionTime: FieldValidator<number>[];
+  ack: FieldValidator<string>[];
 }
 
 export interface RawDataSources {

@@ -4,10 +4,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.metric.SubscriptionMetrics;
+import pl.allegro.tech.hermes.consumers.consumer.profiling.ConsumerProfiler;
+import pl.allegro.tech.hermes.consumers.consumer.profiling.NoOpConsumerProfiler;
+import pl.allegro.tech.hermes.consumers.consumer.rate.AdjustableSemaphore;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetsSlots;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
@@ -31,14 +34,14 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static pl.allegro.tech.hermes.api.SubscriptionOAuthPolicy.passwordGrantOAuthPolicy;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
@@ -91,6 +94,8 @@ public class ConsumerMessageSenderTest {
     @Mock
     private HermesCounter errors;
 
+    private final ConsumerProfiler profiler = new NoOpConsumerProfiler();
+
     private ConsumerMessageSender sender;
 
     @Mock
@@ -124,17 +129,17 @@ public class ConsumerMessageSenderTest {
         when(messageSender.send(message)).thenReturn(success());
 
         // when
-        sender.sendAsync(message);
+        sender.sendAsync(message, profiler);
         verify(successHandler, timeout(1000)).handleSuccess(eq(message), eq(subscription), any(MessageSendingResult.class));
 
         // then
         verify(offsetsSlots).markAsSent(any(SubscriptionPartitionOffset.class));
         verifyLatencyTimersCountedTimes(subscription, 1, 1);
         verifyRateLimiterAcquireTimersCountedTimes(subscription, 1, 1);
-        verifyZeroInteractions(errorHandler);
-        verifyZeroInteractions(failedMeter);
+        verifyNoInteractions(errorHandler);
+        verifyNoInteractions(failedMeter);
         verifyRateLimiterAcquired();
-        verifyZeroInteractions(retries);
+        verifyNoInteractions(retries);
     }
 
     @Test
@@ -144,7 +149,7 @@ public class ConsumerMessageSenderTest {
         doReturn(failure()).doReturn(failure()).doReturn(success()).when(messageSender).send(message);
 
         // when
-        sender.sendAsync(message);
+        sender.sendAsync(message, profiler);
         verify(successHandler, timeout(1000)).handleSuccess(eq(message), eq(subscription), any(MessageSendingResult.class));
 
         // then
@@ -163,16 +168,16 @@ public class ConsumerMessageSenderTest {
         doReturn(failure()).when(messageSender).send(message);
 
         // when
-        sender.sendAsync(message);
+        sender.sendAsync(message, profiler);
 
         // then
         verify(errorHandler, timeout(1000)).handleDiscarded(eq(message), eq(subscription), any(MessageSendingResult.class));
         verify(offsetsSlots).markAsSent(any(SubscriptionPartitionOffset.class));
-        verifyZeroInteractions(successHandler);
+        verifyNoInteractions(successHandler);
         verifyLatencyTimersCountedTimes(subscription, 1, 1);
         verifyRateLimiterAcquireTimersCountedTimes(subscription, 1, 1);
         verifyRateLimiterAcquired();
-        verifyZeroInteractions(retries);
+        verifyNoInteractions(retries);
     }
 
     @Test
@@ -182,16 +187,16 @@ public class ConsumerMessageSenderTest {
         doReturn(failure(403)).doReturn(success()).when(messageSender).send(message);
 
         // when
-        sender.sendAsync(message);
+        sender.sendAsync(message, profiler);
 
         // then
         verify(errorHandler, timeout(1000)).handleDiscarded(eq(message), eq(subscription), any(MessageSendingResult.class));
         verify(offsetsSlots).markAsSent(any(SubscriptionPartitionOffset.class));
-        verifyZeroInteractions(successHandler);
+        verifyNoInteractions(successHandler);
         verifyLatencyTimersCountedTimes(subscription, 1, 1);
         verifyRateLimiterAcquireTimersCountedTimes(subscription, 1, 1);
         verifyRateLimiterAcquired();
-        verifyZeroInteractions(retries);
+        verifyNoInteractions(retries);
     }
 
     @Test
@@ -203,7 +208,7 @@ public class ConsumerMessageSenderTest {
         doReturn(failure(403)).doReturn(failure(403)).doReturn(failure(403)).doReturn(success()).when(messageSender).send(message);
 
         // when
-        sender.sendAsync(message);
+        sender.sendAsync(message, profiler);
         verify(successHandler, timeout(1000)).handleSuccess(eq(message), eq(subscriptionWith4xxRetry), any(MessageSendingResult.class));
 
         // then
@@ -228,7 +233,7 @@ public class ConsumerMessageSenderTest {
         doReturn(failure(401)).doReturn(failure(401)).doReturn(success()).when(messageSender).send(message);
 
         // when
-        sender.sendAsync(message);
+        sender.sendAsync(message, profiler);
 
         // then
         verifyErrorHandlerHandleFailed(message, subscription, expectedNumbersOfFailures);
@@ -251,7 +256,7 @@ public class ConsumerMessageSenderTest {
         doReturn(failure(500)).when(messageSender).send(message);
 
         //when
-        sender.sendAsync(message);
+        sender.sendAsync(message, profiler);
 
         //then
         Thread.sleep(executionTime);
@@ -268,16 +273,16 @@ public class ConsumerMessageSenderTest {
         doReturn(backoff(retrySeconds + 1)).doReturn(success()).when(messageSender).send(message);
 
         // when
-        sender.sendAsync(message);
+        sender.sendAsync(message, profiler);
 
         // then
         verify(errorHandler, timeout(1000)).handleDiscarded(eq(message), eq(subscription), any(MessageSendingResult.class));
         verify(offsetsSlots).markAsSent(any(SubscriptionPartitionOffset.class));
-        verifyZeroInteractions(successHandler);
+        verifyNoInteractions(successHandler);
         verifyLatencyTimersCountedTimes(subscription, 1, 1);
         verifyRateLimiterAcquireTimersCountedTimes(subscription, 1, 1);
         verifyRateLimiterAcquired();
-        verifyZeroInteractions(retries);
+        verifyNoInteractions(retries);
     }
 
     @Test
@@ -293,12 +298,12 @@ public class ConsumerMessageSenderTest {
 
         // when
         sender.updateSubscription(subscriptionWithModfiedEndpoint);
-        sender.sendAsync(message);
+        sender.sendAsync(message, profiler);
 
         // then
         verify(otherMessageSender, timeout(1000)).send(message);
         verifyRateLimiterAcquired();
-        verifyZeroInteractions(retries);
+        verifyNoInteractions(retries);
     }
 
     @Test
@@ -314,12 +319,12 @@ public class ConsumerMessageSenderTest {
 
         // when
         sender.updateSubscription(subscriptionWithModifiedTimeout);
-        sender.sendAsync(message);
+        sender.sendAsync(message, profiler);
 
         // then
         verify(otherMessageSender, timeout(1000)).send(message);
         verifyRateLimiterAcquired();
-        verifyZeroInteractions(retries);
+        verifyNoInteractions(retries);
     }
 
     @Test
@@ -338,14 +343,14 @@ public class ConsumerMessageSenderTest {
 
         // when
         long sendingStartTime = System.currentTimeMillis();
-        sender.sendAsync(message);
+        sender.sendAsync(message, profiler);
         verify(successHandler, timeout(1000)).handleSuccess(eq(message), eq(subscription), any(MessageSendingResult.class));
 
         // then
         long sendingTime = System.currentTimeMillis() - sendingStartTime;
         assertThat(sendingTime).isGreaterThanOrEqualTo(500);
         verifyRateLimiterAcquired();
-        verifyZeroInteractions(retries);
+        verifyNoInteractions(retries);
     }
 
     @Test
@@ -364,14 +369,14 @@ public class ConsumerMessageSenderTest {
 
         // when
         long sendingStartTime = System.currentTimeMillis();
-        sender.sendAsync(message);
+        sender.sendAsync(message, profiler);
         verify(successHandler, timeout(500)).handleSuccess(eq(message), eq(subscription), any(MessageSendingResult.class));
 
         // then
         long sendingTime = System.currentTimeMillis() - sendingStartTime;
         assertThat(sendingTime).isLessThan(300);
         verifyRateLimiterAcquired();
-        verifyZeroInteractions(retries);
+        verifyNoInteractions(retries);
     }
 
     @Test
@@ -387,11 +392,11 @@ public class ConsumerMessageSenderTest {
         ConsumerMessageSender sender = consumerMessageSender(subscription);
 
         // when
-        sender.sendAsync(message);
+        sender.sendAsync(message, profiler);
         Thread.sleep(backoff + (long) multiplier * backoff - 100);
 
         // then
-        verifyZeroInteractions(successHandler);
+        verifyNoInteractions(successHandler);
         verifyRateLimiterAcquired(expectedNumberOfFailures);
         verifyRetryCounted(expectedNumberOfFailures);
     }
@@ -410,7 +415,7 @@ public class ConsumerMessageSenderTest {
         ConsumerMessageSender sender = consumerMessageSender(subscription);
 
         // when
-        sender.sendAsync(message);
+        sender.sendAsync(message, profiler);
 
         //then
         verify(successHandler, timeout(retrySeconds * 1000 * 2 + 500))
@@ -431,11 +436,11 @@ public class ConsumerMessageSenderTest {
         ConsumerMessageSender sender = consumerMessageSender(subscription);
 
         // when
-        sender.sendAsync(message);
+        sender.sendAsync(message, profiler);
         Thread.sleep(backoff + (long) multiplier * backoff + 1000);
 
         //then
-        verifyZeroInteractions(successHandler);
+        verifyNoInteractions(successHandler);
         verifyRateLimiterAcquired(2);
         verifyRetryCounted();
     }

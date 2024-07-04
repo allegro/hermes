@@ -9,12 +9,12 @@ import pl.allegro.tech.hermes.api.TopicWithSchema;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesExtension;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 
+import java.time.Duration;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
-import static com.jayway.awaitility.Awaitility.await;
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
@@ -37,7 +37,7 @@ public class MessagePreviewIntegrationTest {
 
         hermes.api().publishAvroUntilSuccess(topic.getQualifiedName(), avroUser.asBytes());
 
-        await().atMost(10, TimeUnit.SECONDS).until(() -> {
+        await().atMost(Duration.ofSeconds(10)).untilAsserted(() -> {
                     // when
                     List<MessageTextPreview> previews = hermes.api().getPreview(topic.getQualifiedName())
                             .expectStatus().isOk()

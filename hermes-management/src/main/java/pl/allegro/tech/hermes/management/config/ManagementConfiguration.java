@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.management.config;
 
-import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.InjectableValues;
@@ -15,7 +14,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.clock.ClockFactory;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.util.InetAddressInstanceIdResolver;
 import pl.allegro.tech.hermes.common.util.InstanceIdResolver;
@@ -48,17 +46,12 @@ public class ManagementConfiguration {
 
         final InjectableValues defaultSchemaIdAwareSerializationEnabled = new InjectableValues.Std().addValue(
                 Topic.DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY,
-                topicProperties.isDefaultSchemaIdAwareSerializationEnabled());
+                topicProperties.isDefaultSchemaIdAwareSerializationEnabled())
+                .addValue(Topic.DEFAULT_FALLBACK_TO_REMOTE_DATACENTER_KEY, topicProperties.isDefaultFallbackToRemoteDatacenterEnabled());
 
         mapper.setInjectableValues(defaultSchemaIdAwareSerializationEnabled);
 
         return mapper;
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    public MetricRegistry metricRegistry() {
-        return new MetricRegistry();
     }
 
     @Bean
@@ -72,14 +65,8 @@ public class ManagementConfiguration {
     }
 
     @Bean
-    public HermesMetrics hermesMetrics(MetricRegistry metricRegistry,
-                                       PathsCompiler pathsCompiler) {
-        return new HermesMetrics(metricRegistry, pathsCompiler);
-    }
-
-    @Bean
-    public MetricsFacade micrometerHermesMetrics(MeterRegistry meterRegistry, HermesMetrics hermesMetrics) {
-        return new MetricsFacade(meterRegistry, hermesMetrics);
+    public MetricsFacade micrometerHermesMetrics(MeterRegistry meterRegistry) {
+        return new MetricsFacade(meterRegistry);
     }
 
     @Bean

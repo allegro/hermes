@@ -33,22 +33,50 @@ public class InstrumentedExecutorServiceFactory {
         return monitoringEnabled ? monitor(name, executor) : executor;
     }
 
-    public ScheduledExecutorService getScheduledExecutorService(
-            String name, int size, boolean monitoringEnabled
-    ) {
 
-        ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat(name + "-scheduled-executor-%d").build();
-        ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(size, threadFactory);
-        return monitoringEnabled ? monitor(name, executor) : executor;
+    public class ScheduledExecutorServiceBuilder {
+        final String name;
+        final int size;
+        boolean monitoringEnabled = false;
+        boolean removeOnCancel = false;
+
+        public ScheduledExecutorServiceBuilder(String name, int size) {
+            this.name = name;
+            this.size = size;
+        }
+
+        public ScheduledExecutorServiceBuilder withMonitoringEnabled(boolean monitoringEnabled) {
+            this.monitoringEnabled = monitoringEnabled;
+            return this;
+        }
+
+        public ScheduledExecutorServiceBuilder withRemoveOnCancel(boolean removeOnCancel) {
+            this.removeOnCancel = removeOnCancel;
+            return this;
+        }
+
+        public ScheduledExecutorService create() {
+            ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat(name + "-scheduled-executor-%d").build();
+            ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(size, threadFactory);
+            executor.setRemoveOnCancelPolicy(removeOnCancel);
+            return monitoringEnabled ? monitor(name, executor) : executor;
+        }
+
+        private ScheduledExecutorService monitor(String threadPoolName, ScheduledExecutorService executor) {
+            return metricsFacade.executor().monitor(executor, threadPoolName);
+        }
+    }
+
+    public ScheduledExecutorServiceBuilder scheduledExecutorBuilder(
+            String name, int size
+    ) {
+        return new ScheduledExecutorServiceBuilder(name, size);
     }
 
     private ExecutorService monitor(String threadPoolName, ExecutorService executor) {
         return metricsFacade.executor().monitor(executor, threadPoolName);
     }
 
-    private ScheduledExecutorService monitor(String threadPoolName, ScheduledExecutorService executor) {
-        return metricsFacade.executor().monitor(executor, threadPoolName);
-    }
 
     /**
      * Copy of {@link java.util.concurrent.Executors#newFixedThreadPool(int, java.util.concurrent.ThreadFactory)}

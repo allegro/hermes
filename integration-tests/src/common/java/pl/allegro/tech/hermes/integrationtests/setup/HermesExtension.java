@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.integrationtests.setup;
 
-import com.jayway.awaitility.Duration;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
@@ -27,10 +26,11 @@ import pl.allegro.tech.hermes.test.helper.containers.KafkaContainerCluster;
 import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
 import pl.allegro.tech.hermes.test.helper.environment.HermesTestApp;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static com.jayway.awaitility.Awaitility.waitAtMost;
+import static org.awaitility.Awaitility.waitAtMost;
 import static pl.allegro.tech.hermes.integrationtests.setup.HermesManagementTestApp.AUDIT_EVENT_PATH;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
@@ -113,7 +113,7 @@ public class HermesExtension implements BeforeAllCallback, AfterAllCallback, Ext
             service.removeSubscription(subscription.getTopicName(), subscription.getName(), testUser);
         }
 
-        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() ->
+        waitAtMost(adjust(Duration.ofMinutes(1))).untilAsserted(() ->
                 Assertions.assertThat(service.getAllSubscriptions().size()).isEqualTo(0)
         );
     }
@@ -125,7 +125,7 @@ public class HermesExtension implements BeforeAllCallback, AfterAllCallback, Ext
             service.removeTopicWithSchema(topic, testUser);
         }
 
-        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() ->
+        waitAtMost(adjust(Duration.ofMinutes(1))).untilAsserted(() ->
                 Assertions.assertThat(service.getAllTopics().size()).isEqualTo(0)
         );
     }

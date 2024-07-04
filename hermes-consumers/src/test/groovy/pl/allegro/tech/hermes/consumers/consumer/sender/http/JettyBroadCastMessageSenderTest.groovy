@@ -150,7 +150,7 @@ class JettyBroadCastMessageSenderTest extends Specification {
         future.get(1, TimeUnit.SECONDS).succeeded()
     }
 
-    def "should return not succeeded and retry later when endpoint resolver return no hosts"() {
+    def "should return not succeeded and retry later when endpoint resolver return no hosts and no message was sent previously"() {
         given:
         def address = Stub(ResolvableEndpointAddress) {
             resolveAllFor(_ as Message) >> []
@@ -171,6 +171,49 @@ class JettyBroadCastMessageSenderTest extends Specification {
         !messageSendingResult.succeeded()
         !messageSendingResult.isClientError()
         messageSendingResult.isRetryLater()
+    }
+
+    def "should return succeeded when endpoint resolver return no hosts and but message was sent previously"() {
+        given:
+        Message message = testMessage()
+        message.incrementRetryCounter([serviceEndpoints[0].url])
+        def address = Stub(ResolvableEndpointAddress) {
+            resolveAllFor(_ as Message) >> []
+
+            getRawAddress() >> endpoint
+        }
+
+        def httpRequestFactory = new DefaultHttpRequestFactory(client, 1000, 1000, new DefaultHttpMetadataAppender())
+        MessageSender messageSender = new JettyBroadCastMessageSender(httpRequestFactory, address,
+                requestHeadersProvider, resultHandlersProvider, Mock(ResilientMessageSender))
+
+        when:
+        def future =  messageSender.send(message)
+
+        then:
+        MessageSendingResult messageSendingResult = future.get(1, TimeUnit.SECONDS)
+
+        messageSendingResult.succeeded()
+    }
+
+
+    def "should return succeeded when endpoint resolver returns the same urls that the message was already sent to"() {
+        given: "a message that was sent"
+        ConsumerRateLimiter rateLimiter = Mock(ConsumerRateLimiter) {
+            0 * registerSuccessfulSending()
+        }
+
+        serviceEndpoints.forEach { endpoint -> endpoint.expectMessages(TEST_MESSAGE_CONTENT) }
+
+        Message message = testMessage()
+        message.incrementRetryCounter(serviceEndpoints.collect { it.url })
+
+        when:
+        def future = getSender(rateLimiter).send(message)
+
+        then:
+        MessageSendingResult messageSendingResult = future.get(1, TimeUnit.SECONDS)
+        messageSendingResult.succeeded()
     }
 
     def cleanupSpec() {

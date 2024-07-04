@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.test.helper.client.integration;
 
-import com.jayway.awaitility.Duration;
 import jakarta.ws.rs.core.Response;
+import java.time.Duration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.util.MultiValueMap;
@@ -23,8 +23,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static com.jayway.awaitility.Awaitility.waitAtMost;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.waitAtMost;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
 public class HermesTestClient {
@@ -64,7 +64,7 @@ public class HermesTestClient {
     public void ensureSchemaSaved(String topicQualifiedName, boolean validate, String schema) {
         managementTestClient.saveSchema(topicQualifiedName, validate, schema)
                 .expectStatus().isCreated();
-        waitAtMost(adjust(Duration.ONE_MINUTE)).until(() ->
+        waitAtMost(adjust(Duration.ofMinutes(1))).untilAsserted(() ->
                 managementTestClient.getSchema(topicQualifiedName).expectStatus().isOk()
         );
     }
@@ -109,33 +109,37 @@ public class HermesTestClient {
     }
 
     public void waitUntilSubscriptionActivated(String topicQualifiedName, String subscriptionName) {
-        waitAtMost(Duration.TEN_SECONDS)
-                .until(() -> {
-                            managementTestClient.getSubscription(topicQualifiedName, subscriptionName)
+        waitAtMost(Duration.ofSeconds(10))
+                .untilAsserted(() -> {
+                            assertThat(managementTestClient.getSubscription(topicQualifiedName, subscriptionName)
                                     .expectStatus()
                                     .is2xxSuccessful()
                                     .expectBody(Subscription.class)
-                                    .returnResult().getResponseBody().getState().equals(Subscription.State.ACTIVE);
-                            managementTestClient.getConsumerGroupsDescription(topicQualifiedName, subscriptionName).expectBodyList(ConsumerGroup.class).returnResult().getResponseBody()
+                                    .returnResult().getResponseBody().getState())
+                                    .isEqualTo(Subscription.State.ACTIVE);
+                            assertThat(managementTestClient.getConsumerGroupsDescription(topicQualifiedName, subscriptionName)
+                                    .expectBodyList(ConsumerGroup.class).returnResult().getResponseBody()
                                     .get(0)
-                                    .getState()
-                                    .equals("Stable");
+                                    .getState())
+                                    .isEqualTo("Stable");
                         }
                 );
     }
 
     public void waitUntilSubscriptionSuspended(String topicQualifiedName, String subscriptionName) {
-        waitAtMost(Duration.TEN_SECONDS)
-                .until(() -> {
-                            managementTestClient.getSubscription(topicQualifiedName, subscriptionName)
+        waitAtMost(Duration.ofSeconds(10))
+                .untilAsserted(() -> {
+                            assertThat(managementTestClient.getSubscription(topicQualifiedName, subscriptionName)
                                     .expectStatus()
                                     .is2xxSuccessful()
                                     .expectBody(Subscription.class)
-                                    .returnResult().getResponseBody().getState().equals(Subscription.State.SUSPENDED);
-                            managementTestClient.getConsumerGroupsDescription(topicQualifiedName, subscriptionName).expectBodyList(ConsumerGroup.class).returnResult().getResponseBody()
+                                    .returnResult().getResponseBody().getState())
+                                    .isEqualTo(Subscription.State.SUSPENDED);
+                            assertThat(managementTestClient.getConsumerGroupsDescription(topicQualifiedName, subscriptionName)
+                                    .expectBodyList(ConsumerGroup.class).returnResult().getResponseBody()
                                     .get(0)
-                                    .getState()
-                                    .equals("Empty");
+                                    .getState())
+                                    .isEqualTo("Empty");
                         }
                 );
     }

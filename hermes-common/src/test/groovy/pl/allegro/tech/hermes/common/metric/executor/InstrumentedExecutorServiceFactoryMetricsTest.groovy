@@ -1,12 +1,9 @@
 package pl.allegro.tech.hermes.common.metric.executor
 
-import com.codahale.metrics.MetricRegistry
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.search.Search
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
-import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.common.metric.MetricsFacade
-import pl.allegro.tech.hermes.metrics.PathsCompiler
 import spock.lang.Specification
 import spock.lang.Subject
 
@@ -25,8 +22,7 @@ class InstrumentedExecutorServiceFactoryMetricsTest extends Specification {
     private final InstrumentedExecutorServiceFactory factory =
             new InstrumentedExecutorServiceFactory(
                     new MetricsFacade(
-                            meterRegistry,
-                            new HermesMetrics(new MetricRegistry(), new PathsCompiler("host"))
+                            meterRegistry
                     )
             )
 
@@ -49,7 +45,8 @@ class InstrumentedExecutorServiceFactoryMetricsTest extends Specification {
 
     def "should record metrics for scheduled executor service (monitoring enabled: #monitoringEnabled)"() {
         given:
-        ScheduledExecutorService executor = factory.getScheduledExecutorService("test-scheduled-executor", 10, monitoringEnabled)
+        ScheduledExecutorService executor = factory.scheduledExecutorBuilder("test-scheduled-executor", 10)
+                .withMonitoringEnabled(monitoringEnabled).create()
 
         when:
         ScheduledFuture<?> task = executor.schedule({ println("scheduled task executed") }, 1, SECONDS)

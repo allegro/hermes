@@ -9,7 +9,6 @@ import java.time.Clock
 import static java.time.LocalDate.of
 import static java.time.ZoneId.systemDefault
 import static java.time.ZoneOffset.UTC
-import static org.assertj.core.api.Assertions.assertThat
 
 class DailyIndexFactoryTest extends Specification {
 
@@ -18,7 +17,7 @@ class DailyIndexFactoryTest extends Specification {
 
     def "should create daily index"() {
         expect:
-        assertThat(indexFactory.createIndex()).endsWith("_2000_01_01")
+        indexFactory.createIndex().endsWith("_2000_01_01")
 
         where:
         indexFactory << [new FrontendDailyIndexFactory(clock), new ConsumersDailyIndexFactory(clock)]

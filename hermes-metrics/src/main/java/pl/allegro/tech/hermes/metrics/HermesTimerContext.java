@@ -10,19 +10,17 @@ import java.util.concurrent.TimeUnit;
 public class HermesTimerContext implements Closeable {
 
     private final Timer micrometerTimer;
-    private final com.codahale.metrics.Timer graphiteTimer;
     private final Clock clock;
     private final long startNanos;
 
-    private HermesTimerContext(Timer micrometerTimer, com.codahale.metrics.Timer graphiteTimer, Clock clock) {
+    private HermesTimerContext(Timer micrometerTimer, Clock clock) {
         this.micrometerTimer = micrometerTimer;
-        this.graphiteTimer = graphiteTimer;
         this.clock = clock;
         this.startNanos = clock.monotonicTime();
     }
 
-    public static HermesTimerContext from(Timer micrometerTimer, com.codahale.metrics.Timer graphiteTimer) {
-        return new HermesTimerContext(micrometerTimer, graphiteTimer, Clock.SYSTEM);
+    public static HermesTimerContext from(Timer micrometerTimer) {
+        return new HermesTimerContext(micrometerTimer, Clock.SYSTEM);
     }
 
     @Override
@@ -36,7 +34,6 @@ public class HermesTimerContext implements Closeable {
 
     private long reportTimer() {
         long amount = clock.monotonicTime() - startNanos;
-        graphiteTimer.update(amount, TimeUnit.NANOSECONDS);
         micrometerTimer.record(amount, TimeUnit.NANOSECONDS);
         return amount;
     }
