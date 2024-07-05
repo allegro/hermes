@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.api.constraints.OneSourceRetransmission;
 import pl.allegro.tech.hermes.api.jackson.InstantIsoSerializer;
 
 import java.time.Instant;
@@ -15,6 +16,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 
+@OneSourceRetransmission
 public class OfflineRetransmissionRequest {
 
     private static final List<DateTimeFormatter> formatters = List.of(
@@ -24,7 +26,7 @@ public class OfflineRetransmissionRequest {
     );
     private static final Logger logger = LoggerFactory.getLogger(OfflineRetransmissionRequest.class);
 
-    @NotEmpty
+    private final String sourceView;
     private final String sourceTopic;
     @NotEmpty
     private final String targetTopic;
@@ -35,10 +37,12 @@ public class OfflineRetransmissionRequest {
 
     @JsonCreator
     public OfflineRetransmissionRequest(
+            @JsonProperty("sourceView") String sourceView,
             @JsonProperty("sourceTopic") String sourceTopic,
             @JsonProperty("targetTopic") String targetTopic,
             @JsonProperty("startTimestamp") String startTimestamp,
             @JsonProperty("endTimestamp") String endTimestamp) {
+        this.sourceView = sourceView;
         this.sourceTopic = sourceTopic;
         this.targetTopic = targetTopic;
         this.startTimestamp = initializeTimestamp(startTimestamp);
@@ -62,6 +66,10 @@ public class OfflineRetransmissionRequest {
         return null;
     }
 
+    public String getSourceView() {
+        return sourceView;
+    }
+
     public String getSourceTopic() {
         return sourceTopic;
     }
@@ -82,11 +90,12 @@ public class OfflineRetransmissionRequest {
 
     @Override
     public String toString() {
-        return "OfflineRetransmissionRequest{"
-                + "sourceTopic='" + sourceTopic + '\''
-                + ", targetTopic='" + targetTopic + '\''
-                + ", startTimestamp=" + startTimestamp
-                + ", endTimestamp=" + endTimestamp
-                + '}';
+        return "OfflineRetransmissionRequest{" +
+                "sourceView='" + sourceView + '\'' +
+                ", sourceTopic='" + sourceTopic + '\'' +
+                ", targetTopic='" + targetTopic + '\'' +
+                ", startTimestamp=" + startTimestamp +
+                ", endTimestamp=" + endTimestamp +
+                '}';
     }
 }
