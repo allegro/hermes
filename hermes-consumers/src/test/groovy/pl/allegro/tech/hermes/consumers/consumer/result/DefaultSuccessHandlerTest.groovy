@@ -4,10 +4,8 @@ import pl.allegro.tech.hermes.api.Subscription
 import pl.allegro.tech.hermes.api.TrackingMode
 import pl.allegro.tech.hermes.common.metric.MetricsFacade
 import pl.allegro.tech.hermes.consumers.consumer.Message
-import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult
 import pl.allegro.tech.hermes.consumers.test.MessageBuilder
-import pl.allegro.tech.hermes.test.helper.metrics.TestMetricsFacadeFactory
 import pl.allegro.tech.hermes.tracker.consumers.Trackers
 import spock.lang.Specification
 
@@ -15,7 +13,6 @@ import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.sub
 
 class DefaultSuccessHandlerTest extends Specification {
 
-    private OffsetQueue offsetQueue = new OffsetQueue(TestMetricsFacadeFactory.create(), 200_000)
 
     private InMemoryLogRepository sendingTracker = new InMemoryLogRepository()
 
@@ -26,7 +23,7 @@ class DefaultSuccessHandlerTest extends Specification {
 
     private DefaultSuccessHandler handler = new DefaultSuccessHandler(Stub(MetricsFacade), trackers, subscription.qualifiedName)
 
-    def "should commit message and save tracking information on message success"() {
+    def "should save tracking information on message success"() {
         given:
         Message message = MessageBuilder.withTestMessage().withPartitionOffset('kafka_topic', 0, 123L).build()
         MessageSendingResult result = MessageSendingResult.failedResult(500)
@@ -36,6 +33,5 @@ class DefaultSuccessHandlerTest extends Specification {
 
         then:
         sendingTracker.hasSuccessfulLog('kafka_topic', 0, 123L)
-        offsetQueue.drainCommittedOffsets({ o -> assert o.partition == 0 && o.offset == 123L })
     }
 }

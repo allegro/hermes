@@ -8,11 +8,10 @@ import org.mockito.junit.MockitoJUnitRunner;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.metric.SubscriptionMetrics;
-import pl.allegro.tech.hermes.consumers.consumer.profiling.ConsumerProfiler;
-import pl.allegro.tech.hermes.consumers.consumer.profiling.NoOpConsumerProfiler;
-import pl.allegro.tech.hermes.consumers.consumer.rate.AdjustableSemaphore;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetsSlots;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
+import pl.allegro.tech.hermes.consumers.consumer.profiling.ConsumerProfiler;
+import pl.allegro.tech.hermes.consumers.consumer.profiling.NoOpConsumerProfiler;
 import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.result.ErrorHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.SuccessHandler;
@@ -214,9 +213,9 @@ public class ConsumerMessageSenderTest {
         // then
         verify(offsetsSlots).markAsSent(any(SubscriptionPartitionOffset.class));
         verify(errorHandler,
-            timeout(1000).times(expectedNumbersOfFailures)).handleFailed(eq(message),
-            eq(subscriptionWith4xxRetry),
-            any(MessageSendingResult.class)
+                timeout(1000).times(expectedNumbersOfFailures)).handleFailed(eq(message),
+                eq(subscriptionWith4xxRetry),
+                any(MessageSendingResult.class)
         );
         verifyRateLimiterAcquired(expectedNumbersOfFailures + 1);
         verifyRetryCounted(expectedNumbersOfFailures);
@@ -419,7 +418,7 @@ public class ConsumerMessageSenderTest {
 
         //then
         verify(successHandler, timeout(retrySeconds * 1000 * 2 + 500))
-            .handleSuccess(eq(message), eq(subscription), any(MessageSendingResult.class));
+                .handleSuccess(eq(message), eq(subscription), any(MessageSendingResult.class));
         verifyRateLimiterAcquired(expectedNumberOfRetries + 1);
         verifyRetryCounted(expectedNumberOfRetries);
     }

@@ -13,12 +13,12 @@ import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignm
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetCommitter;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetsSlots;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
-import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.profiling.ConsumerProfiler;
 import pl.allegro.tech.hermes.consumers.consumer.profiling.ConsumerRun;
 import pl.allegro.tech.hermes.consumers.consumer.profiling.DefaultConsumerProfiler;
 import pl.allegro.tech.hermes.consumers.consumer.profiling.Measurement;
 import pl.allegro.tech.hermes.consumers.consumer.profiling.NoOpConsumerProfiler;
+import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.UninitializedMessageReceiver;

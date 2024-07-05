@@ -1,6 +1,12 @@
 package pl.allegro.tech.hermes.consumers.consumer.offset;
 
 import com.google.common.collect.Sets;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
+import pl.allegro.tech.hermes.metrics.HermesCounter;
+import pl.allegro.tech.hermes.metrics.HermesTimer;
+import pl.allegro.tech.hermes.metrics.HermesTimerContext;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,13 +17,6 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.common.metric.MetricsFacade;
-import pl.allegro.tech.hermes.metrics.HermesCounter;
-import pl.allegro.tech.hermes.metrics.HermesTimer;
-import pl.allegro.tech.hermes.metrics.HermesTimerContext;
 
 /**
  * <p>Note on algorithm used to calculate offsets to actually commit.
@@ -105,7 +104,7 @@ public class OffsetCommitter {
 
             List<SubscriptionPartitionOffset> inflightOffsetsQueue = new ArrayList<>();
             for (Map.Entry<SubscriptionPartitionOffset, MessageState> entry : offsets.entrySet()) {
-                   inflightOffsetsQueue.add(entry.getKey());
+                inflightOffsetsQueue.add(entry.getKey());
             }
 
             ReducingConsumer committedOffsetsReducer = processCommittedOffsets(deliveredOffsetsQueue);

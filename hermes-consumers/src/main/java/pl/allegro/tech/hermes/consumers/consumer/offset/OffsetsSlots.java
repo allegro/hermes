@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 public class OffsetsSlots {
 
@@ -27,7 +28,7 @@ public class OffsetsSlots {
     }
 
     /**
-     * This method is used by message sender
+     * This method is used by message sender.
      */
     public void markAsSent(SubscriptionPartitionOffset subscriptionPartitionOffset) {
         inflightSemaphore.release();
@@ -35,22 +36,14 @@ public class OffsetsSlots {
     }
 
     /**
-     * This method is used by consumer
+     * This method is used by consumer.
      */
     public boolean hasSpace(Duration processingInterval) throws InterruptedException {
-        int inflightPermits = inflightSemaphore.availablePermits();
-        int totalPermits = totalOffsetsCountSemaphore.availablePermits();
-
-        if (inflightPermits == 0 || totalPermits == 0) {
-            Thread.sleep(processingInterval.toMillis());
-            return false;
-        } else {
-            return true;
-        }
+        return inflightSemaphore.tryAcquire(processingInterval.toMillis(), TimeUnit.MILLISECONDS) && totalOffsetsCountSemaphore.tryAcquire(processingInterval.toMillis(), TimeUnit.MILLISECONDS);
     }
 
     /**
-     * This method is used by consumer
+     * This method is used by consumer.
      */
     public void addSlot(SubscriptionPartitionOffset subscriptionPartitionOffset) throws InterruptedException {
         totalOffsetsCountSemaphore.acquire();
@@ -59,7 +52,7 @@ public class OffsetsSlots {
     }
 
     /**
-     * This method is used by consumer
+     * This method is used by consumer.
      */
     public Map<SubscriptionPartitionOffset, MessageState> offsetSnapshot() {
         int permitsReleased = 0;
