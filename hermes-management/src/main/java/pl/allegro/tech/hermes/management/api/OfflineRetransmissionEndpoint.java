@@ -17,7 +17,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.OfflineRetransmissionRequest;
 import pl.allegro.tech.hermes.api.OfflineRetransmissionTask;
-import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.management.api.auth.ManagementRights;
@@ -46,7 +45,7 @@ public class OfflineRetransmissionEndpoint {
 
     @POST
     @Consumes(APPLICATION_JSON)
-    public Response createRetransmissionTask(@Valid OfflineRetransmissionRequest request, @Context ContainerRequestContext requestContext) {
+      public Response createRetransmissionTask(@Valid OfflineRetransmissionRequest request, @Context ContainerRequestContext requestContext) {
         retransmissionService.validateRequest(request);
         permissions.ensurePermissionsToBothTopics(request, requestContext);
         OfflineRetransmissionTask task = retransmissionService.createTask(request);
@@ -78,13 +77,17 @@ public class OfflineRetransmissionEndpoint {
         }
 
         private void ensurePermissionsToBothTopics(OfflineRetransmissionRequest request, ContainerRequestContext requestContext) {
-            Topic sourceTopic = topicRepository.getTopicDetails(TopicName.fromQualifiedName(request.getSourceTopic()));
-            Topic targetTopic = topicRepository.getTopicDetails(TopicName.fromQualifiedName(request.getTargetTopic()));
-            boolean hasPermissions = managementRights.isUserAllowedToManageTopic(sourceTopic, requestContext)
+            var targetTopic = topicRepository.getTopicDetails(TopicName.fromQualifiedName(request.getTargetTopic()));
+            boolean hasPermissions = validateSourceTopic(request.getSourceTopic(), requestContext)
                     && managementRights.isUserAllowedToManageTopic(targetTopic, requestContext);
             if (!hasPermissions) {
                 throw new PermissionDeniedException("User needs permissions to source and target topics.");
             }
+        }
+
+        private boolean validateSourceTopic(String sourceTopic, ContainerRequestContext requestContext) {
+            var topic = topicRepository.getTopicDetails(TopicName.fromQualifiedName(sourceTopic));
+            return topic == null || managementRights.isUserAllowedToManageTopic(topic, requestContext);
         }
     }
 

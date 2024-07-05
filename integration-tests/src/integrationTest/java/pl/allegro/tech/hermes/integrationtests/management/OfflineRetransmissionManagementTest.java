@@ -45,7 +45,7 @@ public class OfflineRetransmissionManagementTest {
         // when
         OfflineRetransmissionRequest request = createRequest(
                 sourceTopic.getQualifiedName(),
-                targetTopic.getQualifiedName());
+                targetTopic.getQualifiedName(), null);
         WebTestClient.ResponseSpec response = hermes.api().createOfflineRetransmissionTask(request);
         Instant now = Instant.now();
 
@@ -75,6 +75,7 @@ public class OfflineRetransmissionManagementTest {
         OfflineRetransmissionRequest request = new OfflineRetransmissionRequest(
                 "",
                 "",
+                "",
                 null,
                 null
         );
@@ -86,10 +87,10 @@ public class OfflineRetransmissionManagementTest {
         response.expectStatus().isBadRequest();
         assertThat(response.expectBody(String.class).returnResult().getResponseBody()).contains(
                 List.of(
-                "sourceTopic must not be empty",
-                "targetTopic must not be empty",
-                "startTimestamp must not be null",
-                "endTimestamp must not be null")
+                        "sourceTopic must not be empty",
+                        "targetTopic must not be empty",
+                        "startTimestamp must not be null",
+                        "endTimestamp must not be null")
         );
     }
 
@@ -98,7 +99,7 @@ public class OfflineRetransmissionManagementTest {
         // given
         Topic targetTopic = hermes.initHelper().createTopic(topicWithRandomName().build());
         OfflineRetransmissionRequest request = createRequest("not.existing.sourceTopic",
-                targetTopic.getQualifiedName());
+                targetTopic.getQualifiedName(), null);
 
         // when
         WebTestClient.ResponseSpec response = hermes.api().createOfflineRetransmissionTask(request);
@@ -114,7 +115,7 @@ public class OfflineRetransmissionManagementTest {
         // given
         Topic sourceTopic = hermes.initHelper().createTopic(topicWithRandomName().build());
         OfflineRetransmissionRequest request = createRequest(
-                sourceTopic.getQualifiedName(), "not.existing.targetTopic");
+                sourceTopic.getQualifiedName(), "not.existing.targetTopic", null);
 
         // when
         WebTestClient.ResponseSpec response = hermes.api().createOfflineRetransmissionTask(request);
@@ -131,6 +132,7 @@ public class OfflineRetransmissionManagementTest {
         Topic sourceTopic = hermes.initHelper().createTopic(topicWithRandomName().build());
         Topic targetTopic = hermes.initHelper().createTopic(topicWithRandomName().build());
         OfflineRetransmissionRequest request = new OfflineRetransmissionRequest(
+                "",
                 sourceTopic.getQualifiedName(),
                 targetTopic.getQualifiedName(),
                 Instant.now().toString(),
@@ -151,7 +153,7 @@ public class OfflineRetransmissionManagementTest {
         Topic sourceTopic = hermes.initHelper().createTopic(topicWithRandomName().build());
         Topic targetTopic = hermes.initHelper().createTopic(topicWithRandomName().withOfflineStorage(1).build());
         OfflineRetransmissionRequest request = createRequest(
-                sourceTopic.getQualifiedName(), targetTopic.getQualifiedName());
+                sourceTopic.getQualifiedName(), targetTopic.getQualifiedName(), null);
 
         // when
         WebTestClient.ResponseSpec response = hermes.api().createOfflineRetransmissionTask(request);
@@ -170,7 +172,7 @@ public class OfflineRetransmissionManagementTest {
         Topic targetTopic = hermes.initHelper().createTopic(topicWithRandomName().build());
 
         OfflineRetransmissionRequest request = createRequest(
-                sourceTopic.getQualifiedName(), targetTopic.getQualifiedName());
+                sourceTopic.getQualifiedName(), targetTopic.getQualifiedName(), null);
         hermes.api().createOfflineRetransmissionTask(request);
 
         List<OfflineRetransmissionTask> allTasks = getOfflineRetransmissionTasks();
@@ -203,7 +205,7 @@ public class OfflineRetransmissionManagementTest {
         Topic targetTopic = hermes.initHelper().createTopic(topicWithRandomName().build());
         TestSecurityProvider.setUserIsAdmin(false);
         OfflineRetransmissionRequest request = createRequest(
-                sourceTopic.getQualifiedName(), targetTopic.getQualifiedName());
+                sourceTopic.getQualifiedName(), targetTopic.getQualifiedName(), null);
 
         // when
         WebTestClient.ResponseSpec response = hermes.api().createOfflineRetransmissionTask(request);
@@ -218,8 +220,9 @@ public class OfflineRetransmissionManagementTest {
         TestSecurityProvider.reset();
     }
 
-    private OfflineRetransmissionRequest createRequest(String sourceTopic, String targetTopic) {
+    private OfflineRetransmissionRequest createRequest(String sourceTopic, String targetTopic, String sourceView) {
         return new OfflineRetransmissionRequest(
+                sourceView,
                 sourceTopic,
                 targetTopic,
                 Instant.now().minusSeconds(1).toString(),
