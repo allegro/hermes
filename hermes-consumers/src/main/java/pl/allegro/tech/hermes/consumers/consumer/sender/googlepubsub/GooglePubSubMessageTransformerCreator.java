@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
 
 import java.util.Optional;
 
@@ -45,10 +46,10 @@ public class GooglePubSubMessageTransformerCreator {
         return this;
     }
 
-    GooglePubSubMessageTransformer getTransformerForTargetEndpoint(GooglePubSubSenderTarget pubSubTarget) {
+    GooglePubSubMessageTransformer getTransformerForTargetEndpoint(GooglePubSubSenderTarget pubSubTarget, SubscriptionLoadRecorder loadRecorder) {
         if (this.compressionEnabled && pubSubTarget.isCompressionRequested()) {
             Optional<GooglePubSubMessageTransformer> compressingTransformer =
-                    transformerForCodec(pubSubTarget.getCompressionCodec());
+                    transformerForCodec(pubSubTarget.getCompressionCodec(), loadRecorder);
             if (compressingTransformer.isPresent()) {
                 return compressingTransformer.get();
             } else {
@@ -58,7 +59,7 @@ public class GooglePubSubMessageTransformerCreator {
         return this.messageRawTransformer;
     }
 
-    private Optional<GooglePubSubMessageTransformer> transformerForCodec(CompressionCodec codec) {
+    private Optional<GooglePubSubMessageTransformer> transformerForCodec(CompressionCodec codec, SubscriptionLoadRecorder loadRecorder) {
         return Optional.ofNullable(codec)
                 .map(it -> CompressionCodecFactory.of(it, compressionLevel))
                 .map(codecFactory ->
@@ -66,6 +67,7 @@ public class GooglePubSubMessageTransformerCreator {
                                 this.compressionThresholdBytes,
                                 this.messageRawTransformer,
                                 new GooglePubSubMetadataCompressionAppender(codec),
-                                new MessageCompressor(codecFactory)));
+                                new MessageCompressor(codecFactory),
+                                loadRecorder));
     }
 }

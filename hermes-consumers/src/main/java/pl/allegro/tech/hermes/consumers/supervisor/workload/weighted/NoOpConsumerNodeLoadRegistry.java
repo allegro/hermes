@@ -35,7 +35,7 @@ public class NoOpConsumerNodeLoadRegistry implements ConsumerNodeLoadRegistry {
         }
 
         @Override
-        public void recordSingleOperation() {
+        public void recordSingleOperation(long weight) {
 
         }
 

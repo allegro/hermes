@@ -5,6 +5,7 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.exception.EndpointProtocolNotSupportedException;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.consumers.consumer.ResilientMessageSender;
+import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
 
 import java.util.HashMap;
 import java.util.List;
@@ -22,14 +23,14 @@ public class MessageSenderFactory {
         }
     }
 
-    public MessageSender create(Subscription subscription, ResilientMessageSender resilientMessageSender) {
+    public MessageSender create(Subscription subscription, ResilientMessageSender resilientMessageSender, SubscriptionLoadRecorder loadRecorder) {
         EndpointAddress endpoint = subscription.getEndpoint();
 
         ProtocolMessageSenderProvider provider = protocolProviders.get(endpoint.getProtocol());
         if (provider == null) {
             throw new EndpointProtocolNotSupportedException(endpoint);
         }
-        return provider.create(subscription, resilientMessageSender);
+        return provider.create(subscription, resilientMessageSender, loadRecorder);
     }
 
     private void addSupportedProtocol(String protocol, ProtocolMessageSenderProvider provider) {

@@ -2,6 +2,8 @@ package pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub
 
 import com.google.protobuf.ByteString
 import com.google.pubsub.v1.PubsubMessage
+import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder
+import pl.allegro.tech.hermes.consumers.supervisor.workload.weighted.NoOpConsumerNodeLoadRegistry
 import pl.allegro.tech.hermes.consumers.test.MessageBuilder
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -22,7 +24,8 @@ class GooglePubSubMessageTransformerCompressionTest extends Specification {
                 alwaysCompressThresholdBytes,
                 rawTransformer,
                 new GooglePubSubMetadataCompressionAppender(codec),
-                compressor
+                compressor,
+                Mock(SubscriptionLoadRecorder)
         )
         def msg = MessageBuilder.testMessage()
 
@@ -58,7 +61,8 @@ class GooglePubSubMessageTransformerCompressionTest extends Specification {
                 alwaysCompressThresholdBytes,
                 rawTransformer,
                 new GooglePubSubMetadataCompressionAppender(CompressionCodec.BZIP2),
-                failingCompressorStub
+                failingCompressorStub,
+                Mock(SubscriptionLoadRecorder)
         )
 
         when:
@@ -77,7 +81,8 @@ class GooglePubSubMessageTransformerCompressionTest extends Specification {
                 compressionThresholdBytes,
                 rawTransformer,
                 new GooglePubSubMetadataCompressionAppender(CompressionCodec.BZIP2),
-                compressor
+                compressor,
+                Mock(SubscriptionLoadRecorder)
         )
         def msg = MessageBuilder.testMessage()
 

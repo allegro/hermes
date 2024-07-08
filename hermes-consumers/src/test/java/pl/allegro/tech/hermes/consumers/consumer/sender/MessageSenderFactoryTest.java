@@ -8,6 +8,8 @@ import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.exception.EndpointProtocolNotSupportedException;
 import pl.allegro.tech.hermes.consumers.consumer.ResilientMessageSender;
+import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
+import pl.allegro.tech.hermes.consumers.supervisor.workload.weighted.NoOpConsumerNodeLoadRegistry;
 
 import java.util.Set;
 
@@ -19,6 +21,7 @@ public class MessageSenderFactoryTest {
 
     private final MessageSender referenceMessageSender = Mockito.mock(MessageSender.class);
     private final ResilientMessageSender resilientMessageSender = Mockito.mock(ResilientMessageSender.class);
+    private final SubscriptionLoadRecorder loadRecorder = Mockito.mock(SubscriptionLoadRecorder.class);
 
     @Test
     public void shouldCreateCustomProtocolMessageSender() {
@@ -30,7 +33,7 @@ public class MessageSenderFactoryTest {
         );
 
         // when
-        MessageSender sender = factory.create(subscription, resilientMessageSender);
+        MessageSender sender = factory.create(subscription, resilientMessageSender, loadRecorder);
 
         // then
         assertThat(sender).isEqualTo(referenceMessageSender);
@@ -43,13 +46,13 @@ public class MessageSenderFactoryTest {
         Subscription subscription = subscription("group.topic", "subscription", "unknown://localhost:8080/test").build();
 
         // then
-        assertThrows(EndpointProtocolNotSupportedException.class, () -> factory.create(subscription, resilientMessageSender));
+        assertThrows(EndpointProtocolNotSupportedException.class, () -> factory.create(subscription, resilientMessageSender, loadRecorder));
     }
 
     private ProtocolMessageSenderProvider protocolMessageSenderProviderReturning(Object createdMessageSender, String protocol) {
         return new ProtocolMessageSenderProvider() {
             @Override
-            public MessageSender create(Subscription endpoint, ResilientMessageSender resilientMessageSender) {
+            public MessageSender create(Subscription endpoint, ResilientMessageSender resilientMessageSender, SubscriptionLoadRecorder loadRecorder) {
                 return (MessageSender) createdMessageSender;
             }
 
