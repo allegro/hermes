@@ -49,12 +49,11 @@ public class OfflineRetransmissionService {
     }
 
     private void ensureTopicsExist(TopicName sourceTopicName, TopicName targetTopicName) {
-        boolean sourceTopicExists = topicRepository.topicExists(sourceTopicName);
-        boolean targetTopicExists = topicRepository.topicExists(targetTopicName);
-        if (!sourceTopicExists) {
+        if (sourceTopicName != null && !topicRepository.topicExists(sourceTopicName)) {
             throw new OfflineRetransmissionValidationException("Source topic does not exist");
         }
-        if (!targetTopicExists) {
+
+        if (!topicRepository.topicExists(targetTopicName)) {
             throw new OfflineRetransmissionValidationException("Target topic does not exist");
         }
     }

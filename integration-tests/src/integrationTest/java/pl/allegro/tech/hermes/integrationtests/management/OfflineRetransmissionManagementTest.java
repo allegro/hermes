@@ -18,6 +18,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomNameContaining;
 
 public class OfflineRetransmissionManagementTest {
 
@@ -62,6 +63,29 @@ public class OfflineRetransmissionManagementTest {
         assertThat(allTasks.get(0).getCreatedAt()).isBefore(now);
     }
 
+    @Test
+    public void shouldCreateRetransmissionTaskWithViewInsteadTopic() {
+        // given
+        var targetTopic = hermes.initHelper().createTopic(topicWithRandomName().build());
+
+        // when
+        var request = createRequest(null, targetTopic.getQualifiedName(), "testView");
+        var response = hermes.api().createOfflineRetransmissionTask(request);
+        var now = Instant.now();
+
+        //then
+        response.expectStatus().isCreated();
+
+        // and
+        var allTasks = getOfflineRetransmissionTasks();
+        assertThat(allTasks.size()).isEqualTo(1);
+        assertThat(allTasks.get(0).getStartTimestamp()).isEqualTo(request.getStartTimestamp());
+        assertThat(allTasks.get(0).getEndTimestamp()).isEqualTo(request.getEndTimestamp());
+        assertThat(allTasks.get(0).getSourceTopic()).isEqualTo(null);
+        assertThat(allTasks.get(0).getSourceView()).isEqualTo("testView");
+        assertThat(allTasks.get(0).getTargetTopic()).isEqualTo(request.getTargetTopic());
+        assertThat(allTasks.get(0).getCreatedAt()).isBefore(now);
+    }
 
     @Test
     public void shouldReturnEmptyListIfThereAreNoTasks() {

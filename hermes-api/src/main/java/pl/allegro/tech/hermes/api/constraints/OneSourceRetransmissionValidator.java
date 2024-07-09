@@ -8,7 +8,6 @@ public class OneSourceRetransmissionValidator implements ConstraintValidator<One
 
     @Override
     public void initialize(OneSourceRetransmission oneSourceRetransmission) {
-
     }
 
     @Override
@@ -16,10 +15,11 @@ public class OneSourceRetransmissionValidator implements ConstraintValidator<One
         var sourceView = offlineRetransmissionRequest.getSourceView();
         var sourceTopic = offlineRetransmissionRequest.getSourceTopic();
 
-       return  !(sourceView == null || sourceTopic == null) || !(nonBlank(sourceView) || nonBlank(sourceTopic));
+        return (nonBlank(sourceView) && sourceTopic == null) || (nonBlank(sourceTopic) && sourceView == null);
     }
 
-    private static boolean nonBlank(String sourceView) {
-        return sourceView != null && !sourceView.isBlank();
+    private static boolean nonBlank(String value) {
+        return value != null && !value.isBlank();
     }
+
 }
