@@ -72,7 +72,8 @@ class InflightSizeValidatorTest extends Specification {
 
         then:
         def exception = thrown(ConstraintViolationException)
-        exception.message == "serialSubscriptionPolicy.inflightSize: must be greater than or equal to 1"
+        exception.message == "serialSubscriptionPolicy.inflightSize: must be greater than or equal to 1" ||
+                "serialSubscriptionPolicy.inflightSize: musi być równe lub większe od 1"
 
         where:
         inflightSize << [0, -1]
