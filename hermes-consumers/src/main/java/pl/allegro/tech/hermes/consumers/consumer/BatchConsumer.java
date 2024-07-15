@@ -89,7 +89,7 @@ public class BatchConsumer implements Consumer {
         this.subscription = subscription;
         this.useTopicMessageSize = useTopicMessageSize;
         this.loadRecorder = loadRecorder;
-        this.offsetsSlots = new OffsetsSlots(subscription.getQualifiedName(), metricsFacade, offsetQueueSize, subscription.getBatchSubscriptionPolicy().getBatchSize());
+        this.offsetsSlots = new OffsetsSlots(subscription.getQualifiedName(), metricsFacade, subscription.getBatchSubscriptionPolicy().getBatchSize(), offsetQueueSize);
         this.metricsFacade = metricsFacade;
         this.metrics = new BatchConsumerMetrics(metricsFacade, subscription.getQualifiedName());
         this.messageConverterResolver = messageConverterResolver;

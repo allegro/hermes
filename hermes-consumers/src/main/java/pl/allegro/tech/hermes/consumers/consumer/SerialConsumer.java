@@ -80,7 +80,7 @@ public class SerialConsumer implements Consumer {
         this.subscription = subscription;
         this.rateLimiter = rateLimiter;
         this.useTopicMessageSizeEnabled = commonConsumerParameters.isUseTopicMessageSizeEnabled();
-        this.offsetsSlots = new OffsetsSlots(subscription.getQualifiedName(), metrics, offsetQueueSize, calculateInflightSize(subscription));
+        this.offsetsSlots = new OffsetsSlots(subscription.getQualifiedName(), metrics, calculateInflightSize(subscription), offsetQueueSize);
         this.consumerAuthorizationHandler = consumerAuthorizationHandler;
         this.trackers = trackers;
         this.messageConverterResolver = messageConverterResolver;
@@ -115,7 +115,7 @@ public class SerialConsumer implements Consumer {
                 signalsInterrupt.run();
                 commitIfReady();
                 profiler.stopPartialMeasurement();
-            } while (!offsetsSlots.hasSpace(signalProcessingInterval));
+            } while (!offsetsSlots.tryToAcquireSlot(signalProcessingInterval));
 
             profiler.measure(Measurement.MESSAGE_RECEIVER_NEXT);
             Optional<Message> maybeMessage = messageReceiver.next();

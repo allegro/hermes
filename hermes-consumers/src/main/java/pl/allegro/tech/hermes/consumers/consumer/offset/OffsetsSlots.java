@@ -17,7 +17,7 @@ public class OffsetsSlots {
     private final AdjustableSemaphore inflightSemaphore;
     private final Semaphore totalOffsetsCountSemaphore;
 
-    public OffsetsSlots(SubscriptionName subscriptionName, MetricsFacade metrics, int offsetQueueSize, int inflightQueueSize) {
+    public OffsetsSlots(SubscriptionName subscriptionName, MetricsFacade metrics, int inflightQueueSize, int offsetQueueSize) {
         this.totalOffsetsCountSemaphore = new Semaphore(offsetQueueSize);
         this.inflightSemaphore = new AdjustableSemaphore(inflightQueueSize);
         metrics.subscriptions().registerOffsetsQueueGauge(subscriptionName, totalOffsetsCountSemaphore,  slots -> (double) slots.availablePermits() / offsetQueueSize);
@@ -38,16 +38,20 @@ public class OffsetsSlots {
     /**
      * This method is used by consumer.
      */
-    public boolean hasSpace(Duration processingInterval) throws InterruptedException {
-        return inflightSemaphore.tryAcquire(processingInterval.toMillis(), TimeUnit.MILLISECONDS) && totalOffsetsCountSemaphore.tryAcquire(processingInterval.toMillis(), TimeUnit.MILLISECONDS);
+    public boolean tryToAcquireSlot(Duration processingInterval) throws InterruptedException {
+        if (inflightSemaphore.tryAcquire(processingInterval.toMillis(), TimeUnit.MILLISECONDS)) {
+            if (totalOffsetsCountSemaphore.tryAcquire(processingInterval.toMillis(), TimeUnit.MILLISECONDS)) {
+                return true;
+            }
+            inflightSemaphore.release();
+        }
+        return false;
     }
 
     /**
      * This method is used by consumer.
      */
-    public void addSlot(SubscriptionPartitionOffset subscriptionPartitionOffset) throws InterruptedException {
-        totalOffsetsCountSemaphore.acquire();
-        inflightSemaphore.acquire();
+    public void addSlot(SubscriptionPartitionOffset subscriptionPartitionOffset) {
         slots.put(subscriptionPartitionOffset, MessageState.INFLIGHT);
     }
 
