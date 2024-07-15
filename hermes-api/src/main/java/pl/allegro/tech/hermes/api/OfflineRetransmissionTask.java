@@ -45,7 +45,9 @@ public class OfflineRetransmissionTask {
         return request.getSourceTopic();
     }
 
-    public String getSourceView() {return request.getSourceView();}
+    public String getSourceView() {
+        return request.getSourceView();
+    }
 
     public String getTargetTopic() {
         return request.getTargetTopic();

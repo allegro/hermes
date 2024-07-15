@@ -90,12 +90,12 @@ public class OfflineRetransmissionRequest {
 
     @Override
     public String toString() {
-        return "OfflineRetransmissionRequest{" +
-                "sourceView='" + sourceView + '\'' +
-                ", sourceTopic='" + sourceTopic + '\'' +
-                ", targetTopic='" + targetTopic + '\'' +
-                ", startTimestamp=" + startTimestamp +
-                ", endTimestamp=" + endTimestamp +
-                '}';
+        return "OfflineRetransmissionRequest{"
+                + "sourceTopic='" + sourceTopic + '\''
+                + ", sourceView='" + sourceView + '\''
+                + ", targetTopic='" + targetTopic + '\''
+                + ", startTimestamp=" + startTimestamp
+                + ", endTimestamp=" + endTimestamp
+                + '}';
     }
 }
