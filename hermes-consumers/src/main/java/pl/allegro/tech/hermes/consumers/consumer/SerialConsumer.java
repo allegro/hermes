@@ -134,6 +134,7 @@ public class SerialConsumer implements Consumer {
                 Message convertedMessage = messageConverterResolver.converterFor(message, subscription).convert(message, topic);
                 sendMessage(convertedMessage, profiler);
             } else {
+                offsetsSlots.releaseAcquiredSlots();
                 profiler.flushMeasurements(ConsumerRun.EMPTY);
             }
         } catch (InterruptedException e) {

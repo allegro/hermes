@@ -72,4 +72,12 @@ public class OffsetsSlots {
         totalOffsetsCountSemaphore.release(permitsReleased);
         return offsetSnapshot;
     }
+
+    /**
+     * This method is used by consumer. It releases semaphores, when there is no message.
+     */
+    public void releaseAcquiredSlots() {
+        inflightSemaphore.release();
+        totalOffsetsCountSemaphore.release();
+    }
 }
