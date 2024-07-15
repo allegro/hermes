@@ -32,6 +32,7 @@ class TopicValidatorTest extends Specification {
     def contentTypeWhitelistValidator = Stub(ContentTypeValidator)
     def apiPreconditions = Stub(ApiPreconditions)
     def topicLabelsValidator
+    def topicProperties = new TopicProperties()
 
     @Subject
     TopicValidator topicValidator
@@ -42,7 +43,7 @@ class TopicValidatorTest extends Specification {
         topicProperties.setAllowedTopicLabels(allowedLabels)
         topicLabelsValidator = new TopicLabelsValidator(topicProperties)
 
-        topicValidator = new TopicValidator(ownerDescriptorValidator, contentTypeWhitelistValidator, topicLabelsValidator, schemaRepository, apiPreconditions)
+        topicValidator = new TopicValidator(ownerDescriptorValidator, contentTypeWhitelistValidator, topicLabelsValidator, schemaRepository, apiPreconditions, topicProperties)
     }
 
     def "topic with basic properties when creating should be valid"() {
