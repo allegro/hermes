@@ -20,7 +20,7 @@ public class OffsetsSlots {
     public OffsetsSlots(SubscriptionName subscriptionName, MetricsFacade metrics, int inflightQueueSize, int offsetQueueSize) {
         this.totalOffsetsCountSemaphore = new Semaphore(offsetQueueSize);
         this.inflightSemaphore = new AdjustableSemaphore(inflightQueueSize);
-        metrics.subscriptions().registerOffsetsQueueGauge(subscriptionName, totalOffsetsCountSemaphore,  slots -> (double) slots.availablePermits() / offsetQueueSize);
+        metrics.subscriptions().registerOffsetsQueueGauge(subscriptionName, totalOffsetsCountSemaphore, slots -> (offsetQueueSize - (double) slots.availablePermits()) / offsetQueueSize);
     }
 
     public void setInflightSize(int inflightQueueSize) {
