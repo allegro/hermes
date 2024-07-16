@@ -10,10 +10,10 @@ class OneSourceRetransmissionValidatorTest extends Specification {
     OneSourceRetransmissionValidator validator = new OneSourceRetransmissionValidator()
     ConstraintValidatorContext mockContext = Mock()
 
-    def "Validator should validate retransmission request when sourceView is '#sourceView' and sourceTopic is '#sourceTopic'"() {
+    def "Validator should validate retransmission request when sourceViewPath is '#sourceViewPath' and sourceTopic is '#sourceTopic'"() {
         given:
         def request = new OfflineRetransmissionRequest(
-                sourceView,
+                sourceViewPath,
                 sourceTopic,
                 "someTargetTopic",
                 "2024-07-08T12:00:00",
@@ -23,15 +23,15 @@ class OneSourceRetransmissionValidatorTest extends Specification {
         validator.isValid(request, mockContext) == isValid
 
         where:
-        sourceView | sourceTopic | isValid
-        null       | "testTopic" | true
-        "testView" | null        | true
-        null       | null        | false
-        "testView" | "testTopic" | false
-        ""         | ""          | false
-        "  "       | "  "        | false
-        ""         | "testTopic" | false
-        "testView" | "  "        | false
+        sourceViewPath | sourceTopic | isValid
+        null           | "testTopic" | true
+        "testView"     | null        | true
+        null           | null        | false
+        "testView"     | "testTopic" | false
+        ""             | ""          | false
+        "  "           | "  "        | false
+        ""             | "testTopic" | false
+        "testView"     | "  "        | false
     }
 
 }

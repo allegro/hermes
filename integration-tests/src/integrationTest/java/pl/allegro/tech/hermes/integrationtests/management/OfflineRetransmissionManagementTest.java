@@ -18,7 +18,6 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
-import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomNameContaining;
 
 public class OfflineRetransmissionManagementTest {
 
@@ -82,7 +81,7 @@ public class OfflineRetransmissionManagementTest {
         assertThat(allTasks.get(0).getStartTimestamp()).isEqualTo(request.getStartTimestamp());
         assertThat(allTasks.get(0).getEndTimestamp()).isEqualTo(request.getEndTimestamp());
         assertThat(allTasks.get(0).getSourceTopic()).isEqualTo(null);
-        assertThat(allTasks.get(0).getSourceView()).isEqualTo("testView");
+        assertThat(allTasks.get(0).getSourceViewPath()).isEqualTo("testViewPath");
         assertThat(allTasks.get(0).getTargetTopic()).isEqualTo(request.getTargetTopic());
         assertThat(allTasks.get(0).getCreatedAt()).isBefore(now);
     }
@@ -244,9 +243,9 @@ public class OfflineRetransmissionManagementTest {
         TestSecurityProvider.reset();
     }
 
-    private OfflineRetransmissionRequest createRequest(String sourceTopic, String targetTopic, String sourceView) {
+    private OfflineRetransmissionRequest createRequest(String sourceTopic, String targetTopic, String sourceViewPath) {
         return new OfflineRetransmissionRequest(
-                sourceView,
+                sourceViewPath,
                 sourceTopic,
                 targetTopic,
                 Instant.now().minusSeconds(1).toString(),

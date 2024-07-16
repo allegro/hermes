@@ -26,7 +26,7 @@ public class OfflineRetransmissionRequest {
     );
     private static final Logger logger = LoggerFactory.getLogger(OfflineRetransmissionRequest.class);
 
-    private final String sourceView;
+    private final String sourceViewPath;
     private final String sourceTopic;
     @NotEmpty
     private final String targetTopic;
@@ -37,12 +37,12 @@ public class OfflineRetransmissionRequest {
 
     @JsonCreator
     public OfflineRetransmissionRequest(
-            @JsonProperty("sourceView") String sourceView,
+            @JsonProperty("sourceViewPath") String sourceViewPath,
             @JsonProperty("sourceTopic") String sourceTopic,
             @JsonProperty("targetTopic") String targetTopic,
             @JsonProperty("startTimestamp") String startTimestamp,
             @JsonProperty("endTimestamp") String endTimestamp) {
-        this.sourceView = sourceView;
+        this.sourceViewPath = sourceViewPath;
         this.sourceTopic = sourceTopic;
         this.targetTopic = targetTopic;
         this.startTimestamp = initializeTimestamp(startTimestamp);
@@ -66,8 +66,8 @@ public class OfflineRetransmissionRequest {
         return null;
     }
 
-    public String getSourceView() {
-        return sourceView;
+    public String getSourceViewPath() {
+        return sourceViewPath;
     }
 
     public String getSourceTopic() {
@@ -92,7 +92,7 @@ public class OfflineRetransmissionRequest {
     public String toString() {
         return "OfflineRetransmissionRequest{"
                 + "sourceTopic='" + sourceTopic + '\''
-                + ", sourceView='" + sourceView + '\''
+                + ", sourceViewPath='" + sourceViewPath + '\''
                 + ", targetTopic='" + targetTopic + '\''
                 + ", startTimestamp=" + startTimestamp
                 + ", endTimestamp=" + endTimestamp

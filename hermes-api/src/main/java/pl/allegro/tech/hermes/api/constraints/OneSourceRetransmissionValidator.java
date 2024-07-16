@@ -12,10 +12,10 @@ public class OneSourceRetransmissionValidator implements ConstraintValidator<One
 
     @Override
     public boolean isValid(OfflineRetransmissionRequest offlineRetransmissionRequest, ConstraintValidatorContext context) {
-        var sourceView = offlineRetransmissionRequest.getSourceView();
+        var sourceViewPath = offlineRetransmissionRequest.getSourceViewPath();
         var sourceTopic = offlineRetransmissionRequest.getSourceTopic();
 
-        return (nonBlank(sourceView) && sourceTopic == null) || (nonBlank(sourceTopic) && sourceView == null);
+        return (nonBlank(sourceViewPath) && sourceTopic == null) || (nonBlank(sourceTopic) && sourceViewPath == null);
     }
 
     private static boolean nonBlank(String value) {

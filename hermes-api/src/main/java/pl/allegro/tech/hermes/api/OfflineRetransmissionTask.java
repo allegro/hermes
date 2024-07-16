@@ -16,14 +16,14 @@ public class OfflineRetransmissionTask {
     @JsonCreator
     public OfflineRetransmissionTask(
             @JsonProperty("taskId") String taskId,
-            @JsonProperty("sourceView") String sourceView,
+            @JsonProperty("sourceViewPath") String sourceViewPath,
             @JsonProperty("sourceTopic") String sourceTopic,
             @JsonProperty("targetTopic") String targetTopic,
             @JsonProperty("startTimestamp") Instant startTimestamp,
             @JsonProperty("endTimestamp") Instant endTimestamp,
             @JsonProperty("createdAt") Instant createdAt) {
         this(taskId, new OfflineRetransmissionRequest(
-                        sourceView,
+                        sourceViewPath,
                         sourceTopic,
                         targetTopic,
                         startTimestamp.toString(),
@@ -45,8 +45,8 @@ public class OfflineRetransmissionTask {
         return request.getSourceTopic();
     }
 
-    public String getSourceView() {
-        return request.getSourceView();
+    public String getSourceViewPath() {
+        return request.getSourceViewPath();
     }
 
     public String getTargetTopic() {
