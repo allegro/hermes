@@ -6,14 +6,17 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringMetricsContainer;
 
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
+
+
 public class CachingPrometheusClient implements PrometheusClient {
 
     private final PrometheusClient underlyingPrometheusClient;
-    private final LoadingCache<String, MonitoringMetricsContainer> prometheusMetricsCache;
+    private final LoadingCache<List<Query>, MonitoringMetricsContainer> prometheusMetricsCache;
 
     public CachingPrometheusClient(PrometheusClient underlyingPrometheusClient, Ticker ticker,
                                    long cacheTtlInSeconds, long cacheSize) {
@@ -26,19 +29,19 @@ public class CachingPrometheusClient implements PrometheusClient {
     }
 
     @Override
-    public MonitoringMetricsContainer readMetrics(String query) {
+    public MonitoringMetricsContainer readMetrics(List<Query> queries) {
         try {
-            return prometheusMetricsCache.get(query);
+            return prometheusMetricsCache.get(queries);
         } catch (ExecutionException e) {
             // should never happen because the loader does not throw any checked exceptions
             throw new RuntimeException(e);
         }
     }
 
-    private class PrometheusMetricsCacheLoader extends CacheLoader<String, MonitoringMetricsContainer> {
+    private class PrometheusMetricsCacheLoader extends CacheLoader<List<Query>, MonitoringMetricsContainer> {
         @Override
-        public MonitoringMetricsContainer load(String query) {
-            return underlyingPrometheusClient.readMetrics(query);
+        public MonitoringMetricsContainer load(List<Query> queries) {
+            return underlyingPrometheusClient.readMetrics(queries);
         }
     }
 }

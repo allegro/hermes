@@ -7,8 +7,8 @@ import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringSubscr
 import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringTopicMetricsProvider;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import pl.allegro.tech.hermes.management.infrastructure.prometheus.PrometheusClient.Query;
 
 public class VictoriaMetricsMetricsProvider implements MonitoringSubscriptionMetricsProvider, MonitoringTopicMetricsProvider {
 
@@ -30,8 +30,8 @@ public class VictoriaMetricsMetricsProvider implements MonitoringSubscriptionMet
     private final String consumersMetricsPrefix;
     private final String frontendMetricsPrefix;
     private final String additionalFilters;
-    private final String subscriptionMetricsToQuery;
-    private final String topicMetricsToQuery;
+    private final Stream<String> subscriptionMetricsToQuery;
+    private final Stream<String> topicMetricsToQuery;
     private final PrometheusClient prometheusClient;
 
     public VictoriaMetricsMetricsProvider(PrometheusClient prometheusClient, String consumersMetricsPrefix,
@@ -42,26 +42,20 @@ public class VictoriaMetricsMetricsProvider implements MonitoringSubscriptionMet
         this.additionalFilters = additionalFilters;
         this.subscriptionMetricsToQuery = Stream.of(SUBSCRIPTION_DELIVERED, SUBSCRIPTION_TIMEOUTS, SUBSCRIPTION_RETRIES,
                         SUBSCRIPTION_THROUGHPUT, SUBSCRIPTION_OTHER_ERRORS, SUBSCRIPTION_BATCHES, SUBSCRIPTION_STATUS_CODES)
-                .map(this::consumerMetricName)
-                .collect(Collectors.joining("|"));
-        this.topicMetricsToQuery = String.join("|", List.of(
+                .map(this::consumerMetricName);
+        this.topicMetricsToQuery = Stream.of(
                 frontendMetricName(TOPIC_RATE),
                 consumerMetricName(TOPIC_DELIVERY_RATE),
-                frontendMetricName(TOPIC_THROUGHPUT_RATE)
-        ));
+                frontendMetricName(TOPIC_THROUGHPUT_RATE));
     }
 
     @Override
     public MonitoringSubscriptionMetrics subscriptionMetrics(SubscriptionName subscriptionName) {
-        /*
-        The query is based on MetricsQL, available only in VictoriaMetrics
-        https://docs.victoriametrics.com/MetricsQL.html. Basic PromQL does not support `keep_metric_names` param.
-         */
-        String queryFormat = "sum by (__name__, group, topic, subscription, status_code)"
-                + " (irate({__name__=~'%s', group='%s', topic='%s', subscription='%s', %s}[1m]) keep_metric_names)";
-        String query = String.format(queryFormat, subscriptionMetricsToQuery, subscriptionName.getTopicName().getGroupName(),
-                subscriptionName.getTopicName().getName(), subscriptionName.getName(), additionalFilters);
-        MonitoringMetricsContainer prometheusMetricsContainer = prometheusClient.readMetrics(query);
+        List<Query> queries = this.subscriptionMetricsToQuery
+                .map(queryName -> Query.forSubscription(queryName, subscriptionName, additionalFilters))
+                .toList();
+
+        MonitoringMetricsContainer prometheusMetricsContainer = prometheusClient.readMetrics(queries);
         return MonitoringSubscriptionMetricsProvider
                 .metricsBuilder()
                 .withRate(prometheusMetricsContainer.metricValue(consumerMetricName(SUBSCRIPTION_DELIVERED)))
@@ -78,15 +72,9 @@ public class VictoriaMetricsMetricsProvider implements MonitoringSubscriptionMet
 
     @Override
     public MonitoringTopicMetrics topicMetrics(TopicName topicName) {
-        /*
-        The query is based on MetricsQL, available only in VictoriaMetrics
-        https://docs.victoriametrics.com/MetricsQL.html. Basic PromQL does not support `keep_metric_names` param.
-         */
-        String queryFormat = "sum by (__name__, group, topic) (irate({__name__=~'%s', group='%s', "
-                + "topic='%s', %s}[1m]) keep_metric_names)";
-        String query = String.format(queryFormat, topicMetricsToQuery, topicName.getGroupName(), topicName.getName(),
-                additionalFilters);
-        MonitoringMetricsContainer prometheusMetricsContainer = prometheusClient.readMetrics(query);
+        List<Query> queries = topicMetricsToQuery.map(queryName -> Query.forTopic(queryName, topicName, additionalFilters)).toList();
+
+        MonitoringMetricsContainer prometheusMetricsContainer = prometheusClient.readMetrics(queries);
         return MonitoringTopicMetricsProvider
                 .metricsBuilder()
                 .withRate(prometheusMetricsContainer.metricValue(frontendMetricName(TOPIC_RATE)))
@@ -94,7 +82,6 @@ public class VictoriaMetricsMetricsProvider implements MonitoringSubscriptionMet
                 .withThroughput(prometheusMetricsContainer.metricValue(frontendMetricName(TOPIC_THROUGHPUT_RATE)))
                 .build();
     }
-
 
     private String consumerMetricName(String name) {
         return consumersMetricsPrefix + name;

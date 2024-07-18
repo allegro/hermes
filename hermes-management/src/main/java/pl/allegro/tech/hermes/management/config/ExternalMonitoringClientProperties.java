@@ -16,6 +16,8 @@ public class ExternalMonitoringClientProperties {
 
     private String externalMonitoringUrl = "http://localhost:18090";
 
+    private int parallelFetchingThreads = 20;
+
     public int getConnectionTimeoutMillis() {
         return connectionTimeoutMillis;
     }
@@ -70,5 +72,13 @@ public class ExternalMonitoringClientProperties {
 
     public void setExternalMonitoringUrl(String externalMonitoringUrl) {
         this.externalMonitoringUrl = externalMonitoringUrl;
+    }
+
+    public int getParallelFetchingThreads() {
+        return parallelFetchingThreads;
+    }
+
+    public void setParallelFetchingThreads(int parallelFetchingThreads) {
+        this.parallelFetchingThreads = parallelFetchingThreads;
     }
 }

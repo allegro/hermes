@@ -1,5 +1,8 @@
 package pl.allegro.tech.hermes.management.config;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
@@ -13,6 +16,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
+import pl.allegro.tech.hermes.common.concurrent.ExecutorServiceFactory;
 import pl.allegro.tech.hermes.management.infrastructure.prometheus.CachingPrometheusClient;
 import pl.allegro.tech.hermes.management.infrastructure.prometheus.PrometheusClient;
 import pl.allegro.tech.hermes.management.infrastructure.prometheus.RestTemplatePrometheusClient;
@@ -37,9 +41,13 @@ public class ExternalMonitoringConfiguration {
     @Bean
     @ConditionalOnProperty(value = "prometheus.client.enabled", havingValue = "true")
     public PrometheusClient prometheusClient(@Qualifier("monitoringRestTemplate") RestTemplate monitoringRestTemplate,
-                                             PrometheusMonitoringClientProperties clientProperties) {
+                                             PrometheusMonitoringClientProperties clientProperties,
+                                             @Qualifier("prometheusFetcherExecutorService") ExecutorService executorService) {
         RestTemplatePrometheusClient underlyingPrometheusClient =
-                new RestTemplatePrometheusClient(monitoringRestTemplate, URI.create(clientProperties.getExternalMonitoringUrl()));
+                new RestTemplatePrometheusClient(
+                        monitoringRestTemplate,
+                        URI.create(clientProperties.getExternalMonitoringUrl()),
+                        executorService);
         return new CachingPrometheusClient(
                 underlyingPrometheusClient,
                 systemTicker(),
@@ -66,7 +74,14 @@ public class ExternalMonitoringConfiguration {
                 .build();
 
         ClientHttpRequestFactory clientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory(client);
-
         return new RestTemplate(clientHttpRequestFactory);
+    }
+
+    @Bean
+    @Qualifier("prometheusFetcherExecutorService")
+    ExecutorService executorService(ExternalMonitoringClientProperties clientProperties) {
+        return Executors.newFixedThreadPool(clientProperties.getParallelFetchingThreads(),
+                new ThreadFactoryBuilder().setNameFormat("prometheus-metrics-fetcher-%d").build()
+        );
     }
 }

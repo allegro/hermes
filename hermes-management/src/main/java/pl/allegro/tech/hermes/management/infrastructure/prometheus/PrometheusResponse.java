@@ -35,14 +35,13 @@ record PrometheusResponse(@JsonProperty("status") String status,
             return Optional.of(Double.parseDouble(vector.get(SCALAR_INDEX_VALUE)));
         }
 
-        VectorResult renameMetric(String newMetricName) {
-            return new VectorResult(new MetricName(newMetricName, metricName.statusCode), vector);
+        VectorResult renameMetric(String statusCodeFamily) {
+            return new VectorResult(new MetricName(Optional.of(statusCodeFamily)), vector);
         }
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     record MetricName(
-            @JsonProperty(value = "__name__") String name,
             @JsonProperty(value = "status_code") Optional<String> statusCode) {
         boolean is2xxStatusCode() {
             return hasStatusCode() && statusCode.get().startsWith("2");
@@ -58,6 +57,14 @@ record PrometheusResponse(@JsonProperty("status") String status,
 
         private boolean hasStatusCode() {
             return statusCode.isPresent();
+        }
+
+        String statusCodeFamilySuffix() {
+            if (statusCode.isPresent()
+                    && !statusCode.get().isBlank()) {
+                return "_" + statusCode.get().charAt(0) + "xx";
+            }
+            return "";
         }
     }
 

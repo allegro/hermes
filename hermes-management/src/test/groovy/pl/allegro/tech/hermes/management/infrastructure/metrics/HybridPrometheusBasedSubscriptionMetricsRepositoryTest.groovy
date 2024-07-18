@@ -10,6 +10,7 @@ import pl.allegro.tech.hermes.management.infrastructure.prometheus.PrometheusCli
 import pl.allegro.tech.hermes.management.infrastructure.prometheus.VictoriaMetricsMetricsProvider
 import spock.lang.Specification
 
+
 import static pl.allegro.tech.hermes.api.MetricDecimalValue.of
 
 class HybridPrometheusBasedSubscriptionMetricsRepositoryTest extends Specification {
@@ -28,19 +29,19 @@ class HybridPrometheusBasedSubscriptionMetricsRepositoryTest extends Specificati
     private HybridSubscriptionMetricsRepository repository = new HybridSubscriptionMetricsRepository(prometheusMetricsProvider,
             summedSharedCounter, zookeeperPaths, lagSource)
 
-    private static final String query = "sum by (__name__, group, topic, subscription, status_code) " +
-            "(irate({__name__=~'hermes_consumers_subscription_delivered_total" +
-            "|hermes_consumers_subscription_timeouts_total" +
-            "|hermes_consumers_subscription_retries_total" +
-            "|hermes_consumers_subscription_throughput_bytes_total" +
-            "|hermes_consumers_subscription_other_errors_total" +
-            "|hermes_consumers_subscription_batches_total" +
-            "|hermes_consumers_subscription_http_status_codes_total', " +
-            "group='group', topic='topic', subscription='subscription', service=~'hermes'}[1m]) keep_metric_names)"
+    private static final List<PrometheusClient.Query> queries = List.of(
+            new PrometheusClient.Query("hermes_consumers_subscription_delivered_total", "sum by (group, topic, subscription, status_code) (irate({__name__=~'hermes_consumers_subscription_delivered_total', group='group', topic='topic', subscription='subscription', service=~'hermes'}[1m]))"),
+            new PrometheusClient.Query("hermes_consumers_subscription_timeouts_total", "sum by (group, topic, subscription, status_code) (irate({__name__=~'hermes_consumers_subscription_timeouts_total', group='group', topic='topic', subscription='subscription', service=~'hermes'}[1m]))"),
+            new PrometheusClient.Query("hermes_consumers_subscription_retries_total", "sum by (group, topic, subscription, status_code) (irate({__name__=~'hermes_consumers_subscription_retries_total', group='group', topic='topic', subscription='subscription', service=~'hermes'}[1m]))"),
+            new PrometheusClient.Query("hermes_consumers_subscription_throughput_bytes_total", "sum by (group, topic, subscription, status_code) (irate({__name__=~'hermes_consumers_subscription_throughput_bytes_total', group='group', topic='topic', subscription='subscription', service=~'hermes'}[1m]))"),
+            new PrometheusClient.Query("hermes_consumers_subscription_other_errors_total", "sum by (group, topic, subscription, status_code) (irate({__name__=~'hermes_consumers_subscription_other_errors_total', group='group', topic='topic', subscription='subscription', service=~'hermes'}[1m]))"),
+            new PrometheusClient.Query("hermes_consumers_subscription_batches_total", "sum by (group, topic, subscription, status_code) (irate({__name__=~'hermes_consumers_subscription_batches_total', group='group', topic='topic', subscription='subscription', service=~'hermes'}[1m]))"),
+            new PrometheusClient.Query("hermes_consumers_subscription_http_status_codes_total", "sum by (group, topic, subscription, status_code) (irate({__name__=~'hermes_consumers_subscription_http_status_codes_total', group='group', topic='topic', subscription='subscription', service=~'hermes'}[1m]))"),
+    )
 
     def "should read subscription metrics from multiple places"() {
         given:
-        client.readMetrics(query) >> MonitoringMetricsContainer.createEmpty()
+        client.readMetrics(queries) >> MonitoringMetricsContainer.createEmpty()
                 .addMetricValue("hermes_consumers_subscription_delivered_total", of('10'))
                 .addMetricValue("hermes_consumers_subscription_timeouts_total", of('100'))
                 .addMetricValue("hermes_consumers_subscription_retries_total", of('20'))
@@ -66,7 +67,7 @@ class HybridPrometheusBasedSubscriptionMetricsRepositoryTest extends Specificati
 
     def "should read subscription metrics for all http status codes"() {
         given:
-        client.readMetrics(query) >> MonitoringMetricsContainer.createEmpty()
+        client.readMetrics(queries) >> MonitoringMetricsContainer.createEmpty()
                 .addMetricValue("hermes_consumers_subscription_http_status_codes_total_2xx", of('2'))
                 .addMetricValue("hermes_consumers_subscription_http_status_codes_total_4xx", of('4'))
                 .addMetricValue("hermes_consumers_subscription_http_status_codes_total_5xx", of('5'))

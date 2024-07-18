@@ -16,16 +16,17 @@ class CachingPrometheusClientTest extends Specification {
 
     def underlyingClient = Mock(PrometheusClient)
     def ticker = new FakeTicker()
+    def queries = List.of(new PrometheusClient.Query("query", "query"))
 
     @Subject
     def cachingClient = new CachingPrometheusClient(underlyingClient, ticker, CACHE_TTL_IN_SECONDS, CACHE_SIZE)
 
     def "should return metrics from the underlying client"() {
         given:
-        underlyingClient.readMetrics("someQuery") >> MonitoringMetricsContainer.initialized([metric_1: of("1"), metric_2: of("2")])
+        underlyingClient.readMetrics(queries) >> MonitoringMetricsContainer.initialized([metric_1: of("1"), metric_2: of("2")])
 
         when:
-        def metrics = cachingClient.readMetrics("someQuery")
+        def metrics = cachingClient.readMetrics(queries)
 
         then:
         metrics.metricValue("metric_1") == of("1")
@@ -34,21 +35,21 @@ class CachingPrometheusClientTest extends Specification {
 
     def "should return metrics from cache while TTL has not expired"() {
         when:
-        cachingClient.readMetrics("someQuery")
+        cachingClient.readMetrics(queries)
         ticker.advance(CACHE_TTL.minusSeconds(1))
-        cachingClient.readMetrics("someQuery")
+        cachingClient.readMetrics(queries)
 
         then:
-        1 * underlyingClient.readMetrics("someQuery") >> MonitoringMetricsContainer.initialized([metric_1: of("1"), metric_2: of("2")])
+        1 * underlyingClient.readMetrics(queries) >> MonitoringMetricsContainer.initialized([metric_1: of("1"), metric_2: of("2")])
     }
 
     def "should get metrics from the underlying client after TTL expires"() {
         when:
-        cachingClient.readMetrics("someQuery")
+        cachingClient.readMetrics(queries)
         ticker.advance(CACHE_TTL.plusSeconds(1))
-        cachingClient.readMetrics("someQuery")
+        cachingClient.readMetrics(queries)
 
         then:
-        2 * underlyingClient.readMetrics("someQuery") >> MonitoringMetricsContainer.initialized([metric_1: of("1"), metric_2: of("2")])
+        2 * underlyingClient.readMetrics(queries) >> MonitoringMetricsContainer.initialized([metric_1: of("1"), metric_2: of("2")])
     }
 }
