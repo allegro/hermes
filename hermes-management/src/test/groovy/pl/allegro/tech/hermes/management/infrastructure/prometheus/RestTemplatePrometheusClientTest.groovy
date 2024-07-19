@@ -11,6 +11,7 @@ import spock.lang.Shared
 import spock.lang.Specification
 
 import java.nio.charset.StandardCharsets
+import java.time.Duration
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -52,9 +53,9 @@ class RestTemplatePrometheusClientTest extends Specification {
 
     void setup() {
         wireMockServer.resetAll()
-        ExecutorService executorService = Executors.newFixedThreadPool(7)
+        ExecutorService executorService = Executors.newFixedThreadPool(10)
         RestTemplate restTemplate = new RestTemplate()
-        client = new RestTemplateParallelPrometheusClient(restTemplate, URI.create("http://localhost:$PROMETHEUS_HTTP_PORT"), executorService)
+        client = new RestTemplateParallelPrometheusClient(restTemplate, URI.create("http://localhost:$PROMETHEUS_HTTP_PORT"), executorService, Duration.ofSeconds(5))
     }
 
     def "should get metrics for path"() {

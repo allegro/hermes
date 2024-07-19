@@ -9,6 +9,7 @@ import spock.lang.Subject
 import java.time.Duration
 
 import static pl.allegro.tech.hermes.api.MetricDecimalValue.of
+import static pl.allegro.tech.hermes.api.MetricDecimalValue.unavailable
 
 class CachingPrometheusClientTest extends Specification {
     static final CACHE_TTL_IN_SECONDS = 30
@@ -55,5 +56,24 @@ class CachingPrometheusClientTest extends Specification {
         then:
         2 * underlyingClient.readMetrics(queries) >> MonitoringMetricsContainer.initialized(
                 [new MetricsQuery("metric_1"): of("1"), new MetricsQuery("metric_2"): of("2")])
+    }
+
+    def "should invalidate partially unavailable data and retry fetch on the next client metrics read"() {
+        when:
+        cachingClient.readMetrics(queries)
+        cachingClient.readMetrics(queries)
+
+        then:
+        2 * underlyingClient.readMetrics(queries) >> MonitoringMetricsContainer.initialized(
+                [new MetricsQuery("metric_1"): unavailable(), new MetricsQuery("metric_2"): of("2")])
+    }
+
+    def "should invalidate completely unavailable data and retry fetch on the next client metrics read"() {
+        when:
+        cachingClient.readMetrics(queries)
+        cachingClient.readMetrics(queries)
+
+        then:
+        2 * underlyingClient.readMetrics(queries) >> MonitoringMetricsContainer.unavailable()
     }
 }

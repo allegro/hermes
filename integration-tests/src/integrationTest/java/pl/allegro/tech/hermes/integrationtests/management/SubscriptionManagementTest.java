@@ -328,16 +328,14 @@ public class SubscriptionManagementTest {
                         .withRate(100)
                         .build());
 
-        // when
+        waitAtMost(Duration.ofSeconds(10)).untilAsserted(() -> {
+            // when
+            WebTestClient.ResponseSpec response = hermes.api().getSubscriptionHealth(topic.getQualifiedName(), subscription.getName());
 
-
-        // then
-        waitAtMost(Duration.ofSeconds(10))
-                .untilAsserted(() -> {
-                    WebTestClient.ResponseSpec response = hermes.api().getSubscriptionHealth(topic.getQualifiedName(), subscription.getName());
-                    assertThat(response.expectBody(SubscriptionHealth.class).returnResult().getResponseBody())
-                            .isEqualTo(SubscriptionHealth.HEALTHY);
-                });
+            // then
+            assertThat(response.expectBody(SubscriptionHealth.class).returnResult().getResponseBody())
+                    .isEqualTo(SubscriptionHealth.HEALTHY);
+        });
 
     }
 
@@ -359,13 +357,15 @@ public class SubscriptionManagementTest {
                         .with500Rate(11)
                         .build());
 
-        // when
-        WebTestClient.ResponseSpec response = hermes.api().getSubscriptionHealth(topic.getQualifiedName(), subscription.getName());
+        waitAtMost(Duration.ofSeconds(10)).untilAsserted(() -> {
+            // when
+            WebTestClient.ResponseSpec response = hermes.api().getSubscriptionHealth(topic.getQualifiedName(), subscription.getName());
 
-        // then
-        SubscriptionHealth subscriptionHealth = response.expectBody(SubscriptionHealth.class).returnResult().getResponseBody();
-        assertThat(subscriptionHealth.getStatus()).isEqualTo(UNHEALTHY);
-        assertThat(subscriptionHealth.getProblems()).containsOnly(malfunctioning(11, topic.getQualifiedName() + "$" + subscription.getName()));
+            // then
+            SubscriptionHealth subscriptionHealth = response.expectBody(SubscriptionHealth.class).returnResult().getResponseBody();
+            assertThat(subscriptionHealth.getStatus()).isEqualTo(UNHEALTHY);
+            assertThat(subscriptionHealth.getProblems()).containsOnly(malfunctioning(11, topic.getQualifiedName() + "$" + subscription.getName()));
+        });
     }
 
     @Test

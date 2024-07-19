@@ -14,7 +14,7 @@ public class ExternalMonitoringClientProperties {
 
     private int cacheSize = 100_000;
 
-    private int parallelFetchingTimeoutMillis = 2000;
+    private int parallelFetchingTimeoutMillis = 5000;
 
     private String externalMonitoringUrl = "http://localhost:18090";
 

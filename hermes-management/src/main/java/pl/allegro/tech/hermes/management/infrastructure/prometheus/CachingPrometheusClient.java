@@ -32,8 +32,8 @@ public class CachingPrometheusClient implements PrometheusClient {
     public MonitoringMetricsContainer readMetrics(List<MetricsQuery> queries) {
         try {
             MonitoringMetricsContainer monitoringMetricsContainer = prometheusMetricsCache.get(queries);
-            if (monitoringMetricsContainer.containsUnavailable()) {
-                // will load for the next fetching client
+            if (monitoringMetricsContainer.hasUnavailableMetrics()) {
+                // try to load the on the next fetch
                 prometheusMetricsCache.invalidate(queries);
             }
             return monitoringMetricsContainer;

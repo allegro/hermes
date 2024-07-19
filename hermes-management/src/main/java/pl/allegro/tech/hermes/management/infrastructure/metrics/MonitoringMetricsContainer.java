@@ -10,17 +10,23 @@ public class MonitoringMetricsContainer {
     private static final MetricDecimalValue DEFAULT_VALUE = MetricDecimalValue.of("0.0");
 
     private final Map<MetricsQuery, MetricDecimalValue> metrics;
+    private final boolean isAvailable;
 
-    private MonitoringMetricsContainer(Map<MetricsQuery, MetricDecimalValue> metrics) {
+    private MonitoringMetricsContainer(boolean isAvailable, Map<MetricsQuery, MetricDecimalValue> metrics) {
         this.metrics = metrics;
+        this.isAvailable = isAvailable;
     }
 
     public static MonitoringMetricsContainer createEmpty() {
-        return new MonitoringMetricsContainer(new HashMap<>());
+        return new MonitoringMetricsContainer(true, new HashMap<>());
     }
 
     public static MonitoringMetricsContainer initialized(Map<MetricsQuery, MetricDecimalValue> metrics) {
-        return new MonitoringMetricsContainer(metrics);
+        return new MonitoringMetricsContainer(true, metrics);
+    }
+
+    public static MonitoringMetricsContainer unavailable() {
+        return new MonitoringMetricsContainer(false, new HashMap<>());
     }
 
     public MonitoringMetricsContainer addMetricValue(MetricsQuery query, MetricDecimalValue value) {
@@ -29,10 +35,13 @@ public class MonitoringMetricsContainer {
     }
 
     public MetricDecimalValue metricValue(MetricsQuery query) {
+        if (!isAvailable) {
+            return MetricDecimalValue.unavailable();
+        }
         return metrics.getOrDefault(query, DEFAULT_VALUE);
     }
 
-    public boolean containsUnavailable() {
-        return metrics.entrySet().stream().anyMatch(e -> !e.getValue().isAvailable());
+    public boolean hasUnavailableMetrics() {
+        return !isAvailable || metrics.entrySet().stream().anyMatch(e -> !e.getValue().isAvailable());
     }
 }
