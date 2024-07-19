@@ -344,8 +344,10 @@ public class SubscriptionService {
                     )
                     .get(subscriptionHealthCheckTimeoutMillis, TimeUnit.MILLISECONDS);
         } catch (TimeoutException e) {
+            logger.error("Fetching unhealthy subscriptions failed...", e);
             throw new UnhealthySubscriptionGetException("Fetching unhealthy subscriptions timed out.");
         } catch (Exception e) {
+            logger.error("Fetching unhealthy subscriptions failed...", e);
             throw new UnhealthySubscriptionGetException("Fetching unhealthy subscriptions failed.", e);
         }
     }

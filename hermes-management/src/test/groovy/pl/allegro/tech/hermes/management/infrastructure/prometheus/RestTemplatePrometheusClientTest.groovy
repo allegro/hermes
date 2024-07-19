@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import jakarta.ws.rs.core.MediaType
 import org.springframework.web.client.RestTemplate
+import pl.allegro.tech.hermes.management.infrastructure.metrics.MetricsQuery
 import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringMetricsContainer
 import pl.allegro.tech.hermes.test.helper.util.Ports
 import spock.lang.Shared
@@ -20,15 +21,20 @@ import static pl.allegro.tech.hermes.api.MetricDecimalValue.of
 class RestTemplatePrometheusClientTest extends Specification {
 
     private static final int PROMETHEUS_HTTP_PORT = Ports.nextAvailable()
-    def subscriptionDeliveredQuery = new PrometheusClient.Query("hermes_consumers_subscription_delivered_total", "sum by (group, topic, subscription, status_code) (irate({__name__=~'hermes_consumers_subscription_delivered_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', service=~'hermes'}[1m]))")
-    def subscriptionTimeoutsQuery = new PrometheusClient.Query("hermes_consumers_subscription_timeouts_total", "sum by (group, topic, subscription, status_code) (irate({__name__=~'hermes_consumers_subscription_timeouts_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', service=~'hermes'}[1m]))")
-    def subscriptionRetriesQuery = new PrometheusClient.Query("hermes_consumers_subscription_retries_total", "sum by (group, topic, subscription, status_code) (irate({__name__=~'hermes_consumers_subscription_retries_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', service=~'hermes'}[1m]))")
-    def subscriptionThroughputQuery = new PrometheusClient.Query("hermes_consumers_subscription_throughput_bytes_total", "sum by (group, topic, subscription, status_code) (irate({__name__=~'hermes_consumers_subscription_throughput_bytes_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', service=~'hermes'}[1m]))")
-    def subscriptionErrorsQuery = new PrometheusClient.Query("hermes_consumers_subscription_other_errors_total", "sum by (group, topic, subscription, status_code) (irate({__name__=~'hermes_consumers_subscription_other_errors_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', service=~'hermes'}[1m]))")
-    def subscriptionBatchesQuery = new PrometheusClient.Query("hermes_consumers_subscription_batches_total", "sum by (group, topic, subscription, status_code) (irate({__name__=~'hermes_consumers_subscription_batches_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', service=~'hermes'}[1m]))")
-    def subscriptionStatusCodesQuery = new PrometheusClient.Query("hermes_consumers_subscription_http_status_codes_total", "sum by (group, topic, subscription, status_code) (irate({__name__=~'hermes_consumers_subscription_http_status_codes_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', service=~'hermes'}[1m]))")
+    def subscriptionDeliveredQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__=~'hermes_consumers_subscription_delivered_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1' service=~'hermes'}[1m]))")
+    def subscriptionTimeoutsQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__=~'hermes_consumers_subscription_timeouts_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', service=~'hermes'}[1m]))")
+    def subscriptionRetriesQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__=~'hermes_consumers_subscription_retries_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', service=~'hermes'}[1m]))")
+    def subscriptionThroughputQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__=~'hermes_consumers_subscription_throughput_bytes_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', service=~'hermes'}[1m]))")
+    def subscriptionErrorsQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__=~'hermes_consumers_subscription_other_errors_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', service=~'hermes'}[1m]))")
+    def subscriptionBatchesQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__=~'hermes_consumers_subscription_batches_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', service=~'hermes'}[1m]))")
+    def subscription2xxStatusCodesQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__=~'hermes_consumers_subscription_http_status_codes_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', status_code=~'2.*', service=~'hermes'}[1m]))")
+    def subscription4xxStatusCodesQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__=~'hermes_consumers_subscription_http_status_codes_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', status_code=~'4.*', service=~'hermes'}[1m]))")
+    def subscription5xxStatusCodesQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__=~'hermes_consumers_subscription_http_status_codes_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', status_code=~'5.*', service=~'hermes'}[1m]))")
+
     def queries = List.of(subscriptionDeliveredQuery, subscriptionTimeoutsQuery, subscriptionRetriesQuery, subscriptionThroughputQuery,
-            subscriptionErrorsQuery, subscriptionBatchesQuery, subscriptionStatusCodesQuery)
+            subscriptionErrorsQuery, subscriptionBatchesQuery, subscription2xxStatusCodesQuery, subscription4xxStatusCodesQuery,
+            subscription5xxStatusCodesQuery
+    )
 
     @Shared
     WireMockServer wireMockServer = new WireMockServer(
@@ -53,52 +59,85 @@ class RestTemplatePrometheusClientTest extends Specification {
 
     def "should get metrics for path"() {
         given:
-        mockPrometheus(queries)
+        def queriesStubs = List.of(
+                new QueryStub(subscriptionDeliveredQuery, "subscription_delivered_total.json"),
+                new QueryStub(subscriptionTimeoutsQuery, "subscription_timeouts_total.json"),
+                new QueryStub(subscriptionRetriesQuery, "subscription_retries_total.json"),
+                new QueryStub(subscriptionThroughputQuery, "subscription_throughput_bytes_total.json"),
+                new QueryStub(subscriptionErrorsQuery, "subscription_other_errors_total.json"),
+                new QueryStub(subscriptionBatchesQuery, "subscription_batches_total.json"),
+                new QueryStub(subscription2xxStatusCodesQuery, "subscription_2xx_http_status_codes_total.json"),
+                new QueryStub(subscription4xxStatusCodesQuery, "subscription_4xx_http_status_codes_total.json"),
+                new QueryStub(subscription5xxStatusCodesQuery, "subscription_5xx_http_status_codes_total.json"),
+        )
+        mockPrometheus(queriesStubs)
 
         when:
         MonitoringMetricsContainer metrics = client.readMetrics(queries)
 
         then:
-        metrics.metricValue("hermes_consumers_subscription_delivered_total") == of("1.0")
-        metrics.metricValue("hermes_consumers_subscription_timeouts_total") == of("2.0")
-        metrics.metricValue("hermes_consumers_subscription_retries_total") == of("1.0")
-        metrics.metricValue("hermes_consumers_subscription_throughput_bytes_total") == of("3.0")
-        metrics.metricValue("hermes_consumers_subscription_other_errors_total") == of("4.0")
-        metrics.metricValue("hermes_consumers_subscription_batches_total") == of("5.0")
-        metrics.metricValue("hermes_consumers_subscription_http_status_codes_total_2xx") == of("2.0")
-        metrics.metricValue("hermes_consumers_subscription_http_status_codes_total_4xx") == of("1.0")
-        metrics.metricValue("hermes_consumers_subscription_http_status_codes_total_5xx") == of("2.0")
+        metrics.metricValue(subscriptionDeliveredQuery) == of("1.0")
+        metrics.metricValue(subscriptionTimeoutsQuery) == of("2.0")
+        metrics.metricValue(subscriptionRetriesQuery) == of("1.0")
+        metrics.metricValue(subscriptionThroughputQuery) == of("3.0")
+        metrics.metricValue(subscriptionErrorsQuery) == of("4.0")
+        metrics.metricValue(subscriptionBatchesQuery) == of("5.0")
+        metrics.metricValue(subscription2xxStatusCodesQuery) == of("2.0")
+        metrics.metricValue(subscription4xxStatusCodesQuery) == of("1.0")
+        metrics.metricValue(subscription5xxStatusCodesQuery) == of("2.0")
     }
 
     def "should return default value when metric has no value"() {
         given:
-        mockPrometheus(List.of(subscriptionTimeoutsQuery, subscriptionRetriesQuery))
+        def queriesStubs = List.of(
+                emptyStub(subscriptionDeliveredQuery),
+                new QueryStub(subscriptionTimeoutsQuery, "subscription_timeouts_total.json"),
+                new QueryStub(subscriptionRetriesQuery, "subscription_retries_total.json"),
+                emptyStub(subscriptionThroughputQuery),
+                emptyStub(subscriptionErrorsQuery),
+                emptyStub(subscriptionBatchesQuery),
+                emptyStub(subscription2xxStatusCodesQuery),
+                emptyStub(subscription4xxStatusCodesQuery),
+                emptyStub(subscription5xxStatusCodesQuery)
+        )
+        mockPrometheus(queriesStubs)
 
         when:
         MonitoringMetricsContainer metrics = client.readMetrics(queries)
 
         then:
-        metrics.metricValue("hermes_consumers_subscription_delivered_total") == of("0.0")
-        metrics.metricValue("hermes_consumers_subscription_timeouts_total") == of("2.0")
-        metrics.metricValue("hermes_consumers_subscription_retries_total") == of("1.0")
-        metrics.metricValue("hermes_consumers_subscription_throughput_bytes_total") == of("0.0")
-        metrics.metricValue("hermes_consumers_subscription_other_errors_total") == of("0.0")
-        metrics.metricValue("hermes_consumers_subscription_batches_total") == of("0.0")
-        metrics.metricValue("hermes_consumers_subscription_http_status_codes_total_2xx") == of("0.0")
-        metrics.metricValue("hermes_consumers_subscription_http_status_codes_total_4xx") == of("0.0")
-        metrics.metricValue("hermes_consumers_subscription_http_status_codes_total_5xx") == of("0.0")
+        metrics.metricValue(subscriptionDeliveredQuery) == of("0.0")
+        metrics.metricValue(subscriptionTimeoutsQuery) == of("2.0")
+        metrics.metricValue(subscriptionRetriesQuery) == of("1.0")
+        metrics.metricValue(subscriptionThroughputQuery) == of("0.0")
+        metrics.metricValue(subscriptionErrorsQuery) == of("0.0")
+        metrics.metricValue(subscriptionBatchesQuery) == of("0.0")
+        metrics.metricValue(subscription2xxStatusCodesQuery) == of("0.0")
+        metrics.metricValue(subscription4xxStatusCodesQuery) == of("0.0")
+        metrics.metricValue(subscription5xxStatusCodesQuery) == of("0.0")
     }
 
-    private void mockPrometheus(List<PrometheusClient.Query> queries) {
+    private void mockPrometheus(List<QueryStub> queries) {
         queries.forEach { q ->
-            String responseFile = q.name().replace("hermes_consumers_", "") + ".json"
-            String encodedQuery = URLEncoder.encode(q.fullQuery(), StandardCharsets.UTF_8)
+            String encodedQuery = URLEncoder.encode(q.query.query(), StandardCharsets.UTF_8)
             wireMockServer.stubFor(WireMock.get(urlEqualTo(String.format("/api/v1/query?query=%s", encodedQuery)))
                     .willReturn(WireMock.aResponse()
                             .withStatus(200)
                             .withHeader("Content-Type", MediaType.APPLICATION_JSON)
-                            .withBodyFile(responseFile)))
+                            .withBodyFile(q.fileName)))
         }
+    }
 
+    static class QueryStub {
+        QueryStub(MetricsQuery query, String fileName) {
+            this.query = query
+            this.fileName = fileName
+        }
+        MetricsQuery query;
+        String fileName
+    }
+
+    QueryStub emptyStub(MetricsQuery query) {
+        return new QueryStub(query, "prometheus_empty_response.json")
     }
 }

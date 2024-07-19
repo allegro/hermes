@@ -2,13 +2,15 @@ package pl.allegro.tech.hermes.management.infrastructure.prometheus;
 
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.management.infrastructure.metrics.MetricsQuery;
 import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringMetricsContainer;
 import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringSubscriptionMetricsProvider;
 import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringTopicMetricsProvider;
 
-import java.util.List;
-import java.util.stream.Stream;
-import pl.allegro.tech.hermes.management.infrastructure.prometheus.PrometheusClient.Query;
+import static pl.allegro.tech.hermes.management.infrastructure.prometheus.PrometheusClient.forSubscription;
+import static pl.allegro.tech.hermes.management.infrastructure.prometheus.PrometheusClient.forSubscriptionStatusCode;
+import static pl.allegro.tech.hermes.management.infrastructure.prometheus.PrometheusClient.forTopic;
+
 
 public class VictoriaMetricsMetricsProvider implements MonitoringSubscriptionMetricsProvider, MonitoringTopicMetricsProvider {
 
@@ -18,9 +20,6 @@ public class VictoriaMetricsMetricsProvider implements MonitoringSubscriptionMet
     private static final String SUBSCRIPTION_OTHER_ERRORS = "subscription_other_errors_total";
     private static final String SUBSCRIPTION_BATCHES = "subscription_batches_total";
     private static final String SUBSCRIPTION_STATUS_CODES = "subscription_http_status_codes_total";
-    private static final String SUBSCRIPTION_STATUS_CODES_2XX = SUBSCRIPTION_STATUS_CODES + "_2xx";
-    private static final String SUBSCRIPTION_STATUS_CODES_4XX = SUBSCRIPTION_STATUS_CODES + "_4xx";
-    private static final String SUBSCRIPTION_STATUS_CODES_5XX = SUBSCRIPTION_STATUS_CODES + "_5xx";
     private static final String SUBSCRIPTION_RETRIES = "subscription_retries_total";
 
     private static final String TOPIC_RATE = "topic_requests_total";
@@ -30,8 +29,6 @@ public class VictoriaMetricsMetricsProvider implements MonitoringSubscriptionMet
     private final String consumersMetricsPrefix;
     private final String frontendMetricsPrefix;
     private final String additionalFilters;
-    private final Stream<String> subscriptionMetricsToQuery;
-    private final Stream<String> topicMetricsToQuery;
     private final PrometheusClient prometheusClient;
 
     public VictoriaMetricsMetricsProvider(PrometheusClient prometheusClient, String consumersMetricsPrefix,
@@ -40,46 +37,51 @@ public class VictoriaMetricsMetricsProvider implements MonitoringSubscriptionMet
         this.consumersMetricsPrefix = consumersMetricsPrefix.isEmpty() ? "" : consumersMetricsPrefix + "_";
         this.frontendMetricsPrefix = frontendMetricsPrefix.isEmpty() ? "" : frontendMetricsPrefix + "_";
         this.additionalFilters = additionalFilters;
-        this.subscriptionMetricsToQuery = Stream.of(SUBSCRIPTION_DELIVERED, SUBSCRIPTION_TIMEOUTS, SUBSCRIPTION_RETRIES,
-                        SUBSCRIPTION_THROUGHPUT, SUBSCRIPTION_OTHER_ERRORS, SUBSCRIPTION_BATCHES, SUBSCRIPTION_STATUS_CODES)
-                .map(this::consumerMetricName);
-        this.topicMetricsToQuery = Stream.of(
-                frontendMetricName(TOPIC_RATE),
-                consumerMetricName(TOPIC_DELIVERY_RATE),
-                frontendMetricName(TOPIC_THROUGHPUT_RATE));
     }
 
     @Override
     public MonitoringSubscriptionMetrics subscriptionMetrics(SubscriptionName subscriptionName) {
-        List<Query> queries = this.subscriptionMetricsToQuery
-                .map(queryName -> Query.forSubscription(queryName, subscriptionName, additionalFilters))
-                .toList();
+        MetricsQuery subscriptionDeliveredQuery = forSubscription(consumerMetricName(SUBSCRIPTION_DELIVERED), subscriptionName, additionalFilters);
+        MetricsQuery subscriptionTimeoutsQuery = forSubscription(consumerMetricName(SUBSCRIPTION_TIMEOUTS), subscriptionName, additionalFilters);
+        MetricsQuery subscriptionThroughputQuery = forSubscription(consumerMetricName(SUBSCRIPTION_THROUGHPUT), subscriptionName, additionalFilters);
+        MetricsQuery subscriptionOtherErrorsQuery = forSubscription(consumerMetricName(SUBSCRIPTION_OTHER_ERRORS), subscriptionName, additionalFilters);
+        MetricsQuery subscriptionBatchesQuery = forSubscription(consumerMetricName(SUBSCRIPTION_BATCHES), subscriptionName, additionalFilters);
+        MetricsQuery subscriptionRetriesQuery = forSubscription(consumerMetricName(SUBSCRIPTION_RETRIES), subscriptionName, additionalFilters);
+        MetricsQuery subscription2xx = forSubscriptionStatusCode(consumerMetricName(SUBSCRIPTION_STATUS_CODES), subscriptionName, "2.*", additionalFilters);
+        MetricsQuery subscription4xx = forSubscriptionStatusCode(consumerMetricName(SUBSCRIPTION_STATUS_CODES), subscriptionName, "4.*", additionalFilters);
+        MetricsQuery subscription5xx = forSubscriptionStatusCode(consumerMetricName(SUBSCRIPTION_STATUS_CODES), subscriptionName, "5.*", additionalFilters);
 
-        MonitoringMetricsContainer prometheusMetricsContainer = prometheusClient.readMetrics(queries);
+        MonitoringMetricsContainer prometheusMetricsContainer = prometheusClient.readMetrics(
+                subscriptionDeliveredQuery, subscriptionTimeoutsQuery, subscriptionRetriesQuery, subscriptionThroughputQuery,
+                subscriptionOtherErrorsQuery, subscriptionBatchesQuery, subscription2xx, subscription4xx, subscription5xx
+        );
         return MonitoringSubscriptionMetricsProvider
                 .metricsBuilder()
-                .withRate(prometheusMetricsContainer.metricValue(consumerMetricName(SUBSCRIPTION_DELIVERED)))
-                .withTimeouts(prometheusMetricsContainer.metricValue(consumerMetricName(SUBSCRIPTION_TIMEOUTS)))
-                .withThroughput(prometheusMetricsContainer.metricValue(consumerMetricName(SUBSCRIPTION_THROUGHPUT)))
-                .withOtherErrors(prometheusMetricsContainer.metricValue(consumerMetricName(SUBSCRIPTION_OTHER_ERRORS)))
-                .withMetricPathBatchRate(prometheusMetricsContainer.metricValue(consumerMetricName(SUBSCRIPTION_BATCHES)))
-                .withCodes2xx(prometheusMetricsContainer.metricValue(consumerMetricName(SUBSCRIPTION_STATUS_CODES_2XX)))
-                .withCode4xx(prometheusMetricsContainer.metricValue(consumerMetricName(SUBSCRIPTION_STATUS_CODES_4XX)))
-                .withCode5xx(prometheusMetricsContainer.metricValue(consumerMetricName(SUBSCRIPTION_STATUS_CODES_5XX)))
-                .withRetries(prometheusMetricsContainer.metricValue(consumerMetricName(SUBSCRIPTION_RETRIES)))
+                .withRate(prometheusMetricsContainer.metricValue(subscriptionDeliveredQuery))
+                .withTimeouts(prometheusMetricsContainer.metricValue(subscriptionTimeoutsQuery))
+                .withThroughput(prometheusMetricsContainer.metricValue(subscriptionThroughputQuery))
+                .withOtherErrors(prometheusMetricsContainer.metricValue(subscriptionOtherErrorsQuery))
+                .withMetricPathBatchRate(prometheusMetricsContainer.metricValue(subscriptionBatchesQuery))
+                .withCodes2xx(prometheusMetricsContainer.metricValue(subscription2xx))
+                .withCode4xx(prometheusMetricsContainer.metricValue(subscription4xx))
+                .withCode5xx(prometheusMetricsContainer.metricValue(subscription5xx))
+                .withRetries(prometheusMetricsContainer.metricValue(subscriptionRetriesQuery))
                 .build();
     }
 
     @Override
     public MonitoringTopicMetrics topicMetrics(TopicName topicName) {
-        List<Query> queries = topicMetricsToQuery.map(queryName -> Query.forTopic(queryName, topicName, additionalFilters)).toList();
+        MetricsQuery topicRateQuery = forTopic(frontendMetricName(TOPIC_RATE), topicName, additionalFilters);
+        MetricsQuery topicDeliveryRateQuery = forTopic(consumerMetricName(TOPIC_DELIVERY_RATE), topicName, additionalFilters);
+        MetricsQuery topicThroughputQuery = forTopic(frontendMetricName(TOPIC_THROUGHPUT_RATE), topicName, additionalFilters);
 
-        MonitoringMetricsContainer prometheusMetricsContainer = prometheusClient.readMetrics(queries);
+        MonitoringMetricsContainer prometheusMetricsContainer = prometheusClient.readMetrics(
+                topicRateQuery, topicDeliveryRateQuery, topicThroughputQuery);
         return MonitoringTopicMetricsProvider
                 .metricsBuilder()
-                .withRate(prometheusMetricsContainer.metricValue(frontendMetricName(TOPIC_RATE)))
-                .withDeliveryRate(prometheusMetricsContainer.metricValue(consumerMetricName(TOPIC_DELIVERY_RATE)))
-                .withThroughput(prometheusMetricsContainer.metricValue(frontendMetricName(TOPIC_THROUGHPUT_RATE)))
+                .withRate(prometheusMetricsContainer.metricValue(topicRateQuery))
+                .withDeliveryRate(prometheusMetricsContainer.metricValue(topicDeliveryRateQuery))
+                .withThroughput(prometheusMetricsContainer.metricValue(topicThroughputQuery))
                 .build();
     }
 

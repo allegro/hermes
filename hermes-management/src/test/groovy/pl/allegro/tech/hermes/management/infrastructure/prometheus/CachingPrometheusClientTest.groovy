@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.management.infrastructure.prometheus
 
+import pl.allegro.tech.hermes.management.infrastructure.metrics.MetricsQuery
 import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringMetricsContainer
 import pl.allegro.tech.hermes.test.helper.cache.FakeTicker
 import spock.lang.Specification
@@ -16,21 +17,22 @@ class CachingPrometheusClientTest extends Specification {
 
     def underlyingClient = Mock(PrometheusClient)
     def ticker = new FakeTicker()
-    def queries = List.of(new PrometheusClient.Query("query", "query"))
+    def queries = List.of(new MetricsQuery("query"))
 
     @Subject
     def cachingClient = new CachingPrometheusClient(underlyingClient, ticker, CACHE_TTL_IN_SECONDS, CACHE_SIZE)
 
     def "should return metrics from the underlying client"() {
         given:
-        underlyingClient.readMetrics(queries) >> MonitoringMetricsContainer.initialized([metric_1: of("1"), metric_2: of("2")])
+        underlyingClient.readMetrics(queries) >> MonitoringMetricsContainer.initialized(
+                [new MetricsQuery("metric_1"): of("1"), new MetricsQuery("metric_2"): of("2")])
 
         when:
         def metrics = cachingClient.readMetrics(queries)
 
         then:
-        metrics.metricValue("metric_1") == of("1")
-        metrics.metricValue("metric_2") == of("2")
+        metrics.metricValue(new MetricsQuery("metric_1")) == of("1")
+        metrics.metricValue(new MetricsQuery("metric_2")) == of("2")
     }
 
     def "should return metrics from cache while TTL has not expired"() {
@@ -40,7 +42,8 @@ class CachingPrometheusClientTest extends Specification {
         cachingClient.readMetrics(queries)
 
         then:
-        1 * underlyingClient.readMetrics(queries) >> MonitoringMetricsContainer.initialized([metric_1: of("1"), metric_2: of("2")])
+        1 * underlyingClient.readMetrics(queries) >> MonitoringMetricsContainer.initialized(
+                [new MetricsQuery("metric_1"): of("1"), new MetricsQuery("metric_2"): of("2")])
     }
 
     def "should get metrics from the underlying client after TTL expires"() {
@@ -50,6 +53,7 @@ class CachingPrometheusClientTest extends Specification {
         cachingClient.readMetrics(queries)
 
         then:
-        2 * underlyingClient.readMetrics(queries) >> MonitoringMetricsContainer.initialized([metric_1: of("1"), metric_2: of("2")])
+        2 * underlyingClient.readMetrics(queries) >> MonitoringMetricsContainer.initialized(
+                [new MetricsQuery("metric_1"): of("1"), new MetricsQuery("metric_2"): of("2")])
     }
 }

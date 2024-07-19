@@ -26,17 +26,18 @@ class HybridPrometheusBasedTopicMetricsRepositoryTest extends Specification {
     private HybridTopicMetricsRepository repository = new HybridTopicMetricsRepository(prometheusMetricsProvider,
             summedSharedCounter, zookeeperPaths, subscriptionRepository)
 
+    private MetricsQuery topicRequestsQuery = new MetricsQuery("sum by (group, topic) (irate({__name__=~'hermes_frontend_topic_requests_total', group='group', topic='topic', service='hermes'}[1m]))")
+    private MetricsQuery topicDeliveredQuery = new MetricsQuery("sum by (group, topic) (irate({__name__=~'hermes_consumers_subscription_delivered_total', group='group', topic='topic', service='hermes'}[1m]))")
+    private MetricsQuery topicThroughputQuery = new MetricsQuery("sum by (group, topic) (irate({__name__=~'hermes_frontend_topic_throughput_bytes_total', group='group', topic='topic', service='hermes'}[1m]))")
+
     def "should load metrics from graphite and zookeeper"() {
         given:
-        String query = "sum by (__name__, group, topic) (irate({__name__=~'hermes_frontend_topic_requests_total" +
-                "|hermes_consumers_subscription_delivered_total" +
-                "|hermes_frontend_topic_throughput_bytes_total', group='group', " +
-                "topic='topic', service='hermes'}[1m]) keep_metric_names)"
+        List<MetricsQuery> queries = List.of(topicRequestsQuery, topicDeliveredQuery, topicThroughputQuery)
         TopicName topic = new TopicName('group', 'topic')
 
-        client.readMetrics(query) >> MonitoringMetricsContainer.createEmpty()
-            .addMetricValue("hermes_frontend_topic_requests_total", of('10'))
-            .addMetricValue("hermes_consumers_subscription_delivered_total", of('20'))
+        client.readMetrics(queries) >> MonitoringMetricsContainer.createEmpty()
+            .addMetricValue(topicRequestsQuery, of('10'))
+            .addMetricValue(topicDeliveredQuery, of('20'))
         summedSharedCounter.getValue('/hermes/groups/group/topics/topic/metrics/published') >> 100
         summedSharedCounter.getValue('/hermes/groups/group/topics/topic/metrics/volume') >> 1024
         subscriptionRepository.listSubscriptionNames(topic) >> ["subscription1", "subscription2"]

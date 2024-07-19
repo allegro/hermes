@@ -22,7 +22,6 @@ record PrometheusResponse(@JsonProperty("status") String status,
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     record VectorResult(
-            @JsonProperty("metric") MetricName metricName,
             @JsonProperty("value") List<String> vector) {
 
         private static final int VALID_VECTOR_LENGTH = 2;
@@ -33,38 +32,6 @@ record PrometheusResponse(@JsonProperty("status") String status,
                 return Optional.empty();
             }
             return Optional.of(Double.parseDouble(vector.get(SCALAR_INDEX_VALUE)));
-        }
-
-        VectorResult renameMetric(String statusCodeFamily) {
-            return new VectorResult(new MetricName(Optional.of(statusCodeFamily)), vector);
-        }
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    record MetricName(
-            @JsonProperty(value = "status_code") Optional<String> statusCode) {
-        boolean is2xxStatusCode() {
-            return hasStatusCode() && statusCode.get().startsWith("2");
-        }
-
-        boolean is4xxStatusCode() {
-            return hasStatusCode() && statusCode.get().startsWith("4");
-        }
-
-        boolean is5xxStatusCode() {
-            return hasStatusCode() && statusCode.get().startsWith("5");
-        }
-
-        private boolean hasStatusCode() {
-            return statusCode.isPresent();
-        }
-
-        String statusCodeFamilySuffix() {
-            if (statusCode.isPresent()
-                    && !statusCode.get().isBlank()) {
-                return "_" + statusCode.get().charAt(0) + "xx";
-            }
-            return "";
         }
     }
 

@@ -9,38 +9,26 @@ public class MonitoringMetricsContainer {
 
     private static final MetricDecimalValue DEFAULT_VALUE = MetricDecimalValue.of("0.0");
 
-    private final Map<String, MetricDecimalValue> metrics;
-    private final boolean isAvailable;
+    private final Map<MetricsQuery, MetricDecimalValue> metrics;
 
-    private MonitoringMetricsContainer(boolean isAvailable, Map<String, MetricDecimalValue> metrics) {
+    private MonitoringMetricsContainer(Map<MetricsQuery, MetricDecimalValue> metrics) {
         this.metrics = metrics;
-        this.isAvailable = isAvailable;
     }
 
     public static MonitoringMetricsContainer createEmpty() {
-        return new MonitoringMetricsContainer(true, new HashMap<>());
+        return new MonitoringMetricsContainer(new HashMap<>());
     }
 
-    public static MonitoringMetricsContainer initialized(Map<String, MetricDecimalValue> metrics) {
-        return new MonitoringMetricsContainer(true, metrics);
+    public static MonitoringMetricsContainer initialized(Map<MetricsQuery, MetricDecimalValue> metrics) {
+        return new MonitoringMetricsContainer(metrics);
     }
 
-    public static MonitoringMetricsContainer unavailable() {
-        return new MonitoringMetricsContainer(false, new HashMap<>());
-    }
-
-    public MonitoringMetricsContainer addMetricValue(String metricPath, MetricDecimalValue value) {
-        if (!isAvailable) {
-            throw new IllegalStateException("Adding value to unavailable metrics container");
-        }
-        this.metrics.put(metricPath, value);
+    public MonitoringMetricsContainer addMetricValue(MetricsQuery query, MetricDecimalValue value) {
+        this.metrics.put(query, value);
         return this;
     }
 
-    public MetricDecimalValue metricValue(String metricPath) {
-        if (!isAvailable) {
-            return MetricDecimalValue.unavailable();
-        }
-        return metrics.getOrDefault(metricPath, DEFAULT_VALUE);
+    public MetricDecimalValue metricValue(MetricsQuery query) {
+        return metrics.getOrDefault(query, DEFAULT_VALUE);
     }
 }

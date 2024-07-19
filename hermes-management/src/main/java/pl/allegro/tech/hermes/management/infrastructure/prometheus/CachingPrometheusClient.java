@@ -4,6 +4,7 @@ import com.google.common.base.Ticker;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import pl.allegro.tech.hermes.management.infrastructure.metrics.MetricsQuery;
 import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringMetricsContainer;
 
 import java.util.List;
@@ -11,12 +12,10 @@ import java.util.concurrent.ExecutionException;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-
-
 public class CachingPrometheusClient implements PrometheusClient {
 
     private final PrometheusClient underlyingPrometheusClient;
-    private final LoadingCache<List<Query>, MonitoringMetricsContainer> prometheusMetricsCache;
+    private final LoadingCache<List<MetricsQuery>, MonitoringMetricsContainer> prometheusMetricsCache;
 
     public CachingPrometheusClient(PrometheusClient underlyingPrometheusClient, Ticker ticker,
                                    long cacheTtlInSeconds, long cacheSize) {
@@ -29,7 +28,7 @@ public class CachingPrometheusClient implements PrometheusClient {
     }
 
     @Override
-    public MonitoringMetricsContainer readMetrics(List<Query> queries) {
+    public MonitoringMetricsContainer readMetrics(List<MetricsQuery> queries) {
         try {
             return prometheusMetricsCache.get(queries);
         } catch (ExecutionException e) {
@@ -38,9 +37,9 @@ public class CachingPrometheusClient implements PrometheusClient {
         }
     }
 
-    private class PrometheusMetricsCacheLoader extends CacheLoader<List<Query>, MonitoringMetricsContainer> {
+    private class PrometheusMetricsCacheLoader extends CacheLoader<List<MetricsQuery>, MonitoringMetricsContainer> {
         @Override
-        public MonitoringMetricsContainer load(List<Query> queries) {
+        public MonitoringMetricsContainer load(List<MetricsQuery> queries) {
             return underlyingPrometheusClient.readMetrics(queries);
         }
     }
