@@ -12,6 +12,7 @@ import java.util.concurrent.ExecutionException;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
+
 public class CachingPrometheusClient implements PrometheusClient {
 
     private final PrometheusClient underlyingPrometheusClient;
@@ -30,7 +31,12 @@ public class CachingPrometheusClient implements PrometheusClient {
     @Override
     public MonitoringMetricsContainer readMetrics(List<MetricsQuery> queries) {
         try {
-            return prometheusMetricsCache.get(queries);
+            MonitoringMetricsContainer monitoringMetricsContainer = prometheusMetricsCache.get(queries);
+            if (monitoringMetricsContainer.containsUnavailable()) {
+                // will load for the next fetching client
+                prometheusMetricsCache.invalidate(queries);
+            }
+            return monitoringMetricsContainer;
         } catch (ExecutionException e) {
             // should never happen because the loader does not throw any checked exceptions
             throw new RuntimeException(e);

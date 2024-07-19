@@ -329,12 +329,16 @@ public class SubscriptionManagementTest {
                         .build());
 
         // when
-        WebTestClient.ResponseSpec response = hermes.api().getSubscriptionHealth(topic.getQualifiedName(), subscription.getName());
+
 
         // then
+        waitAtMost(Duration.ofSeconds(10))
+                .untilAsserted(() -> {
+                    WebTestClient.ResponseSpec response = hermes.api().getSubscriptionHealth(topic.getQualifiedName(), subscription.getName());
+                    assertThat(response.expectBody(SubscriptionHealth.class).returnResult().getResponseBody())
+                            .isEqualTo(SubscriptionHealth.HEALTHY);
+                });
 
-        assertThat(response.expectBody(SubscriptionHealth.class).returnResult().getResponseBody())
-                .isEqualTo(SubscriptionHealth.HEALTHY);
     }
 
     @Test
@@ -386,8 +390,8 @@ public class SubscriptionManagementTest {
         // given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
         Subscription subscription = subscriptionWithRandomName(topic.getName())
-                        .withDeliveryType(DeliveryType.BATCH)
-                        .withContentType(ContentType.AVRO)
+                .withDeliveryType(DeliveryType.BATCH)
+                .withContentType(ContentType.AVRO)
                 .build();
 
         // when

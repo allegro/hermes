@@ -4,7 +4,7 @@ public class ExternalMonitoringClientProperties {
 
     private int connectionTimeoutMillis = 1000;
 
-    private int socketTimeoutMillis = 2000;
+    private int socketTimeoutMillis = 1000;
 
     private int maxConnections = 100;
 
@@ -13,6 +13,8 @@ public class ExternalMonitoringClientProperties {
     private int cacheTtlSeconds = 55;
 
     private int cacheSize = 100_000;
+
+    private int parallelFetchingTimeoutMillis = 2000;
 
     private String externalMonitoringUrl = "http://localhost:18090";
 
@@ -80,5 +82,13 @@ public class ExternalMonitoringClientProperties {
 
     public void setParallelFetchingThreads(int parallelFetchingThreads) {
         this.parallelFetchingThreads = parallelFetchingThreads;
+    }
+
+    public int getParallelFetchingTimeoutMillis() {
+        return parallelFetchingTimeoutMillis;
+    }
+
+    public void setParallelFetchingTimeoutMillis(int parallelFetchingTimeoutMillis) {
+        this.parallelFetchingTimeoutMillis = parallelFetchingTimeoutMillis;
     }
 }

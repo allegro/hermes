@@ -1,8 +1,6 @@
 package pl.allegro.tech.hermes.management.config;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
@@ -16,13 +14,15 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
-import pl.allegro.tech.hermes.common.concurrent.ExecutorServiceFactory;
 import pl.allegro.tech.hermes.management.infrastructure.prometheus.CachingPrometheusClient;
 import pl.allegro.tech.hermes.management.infrastructure.prometheus.PrometheusClient;
-import pl.allegro.tech.hermes.management.infrastructure.prometheus.RestTemplatePrometheusClient;
-import pl.allegro.tech.hermes.management.infrastructure.prometheus.VictoriaMetricsMetricsProvider;
+import pl.allegro.tech.hermes.management.infrastructure.prometheus.PrometheusMetricsProvider;
+import pl.allegro.tech.hermes.management.infrastructure.prometheus.RestTemplateParallelPrometheusClient;
 
 import java.net.URI;
+import java.time.Duration;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static com.google.common.base.Ticker.systemTicker;
 
@@ -31,9 +31,9 @@ public class ExternalMonitoringConfiguration {
 
     @Bean
     @ConditionalOnProperty(value = "prometheus.client.enabled", havingValue = "true")
-    public VictoriaMetricsMetricsProvider prometheusMetricsProvider(PrometheusClient prometheusClient,
-                                                                    PrometheusMonitoringClientProperties properties) {
-        return new VictoriaMetricsMetricsProvider(prometheusClient,
+    public PrometheusMetricsProvider prometheusMetricsProvider(PrometheusClient prometheusClient,
+                                                               PrometheusMonitoringClientProperties properties) {
+        return new PrometheusMetricsProvider(prometheusClient,
                 properties.getConsumersMetricsPrefix(), properties.getFrontendMetricsPrefix(),
                 properties.getAdditionalFilters());
     }
@@ -43,11 +43,12 @@ public class ExternalMonitoringConfiguration {
     public PrometheusClient prometheusClient(@Qualifier("monitoringRestTemplate") RestTemplate monitoringRestTemplate,
                                              PrometheusMonitoringClientProperties clientProperties,
                                              @Qualifier("prometheusFetcherExecutorService") ExecutorService executorService) {
-        RestTemplatePrometheusClient underlyingPrometheusClient =
-                new RestTemplatePrometheusClient(
+        RestTemplateParallelPrometheusClient underlyingPrometheusClient =
+                new RestTemplateParallelPrometheusClient(
                         monitoringRestTemplate,
                         URI.create(clientProperties.getExternalMonitoringUrl()),
-                        executorService);
+                        executorService,
+                        Duration.ofMillis(clientProperties.getParallelFetchingTimeoutMillis()));
         return new CachingPrometheusClient(
                 underlyingPrometheusClient,
                 systemTicker(),

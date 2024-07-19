@@ -13,6 +13,7 @@ import pl.allegro.tech.hermes.management.infrastructure.metrics.MetricsQuery;
 import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringMetricsContainer;
 
 import java.net.URI;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -24,19 +25,21 @@ import static java.net.URLEncoder.encode;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 
-public class RestTemplatePrometheusClient implements PrometheusClient {
+public class RestTemplateParallelPrometheusClient implements PrometheusClient {
 
-    private static final Logger logger = LoggerFactory.getLogger(RestTemplatePrometheusClient.class);
+    private static final Logger logger = LoggerFactory.getLogger(RestTemplateParallelPrometheusClient.class);
 
     private final URI prometheusUri;
     private final RestTemplate restTemplate;
     private final ExecutorService executorService;
+    private final Duration parallelFetchingTimeoutMillis;
 
-    public RestTemplatePrometheusClient(RestTemplate restTemplate, URI prometheusUri,
-                                        ExecutorService executorService) {
+    public RestTemplateParallelPrometheusClient(RestTemplate restTemplate, URI prometheusUri,
+                                                ExecutorService executorService, Duration parallelFetchingTimeoutMillis) {
         this.restTemplate = restTemplate;
         this.prometheusUri = prometheusUri;
         this.executorService = executorService;
+        this.parallelFetchingTimeoutMillis = parallelFetchingTimeoutMillis;
     }
 
     @Override

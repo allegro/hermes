@@ -31,4 +31,8 @@ public class MonitoringMetricsContainer {
     public MetricDecimalValue metricValue(MetricsQuery query) {
         return metrics.getOrDefault(query, DEFAULT_VALUE);
     }
+
+    public boolean containsUnavailable() {
+        return metrics.entrySet().stream().anyMatch(e -> !e.getValue().isAvailable());
+    }
 }

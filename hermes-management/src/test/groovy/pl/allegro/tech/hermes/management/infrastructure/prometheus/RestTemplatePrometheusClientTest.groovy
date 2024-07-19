@@ -40,7 +40,7 @@ class RestTemplatePrometheusClientTest extends Specification {
     WireMockServer wireMockServer = new WireMockServer(
             wireMockConfig().port(PROMETHEUS_HTTP_PORT).usingFilesUnderClasspath("prometheus-stubs"))
 
-    private RestTemplatePrometheusClient client
+    private RestTemplateParallelPrometheusClient client
 
     void setupSpec() {
         wireMockServer.start()
@@ -54,7 +54,7 @@ class RestTemplatePrometheusClientTest extends Specification {
         wireMockServer.resetAll()
         ExecutorService executorService = Executors.newFixedThreadPool(7)
         RestTemplate restTemplate = new RestTemplate()
-        client = new RestTemplatePrometheusClient(restTemplate, URI.create("http://localhost:$PROMETHEUS_HTTP_PORT"), executorService)
+        client = new RestTemplateParallelPrometheusClient(restTemplate, URI.create("http://localhost:$PROMETHEUS_HTTP_PORT"), executorService)
     }
 
     def "should get metrics for path"() {

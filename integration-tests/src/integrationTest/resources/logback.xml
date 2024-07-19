@@ -23,7 +23,7 @@
     <logger name="pl.allegro.tech.hermes.consumers.supervisor.workload.ClusterAssignmentCache" level="warn" />
     <logger name="pl.allegro.tech.hermes.infrastructure.zookeeper.notifications.ZookeeperInternalNotificationBus" level="OFF" />
     <logger name="pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaRawMessageReader" level="OFF" />
-    <logger name="pl.allegro.tech.hermes.management.infrastructure.prometheus.RestTemplatePrometheusClient" level="OFF" />
+    <logger name="pl.allegro.tech.hermes.management.infrastructure.prometheus.RestTemplateParallelPrometheusClient" level="OFF" />
 
     <root level="info">
         <appender-ref ref="STDOUT"/>

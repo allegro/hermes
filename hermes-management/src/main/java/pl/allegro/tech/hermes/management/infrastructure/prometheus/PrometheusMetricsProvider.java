@@ -12,7 +12,7 @@ import static pl.allegro.tech.hermes.management.infrastructure.prometheus.Promet
 import static pl.allegro.tech.hermes.management.infrastructure.prometheus.PrometheusClient.forTopic;
 
 
-public class VictoriaMetricsMetricsProvider implements MonitoringSubscriptionMetricsProvider, MonitoringTopicMetricsProvider {
+public class PrometheusMetricsProvider implements MonitoringSubscriptionMetricsProvider, MonitoringTopicMetricsProvider {
 
     private static final String SUBSCRIPTION_DELIVERED = "subscription_delivered_total";
     private static final String SUBSCRIPTION_TIMEOUTS = "subscription_timeouts_total";
@@ -31,8 +31,8 @@ public class VictoriaMetricsMetricsProvider implements MonitoringSubscriptionMet
     private final String additionalFilters;
     private final PrometheusClient prometheusClient;
 
-    public VictoriaMetricsMetricsProvider(PrometheusClient prometheusClient, String consumersMetricsPrefix,
-                                          String frontendMetricsPrefix, String additionalFilters) {
+    public PrometheusMetricsProvider(PrometheusClient prometheusClient, String consumersMetricsPrefix,
+                                     String frontendMetricsPrefix, String additionalFilters) {
         this.prometheusClient = prometheusClient;
         this.consumersMetricsPrefix = consumersMetricsPrefix.isEmpty() ? "" : consumersMetricsPrefix + "_";
         this.frontendMetricsPrefix = frontendMetricsPrefix.isEmpty() ? "" : frontendMetricsPrefix + "_";
