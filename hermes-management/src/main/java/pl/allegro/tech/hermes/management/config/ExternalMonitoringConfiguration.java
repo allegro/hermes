@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.management.config;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hc.client5.http.classic.HttpClient;
+import org.apache.hc.client5.http.config.ConnectionConfig;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
@@ -23,6 +24,7 @@ import java.net.URI;
 import java.time.Duration;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Ticker.systemTicker;
 
@@ -62,11 +64,16 @@ public class ExternalMonitoringConfiguration {
         PoolingHttpClientConnectionManager connectionManager = PoolingHttpClientConnectionManagerBuilder.create()
                 .setMaxConnTotal(clientProperties.getMaxConnections())
                 .setMaxConnPerRoute(clientProperties.getMaxConnectionsPerRoute())
+                .setDefaultConnectionConfig(ConnectionConfig.custom()
+                        .setTimeToLive(1000, TimeUnit.MILLISECONDS)
+                        .setValidateAfterInactivity(1000, TimeUnit.MILLISECONDS)
+                        .build())
                 .build();
 
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectTimeout(Timeout.ofMilliseconds(clientProperties.getConnectionTimeoutMillis()))
                 .setResponseTimeout(Timeout.ofMilliseconds(clientProperties.getSocketTimeoutMillis()))
+                .setConnectionRequestTimeout(Timeout.ofMilliseconds(clientProperties.getSocketTimeoutMillis()))
                 .build();
 
         HttpClient client = HttpClientBuilder.create()

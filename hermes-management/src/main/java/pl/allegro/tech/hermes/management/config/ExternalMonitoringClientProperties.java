@@ -8,7 +8,7 @@ public class ExternalMonitoringClientProperties {
 
     private int maxConnections = 100;
 
-    private int maxConnectionsPerRoute = 10;
+    private int maxConnectionsPerRoute = 100;
 
     private int cacheTtlSeconds = 55;
 

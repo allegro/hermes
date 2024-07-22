@@ -39,7 +39,8 @@ class RestTemplatePrometheusClientTest extends Specification {
 
     @Shared
     WireMockServer wireMockServer = new WireMockServer(
-            wireMockConfig().port(PROMETHEUS_HTTP_PORT).usingFilesUnderClasspath("prometheus-stubs"))
+            wireMockConfig()
+                    .port(PROMETHEUS_HTTP_PORT).usingFilesUnderClasspath("prometheus-stubs"))
 
     private RestTemplateParallelPrometheusClient client
 

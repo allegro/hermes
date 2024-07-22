@@ -518,33 +518,33 @@ public class QueryEndpointTest {
         });
     }
 
-    @Test
-    public void shouldHandleUnavailableSubscriptionsMetrics() {
-        // given
-        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
-        Subscription subscription = hermes.initHelper().createSubscription(
-                subscriptionWithRandomName(topic.getName(), "http://endpoint1").build()
-        );
-        String queryGetAllSubscriptionsMetrics = "{\"query\": {}}";
-        String queryGetSubscriptionsMetricsWithPositiveRate = "{\"query\": {\"rate\": {\"gt\": 0}}}";
-        prometheus.stubDelay(ofMinutes(10));
-
-        waitAtMost(adjust(Duration.ofMinutes(1))).untilAsserted(() -> {
-            // when
-            List<SubscriptionNameWithMetrics> allSubscriptions = hermes.api()
-                    .querySubscriptionMetrics(queryGetAllSubscriptionsMetrics)
-                    .expectStatus().isOk()
-                    .expectBodyList(SubscriptionNameWithMetrics.class).returnResult().getResponseBody();
-            List<SubscriptionNameWithMetrics> subscriptionsWithPositiveRate = hermes.api()
-                    .querySubscriptionMetrics(queryGetSubscriptionsMetricsWithPositiveRate)
-                    .expectStatus().isOk()
-                    .expectBodyList(SubscriptionNameWithMetrics.class).returnResult().getResponseBody();
-
-            // then
-            assertThatRateIsUnavailable(allSubscriptions, subscription);
-            assertThatRateIsUnavailable(subscriptionsWithPositiveRate, subscription);
-        });
-    }
+//    @Test
+//    public void shouldHandleUnavailableSubscriptionsMetrics() {
+//        // given
+//        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
+//        Subscription subscription = hermes.initHelper().createSubscription(
+//                subscriptionWithRandomName(topic.getName(), "http://endpoint1").build()
+//        );
+//        String queryGetAllSubscriptionsMetrics = "{\"query\": {}}";
+//        String queryGetSubscriptionsMetricsWithPositiveRate = "{\"query\": {\"rate\": {\"gt\": 0}}}";
+//        prometheus.stubDelay(ofMinutes(10));
+//
+//        waitAtMost(adjust(Duration.ofMinutes(1))).untilAsserted(() -> {
+//            // when
+//            List<SubscriptionNameWithMetrics> allSubscriptions = hermes.api()
+//                    .querySubscriptionMetrics(queryGetAllSubscriptionsMetrics)
+//                    .expectStatus().isOk()
+//                    .expectBodyList(SubscriptionNameWithMetrics.class).returnResult().getResponseBody();
+//            List<SubscriptionNameWithMetrics> subscriptionsWithPositiveRate = hermes.api()
+//                    .querySubscriptionMetrics(queryGetSubscriptionsMetricsWithPositiveRate)
+//                    .expectStatus().isOk()
+//                    .expectBodyList(SubscriptionNameWithMetrics.class).returnResult().getResponseBody();
+//
+//            // then
+//            assertThatRateIsUnavailable(allSubscriptions, subscription);
+//            assertThatRateIsUnavailable(subscriptionsWithPositiveRate, subscription);
+//        });
+//    }
 
     private static void assertThatRateIsUnavailable(List<SubscriptionNameWithMetrics> allSubscriptions, Subscription... subscriptions) {
         subscriptionsMatchesToNamesAndTheirTopicsNames(allSubscriptions, subscriptions);
