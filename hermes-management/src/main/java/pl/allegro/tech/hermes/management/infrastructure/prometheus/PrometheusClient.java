@@ -10,12 +10,12 @@ import java.util.List;
 
 public interface PrometheusClient {
     String SUBSCRIPTION_QUERY_FORMAT = "sum by (group, topic, subscription)"
-            + " (irate({__name__=~'%s', group='%s', topic='%s', subscription='%s', %s}[1m]))";
+            + " (irate({__name__='%s', group='%s', topic='%s', subscription='%s', %s}[1m]))";
 
     String SUBSCRIPTION_QUERY_FORMAT_STATUS_CODE = "sum by (group, topic, subscription)"
-            + " (irate({__name__=~'%s', group='%s', topic='%s', subscription='%s', status_code=~'%s', %s}[1m]))";
+            + " (irate({__name__='%s', group='%s', topic='%s', subscription='%s', status_code=~'%s', %s}[1m]))";
 
-    String TOPIC_QUERY_FORMAT = "sum by (group, topic) (irate({__name__=~'%s', group='%s', "
+    String TOPIC_QUERY_FORMAT = "sum by (group, topic) (irate({__name__='%s', group='%s', "
             + "topic='%s', %s}[1m]))";
 
     default MonitoringMetricsContainer readMetrics(MetricsQuery... query) {
@@ -23,7 +23,6 @@ public interface PrometheusClient {
     }
 
     MonitoringMetricsContainer readMetrics(List<MetricsQuery> queries);
-
 
     static MetricsQuery forSubscription(String name, SubscriptionName subscriptionName, String additionalFilters) {
         String fullQueryName = String.format(SUBSCRIPTION_QUERY_FORMAT, name,

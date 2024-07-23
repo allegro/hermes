@@ -2,7 +2,9 @@ package pl.allegro.tech.hermes.management.infrastructure.prometheus
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
+import com.github.tomakehurst.wiremock.junit.WireMockRule
 import jakarta.ws.rs.core.MediaType
+import org.junit.Rule
 import org.springframework.web.client.RestTemplate
 import pl.allegro.tech.hermes.management.infrastructure.metrics.MetricsQuery
 import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringMetricsContainer
@@ -22,38 +24,29 @@ import static pl.allegro.tech.hermes.api.MetricDecimalValue.of
 class RestTemplatePrometheusClientTest extends Specification {
 
     private static final int PROMETHEUS_HTTP_PORT = Ports.nextAvailable()
-    def subscriptionDeliveredQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__=~'hermes_consumers_subscription_delivered_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1' service=~'hermes'}[1m]))")
-    def subscriptionTimeoutsQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__=~'hermes_consumers_subscription_timeouts_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', service=~'hermes'}[1m]))")
-    def subscriptionRetriesQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__=~'hermes_consumers_subscription_retries_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', service=~'hermes'}[1m]))")
-    def subscriptionThroughputQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__=~'hermes_consumers_subscription_throughput_bytes_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', service=~'hermes'}[1m]))")
-    def subscriptionErrorsQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__=~'hermes_consumers_subscription_other_errors_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', service=~'hermes'}[1m]))")
-    def subscriptionBatchesQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__=~'hermes_consumers_subscription_batches_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', service=~'hermes'}[1m]))")
-    def subscription2xxStatusCodesQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__=~'hermes_consumers_subscription_http_status_codes_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', status_code=~'2.*', service=~'hermes'}[1m]))")
-    def subscription4xxStatusCodesQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__=~'hermes_consumers_subscription_http_status_codes_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', status_code=~'4.*', service=~'hermes'}[1m]))")
-    def subscription5xxStatusCodesQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__=~'hermes_consumers_subscription_http_status_codes_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', status_code=~'5.*', service=~'hermes'}[1m]))")
+    def subscriptionDeliveredQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_delivered_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1' service=~'hermes'}[1m]))")
+    def subscriptionTimeoutsQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_timeouts_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', service=~'hermes'}[1m]))")
+    def subscriptionRetriesQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_retries_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', service=~'hermes'}[1m]))")
+    def subscriptionThroughputQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_throughput_bytes_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', service=~'hermes'}[1m]))")
+    def subscriptionErrorsQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_other_errors_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', service=~'hermes'}[1m]))")
+    def subscriptionBatchesQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_batches_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', service=~'hermes'}[1m]))")
+    def subscription2xxStatusCodesQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_http_status_codes_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', status_code=~'2.*', service=~'hermes'}[1m]))")
+    def subscription4xxStatusCodesQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_http_status_codes_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', status_code=~'4.*', service=~'hermes'}[1m]))")
+    def subscription5xxStatusCodesQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_http_status_codes_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', status_code=~'5.*', service=~'hermes'}[1m]))")
 
     def queries = List.of(subscriptionDeliveredQuery, subscriptionTimeoutsQuery, subscriptionRetriesQuery, subscriptionThroughputQuery,
             subscriptionErrorsQuery, subscriptionBatchesQuery, subscription2xxStatusCodesQuery, subscription4xxStatusCodesQuery,
             subscription5xxStatusCodesQuery
     )
 
-    @Shared
-    WireMockServer wireMockServer = new WireMockServer(
+    @Rule
+    WireMockRule wireMockServer = new WireMockRule(
             wireMockConfig()
                     .port(PROMETHEUS_HTTP_PORT).usingFilesUnderClasspath("prometheus-stubs"))
 
     private RestTemplateParallelPrometheusClient client
 
-    void setupSpec() {
-        wireMockServer.start()
-    }
-
-    void cleanupSpec() {
-        wireMockServer.stop()
-    }
-
     void setup() {
-        wireMockServer.resetAll()
         ExecutorService executorService = Executors.newFixedThreadPool(10)
         RestTemplate restTemplate = new RestTemplate()
         client = new RestTemplateParallelPrometheusClient(restTemplate, URI.create("http://localhost:$PROMETHEUS_HTTP_PORT"), executorService, Duration.ofSeconds(5))

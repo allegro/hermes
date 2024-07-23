@@ -5,7 +5,6 @@
     "result": [
       {
         "metric": {
-          "status_code": "503",
           "group": "pl.allegro.tech.hermes",
           "subscription": "hermesSubscription",
           "topic": "hermesTopic"
@@ -13,8 +12,7 @@
         "value": [
           1692281425.609,
           "2"
-        ],
-        "group": 1
+        ]
       }
     ]
   }

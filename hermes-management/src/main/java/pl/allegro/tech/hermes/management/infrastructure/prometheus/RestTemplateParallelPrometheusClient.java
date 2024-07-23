@@ -34,8 +34,10 @@ public class RestTemplateParallelPrometheusClient implements PrometheusClient {
     private final ExecutorService executorService;
     private final Duration parallelFetchingTimeout;
 
-    public RestTemplateParallelPrometheusClient(RestTemplate restTemplate, URI prometheusUri,
-                                                ExecutorService executorService, Duration parallelFetchingTimeoutMillis) {
+    public RestTemplateParallelPrometheusClient(RestTemplate restTemplate,
+                                                URI prometheusUri,
+                                                ExecutorService executorService,
+                                                Duration parallelFetchingTimeoutMillis) {
         this.restTemplate = restTemplate;
         this.prometheusUri = prometheusUri;
         this.executorService = executorService;
@@ -48,13 +50,13 @@ public class RestTemplateParallelPrometheusClient implements PrometheusClient {
     }
 
     private MonitoringMetricsContainer fetchInParallelFromPrometheus(List<MetricsQuery> queries) {
-        // has to be collected (which is terminal operation) to run in parallel
         CompletableFuture<Map<MetricsQuery, MetricDecimalValue>> aggregatedFuture = getAggregatedCompletableFuture(queries);
 
         try {
             Map<MetricsQuery, MetricDecimalValue> metrics = aggregatedFuture.get(parallelFetchingTimeout.toMillis(), TimeUnit.MILLISECONDS);
             return MonitoringMetricsContainer.initialized(metrics);
         } catch (InterruptedException e) {
+            // possibly let know the caller that the thread was interrupted
             Thread.currentThread().interrupt();
             logger.warn("Prometheus fetching thread was interrupted...", e);
             return MonitoringMetricsContainer.unavailable();
@@ -62,6 +64,19 @@ public class RestTemplateParallelPrometheusClient implements PrometheusClient {
             logger.warn("Unexpected exception during fetching metrics from prometheus...", ex);
             return MonitoringMetricsContainer.unavailable();
         }
+    }
+
+    private CompletableFuture<Map<MetricsQuery, MetricDecimalValue>> getAggregatedCompletableFuture(List<MetricsQuery> queries) {
+        // has to be collected to avoid lazy stream iteration, and to run in parallel
+        List<CompletableFuture<Pair<MetricsQuery, MetricDecimalValue>>> futures = queries.stream()
+                .map(this::readSingleMetric)
+                .toList();
+
+        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+                .thenApply(
+                        v -> futures.stream().map(CompletableFuture::join)
+                                .collect(Collectors.toMap(Pair::getKey, Pair::getValue))
+                );
     }
 
     private CompletableFuture<Pair<MetricsQuery, MetricDecimalValue>> readSingleMetric(MetricsQuery query) {
@@ -83,18 +98,6 @@ public class RestTemplateParallelPrometheusClient implements PrometheusClient {
             logger.warn("Unable to read from Prometheus...", exception);
             return CompletableFuture.completedFuture(Pair.of(query, MetricDecimalValue.unavailable()));
         }
-    }
-
-    private CompletableFuture<Map<MetricsQuery, MetricDecimalValue>> getAggregatedCompletableFuture(List<MetricsQuery> queries) {
-        List<CompletableFuture<Pair<MetricsQuery, MetricDecimalValue>>> futures = queries.stream()
-                .map(this::readSingleMetric)
-                .toList();
-
-        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
-                .thenApply(
-                        v -> futures.stream().map(CompletableFuture::join)
-                                .collect(Collectors.toMap(Pair::getKey, Pair::getValue))
-                );
     }
 
     private PrometheusResponse queryPrometheus(MetricsQuery query) {

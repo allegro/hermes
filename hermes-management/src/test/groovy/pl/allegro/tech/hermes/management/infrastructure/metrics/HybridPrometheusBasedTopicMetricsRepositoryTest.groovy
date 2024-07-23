@@ -26,9 +26,9 @@ class HybridPrometheusBasedTopicMetricsRepositoryTest extends Specification {
     private HybridTopicMetricsRepository repository = new HybridTopicMetricsRepository(prometheusMetricsProvider,
             summedSharedCounter, zookeeperPaths, subscriptionRepository)
 
-    private MetricsQuery topicRequestsQuery = new MetricsQuery("sum by (group, topic) (irate({__name__=~'hermes_frontend_topic_requests_total', group='group', topic='topic', service='hermes'}[1m]))")
-    private MetricsQuery topicDeliveredQuery = new MetricsQuery("sum by (group, topic) (irate({__name__=~'hermes_consumers_subscription_delivered_total', group='group', topic='topic', service='hermes'}[1m]))")
-    private MetricsQuery topicThroughputQuery = new MetricsQuery("sum by (group, topic) (irate({__name__=~'hermes_frontend_topic_throughput_bytes_total', group='group', topic='topic', service='hermes'}[1m]))")
+    private MetricsQuery topicRequestsQuery = new MetricsQuery("sum by (group, topic) (irate({__name__='hermes_frontend_topic_requests_total', group='group', topic='topic', service='hermes'}[1m]))")
+    private MetricsQuery topicDeliveredQuery = new MetricsQuery("sum by (group, topic) (irate({__name__='hermes_consumers_subscription_delivered_total', group='group', topic='topic', service='hermes'}[1m]))")
+    private MetricsQuery topicThroughputQuery = new MetricsQuery("sum by (group, topic) (irate({__name__='hermes_frontend_topic_throughput_bytes_total', group='group', topic='topic', service='hermes'}[1m]))")
 
     def "should load metrics from graphite and zookeeper"() {
         given:

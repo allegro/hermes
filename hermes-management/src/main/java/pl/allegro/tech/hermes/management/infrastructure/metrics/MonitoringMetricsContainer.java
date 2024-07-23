@@ -30,6 +30,9 @@ public class MonitoringMetricsContainer {
     }
 
     public MonitoringMetricsContainer addMetricValue(MetricsQuery query, MetricDecimalValue value) {
+        if (!isAvailable) {
+            throw new IllegalStateException("Adding value to unavailable metrics container");
+        }
         this.metrics.put(query, value);
         return this;
     }

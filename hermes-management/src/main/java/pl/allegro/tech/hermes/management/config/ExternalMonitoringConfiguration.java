@@ -64,16 +64,11 @@ public class ExternalMonitoringConfiguration {
         PoolingHttpClientConnectionManager connectionManager = PoolingHttpClientConnectionManagerBuilder.create()
                 .setMaxConnTotal(clientProperties.getMaxConnections())
                 .setMaxConnPerRoute(clientProperties.getMaxConnectionsPerRoute())
-                .setDefaultConnectionConfig(ConnectionConfig.custom()
-                        .setTimeToLive(1000, TimeUnit.MILLISECONDS)
-                        .setValidateAfterInactivity(1000, TimeUnit.MILLISECONDS)
-                        .build())
                 .build();
 
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectTimeout(Timeout.ofMilliseconds(clientProperties.getConnectionTimeoutMillis()))
                 .setResponseTimeout(Timeout.ofMilliseconds(clientProperties.getSocketTimeoutMillis()))
-                .setConnectionRequestTimeout(Timeout.ofMilliseconds(clientProperties.getSocketTimeoutMillis()))
                 .build();
 
         HttpClient client = HttpClientBuilder.create()
