@@ -308,25 +308,25 @@ public class ListUnhealthySubscriptionsForOwnerTest {
                 );
     }
 
-//    @Test
-//    public void shouldTimeoutUnhealthySubscriptionsRequest() {
-//        // given
-//        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
-//        createSubscriptionOwnedBy("Team A", topic);
-//        prometheus.stubDelay(Duration.ofMillis(3000));
-//
-//        // when
-//        long start = System.currentTimeMillis();
-//        WebTestClient.ResponseSpec response = hermes.api().listUnhealthyAsPlainText();
-//        long end = System.currentTimeMillis();
-//
-//        // then
-//        response.expectStatus()
-//                .isOk()
-//                .expectBody()
-//                .isEmpty();
-//        assertThat(end - start).isLessThan(3000);
-//    }
+    @Test
+    public void shouldTimeoutUnhealthySubscriptionsRequest() {
+        // given
+        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
+        createSubscriptionOwnedBy("Team A", topic);
+        prometheus.stubDelay(Duration.ofMillis(3000));
+
+        // when
+        long start = System.currentTimeMillis();
+        WebTestClient.ResponseSpec response = hermes.api().listUnhealthyAsPlainText();
+        long end = System.currentTimeMillis();
+
+        // then
+        response.expectStatus()
+                .isOk()
+                .expectBody()
+                .isEmpty();
+        assertThat(end - start).isLessThan(3000);
+    }
 
     @Test
     public void shouldReportSuspendedSubscriptionAsHealthy() {
