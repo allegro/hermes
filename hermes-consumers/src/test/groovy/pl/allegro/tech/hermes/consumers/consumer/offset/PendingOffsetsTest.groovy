@@ -9,7 +9,7 @@ import spock.lang.Specification
 
 import java.time.Duration
 
-class OffsetsSlotsTest extends Specification {
+class PendingOffsetsTest extends Specification {
 
     @Shared
     SubscriptionName SUBSCRIPTION_NAME = SubscriptionName.fromString('group.topic$sub')
@@ -26,11 +26,11 @@ class OffsetsSlotsTest extends Specification {
 
     def "should not allow for more inflight offsets than allowed"() {
         given:
-        OffsetsSlots offsetsSlots = createOffsetsSlots(2, 10)
-        2.times {offsetsSlots.tryToAcquireSlot(ACQUIRE_DURATION)}
+        PendingOffsets offsetsSlots = createOffsetsSlots(2, 10)
+        2.times {offsetsSlots.tryAcquireSlot(ACQUIRE_DURATION)}
 
         when:
-        boolean isAcquired = offsetsSlots.tryToAcquireSlot(ACQUIRE_DURATION)
+        boolean isAcquired = offsetsSlots.tryAcquireSlot(ACQUIRE_DURATION)
 
         then:
         !isAcquired
@@ -38,16 +38,16 @@ class OffsetsSlotsTest extends Specification {
 
     def "should not allow for more total offsets than allowed"() {
         given:
-        OffsetsSlots offsetsSlots = createOffsetsSlots(2, 3)
-        2.times {offsetsSlots.tryToAcquireSlot(ACQUIRE_DURATION)}
-        offsetsSlots.addSlot(offset(1, 1))
-        offsetsSlots.addSlot(offset(1, 2))
-        offsetsSlots.markAsSent(offset(1, 1))
-        offsetsSlots.markAsSent(offset(1, 2))
-        offsetsSlots.tryToAcquireSlot(ACQUIRE_DURATION)
+        PendingOffsets offsetsSlots = createOffsetsSlots(2, 3)
+        2.times {offsetsSlots.tryAcquireSlot(ACQUIRE_DURATION)}
+        offsetsSlots.markAsInflight(offset(1, 1))
+        offsetsSlots.markAsInflight(offset(1, 2))
+        offsetsSlots.markAsProcessed(offset(1, 1))
+        offsetsSlots.markAsProcessed(offset(1, 2))
+        offsetsSlots.tryAcquireSlot(ACQUIRE_DURATION)
 
         when:
-        boolean isAcquired = offsetsSlots.tryToAcquireSlot(ACQUIRE_DURATION)
+        boolean isAcquired = offsetsSlots.tryAcquireSlot(ACQUIRE_DURATION)
 
         then:
         !isAcquired
@@ -55,19 +55,19 @@ class OffsetsSlotsTest extends Specification {
 
     def "should free inflight offsets"() {
         given:
-        OffsetsSlots offsetsSlots = createOffsetsSlots(1, 10)
-        offsetsSlots.tryToAcquireSlot(ACQUIRE_DURATION)
-        offsetsSlots.addSlot(offset(1, 1))
+        PendingOffsets offsetsSlots = createOffsetsSlots(1, 10)
+        offsetsSlots.tryAcquireSlot(ACQUIRE_DURATION)
+        offsetsSlots.markAsInflight(offset(1, 1))
 
         when:
-        boolean isAcquired = offsetsSlots.tryToAcquireSlot(ACQUIRE_DURATION)
+        boolean isAcquired = offsetsSlots.tryAcquireSlot(ACQUIRE_DURATION)
 
         then:
         !isAcquired
 
         when:
-        offsetsSlots.markAsSent(offset(1, 1))
-        boolean isAcquiredAfterRelease = offsetsSlots.tryToAcquireSlot(ACQUIRE_DURATION)
+        offsetsSlots.markAsProcessed(offset(1, 1))
+        boolean isAcquiredAfterRelease = offsetsSlots.tryAcquireSlot(ACQUIRE_DURATION)
 
         then:
         isAcquiredAfterRelease
@@ -75,31 +75,31 @@ class OffsetsSlotsTest extends Specification {
 
     def "should free offsetQueue and return offset snapshot"() {
         given:
-        Map<SubscriptionPartitionOffset, MessageState> expectedOffsetSnapshot = Map.of(offset(1, 1), MessageState.DELIVERED, offset(1, 2), MessageState.DELIVERED)
-        OffsetsSlots offsetsSlots = createOffsetsSlots(2, 2)
-        2.times{offsetsSlots.tryToAcquireSlot(ACQUIRE_DURATION)}
-        offsetsSlots.addSlot(offset(1, 1))
-        offsetsSlots.addSlot(offset(1, 2))
-        offsetsSlots.markAsSent(offset(1, 1))
-        offsetsSlots.markAsSent(offset(1, 2))
+        Map<SubscriptionPartitionOffset, MessageState> expectedOffsetSnapshot = Map.of(offset(1, 1), MessageState.PROCESSED, offset(1, 2), MessageState.PROCESSED)
+        PendingOffsets offsetsSlots = createOffsetsSlots(2, 2)
+        2.times{offsetsSlots.tryAcquireSlot(ACQUIRE_DURATION)}
+        offsetsSlots.markAsInflight(offset(1, 1))
+        offsetsSlots.markAsInflight(offset(1, 2))
+        offsetsSlots.markAsProcessed(offset(1, 1))
+        offsetsSlots.markAsProcessed(offset(1, 2))
 
         when:
-        boolean isAcquired = offsetsSlots.tryToAcquireSlot(ACQUIRE_DURATION)
+        boolean isAcquired = offsetsSlots.tryAcquireSlot(ACQUIRE_DURATION)
 
         then:
         !isAcquired
 
         when:
         Map<SubscriptionPartitionOffset,MessageState> offsetSnapshot = offsetsSlots.offsetSnapshot()
-        boolean isAcquiredAfterRelease = offsetsSlots.tryToAcquireSlot(ACQUIRE_DURATION)
+        boolean isAcquiredAfterRelease = offsetsSlots.tryAcquireSlot(ACQUIRE_DURATION)
 
         then:
         offsetSnapshot == expectedOffsetSnapshot
         isAcquiredAfterRelease
     }
 
-    private OffsetsSlots createOffsetsSlots(int inflightSize, int offsetQueueSize) {
-        return new OffsetsSlots(SUBSCRIPTION_NAME, testMetricsFacade, inflightSize, offsetQueueSize)
+    private PendingOffsets createOffsetsSlots(int inflightSize, int offsetQueueSize) {
+        return new PendingOffsets(SUBSCRIPTION_NAME, testMetricsFacade, inflightSize, offsetQueueSize)
     }
 
     private SubscriptionPartitionOffset offset(int partition, long offset) {

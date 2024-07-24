@@ -5,7 +5,7 @@ import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
 import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
-import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetsSlots;
+import pl.allegro.tech.hermes.consumers.consumer.offset.PendingOffsets;
 import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.result.DefaultErrorHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.DefaultSuccessHandler;
@@ -56,7 +56,7 @@ public class ConsumerMessageSenderFactory {
 
     public ConsumerMessageSender create(Subscription subscription,
                                         SerialConsumerRateLimiter consumerRateLimiter,
-                                        OffsetsSlots offsetsSlots,
+                                        PendingOffsets pendingOffsets,
                                         SubscriptionLoadRecorder subscriptionLoadRecorder,
                                         MetricsFacade metrics) {
 
@@ -82,7 +82,7 @@ public class ConsumerMessageSenderFactory {
                 errorHandlers,
                 consumerRateLimiter,
                 rateLimiterReportingExecutor,
-                offsetsSlots,
+                pendingOffsets,
                 metrics,
                 senderAsyncTimeoutMs,
                 futureAsyncTimeout,

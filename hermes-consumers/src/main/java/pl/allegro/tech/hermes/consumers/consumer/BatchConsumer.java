@@ -18,9 +18,7 @@ import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatchReceiver;
 import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatchingResult;
 import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResolver;
 import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
-import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignmentState;
-import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetCommitter;
-import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetsSlots;
+import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartition;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.rate.BatchConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
@@ -33,6 +31,9 @@ import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -40,7 +41,6 @@ import static com.github.rholder.retry.WaitStrategies.fixedWait;
 import static java.util.Optional.of;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset.subscriptionPartitionOffset;
 
 public class BatchConsumer implements Consumer {
 
@@ -54,8 +54,6 @@ public class BatchConsumer implements Consumer {
     private final CompositeMessageContentWrapper compositeMessageContentWrapper;
     private final Trackers trackers;
     private final SubscriptionLoadRecorder loadRecorder;
-    private final OffsetsSlots offsetsSlots;
-    private final OffsetCommitter offsetCommitter;
     private final Duration commitPeriod;
 
     private Topic topic;
@@ -66,6 +64,8 @@ public class BatchConsumer implements Consumer {
     private final MetricsFacade metricsFacade;
     private final BatchConsumerMetrics metrics;
     private MessageBatchReceiver receiver;
+
+    private final Map<SubscriptionPartition, Long> pendingOffsets = new HashMap<>();
 
     private Instant lastCommitTime;
 
@@ -80,23 +80,19 @@ public class BatchConsumer implements Consumer {
                          Topic topic,
                          boolean useTopicMessageSize,
                          SubscriptionLoadRecorder loadRecorder,
-                         ConsumerPartitionAssignmentState consumerPartitionAssignmentState,
-                         Duration commitPeriod,
-                         int offsetQueueSize) {
+                         Duration commitPeriod) {
         this.messageReceiverFactory = messageReceiverFactory;
         this.sender = sender;
         this.batchFactory = batchFactory;
         this.subscription = subscription;
         this.useTopicMessageSize = useTopicMessageSize;
         this.loadRecorder = loadRecorder;
-        this.offsetsSlots = new OffsetsSlots(subscription.getQualifiedName(), metricsFacade, subscription.getBatchSubscriptionPolicy().getBatchSize(), offsetQueueSize);
         this.metricsFacade = metricsFacade;
         this.metrics = new BatchConsumerMetrics(metricsFacade, subscription.getQualifiedName());
         this.messageConverterResolver = messageConverterResolver;
         this.compositeMessageContentWrapper = compositeMessageContentWrapper;
         this.topic = topic;
         this.trackers = trackers;
-        this.offsetCommitter = new OffsetCommitter(consumerPartitionAssignmentState, metricsFacade);
         this.commitPeriod = commitPeriod;
         this.lastCommitTime = Instant.now();
     }
@@ -116,16 +112,9 @@ public class BatchConsumer implements Consumer {
             inflight.ifPresent(batch -> {
                 logger.debug("Delivering batch [subscription={}].", subscription.getQualifiedName());
 
-                try {
-                    offerInflightOffsets(batch);
-                } catch (InterruptedException e) {
-                    logger.info("Restoring interrupted status {}", subscription.getQualifiedName(), e);
-                    Thread.currentThread().interrupt();
-                }
-
                 deliver(signalsInterrupt, batch, createRetryer(batch, subscription.getBatchSubscriptionPolicy()));
 
-                offerCommittedOffsets(batch);
+                offerProcessedOffsets(batch);
                 logger.debug("Finished delivering batch [subscription={}]", subscription.getQualifiedName());
             });
 
@@ -133,8 +122,6 @@ public class BatchConsumer implements Consumer {
                 metrics.markDiscarded();
                 trackers.get(subscription).logDiscarded(m, "too large");
             });
-        } catch (Exception e) {
-            logger.error("Consumer loop failed for {}", subscription.getQualifiedName(), e);
         } finally {
             logger.debug("Cleaning batch [subscription={}]", subscription.getQualifiedName());
             inflight.ifPresent(this::clean);
@@ -143,36 +130,34 @@ public class BatchConsumer implements Consumer {
 
     private void commitIfReady() {
         if (isReadyToCommit()) {
-            Set<SubscriptionPartitionOffset> offsetsToCommit = offsetCommitter.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot());
-            if (offsetsToCommit != null) {
+            Set<SubscriptionPartitionOffset> offsetsToCommit = new HashSet<>();
+
+            for (Map.Entry<SubscriptionPartition, Long> entry : pendingOffsets.entrySet()) {
+                offsetsToCommit.add(new SubscriptionPartitionOffset(entry.getKey(), entry.getValue()));
+            }
+
+            if (!offsetsToCommit.isEmpty()) {
                 commit(offsetsToCommit);
             }
+            lastCommitTime = Instant.now();
         }
     }
 
     private boolean isReadyToCommit() {
-        if (Duration.between(lastCommitTime, Instant.now()).toMillis() > commitPeriod.toMillis()) {
-            lastCommitTime = Instant.now();
-            return true;
-        }
-        return false;
+        return Duration.between(lastCommitTime, Instant.now()).toMillis() > commitPeriod.toMillis();
     }
 
-    private void offerInflightOffsets(MessageBatch batch) throws InterruptedException {
+    private void offerProcessedOffsets(MessageBatch batch) {
         for (SubscriptionPartitionOffset offset : batch.getPartitionOffsets()) {
-            offsetsSlots.addSlot(
-                    subscriptionPartitionOffset(subscription.getQualifiedName(),
-                            offset.getPartitionOffset(),
-                            offset.getPartitionAssignmentTerm()));
+            putOffset(offset);
         }
     }
 
-    private void offerCommittedOffsets(MessageBatch batch) {
-        for (SubscriptionPartitionOffset offset : batch.getPartitionOffsets()) {
-            offsetsSlots.markAsSent(
-                    subscriptionPartitionOffset(subscription.getQualifiedName(),
-                            offset.getPartitionOffset(),
-                            offset.getPartitionAssignmentTerm()));
+    private void putOffset(SubscriptionPartitionOffset offset) {
+        if (!pendingOffsets.containsKey(offset.getSubscriptionPartition())) {
+            pendingOffsets.put(offset.getSubscriptionPartition(), offset.getOffset());
+        } else if (pendingOffsets.get(offset.getSubscriptionPartition()) < offset.getOffset()) {
+            pendingOffsets.put(offset.getSubscriptionPartition(), offset.getOffset());
         }
     }
 
@@ -186,7 +171,7 @@ public class BatchConsumer implements Consumer {
                 new BatchConsumerRateLimiter(),
                 loadRecorder,
                 metricsFacade,
-                offsetsSlots
+                this::putOffset
         );
 
         logger.debug("Consumer: preparing batch receiver for subscription {}", subscription.getQualifiedName());
@@ -216,7 +201,6 @@ public class BatchConsumer implements Consumer {
 
     @Override
     public void updateSubscription(Subscription subscription) {
-        this.offsetsSlots.setInflightSize(subscription.getBatchSubscriptionPolicy().getBatchSize());
         this.subscription = subscription;
     }
 

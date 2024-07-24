@@ -14,7 +14,7 @@ class OffsetCommitterTest extends Specification {
     @Shared
     KafkaTopicName KAFKA_TOPIC_NAME = KafkaTopicName.valueOf("group_topic")
 
-    private OffsetsSlots offsetsSlots = new OffsetsSlots(SUBSCRIPTION_NAME, TestMetricsFacadeFactory.create(), 50, 2000)
+    private PendingOffsets offsetsSlots = new PendingOffsets(SUBSCRIPTION_NAME, TestMetricsFacadeFactory.create(), 50, 2000)
 
     private OffsetCommitterTestHelper offsetCommitterTestHelper = new OffsetCommitterTestHelper()
 
@@ -31,8 +31,8 @@ class OffsetCommitterTest extends Specification {
     def "should not commit offsets with negative values"() {
         given:
         assignPartitions(1)
-        offsetsSlots.addSlot(offset(1, -123))
-        offsetsSlots.markAsSent(offset(1, -123))
+        offsetsSlots.markAsInflight(offset(1, -123))
+        offsetsSlots.markAsProcessed(offset(1, -123))
 
         when:
         offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot()))
@@ -45,8 +45,8 @@ class OffsetCommitterTest extends Specification {
         given:
         assignPartitions(1)
         def offsetTooLarge = Long.MAX_VALUE - 1 // we actually commit the offset we want to read next, so it'll be +1
-        offsetsSlots.addSlot(offset(1, offsetTooLarge))
-        offsetsSlots.markAsSent(offset(1, offsetTooLarge))
+        offsetsSlots.markAsInflight(offset(1, offsetTooLarge))
+        offsetsSlots.markAsProcessed(offset(1, offsetTooLarge))
 
         when:
         offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot()))
@@ -58,13 +58,13 @@ class OffsetCommitterTest extends Specification {
     def "should commit smallest offset of uncommitted message"() {
         given:
         assignPartitions(1)
-        offsetsSlots.addSlot(offset(1, 1))
-        offsetsSlots.addSlot(offset(1, 2))
-        offsetsSlots.addSlot(offset(1, 3))
-        offsetsSlots.addSlot(offset(1, 4))
+        offsetsSlots.markAsInflight(offset(1, 1))
+        offsetsSlots.markAsInflight(offset(1, 2))
+        offsetsSlots.markAsInflight(offset(1, 3))
+        offsetsSlots.markAsInflight(offset(1, 4))
 
-        offsetsSlots.markAsSent(offset(1, 1))
-        offsetsSlots.markAsSent(offset(1, 4))
+        offsetsSlots.markAsProcessed(offset(1, 1))
+        offsetsSlots.markAsProcessed(offset(1, 4))
 
         when:
         offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot()))
@@ -76,10 +76,10 @@ class OffsetCommitterTest extends Specification {
     def "should increment offset by 1 only if it comes from committed offsets to match Kafka offset definition"() {
         given:
         assignPartitions(1, 2)
-        offsetsSlots.addSlot(offset(1, 1))
-        offsetsSlots.markAsSent(offset(1, 1))
+        offsetsSlots.markAsInflight(offset(1, 1))
+        offsetsSlots.markAsProcessed(offset(1, 1))
 
-        offsetsSlots.addSlot(offset(2, 1))
+        offsetsSlots.markAsInflight(offset(2, 1))
 
         when:
         offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot()))
@@ -91,11 +91,11 @@ class OffsetCommitterTest extends Specification {
     def "should commit max offset of committed offsets when no smaller inflights exist"() {
         given:
         assignPartitions(1)
-        offsetsSlots.addSlot(offset(1, 3))
-        offsetsSlots.addSlot(offset(1, 4))
+        offsetsSlots.markAsInflight(offset(1, 3))
+        offsetsSlots.markAsInflight(offset(1, 4))
 
-        offsetsSlots.markAsSent(offset(1, 3))
-        offsetsSlots.markAsSent(offset(1, 4))
+        offsetsSlots.markAsProcessed(offset(1, 3))
+        offsetsSlots.markAsProcessed(offset(1, 4))
 
         when:
         offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot()))
@@ -107,7 +107,7 @@ class OffsetCommitterTest extends Specification {
     def "should commit same offset twice when there are no new offsets to commit"() {
         given:
         assignPartitions(1)
-        offsetsSlots.addSlot(offset(1, 5))
+        offsetsSlots.markAsInflight(offset(1, 5))
 
         when:
         offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot()))
@@ -126,15 +126,15 @@ class OffsetCommitterTest extends Specification {
         given:
         assignPartitions(1, 2)
 
-        offsetsSlots.addSlot(offset(1, 3))
-        offsetsSlots.addSlot(offset(1, 4))
+        offsetsSlots.markAsInflight(offset(1, 3))
+        offsetsSlots.markAsInflight(offset(1, 4))
 
-        offsetsSlots.addSlot(offset(2, 10))
-        offsetsSlots.addSlot(offset(2, 11))
+        offsetsSlots.markAsInflight(offset(2, 10))
+        offsetsSlots.markAsInflight(offset(2, 11))
 
-        offsetsSlots.markAsSent(offset(1, 3))
-        offsetsSlots.markAsSent(offset(1, 4))
-        offsetsSlots.markAsSent(offset(2, 11))
+        offsetsSlots.markAsProcessed(offset(1, 3))
+        offsetsSlots.markAsProcessed(offset(1, 4))
+        offsetsSlots.markAsProcessed(offset(2, 11))
 
         when:
         offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot()))
@@ -146,7 +146,7 @@ class OffsetCommitterTest extends Specification {
     def "should get rid of leftover inflight offsets when revoked from topic partitions"() {
         given:
         assignPartitions(1)
-        offsetsSlots.addSlot(offset(1, 3))
+        offsetsSlots.markAsInflight(offset(1, 3))
 
         when:
         revokeAllPartitions()
@@ -159,8 +159,8 @@ class OffsetCommitterTest extends Specification {
     def "should get rid of inflight offsets from revoked partitions"() {
         given:
         assignPartitions(1, 2)
-        offsetsSlots.addSlot(offset(1, 3))
-        offsetsSlots.addSlot(offset(2, 3))
+        offsetsSlots.markAsInflight(offset(1, 3))
+        offsetsSlots.markAsInflight(offset(2, 3))
 
         when:
         revokePartitions(1)
@@ -173,8 +173,8 @@ class OffsetCommitterTest extends Specification {
     def "should get rid of committed offsets from revoked partitions"() {
         given:
         assignPartitions(1)
-        offsetsSlots.addSlot(offset(1, 3))
-        offsetsSlots.markAsSent(offset(1, 3))
+        offsetsSlots.markAsInflight(offset(1, 3))
+        offsetsSlots.markAsProcessed(offset(1, 3))
 
         when:
         revokePartitions(1)
@@ -187,8 +187,8 @@ class OffsetCommitterTest extends Specification {
     def "should get rid of leftover committed offsets when revoked from topic partitions"() {
         given:
         assignPartitions(1)
-        offsetsSlots.addSlot(offset(1, 3))
-        offsetsSlots.markAsSent(offset(1, 3))
+        offsetsSlots.markAsInflight(offset(1, 3))
+        offsetsSlots.markAsProcessed(offset(1, 3))
 
         when:
         offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot()))
@@ -197,8 +197,8 @@ class OffsetCommitterTest extends Specification {
         offsetCommitterTestHelper.wereCommitted(1, offset(1, 4))
 
         when:
-        offsetsSlots.addSlot(offset(1, 4))
-        offsetsSlots.markAsSent(offset(1, 4))
+        offsetsSlots.markAsInflight(offset(1, 4))
+        offsetsSlots.markAsProcessed(offset(1, 4))
 
         and:
         revokeAllPartitions()
@@ -213,7 +213,7 @@ class OffsetCommitterTest extends Specification {
     def "should not commit offsets in next iteration after reassigning partition"() {
         given:
         assignPartitions(1)
-        offsetsSlots.addSlot(offset(1, 3))
+        offsetsSlots.markAsInflight(offset(1, 3))
 
         when:
         offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot()))
@@ -239,7 +239,7 @@ class OffsetCommitterTest extends Specification {
     def "should commit only offsets from current term"() {
         given:
         assignPartitions(1)
-        offsetsSlots.addSlot(offset(1, 3))
+        offsetsSlots.markAsInflight(offset(1, 3))
 
         when:
         offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot()))
@@ -248,9 +248,9 @@ class OffsetCommitterTest extends Specification {
         offsetCommitterTestHelper.wereCommitted(1, offset(1, 3))
 
         when:
-        offsetsSlots.markAsSent(offset(1, 3))
-        offsetsSlots.addSlot(offset(1, 4))
-        offsetsSlots.markAsSent(offset(1, 4))
+        offsetsSlots.markAsProcessed(offset(1, 3))
+        offsetsSlots.markAsInflight(offset(1, 4))
+        offsetsSlots.markAsProcessed(offset(1, 4))
         revokePartitions(1)
         assignPartitions(1)
 
@@ -261,7 +261,7 @@ class OffsetCommitterTest extends Specification {
         offsetCommitterTestHelper.nothingCommitted(2)
 
         when:
-        offsetsSlots.markAsSent(offsetFromTerm(1, 4, 0)) // message from previous term=0
+        offsetsSlots.markAsProcessed(offsetFromTerm(1, 4, 0)) // message from previous term=0
 
         and:
         offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot()))
@@ -273,9 +273,9 @@ class OffsetCommitterTest extends Specification {
     def "should commit maximum commited offset no matter what order committed offset return"() {
         given:
         assignPartitions(1)
-        offsetsSlots.addSlot(offset(1, 3))
-        offsetsSlots.addSlot(offset(1, 4))
-        offsetsSlots.addSlot(offset(1, 5))
+        offsetsSlots.markAsInflight(offset(1, 3))
+        offsetsSlots.markAsInflight(offset(1, 4))
+        offsetsSlots.markAsInflight(offset(1, 5))
 
         when:
         offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot()))
@@ -284,8 +284,8 @@ class OffsetCommitterTest extends Specification {
         offsetCommitterTestHelper.wereCommitted(1, offset(1, 3))
 
         when:
-        offsetsSlots.markAsSent(offset(1, 4))
-        offsetsSlots.markAsSent(offset(1, 5))
+        offsetsSlots.markAsProcessed(offset(1, 4))
+        offsetsSlots.markAsProcessed(offset(1, 5))
 
         and:
         offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot()))
@@ -294,7 +294,7 @@ class OffsetCommitterTest extends Specification {
         offsetCommitterTestHelper.wereCommitted(2, offset(1, 3))
 
         when:
-        offsetsSlots.markAsSent(offset(1, 3))
+        offsetsSlots.markAsProcessed(offset(1, 3))
 
         and:
         offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot()))
@@ -306,9 +306,9 @@ class OffsetCommitterTest extends Specification {
     def "should drop maximum committed offset when lost partition assignment"() {
         given:
         assignPartitions(1)
-        offsetsSlots.addSlot(offset(1, 3))
-        offsetsSlots.addSlot(offset(1, 4))
-        offsetsSlots.addSlot(offset(1, 5))
+        offsetsSlots.markAsInflight(offset(1, 3))
+        offsetsSlots.markAsInflight(offset(1, 4))
+        offsetsSlots.markAsInflight(offset(1, 5))
 
         when:
         offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot()))
@@ -317,8 +317,8 @@ class OffsetCommitterTest extends Specification {
         offsetCommitterTestHelper.wereCommitted(1, offset(1, 3))
 
         when:
-        offsetsSlots.markAsSent(offset(1, 4))
-        offsetsSlots.markAsSent(offset(1, 5))
+        offsetsSlots.markAsProcessed(offset(1, 4))
+        offsetsSlots.markAsProcessed(offset(1, 5))
 
         and:
         offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot()))
@@ -327,7 +327,7 @@ class OffsetCommitterTest extends Specification {
         offsetCommitterTestHelper.wereCommitted(2, offset(1, 3))
 
         when:
-        offsetsSlots.markAsSent(offset(1, 3))
+        offsetsSlots.markAsProcessed(offset(1, 3))
         revokePartitions(1)
         assignPartitions(1)
 

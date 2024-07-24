@@ -91,35 +91,36 @@ public class OffsetCommitter {
         this.timer = metrics.offsetCommits().duration();
     }
 
+    //
     public Set<SubscriptionPartitionOffset> calculateOffsetsToBeCommitted(Map<SubscriptionPartitionOffset, MessageState> offsets) {
         try (HermesTimerContext ignored = timer.time()) {
             // committed offsets need to be copied first so that there is no possibility of new committed offsets
             // showing up after inflight queue is copied - this would lead to stall in committing offsets
-            List<SubscriptionPartitionOffset> deliveredOffsetsQueue = new ArrayList<>();
+            List<SubscriptionPartitionOffset> processedOffsets = new ArrayList<>();
             for (Map.Entry<SubscriptionPartitionOffset, MessageState> entry : offsets.entrySet()) {
-                if (entry.getValue() == MessageState.DELIVERED) {
-                    deliveredOffsetsQueue.add(entry.getKey());
+                if (entry.getValue() == MessageState.PROCESSED) {
+                    processedOffsets.add(entry.getKey());
                 }
             }
 
-            List<SubscriptionPartitionOffset> inflightOffsetsQueue = new ArrayList<>();
+            List<SubscriptionPartitionOffset> allOffsets = new ArrayList<>();
             for (Map.Entry<SubscriptionPartitionOffset, MessageState> entry : offsets.entrySet()) {
-                inflightOffsetsQueue.add(entry.getKey());
+                allOffsets.add(entry.getKey());
             }
 
-            ReducingConsumer committedOffsetsReducer = processCommittedOffsets(deliveredOffsetsQueue);
+            ReducingConsumer processedOffsetsReducer = prepareProcessedOffsets(processedOffsets);
 
             // update stored max committed offsets with offsets drained from queue
-            Map<SubscriptionPartition, Long> maxDrainedCommittedOffsets = committedOffsetsReducer.reduced;
-            updateMaxCommittedOffsets(maxDrainedCommittedOffsets);
+            Map<SubscriptionPartition, Long> maxDrainedProcessedOffsets = processedOffsetsReducer.reduced;
+            updateMaxProcessedOffsets(maxDrainedProcessedOffsets);
 
-            ReducingConsumer inflightOffsetReducer = processInflightOffsets(committedOffsetsReducer.all, inflightOffsetsQueue);
+            ReducingConsumer inflightOffsetReducer = prepareInflightOffsets(processedOffsetsReducer.all, allOffsets);
             Map<SubscriptionPartition, Long> minInflightOffsets = inflightOffsetReducer.reduced;
 
             int scheduledToCommitCount = 0;
             int obsoleteCount = 0;
 
-            Set<SubscriptionPartition> committedOffsetToBeRemoved = new HashSet<>();
+            Set<SubscriptionPartition> processedOffsetToBeRemoved = new HashSet<>();
 
             Set<SubscriptionPartitionOffset> offsetsToCommit = new HashSet<>();
             for (SubscriptionPartition partition : Sets.union(minInflightOffsets.keySet(), maxCommittedOffsets.keySet())) {
@@ -134,7 +135,7 @@ public class OffsetCommitter {
 
                         // if we just committed the maximum possible offset for partition, we can safely forget about it
                         if (maxCommitted == offsetToBeCommitted) {
-                            committedOffsetToBeRemoved.add(partition);
+                            processedOffsetToBeRemoved.add(partition);
                         }
                     } else {
                         logger.warn("Skipping offset out of bounds for subscription {}: partition={}, offset={}",
@@ -144,7 +145,7 @@ public class OffsetCommitter {
                     obsoleteCount++;
                 }
             }
-            committedOffsetToBeRemoved.forEach(maxCommittedOffsets::remove);
+            processedOffsetToBeRemoved.forEach(maxCommittedOffsets::remove);
 
             obsoleteCounter.increment(obsoleteCount);
             committedCounter.increment(scheduledToCommitCount);
@@ -158,21 +159,21 @@ public class OffsetCommitter {
         return Set.of();
     }
 
-    private ReducingConsumer processCommittedOffsets(List<SubscriptionPartitionOffset> deliveredOffsetsQueue) {
-        ReducingConsumer committedOffsetsReducer = new ReducingConsumer(Math::max, c -> c + 1);
-        drain(deliveredOffsetsQueue, committedOffsetsReducer);
-        committedOffsetsReducer.resetModifierFunction();
-        return committedOffsetsReducer;
+    private ReducingConsumer prepareProcessedOffsets(List<SubscriptionPartitionOffset> processedOffsets) {
+        ReducingConsumer processedOffsetsReducer = new ReducingConsumer(Math::max, c -> c + 1);
+        drain(processedOffsets, processedOffsetsReducer);
+        processedOffsetsReducer.resetModifierFunction();
+        return processedOffsetsReducer;
     }
 
-    private void updateMaxCommittedOffsets(Map<SubscriptionPartition, Long> maxDrainedCommittedOffsets) {
+    private void updateMaxProcessedOffsets(Map<SubscriptionPartition, Long> maxDrainedCommittedOffsets) {
         maxDrainedCommittedOffsets.forEach((partition, drainedOffset) ->
                 maxCommittedOffsets.compute(partition, (p, storedOffset) ->
                         storedOffset == null || storedOffset < drainedOffset ? drainedOffset : storedOffset)
         );
     }
 
-    private ReducingConsumer processInflightOffsets(Set<SubscriptionPartitionOffset> deliveredOffsets,
+    private ReducingConsumer prepareInflightOffsets(Set<SubscriptionPartitionOffset> deliveredOffsets,
                                                     List<SubscriptionPartitionOffset> inflightOffsetsQueue) {
         // smallest undelivered message
         ReducingConsumer inflightOffsetReducer = new ReducingConsumer(Math::min);

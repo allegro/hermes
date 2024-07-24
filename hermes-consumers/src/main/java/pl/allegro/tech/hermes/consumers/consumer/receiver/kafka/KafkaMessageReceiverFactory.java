@@ -13,7 +13,7 @@ import pl.allegro.tech.hermes.consumers.consumer.idletime.ExponentiallyGrowingId
 import pl.allegro.tech.hermes.consumers.consumer.idletime.IdleTimeCalculator;
 import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
 import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignmentState;
-import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetsSlots;
+import pl.allegro.tech.hermes.consumers.consumer.offset.PendingOffsetsAppender;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
@@ -93,7 +93,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
                                                  ConsumerRateLimiter consumerRateLimiter,
                                                  SubscriptionLoadRecorder loadReporter,
                                                  MetricsFacade metrics,
-                                                 OffsetsSlots offsetsSlots) {
+                                                 PendingOffsetsAppender pendingOffsetsAppender) {
 
         MessageReceiver receiver = createKafkaSingleThreadedMessageReceiver(topic, subscription, loadReporter);
 
@@ -102,7 +102,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
         }
 
         if (consumerReceiverParameters.isFilteringEnabled()) {
-            receiver = createFilteringMessageReceiver(receiver, consumerRateLimiter, subscription, metrics, offsetsSlots);
+            receiver = createFilteringMessageReceiver(receiver, consumerRateLimiter, subscription, metrics, pendingOffsetsAppender);
         }
 
         return receiver;
@@ -139,11 +139,11 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
                                                            ConsumerRateLimiter consumerRateLimiter,
                                                            Subscription subscription,
                                                            MetricsFacade metrics,
-                                                           OffsetsSlots offsetsSlots) {
+                                                           PendingOffsetsAppender pendingOffsetsAppender) {
         boolean filteringRateLimitEnabled = consumerReceiverParameters.isFilteringRateLimiterEnabled();
         FilteredMessageHandler filteredMessageHandler = new FilteredMessageHandler(
                 filteringRateLimitEnabled ? consumerRateLimiter : null,
-                offsetsSlots,
+                pendingOffsetsAppender,
                 trackers,
                 metrics,
                 subscription.getQualifiedName()

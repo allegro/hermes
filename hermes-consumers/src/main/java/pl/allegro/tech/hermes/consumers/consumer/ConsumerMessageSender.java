@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
-import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetsSlots;
+import pl.allegro.tech.hermes.consumers.consumer.offset.PendingOffsets;
 import pl.allegro.tech.hermes.consumers.consumer.profiling.ConsumerProfiler;
 import pl.allegro.tech.hermes.consumers.consumer.profiling.ConsumerRun;
 import pl.allegro.tech.hermes.consumers.consumer.profiling.DefaultConsumerProfiler;
@@ -49,7 +49,7 @@ public class ConsumerMessageSender {
     private final List<ErrorHandler> errorHandlers;
     private final MessageSenderFactory messageSenderFactory;
     private final Clock clock;
-    private final OffsetsSlots offsetsSlots;
+    private final PendingOffsets pendingOffsets;
     private final SubscriptionLoadRecorder loadRecorder;
     private final HermesTimer consumerLatencyTimer;
     private final HermesCounter retries;
@@ -71,7 +71,7 @@ public class ConsumerMessageSender {
                                  List<ErrorHandler> errorHandlers,
                                  SerialConsumerRateLimiter rateLimiter,
                                  ExecutorService deliveryReportingExecutor,
-                                 OffsetsSlots offsetsSlots,
+                                 PendingOffsets pendingOffsets,
                                  MetricsFacade metrics,
                                  int asyncTimeoutMs,
                                  FutureAsyncTimeout futureAsyncTimeout,
@@ -88,7 +88,7 @@ public class ConsumerMessageSender {
         this.asyncTimeoutMs = asyncTimeoutMs;
         this.messageSender = messageSender(subscription);
         this.subscription = subscription;
-        this.offsetsSlots = offsetsSlots;
+        this.pendingOffsets = pendingOffsets;
         this.consumerLatencyTimer = metrics.subscriptions().latency(subscription.getQualifiedName());
         metrics.subscriptions().registerInflightGauge(subscription.getQualifiedName(), this, sender -> sender.inflightCount.doubleValue());
         this.retries = metrics.subscriptions().retries(subscription.getQualifiedName());
@@ -259,7 +259,7 @@ public class ConsumerMessageSender {
     }
 
     private void handleMessageDiscarding(Message message, MessageSendingResult result, ConsumerProfiler profiler) {
-        offsetsSlots.markAsSent(subscriptionPartitionOffset(subscription.getQualifiedName(),
+        pendingOffsets.markAsProcessed(subscriptionPartitionOffset(subscription.getQualifiedName(),
                 message.getPartitionOffset(), message.getPartitionAssignmentTerm()));
         inflightCount.decrement();
         errorHandlers.forEach(h -> h.handleDiscarded(message, subscription, result));
@@ -267,7 +267,7 @@ public class ConsumerMessageSender {
     }
 
     private void handleMessageSendingSuccess(Message message, MessageSendingResult result, ConsumerProfiler profiler) {
-        offsetsSlots.markAsSent(subscriptionPartitionOffset(subscription.getQualifiedName(),
+        pendingOffsets.markAsProcessed(subscriptionPartitionOffset(subscription.getQualifiedName(),
                 message.getPartitionOffset(), message.getPartitionAssignmentTerm()));
         inflightCount.decrement();
         successHandlers.forEach(h -> h.handleSuccess(message, subscription, result));

@@ -6,7 +6,7 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
-import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetsSlots;
+import pl.allegro.tech.hermes.consumers.consumer.offset.PendingOffsetsAppender;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.domain.filtering.chain.FilterResult;
 import pl.allegro.tech.hermes.metrics.HermesCounter;
@@ -19,7 +19,7 @@ import static pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionParti
 
 public class FilteredMessageHandler {
 
-    private final OffsetsSlots offsetsSlots;
+    private final PendingOffsetsAppender pendingOffsets;
     private final Optional<ConsumerRateLimiter> consumerRateLimiter;
     private final Trackers trackers;
     private final HermesCounter filteredOutCounter;
@@ -27,12 +27,12 @@ public class FilteredMessageHandler {
     private static final Logger logger = LoggerFactory.getLogger(FilteredMessageHandler.class);
 
     public FilteredMessageHandler(ConsumerRateLimiter consumerRateLimiter,
-                                  OffsetsSlots offsetsSlots,
+                                  PendingOffsetsAppender pendingOffsetsAppender,
                                   Trackers trackers,
                                   MetricsFacade metrics,
                                   SubscriptionName subscriptionName) {
         this.consumerRateLimiter = Optional.ofNullable(consumerRateLimiter);
-        this.offsetsSlots = offsetsSlots;
+        this.pendingOffsets = pendingOffsetsAppender;
         this.trackers = trackers;
         this.filteredOutCounter = metrics.subscriptions().filteredOutCounter(subscriptionName);
     }
@@ -43,7 +43,7 @@ public class FilteredMessageHandler {
                 logger.debug("Message filtered for subscription {} {}", subscription.getQualifiedName(), result);
             }
 
-            offsetsSlots.markAsSent(subscriptionPartitionOffset(subscription.getQualifiedName(),
+            pendingOffsets.markAsProcessed(subscriptionPartitionOffset(subscription.getQualifiedName(),
                     message.getPartitionOffset(), message.getPartitionAssignmentTerm()));
 
             filteredOutCounter.increment();

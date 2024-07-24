@@ -100,9 +100,7 @@ public class ConsumerFactory {
                     topic,
                     commonConsumerParameters.isUseTopicMessageSizeEnabled(),
                     loadRecorder,
-                    consumerPartitionAssignmentState,
-                    commitPeriod,
-                    offsetQueueSize
+                    commitPeriod
             );
         } else {
             SerialConsumerRateLimiter consumerRateLimiter = new SerialConsumerRateLimiter(subscription,
