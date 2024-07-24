@@ -15,6 +15,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.Optional;
 
 @OneSourceRetransmission
 public class OfflineRetransmissionRequest {
@@ -66,12 +67,12 @@ public class OfflineRetransmissionRequest {
         return null;
     }
 
-    public String getSourceViewPath() {
-        return sourceViewPath;
+    public Optional<String> getSourceViewPath() {
+        return Optional.ofNullable(sourceViewPath);
     }
 
-    public String getSourceTopic() {
-        return sourceTopic;
+    public Optional<String> getSourceTopic() {
+        return Optional.ofNullable(sourceTopic);
     }
 
     public String getTargetTopic() {

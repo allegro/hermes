@@ -21,7 +21,7 @@ public class OfflineRetransmissionService {
     }
 
     public void validateRequest(OfflineRetransmissionRequest request) {
-        TopicName sourceTopicName = TopicName.fromQualifiedName(request.getSourceTopic());
+        TopicName sourceTopicName = TopicName.fromQualifiedName(request.getSourceTopic().orElse(""));
         TopicName targetTopicName = TopicName.fromQualifiedName(request.getTargetTopic());
 
         ensureTopicsExist(sourceTopicName, targetTopicName);
