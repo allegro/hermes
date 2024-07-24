@@ -742,3 +742,21 @@ Note that by default Hermes does not give any guarantees about assigning message
 
 When messages are published with `parition-key` and consumed with `BATCH` mode (or `SERIAL` with `inflightSize=1`) they will be ordered as long as they were published to one DC. 
 Publishing messages with same `parition-key` to multiple DCs does not guarantee ordering because messages are stored in separate kafka clusters. 
+
+## Message duplication
+
+Hermes messages can be duplicated on different levels. Publishers are advised to include an idempotency key in message schema to allow 
+consumers to process messages idempotently, relying on Hermes `messageId` is not sufficient.
+
+Scenarios in which subscribes may receive logically duplicated messages: 
+
+- Publisher sends a message to Hermes, the request is timed out and retried. In this case both the first and the second message may end up on Kafka and
+they will have different Hermes `messageId`. Both messages are later sent to subscriber.
+- Once message is received by Hermes it is relayed to Kafka. Message may then be duplicated because of Kafka producer level retries. Duplicated messages will
+have the same Hermes `messageId`.
+- When using [remote DC fallback](https://hermes-pubsub.readthedocs.io/en/latest/user/publishing/#remote-dc-fallback), slow messages are speculatively
+sent to remote DC. This may result in a message being duplicated across DCs if both the local and remote message are saved, both copies will have the 
+same `messageId`.
+- Even if there is one instance of a given message on a given topic, the message may still be delivered to subscriber multiple times. 
+When message is acknowledged by a subscriber its offset is not commited to Kafka synchronously. If Hermes instance is restarted 
+after receiving an ack from subscriber but before commiting the message offset to Kafka, the message will be redelivered.
