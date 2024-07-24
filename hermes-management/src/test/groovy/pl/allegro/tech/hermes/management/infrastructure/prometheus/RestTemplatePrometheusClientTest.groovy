@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.management.infrastructure.prometheus
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.junit.WireMockRule
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import jakarta.ws.rs.core.MediaType
 import org.junit.Rule
 import org.springframework.web.client.RestTemplate
@@ -49,7 +50,8 @@ class RestTemplatePrometheusClientTest extends Specification {
     void setup() {
         ExecutorService executorService = Executors.newFixedThreadPool(10)
         RestTemplate restTemplate = new RestTemplate()
-        client = new RestTemplateParallelPrometheusClient(restTemplate, URI.create("http://localhost:$PROMETHEUS_HTTP_PORT"), executorService, Duration.ofSeconds(5))
+        client = new RestTemplateParallelPrometheusClient(restTemplate, URI.create("http://localhost:$PROMETHEUS_HTTP_PORT"),
+                executorService, Duration.ofSeconds(5), new SimpleMeterRegistry())
     }
 
     def "should get metrics for path"() {

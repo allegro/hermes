@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.management.infrastructure.prometheus;
 
 import com.google.common.base.Preconditions;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,15 +34,18 @@ public class RestTemplateParallelPrometheusClient implements PrometheusClient {
     private final RestTemplate restTemplate;
     private final ExecutorService executorService;
     private final Duration parallelFetchingTimeout;
+    private final MeterRegistry meterRegistry;
+
 
     public RestTemplateParallelPrometheusClient(RestTemplate restTemplate,
                                                 URI prometheusUri,
                                                 ExecutorService executorService,
-                                                Duration parallelFetchingTimeoutMillis) {
+                                                Duration parallelFetchingTimeoutMillis, MeterRegistry meterRegistry) {
         this.restTemplate = restTemplate;
         this.prometheusUri = prometheusUri;
         this.executorService = executorService;
         this.parallelFetchingTimeout = parallelFetchingTimeoutMillis;
+        this.meterRegistry = meterRegistry;
     }
 
     @Override
@@ -92,10 +96,12 @@ public class RestTemplateParallelPrometheusClient implements PrometheusClient {
                         .flatMap(PrometheusResponse.VectorResult::getValue)
                         .map(value -> MetricDecimalValue.of(value.toString()))
                         .orElse(MetricDecimalValue.defaultValue());
+                meterRegistry.counter("read-metric-from-prometheus.success").increment();
                 return Pair.of(query, result);
             });
         } catch (Exception exception) {
             logger.warn("Unable to read from Prometheus...", exception);
+            meterRegistry.counter("read-metric-from-prometheus.error").increment();
             return CompletableFuture.completedFuture(Pair.of(query, MetricDecimalValue.unavailable()));
         }
     }

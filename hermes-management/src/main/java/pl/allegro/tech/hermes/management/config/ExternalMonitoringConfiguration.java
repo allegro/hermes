@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.management.config;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.client5.http.config.ConnectionConfig;
 import org.apache.hc.client5.http.config.RequestConfig;
@@ -44,13 +45,15 @@ public class ExternalMonitoringConfiguration {
     @ConditionalOnProperty(value = "prometheus.client.enabled", havingValue = "true")
     public PrometheusClient prometheusClient(@Qualifier("monitoringRestTemplate") RestTemplate monitoringRestTemplate,
                                              PrometheusMonitoringClientProperties clientProperties,
-                                             @Qualifier("prometheusFetcherExecutorService") ExecutorService executorService) {
+                                             @Qualifier("prometheusFetcherExecutorService") ExecutorService executorService,
+                                             MeterRegistry meterRegistry) {
         RestTemplateParallelPrometheusClient underlyingPrometheusClient =
                 new RestTemplateParallelPrometheusClient(
                         monitoringRestTemplate,
                         URI.create(clientProperties.getExternalMonitoringUrl()),
                         executorService,
-                        Duration.ofMillis(clientProperties.getParallelFetchingTimeoutMillis()));
+                        Duration.ofMillis(clientProperties.getParallelFetchingTimeoutMillis()),
+                        meterRegistry);
         return new CachingPrometheusClient(
                 underlyingPrometheusClient,
                 systemTicker(),
