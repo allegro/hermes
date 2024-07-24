@@ -17,8 +17,8 @@ public class OneSourceRetransmissionValidator implements ConstraintValidator<One
         var sourceViewPath = offlineRetransmissionRequest.getSourceViewPath();
         var sourceTopic = offlineRetransmissionRequest.getSourceTopic();
 
-        return (nonBlank(sourceViewPath.orElse(EMPTY_STRING)) && sourceTopic.isEmpty()) ||
-                (nonBlank(sourceTopic.orElse(EMPTY_STRING)) && sourceViewPath.isEmpty());
+        return (nonBlank(sourceViewPath.orElse(EMPTY_STRING)) && sourceTopic.isEmpty())
+                || (nonBlank(sourceTopic.orElse(EMPTY_STRING)) && sourceViewPath.isEmpty());
     }
 
     private static boolean nonBlank(String value) {
