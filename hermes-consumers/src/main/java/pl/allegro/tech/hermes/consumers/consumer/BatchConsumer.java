@@ -65,7 +65,7 @@ public class BatchConsumer implements Consumer {
     private final BatchConsumerMetrics metrics;
     private MessageBatchReceiver receiver;
 
-    private final Map<SubscriptionPartition, Long> pendingOffsets = new HashMap<>();
+    private final Map<SubscriptionPartition, Long> maxPendingOffsets = new HashMap<>();
 
     private Instant lastCommitTime;
 
@@ -132,7 +132,7 @@ public class BatchConsumer implements Consumer {
         if (isReadyToCommit()) {
             Set<SubscriptionPartitionOffset> offsetsToCommit = new HashSet<>();
 
-            for (Map.Entry<SubscriptionPartition, Long> entry : pendingOffsets.entrySet()) {
+            for (Map.Entry<SubscriptionPartition, Long> entry : maxPendingOffsets.entrySet()) {
                 offsetsToCommit.add(new SubscriptionPartitionOffset(entry.getKey(), entry.getValue()));
             }
 
@@ -154,11 +154,9 @@ public class BatchConsumer implements Consumer {
     }
 
     private void putOffset(SubscriptionPartitionOffset offset) {
-        if (!pendingOffsets.containsKey(offset.getSubscriptionPartition())) {
-            pendingOffsets.put(offset.getSubscriptionPartition(), offset.getOffset());
-        } else if (pendingOffsets.get(offset.getSubscriptionPartition()) < offset.getOffset()) {
-            pendingOffsets.put(offset.getSubscriptionPartition(), offset.getOffset());
-        }
+        maxPendingOffsets.compute(offset.getSubscriptionPartition(), (subscriptionPartition, maxOffset) ->
+                maxOffset == null ? offset.getOffset() : Math.max(maxOffset, offset.getOffset())
+        );
     }
 
     @Override

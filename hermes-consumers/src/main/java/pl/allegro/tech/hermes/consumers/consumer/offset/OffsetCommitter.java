@@ -91,7 +91,6 @@ public class OffsetCommitter {
         this.timer = metrics.offsetCommits().duration();
     }
 
-    //
     public Set<SubscriptionPartitionOffset> calculateOffsetsToBeCommitted(Map<SubscriptionPartitionOffset, MessageState> offsets) {
         try (HermesTimerContext ignored = timer.time()) {
             // committed offsets need to be copied first so that there is no possibility of new committed offsets
@@ -173,16 +172,16 @@ public class OffsetCommitter {
         );
     }
 
-    private ReducingConsumer prepareInflightOffsets(Set<SubscriptionPartitionOffset> deliveredOffsets,
+    private ReducingConsumer prepareInflightOffsets(Set<SubscriptionPartitionOffset> processedOffsets,
                                                     List<SubscriptionPartitionOffset> inflightOffsetsQueue) {
         // smallest undelivered message
         ReducingConsumer inflightOffsetReducer = new ReducingConsumer(Math::min);
 
         // process inflights from the current iteration
-        drain(inflightOffsetsQueue, o -> reduceIfNotDelivered(o, inflightOffsetReducer, deliveredOffsets));
+        drain(inflightOffsetsQueue, o -> reduceIfNotDelivered(o, inflightOffsetReducer, processedOffsets));
 
         // process inflights from the previous iteration
-        inflightOffsets.forEach(o -> reduceIfNotDelivered(o, inflightOffsetReducer, deliveredOffsets));
+        inflightOffsets.forEach(o -> reduceIfNotDelivered(o, inflightOffsetReducer, processedOffsets));
 
         inflightOffsets.clear();
         inflightOffsets.addAll(inflightOffsetReducer.all);
