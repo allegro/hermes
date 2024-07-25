@@ -3,13 +3,13 @@ package pl.allegro.tech.hermes.management.config;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.apache.hc.client5.http.classic.HttpClient;
-import org.apache.hc.client5.http.config.ConnectionConfig;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
 import org.apache.hc.core5.util.Timeout;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,7 +25,6 @@ import java.net.URI;
 import java.time.Duration;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Ticker.systemTicker;
 
@@ -63,6 +62,8 @@ public class ExternalMonitoringConfiguration {
     }
 
     @Bean("monitoringRestTemplate")
+    @ConditionalOnMissingBean(name = "monitoringRestTemplate")
+    @ConditionalOnProperty(value = "prometheus.client.enabled", havingValue = "true")
     public RestTemplate restTemplate(ExternalMonitoringClientProperties clientProperties) {
         PoolingHttpClientConnectionManager connectionManager = PoolingHttpClientConnectionManagerBuilder.create()
                 .setMaxConnTotal(clientProperties.getMaxConnections())
@@ -83,8 +84,9 @@ public class ExternalMonitoringConfiguration {
         return new RestTemplate(clientHttpRequestFactory);
     }
 
-    @Bean
-    @Qualifier("prometheusFetcherExecutorService")
+    @Bean("prometheusFetcherExecutorService")
+    @ConditionalOnMissingBean(name = "prometheusFetcherExecutorService")
+    @ConditionalOnProperty(value = "prometheus.client.enabled", havingValue = "true")
     ExecutorService executorService(ExternalMonitoringClientProperties clientProperties) {
         return Executors.newFixedThreadPool(clientProperties.getParallelFetchingThreads(),
                 new ThreadFactoryBuilder().setNameFormat("prometheus-metrics-fetcher-%d").build()
