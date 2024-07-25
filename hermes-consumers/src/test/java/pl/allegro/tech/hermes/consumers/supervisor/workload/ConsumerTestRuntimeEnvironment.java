@@ -16,7 +16,6 @@ import pl.allegro.tech.hermes.consumers.config.SubscriptionConfiguration;
 import pl.allegro.tech.hermes.consumers.config.WorkloadProperties;
 import pl.allegro.tech.hermes.consumers.config.ZookeeperProperties;
 import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignmentState;
-import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.health.ConsumerMonitor;
 import pl.allegro.tech.hermes.consumers.message.undelivered.UndeliveredMessageLogPersister;
 import pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistry;
@@ -222,15 +221,13 @@ class ConsumerTestRuntimeEnvironment {
         return new NonblockingConsumersSupervisor(commonConsumerProperties,
                 new ConsumersExecutorService(new CommonConsumerProperties().getThreadPoolSize(), metrics),
                 consumerFactory,
-                mock(OffsetQueue.class),
                 partitionAssignmentState,
                 mock(Retransmitter.class),
                 mock(UndeliveredMessageLogPersister.class),
                 subscriptionRepository,
                 metrics,
                 mock(ConsumerMonitor.class),
-                Clock.systemDefaultZone(),
-                Duration.ofSeconds(60));
+                Clock.systemDefaultZone());
     }
 
     ConsumersRuntimeMonitor monitor(String consumerId,
