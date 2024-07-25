@@ -90,7 +90,7 @@ class PendingOffsetsTest extends Specification {
         !isAcquired
 
         when:
-        Map<SubscriptionPartitionOffset,MessageState> offsetSnapshot = offsetsSlots.offsetSnapshot()
+        Map<SubscriptionPartitionOffset,MessageState> offsetSnapshot = offsetsSlots.getOffsetsSnapshotAndReleaseProcessedSlots()
         boolean isAcquiredAfterRelease = offsetsSlots.tryAcquireSlot(ACQUIRE_DURATION)
 
         then:

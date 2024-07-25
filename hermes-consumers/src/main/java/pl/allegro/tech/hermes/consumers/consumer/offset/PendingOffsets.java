@@ -63,7 +63,7 @@ public class PendingOffsets {
         slots.put(subscriptionPartitionOffset, MessageState.INFLIGHT);
     }
 
-    public Map<SubscriptionPartitionOffset, MessageState> offsetSnapshot() {
+    public Map<SubscriptionPartitionOffset, MessageState> getOffsetsSnapshotAndReleaseProcessedSlots() {
         int permitsReleased = 0;
         Map<SubscriptionPartitionOffset, MessageState> offsetSnapshot = new HashMap<>();
 

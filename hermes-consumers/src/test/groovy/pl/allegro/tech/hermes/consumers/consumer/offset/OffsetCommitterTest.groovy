@@ -35,7 +35,7 @@ class OffsetCommitterTest extends Specification {
         offsetsSlots.markAsProcessed(offset(1, -123))
 
         when:
-        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot()))
+        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.getOffsetsSnapshotAndReleaseProcessedSlots()))
 
         then:
         offsetCommitterTestHelper.nothingCommitted(1)
@@ -49,7 +49,7 @@ class OffsetCommitterTest extends Specification {
         offsetsSlots.markAsProcessed(offset(1, offsetTooLarge))
 
         when:
-        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot()))
+        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.getOffsetsSnapshotAndReleaseProcessedSlots()))
 
         then:
         offsetCommitterTestHelper.nothingCommitted(1)
@@ -67,7 +67,7 @@ class OffsetCommitterTest extends Specification {
         offsetsSlots.markAsProcessed(offset(1, 4))
 
         when:
-        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot()))
+        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.getOffsetsSnapshotAndReleaseProcessedSlots()))
 
         then:
         offsetCommitterTestHelper.wereCommitted(1, offset(1, 2))
@@ -82,7 +82,7 @@ class OffsetCommitterTest extends Specification {
         offsetsSlots.markAsInflight(offset(2, 1))
 
         when:
-        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot()))
+        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.getOffsetsSnapshotAndReleaseProcessedSlots()))
 
         then:
         offsetCommitterTestHelper.wereCommitted(1, offset(1, 2), offset(2, 1))
@@ -98,7 +98,7 @@ class OffsetCommitterTest extends Specification {
         offsetsSlots.markAsProcessed(offset(1, 4))
 
         when:
-        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot()))
+        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.getOffsetsSnapshotAndReleaseProcessedSlots()))
 
         then:
         offsetCommitterTestHelper.wereCommitted(1, offset(1, 5))
@@ -110,13 +110,13 @@ class OffsetCommitterTest extends Specification {
         offsetsSlots.markAsInflight(offset(1, 5))
 
         when:
-        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot()))
+        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.getOffsetsSnapshotAndReleaseProcessedSlots()))
 
         then:
         offsetCommitterTestHelper.wereCommitted(1, offset(1, 5))
 
         when:
-        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot()))
+        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.getOffsetsSnapshotAndReleaseProcessedSlots()))
 
         then:
         offsetCommitterTestHelper.wereCommitted(2, offset(1, 5))
@@ -137,7 +137,7 @@ class OffsetCommitterTest extends Specification {
         offsetsSlots.markAsProcessed(offset(2, 11))
 
         when:
-        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot()))
+        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.getOffsetsSnapshotAndReleaseProcessedSlots()))
 
         then:
         offsetCommitterTestHelper.wereCommitted(1, offset(1, 5), offset(2, 10))
@@ -150,7 +150,7 @@ class OffsetCommitterTest extends Specification {
 
         when:
         revokeAllPartitions()
-        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot()))
+        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.getOffsetsSnapshotAndReleaseProcessedSlots()))
 
         then:
         offsetCommitterTestHelper.nothingCommitted(1)
@@ -164,7 +164,7 @@ class OffsetCommitterTest extends Specification {
 
         when:
         revokePartitions(1)
-        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot()))
+        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.getOffsetsSnapshotAndReleaseProcessedSlots()))
 
         then:
         offsetCommitterTestHelper.wereCommitted(1, offset(2, 3))
@@ -178,7 +178,7 @@ class OffsetCommitterTest extends Specification {
 
         when:
         revokePartitions(1)
-        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot()))
+        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.getOffsetsSnapshotAndReleaseProcessedSlots()))
 
         then:
         offsetCommitterTestHelper.nothingCommitted(1)
@@ -191,7 +191,7 @@ class OffsetCommitterTest extends Specification {
         offsetsSlots.markAsProcessed(offset(1, 3))
 
         when:
-        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot()))
+        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.getOffsetsSnapshotAndReleaseProcessedSlots()))
 
         then:
         offsetCommitterTestHelper.wereCommitted(1, offset(1, 4))
@@ -204,7 +204,7 @@ class OffsetCommitterTest extends Specification {
         revokeAllPartitions()
 
         and:
-        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot()))
+        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.getOffsetsSnapshotAndReleaseProcessedSlots()))
 
         then:
         offsetCommitterTestHelper.nothingCommitted(2)
@@ -216,21 +216,21 @@ class OffsetCommitterTest extends Specification {
         offsetsSlots.markAsInflight(offset(1, 3))
 
         when:
-        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot()))
+        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.getOffsetsSnapshotAndReleaseProcessedSlots()))
 
         then:
         offsetCommitterTestHelper.wereCommitted(1, offset(1, 3))
 
         when:
         revokePartitions(1)
-        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot()))
+        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.getOffsetsSnapshotAndReleaseProcessedSlots()))
 
         then:
         offsetCommitterTestHelper.nothingCommitted(2)
 
         when:
         assignPartitions(1)
-        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot()))
+        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.getOffsetsSnapshotAndReleaseProcessedSlots()))
 
         then:
         offsetCommitterTestHelper.nothingCommitted(3)
@@ -242,7 +242,7 @@ class OffsetCommitterTest extends Specification {
         offsetsSlots.markAsInflight(offset(1, 3))
 
         when:
-        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot()))
+        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.getOffsetsSnapshotAndReleaseProcessedSlots()))
 
         then:
         offsetCommitterTestHelper.wereCommitted(1, offset(1, 3))
@@ -255,7 +255,7 @@ class OffsetCommitterTest extends Specification {
         assignPartitions(1)
 
         and:
-        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot()))
+        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.getOffsetsSnapshotAndReleaseProcessedSlots()))
 
         then:
         offsetCommitterTestHelper.nothingCommitted(2)
@@ -264,7 +264,7 @@ class OffsetCommitterTest extends Specification {
         offsetsSlots.markAsProcessed(offsetFromTerm(1, 4, 0)) // message from previous term=0
 
         and:
-        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot()))
+        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.getOffsetsSnapshotAndReleaseProcessedSlots()))
 
         then:
         offsetCommitterTestHelper.nothingCommitted(3)
@@ -278,7 +278,7 @@ class OffsetCommitterTest extends Specification {
         offsetsSlots.markAsInflight(offset(1, 5))
 
         when:
-        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot()))
+        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.getOffsetsSnapshotAndReleaseProcessedSlots()))
 
         then:
         offsetCommitterTestHelper.wereCommitted(1, offset(1, 3))
@@ -288,7 +288,7 @@ class OffsetCommitterTest extends Specification {
         offsetsSlots.markAsProcessed(offset(1, 5))
 
         and:
-        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot()))
+        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.getOffsetsSnapshotAndReleaseProcessedSlots()))
 
         then:
         offsetCommitterTestHelper.wereCommitted(2, offset(1, 3))
@@ -297,7 +297,7 @@ class OffsetCommitterTest extends Specification {
         offsetsSlots.markAsProcessed(offset(1, 3))
 
         and:
-        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot()))
+        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.getOffsetsSnapshotAndReleaseProcessedSlots()))
 
         then:
         offsetCommitterTestHelper.wereCommitted(3, offset(1, 6))
@@ -311,7 +311,7 @@ class OffsetCommitterTest extends Specification {
         offsetsSlots.markAsInflight(offset(1, 5))
 
         when:
-        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot()))
+        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.getOffsetsSnapshotAndReleaseProcessedSlots()))
 
         then:
         offsetCommitterTestHelper.wereCommitted(1, offset(1, 3))
@@ -321,7 +321,7 @@ class OffsetCommitterTest extends Specification {
         offsetsSlots.markAsProcessed(offset(1, 5))
 
         and:
-        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot()))
+        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.getOffsetsSnapshotAndReleaseProcessedSlots()))
 
         then:
         offsetCommitterTestHelper.wereCommitted(2, offset(1, 3))
@@ -332,7 +332,7 @@ class OffsetCommitterTest extends Specification {
         assignPartitions(1)
 
         and:
-        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.offsetSnapshot()))
+        offsetCommitterTestHelper.markCommittedOffsets(committer.calculateOffsetsToBeCommitted(offsetsSlots.getOffsetsSnapshotAndReleaseProcessedSlots()))
 
         then:
         offsetCommitterTestHelper.nothingCommitted(3)

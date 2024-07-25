@@ -93,8 +93,6 @@ public class OffsetCommitter {
 
     public Set<SubscriptionPartitionOffset> calculateOffsetsToBeCommitted(Map<SubscriptionPartitionOffset, MessageState> offsets) {
         try (HermesTimerContext ignored = timer.time()) {
-            // committed offsets need to be copied first so that there is no possibility of new committed offsets
-            // showing up after inflight queue is copied - this would lead to stall in committing offsets
             List<SubscriptionPartitionOffset> processedOffsets = new ArrayList<>();
             for (Map.Entry<SubscriptionPartitionOffset, MessageState> entry : offsets.entrySet()) {
                 if (entry.getValue() == MessageState.PROCESSED) {

@@ -147,7 +147,7 @@ public class SerialConsumer implements Consumer {
 
     private void commitIfReady() {
         if (isReadyToCommit()) {
-            Set<SubscriptionPartitionOffset> offsetsToCommit = offsetCommitter.calculateOffsetsToBeCommitted(pendingOffsets.offsetSnapshot());
+            Set<SubscriptionPartitionOffset> offsetsToCommit = offsetCommitter.calculateOffsetsToBeCommitted(pendingOffsets.getOffsetsSnapshotAndReleaseProcessedSlots());
             if (!offsetsToCommit.isEmpty()) {
                 commit(offsetsToCommit);
             }
