@@ -110,6 +110,10 @@ allprojects {
         args += chronicleMapJvmArgs
         jvmArgs = args
     }
+
+    // Add JVM arguments to support ChronicleMap in the HERMES_FRONTEND_OPTS environment variable
+    ext.HERMES_FRONTEND_OPTS = ["-Dspring.config.location=file:///etc/hermes/frontend.yaml",
+                                "-Dlogback.configurationFile=/etc/hermes/logback.xml"] + chronicleMapJvmArgs
 }
 
 

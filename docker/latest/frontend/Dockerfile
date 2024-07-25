@@ -4,7 +4,7 @@ COPY --chown=gradle:gradle . /home/gradle/src/
 WORKDIR /home/gradle/src/
 RUN gradle clean distZip -Pdistribution
 
-FROM eclipse-temurin:17.0.7_7-jre
+FROM eclipse-temurin:17.0.7_7-jdk
 
 RUN apt-get update \
   && apt-get -y install unzip wget bash \
@@ -19,4 +19,4 @@ ADD docker/latest/frontend/frontend.yaml /etc/hermes/frontend.yaml
 ADD docker/latest/frontend/logback.xml /etc/hermes/logback.xml
 ENV HERMES_FRONTEND_OPTS="-Dspring.config.location=file:///etc/hermes/frontend.yaml -Dlogback.configurationFile=/etc/hermes/logback.xml"
 
-CMD /hermes-frontend/bin/hermes-frontend
+CMD /hermes-frontend/bin/hermes-frontend --add-exports=java.base/jdk.internal.ref=ALL-UNNAMED --add-exports=java.base/sun.nio.ch=ALL-UNNAMED --add-exports=jdk.unsupported/sun.misc=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED --add-opens=jdk.compiler/com.sun.tools.javac=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED
