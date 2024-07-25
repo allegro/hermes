@@ -29,10 +29,10 @@ import java.util.concurrent.Executors;
 import static com.google.common.base.Ticker.systemTicker;
 
 @Configuration
+@ConditionalOnProperty(value = "prometheus.client.enabled", havingValue = "true")
 public class ExternalMonitoringConfiguration {
 
     @Bean
-    @ConditionalOnProperty(value = "prometheus.client.enabled", havingValue = "true")
     public PrometheusMetricsProvider prometheusMetricsProvider(PrometheusClient prometheusClient,
                                                                PrometheusMonitoringClientProperties properties) {
         return new PrometheusMetricsProvider(prometheusClient,
@@ -41,7 +41,6 @@ public class ExternalMonitoringConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty(value = "prometheus.client.enabled", havingValue = "true")
     public PrometheusClient prometheusClient(@Qualifier("monitoringRestTemplate") RestTemplate monitoringRestTemplate,
                                              PrometheusMonitoringClientProperties clientProperties,
                                              @Qualifier("prometheusFetcherExecutorService") ExecutorService executorService,
@@ -63,7 +62,6 @@ public class ExternalMonitoringConfiguration {
 
     @Bean("monitoringRestTemplate")
     @ConditionalOnMissingBean(name = "monitoringRestTemplate")
-    @ConditionalOnProperty(value = "prometheus.client.enabled", havingValue = "true")
     public RestTemplate restTemplate(ExternalMonitoringClientProperties clientProperties) {
         PoolingHttpClientConnectionManager connectionManager = PoolingHttpClientConnectionManagerBuilder.create()
                 .setMaxConnTotal(clientProperties.getMaxConnections())
@@ -86,8 +84,7 @@ public class ExternalMonitoringConfiguration {
 
     @Bean("prometheusFetcherExecutorService")
     @ConditionalOnMissingBean(name = "prometheusFetcherExecutorService")
-    @ConditionalOnProperty(value = "prometheus.client.enabled", havingValue = "true")
-    ExecutorService executorService(ExternalMonitoringClientProperties clientProperties) {
+    public ExecutorService executorService(ExternalMonitoringClientProperties clientProperties) {
         return Executors.newFixedThreadPool(clientProperties.getParallelFetchingThreads(),
                 new ThreadFactoryBuilder().setNameFormat("prometheus-metrics-fetcher-%d").build()
         );
