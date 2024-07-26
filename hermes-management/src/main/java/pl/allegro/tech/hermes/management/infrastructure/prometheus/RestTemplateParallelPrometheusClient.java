@@ -98,7 +98,6 @@ public class RestTemplateParallelPrometheusClient implements PrometheusClient {
 
             MetricDecimalValue result = parseResponse(response);
             meterRegistry.counter("read-metric-from-prometheus.success").increment();
-            logger.warn("Successfull read query from Prometheus...");
             return Pair.of(query, result);
         } catch (Exception exception) {
             logger.warn("Unable to read from Prometheus...", exception);
