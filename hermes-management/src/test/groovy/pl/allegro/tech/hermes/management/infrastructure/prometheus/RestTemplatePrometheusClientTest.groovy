@@ -1,16 +1,21 @@
 package pl.allegro.tech.hermes.management.infrastructure.prometheus
 
-import com.github.tomakehurst.wiremock.WireMockServer
+
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.junit.WireMockRule
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import jakarta.ws.rs.core.MediaType
+import org.apache.hc.client5.http.classic.HttpClient
+import org.apache.hc.client5.http.config.RequestConfig
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder
+import org.apache.hc.core5.util.Timeout
 import org.junit.Rule
+import org.springframework.http.client.ClientHttpRequestFactory
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory
 import org.springframework.web.client.RestTemplate
 import pl.allegro.tech.hermes.management.infrastructure.metrics.MetricsQuery
 import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringMetricsContainer
 import pl.allegro.tech.hermes.test.helper.util.Ports
-import spock.lang.Shared
 import spock.lang.Specification
 
 import java.nio.charset.StandardCharsets
@@ -20,7 +25,9 @@ import java.util.concurrent.Executors
 
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
+import static pl.allegro.tech.hermes.api.MetricDecimalValue.defaultValue
 import static pl.allegro.tech.hermes.api.MetricDecimalValue.of
+import static pl.allegro.tech.hermes.api.MetricDecimalValue.unavailable
 
 class RestTemplatePrometheusClientTest extends Specification {
 
@@ -49,23 +56,24 @@ class RestTemplatePrometheusClientTest extends Specification {
 
     void setup() {
         ExecutorService executorService = Executors.newFixedThreadPool(10)
-        RestTemplate restTemplate = new RestTemplate()
+        RestTemplate restTemplate = createRestTemplateWithTimeout(Duration.ofSeconds(1))
         client = new RestTemplateParallelPrometheusClient(restTemplate, URI.create("http://localhost:$PROMETHEUS_HTTP_PORT"),
                 executorService, Duration.ofSeconds(5), new SimpleMeterRegistry())
+        wireMockServer.resetAll()
     }
 
     def "should get metrics for path"() {
         given:
         def queriesStubs = List.of(
-                new QueryStub(subscriptionDeliveredQuery, "subscription_delivered_total.json"),
-                new QueryStub(subscriptionTimeoutsQuery, "subscription_timeouts_total.json"),
-                new QueryStub(subscriptionRetriesQuery, "subscription_retries_total.json"),
-                new QueryStub(subscriptionThroughputQuery, "subscription_throughput_bytes_total.json"),
-                new QueryStub(subscriptionErrorsQuery, "subscription_other_errors_total.json"),
-                new QueryStub(subscriptionBatchesQuery, "subscription_batches_total.json"),
-                new QueryStub(subscription2xxStatusCodesQuery, "subscription_2xx_http_status_codes_total.json"),
-                new QueryStub(subscription4xxStatusCodesQuery, "subscription_4xx_http_status_codes_total.json"),
-                new QueryStub(subscription5xxStatusCodesQuery, "subscription_5xx_http_status_codes_total.json"),
+                new FileStub(subscriptionDeliveredQuery, "subscription_delivered_total.json"),
+                new FileStub(subscriptionTimeoutsQuery, "subscription_timeouts_total.json"),
+                new FileStub(subscriptionRetriesQuery, "subscription_retries_total.json"),
+                new FileStub(subscriptionThroughputQuery, "subscription_throughput_bytes_total.json"),
+                new FileStub(subscriptionErrorsQuery, "subscription_other_errors_total.json"),
+                new FileStub(subscriptionBatchesQuery, "subscription_batches_total.json"),
+                new FileStub(subscription2xxStatusCodesQuery, "subscription_2xx_http_status_codes_total.json"),
+                new FileStub(subscription4xxStatusCodesQuery, "subscription_4xx_http_status_codes_total.json"),
+                new FileStub(subscription5xxStatusCodesQuery, "subscription_5xx_http_status_codes_total.json"),
         )
         mockPrometheus(queriesStubs)
 
@@ -88,8 +96,8 @@ class RestTemplatePrometheusClientTest extends Specification {
         given:
         def queriesStubs = List.of(
                 emptyStub(subscriptionDeliveredQuery),
-                new QueryStub(subscriptionTimeoutsQuery, "subscription_timeouts_total.json"),
-                new QueryStub(subscriptionRetriesQuery, "subscription_retries_total.json"),
+                new FileStub(subscriptionTimeoutsQuery, "subscription_timeouts_total.json"),
+                new FileStub(subscriptionRetriesQuery, "subscription_retries_total.json"),
                 emptyStub(subscriptionThroughputQuery),
                 emptyStub(subscriptionErrorsQuery),
                 emptyStub(subscriptionBatchesQuery),
@@ -103,30 +111,87 @@ class RestTemplatePrometheusClientTest extends Specification {
         MonitoringMetricsContainer metrics = client.readMetrics(queries)
 
         then:
-        metrics.metricValue(subscriptionDeliveredQuery) == of("0.0")
+        metrics.metricValue(subscriptionDeliveredQuery) == defaultValue()
         metrics.metricValue(subscriptionTimeoutsQuery) == of("2.0")
         metrics.metricValue(subscriptionRetriesQuery) == of("1.0")
-        metrics.metricValue(subscriptionThroughputQuery) == of("0.0")
-        metrics.metricValue(subscriptionErrorsQuery) == of("0.0")
-        metrics.metricValue(subscriptionBatchesQuery) == of("0.0")
-        metrics.metricValue(subscription2xxStatusCodesQuery) == of("0.0")
-        metrics.metricValue(subscription4xxStatusCodesQuery) == of("0.0")
-        metrics.metricValue(subscription5xxStatusCodesQuery) == of("0.0")
+        metrics.metricValue(subscriptionThroughputQuery) == defaultValue()
+        metrics.metricValue(subscriptionErrorsQuery) == defaultValue()
+        metrics.metricValue(subscriptionBatchesQuery) == defaultValue()
+        metrics.metricValue(subscription2xxStatusCodesQuery) == defaultValue()
+        metrics.metricValue(subscription4xxStatusCodesQuery) == defaultValue()
+        metrics.metricValue(subscription5xxStatusCodesQuery) == defaultValue()
     }
 
-    private void mockPrometheus(List<QueryStub> queries) {
-        queries.forEach { q ->
-            String encodedQuery = URLEncoder.encode(q.query.query(), StandardCharsets.UTF_8)
+    def "should return partial results when some of the requests fails"() {
+        given:
+        def queriesToFail = List.of(
+                subscriptionDeliveredQuery,
+                subscriptionThroughputQuery,
+                subscriptionErrorsQuery,
+                subscriptionBatchesQuery,
+                subscription2xxStatusCodesQuery,
+                subscription4xxStatusCodesQuery,
+                subscription5xxStatusCodesQuery,
+        )
+        def queriesToSuccess = List.of(
+                new FileStub(subscriptionTimeoutsQuery, "subscription_timeouts_total.json"),
+                new FileStub(subscriptionRetriesQuery, "subscription_retries_total.json"),
+        )
+        mockPrometheus(queriesToSuccess)
+        mockPrometheusTimeout(queriesToFail, Duration.ofSeconds(5))
+
+        when:
+        MonitoringMetricsContainer metrics = client.readMetrics(queries)
+
+        then:
+        metrics.metricValue(subscriptionDeliveredQuery) == unavailable()
+        metrics.metricValue(subscriptionTimeoutsQuery) == of("2.0")
+        metrics.metricValue(subscriptionRetriesQuery) == of("1.0")
+        metrics.metricValue(subscriptionThroughputQuery) == unavailable()
+        metrics.metricValue(subscriptionErrorsQuery) == unavailable()
+        metrics.metricValue(subscriptionBatchesQuery) == unavailable()
+        metrics.metricValue(subscription2xxStatusCodesQuery) == unavailable()
+        metrics.metricValue(subscription4xxStatusCodesQuery) == unavailable()
+        metrics.metricValue(subscription5xxStatusCodesQuery) == unavailable()
+    }
+
+    private void mockPrometheus(List<FileStub> stubs) {
+        stubs.forEach { s ->
+            String encodedQuery = URLEncoder.encode(s.query.query(), StandardCharsets.UTF_8)
             wireMockServer.stubFor(WireMock.get(urlEqualTo(String.format("/api/v1/query?query=%s", encodedQuery)))
                     .willReturn(WireMock.aResponse()
                             .withStatus(200)
                             .withHeader("Content-Type", MediaType.APPLICATION_JSON)
-                            .withBodyFile(q.fileName)))
+                            .withBodyFile(s.fileName)))
         }
     }
 
-    static class QueryStub {
-        QueryStub(MetricsQuery query, String fileName) {
+    private void mockPrometheusTimeout(List<MetricsQuery> queries, Duration delay) {
+        queries.forEach { q ->
+            String encodedQuery = URLEncoder.encode(q.query(), StandardCharsets.UTF_8)
+            wireMockServer.stubFor(WireMock.get(urlEqualTo(String.format("/api/v1/query?query=%s", encodedQuery)))
+                    .willReturn(WireMock.aResponse()
+                            .withHeader("Content-Type", MediaType.APPLICATION_JSON)
+                            .withFixedDelay(delay.toMillis() as Integer)));
+        }
+    }
+
+    private RestTemplate createRestTemplateWithTimeout(Duration timeout) {
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectTimeout(Timeout.ofMilliseconds(timeout.toMillis()))
+                .setResponseTimeout(Timeout.ofMilliseconds(timeout.toMillis()))
+                .build();
+
+        HttpClient client = HttpClientBuilder.create()
+                .setDefaultRequestConfig(requestConfig)
+                .build();
+
+        ClientHttpRequestFactory clientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory(client);
+        return new RestTemplate(clientHttpRequestFactory);
+    }
+
+    static class FileStub {
+        FileStub(MetricsQuery query, String fileName) {
             this.query = query
             this.fileName = fileName
         }
@@ -134,7 +199,7 @@ class RestTemplatePrometheusClientTest extends Specification {
         String fileName
     }
 
-    QueryStub emptyStub(MetricsQuery query) {
-        return new QueryStub(query, "prometheus_empty_response.json")
+    FileStub emptyStub(MetricsQuery query) {
+        return new FileStub(query, "prometheus_empty_response.json")
     }
 }

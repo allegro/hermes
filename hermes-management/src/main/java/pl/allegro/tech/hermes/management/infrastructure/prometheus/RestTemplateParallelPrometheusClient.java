@@ -71,7 +71,7 @@ public class RestTemplateParallelPrometheusClient implements PrometheusClient {
     }
 
     private CompletableFuture<Map<MetricsQuery, MetricDecimalValue>> getAggregatedCompletableFuture(List<MetricsQuery> queries) {
-        // has to be collected to avoid lazy stream iteration, and to run in parallel
+        // has to be collected to run in parallel
         List<CompletableFuture<Pair<MetricsQuery, MetricDecimalValue>>> futures = queries.stream()
                 .map(this::readSingleMetric)
                 .toList();
@@ -84,33 +84,34 @@ public class RestTemplateParallelPrometheusClient implements PrometheusClient {
     }
 
     private CompletableFuture<Pair<MetricsQuery, MetricDecimalValue>> readSingleMetric(MetricsQuery query) {
-        try {
-            CompletableFuture<PrometheusResponse> future = CompletableFuture.supplyAsync(
-                    () -> queryPrometheus(query), executorService);
-            return future.thenApply(response -> {
-                Preconditions.checkNotNull(response, "Prometheus response is null");
-                Preconditions.checkState(response.isSuccess(), "Prometheus response does not contain valid data");
+        return CompletableFuture.supplyAsync(() -> queryPrometheus(query), executorService);
+    }
 
-                MetricDecimalValue result = response.data().results().stream()
-                        .findFirst()
-                        .flatMap(PrometheusResponse.VectorResult::getValue)
-                        .map(value -> MetricDecimalValue.of(value.toString()))
-                        .orElse(MetricDecimalValue.defaultValue());
-                meterRegistry.counter("read-metric-from-prometheus.success").increment();
-                return Pair.of(query, result);
-            });
+    private Pair<MetricsQuery, MetricDecimalValue> queryPrometheus(MetricsQuery query) {
+        try {
+            URI queryUri = URI.create(prometheusUri.toString() + "/api/v1/query?query=" + encode(query.query(), UTF_8));
+            PrometheusResponse response = restTemplate.exchange(queryUri,
+                    HttpMethod.GET, HttpEntity.EMPTY, PrometheusResponse.class).getBody();
+
+            Preconditions.checkNotNull(response, "Prometheus response is null");
+            Preconditions.checkState(response.isSuccess(), "Prometheus response does not contain valid data");
+
+            MetricDecimalValue result = parseResponse(response);
+            meterRegistry.counter("read-metric-from-prometheus.success").increment();
+            logger.warn("Successfull read query from Prometheus...");
+            return Pair.of(query, result);
         } catch (Exception exception) {
             logger.warn("Unable to read from Prometheus...", exception);
             meterRegistry.counter("read-metric-from-prometheus.error").increment();
-            return CompletableFuture.completedFuture(Pair.of(query, MetricDecimalValue.unavailable()));
+            return Pair.of(query, MetricDecimalValue.unavailable());
         }
     }
 
-    private PrometheusResponse queryPrometheus(MetricsQuery query) {
-        URI queryUri = URI.create(prometheusUri.toString() + "/api/v1/query?query=" + encode(query.query(), UTF_8));
-
-        ResponseEntity<PrometheusResponse> response = restTemplate.exchange(queryUri,
-                HttpMethod.GET, HttpEntity.EMPTY, PrometheusResponse.class);
-        return response.getBody();
+    private MetricDecimalValue parseResponse(PrometheusResponse response) {
+        return response.data().results().stream()
+                .findFirst()
+                .flatMap(PrometheusResponse.VectorResult::getValue)
+                .map(value -> MetricDecimalValue.of(value.toString()))
+                .orElse(MetricDecimalValue.defaultValue());
     }
 }
