@@ -82,7 +82,7 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
             AdminClient brokerAdminClient = brokerAdminClient(kafkaProperties);
             BrokerStorage storage = brokersStorage(brokerAdminClient);
             BrokerTopicManagement brokerTopicManagement =
-                    new KafkaBrokerTopicManagement(topicProperties, brokerAdminClient, kafkaNamesMapper);
+                    new KafkaBrokerTopicManagement(topicProperties, brokerAdminClient, kafkaNamesMapper, kafkaProperties.getDatacenter());
             KafkaConsumerPool consumerPool = kafkaConsumersPool(kafkaProperties, storage, kafkaProperties.getBrokerList());
             KafkaRawMessageReader kafkaRawMessageReader =
                     new KafkaRawMessageReader(consumerPool, kafkaProperties.getKafkaConsumer().getPollTimeoutMillis());

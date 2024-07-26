@@ -9,6 +9,8 @@ import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.common.KafkaFuture;
 import org.apache.kafka.common.config.ConfigResource;
 import org.apache.kafka.common.config.TopicConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
@@ -32,10 +34,16 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
 
     private final KafkaNamesMapper kafkaNamesMapper;
 
-    public KafkaBrokerTopicManagement(TopicProperties topicProperties, AdminClient kafkaAdminClient, KafkaNamesMapper kafkaNamesMapper) {
+    private final String datacenterName;
+
+    private static final Logger logger = LoggerFactory.getLogger(KafkaBrokerTopicManagement.class);
+
+
+    public KafkaBrokerTopicManagement(TopicProperties topicProperties, AdminClient kafkaAdminClient, KafkaNamesMapper kafkaNamesMapper, String datacenterName) {
         this.topicProperties = topicProperties;
         this.kafkaAdminClient = kafkaAdminClient;
         this.kafkaNamesMapper = kafkaNamesMapper;
+        this.datacenterName = datacenterName;
     }
 
     @Override
@@ -59,7 +67,12 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
         kafkaNamesMapper.toKafkaTopics(topic).stream()
                 .map(k -> kafkaAdminClient.deleteTopics(Collections.singletonList(k.name().asString())))
                 .map(DeleteTopicsResult::all)
-                .forEach(this::waitForKafkaFuture);
+                .forEach(future -> {
+                    logger.info("Removing topic {} from Kafka dc: {}", topic, datacenterName);
+                    long start = System.currentTimeMillis();
+                    waitForKafkaFuture(future);
+                    logger.info("Removed topic {} from Kafka dc: {} in {}ms", topic, datacenterName, System.currentTimeMillis() - start);
+                });
     }
 
     @Override
