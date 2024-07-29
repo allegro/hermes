@@ -80,9 +80,10 @@ public class ZookeeperTopicRepository extends ZookeeperBasedRepository implement
     @Override
     public void removeTopic(TopicName topicName) {
         ensureTopicExists(topicName);
+        String topicPath = paths.topicPath(topicName);
         logger.info("Removing topic: " + topicName);
         try {
-            remove(paths.topicPath(topicName));
+            deleteInTransaction(topicPath, paths.subscriptionsPath(topicName));
         } catch (Exception e) {
             throw new InternalProcessingException(e);
         }

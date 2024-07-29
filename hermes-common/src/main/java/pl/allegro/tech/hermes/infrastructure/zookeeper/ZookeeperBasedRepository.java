@@ -156,6 +156,16 @@ public abstract class ZookeeperBasedRepository {
                 .commit();
     }
 
+    protected void deleteInTransaction(String path, String childPath) throws Exception {
+        ensureConnected();
+        zookeeper.inTransaction()
+                .delete().forPath(childPath)
+                .and()
+                .delete().forPath(path)
+                .and()
+                .commit();
+    }
+
     protected void create(String path, Object value) throws Exception {
         ensureConnected();
         zookeeper.create().forPath(path, mapper.writeValueAsBytes(value));
