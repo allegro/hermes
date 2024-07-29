@@ -46,6 +46,10 @@ public class SubscriptionPartitionOffset {
         return offset;
     }
 
+    public PartitionOffset getPartitionOffset() {
+        return new PartitionOffset(subscriptionPartition.getKafkaTopicName(), offset, subscriptionPartition.getPartition());
+    }
+
     public long getPartitionAssignmentTerm() {
         return subscriptionPartition.getPartitionAssignmentTerm();
     }

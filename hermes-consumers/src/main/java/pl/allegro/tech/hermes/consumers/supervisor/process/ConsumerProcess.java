@@ -126,9 +126,6 @@ public class ConsumerProcess implements Runnable {
                 case UPDATE_TOPIC:
                     consumer.updateTopic(signal.getPayload());
                     break;
-                case COMMIT:
-                    consumer.commit(signal.getPayload());
-                    break;
                 default:
                     logger.warn("Unhandled signal found {}", signal);
                     break;

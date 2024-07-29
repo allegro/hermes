@@ -8,7 +8,6 @@ import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignmentState;
-import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.BasicMessageContentReaderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaConsumerRecordToMessageConverterFactory;
@@ -40,7 +39,6 @@ public class ConsumerReceiverConfiguration {
                                                        KafkaClustersProperties kafkaClustersProperties,
                                                        KafkaConsumerRecordToMessageConverterFactory messageConverterFactory,
                                                        MetricsFacade metrics,
-                                                       OffsetQueue offsetQueue,
                                                        KafkaNamesMapper kafkaNamesMapper,
                                                        FilterChainFactory filterChainFactory,
                                                        Trackers trackers,
@@ -56,7 +54,6 @@ public class ConsumerReceiverConfiguration {
                 kafkaProperties,
                 messageConverterFactory,
                 metrics,
-                offsetQueue,
                 kafkaNamesMapper,
                 filterChainFactory,
                 trackers,

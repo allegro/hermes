@@ -7,12 +7,12 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
+import pl.allegro.tech.hermes.consumers.consumer.offset.PendingOffsets;
 import pl.allegro.tech.hermes.consumers.consumer.profiling.ConsumerProfiler;
 import pl.allegro.tech.hermes.consumers.consumer.profiling.ConsumerRun;
 import pl.allegro.tech.hermes.consumers.consumer.profiling.DefaultConsumerProfiler;
 import pl.allegro.tech.hermes.consumers.consumer.profiling.Measurement;
 import pl.allegro.tech.hermes.consumers.consumer.profiling.NoOpConsumerProfiler;
-import pl.allegro.tech.hermes.consumers.consumer.rate.InflightsPool;
 import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.result.ErrorHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.SuccessHandler;
@@ -39,6 +39,7 @@ import java.util.concurrent.atomic.LongAdder;
 
 import static java.lang.String.format;
 import static org.apache.commons.lang3.math.NumberUtils.INTEGER_ZERO;
+import static pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset.subscriptionPartitionOffset;
 
 public class ConsumerMessageSender {
 
@@ -48,7 +49,7 @@ public class ConsumerMessageSender {
     private final List<ErrorHandler> errorHandlers;
     private final MessageSenderFactory messageSenderFactory;
     private final Clock clock;
-    private final InflightsPool inflight;
+    private final PendingOffsets pendingOffsets;
     private final SubscriptionLoadRecorder loadRecorder;
     private final HermesTimer consumerLatencyTimer;
     private final HermesCounter retries;
@@ -70,7 +71,7 @@ public class ConsumerMessageSender {
                                  List<ErrorHandler> errorHandlers,
                                  SerialConsumerRateLimiter rateLimiter,
                                  ExecutorService deliveryReportingExecutor,
-                                 InflightsPool inflight,
+                                 PendingOffsets pendingOffsets,
                                  MetricsFacade metrics,
                                  int asyncTimeoutMs,
                                  FutureAsyncTimeout futureAsyncTimeout,
@@ -87,7 +88,7 @@ public class ConsumerMessageSender {
         this.asyncTimeoutMs = asyncTimeoutMs;
         this.messageSender = messageSender(subscription);
         this.subscription = subscription;
-        this.inflight = inflight;
+        this.pendingOffsets = pendingOffsets;
         this.consumerLatencyTimer = metrics.subscriptions().latency(subscription.getQualifiedName());
         metrics.subscriptions().registerInflightGauge(subscription.getQualifiedName(), this, sender -> sender.inflightCount.doubleValue());
         this.retries = metrics.subscriptions().retries(subscription.getQualifiedName());
@@ -258,14 +259,16 @@ public class ConsumerMessageSender {
     }
 
     private void handleMessageDiscarding(Message message, MessageSendingResult result, ConsumerProfiler profiler) {
-        inflight.release();
+        pendingOffsets.markAsProcessed(subscriptionPartitionOffset(subscription.getQualifiedName(),
+                message.getPartitionOffset(), message.getPartitionAssignmentTerm()));
         inflightCount.decrement();
         errorHandlers.forEach(h -> h.handleDiscarded(message, subscription, result));
         profiler.flushMeasurements(ConsumerRun.DISCARDED);
     }
 
     private void handleMessageSendingSuccess(Message message, MessageSendingResult result, ConsumerProfiler profiler) {
-        inflight.release();
+        pendingOffsets.markAsProcessed(subscriptionPartitionOffset(subscription.getQualifiedName(),
+                message.getPartitionOffset(), message.getPartitionAssignmentTerm()));
         inflightCount.decrement();
         successHandlers.forEach(h -> h.handleSuccess(message, subscription, result));
         profiler.flushMeasurements(ConsumerRun.DELIVERED);

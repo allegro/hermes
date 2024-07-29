@@ -9,8 +9,6 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.CommonConsumerParameters;
 import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignmentState;
-import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetCommitter;
-import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.health.ConsumerMonitor;
 import pl.allegro.tech.hermes.consumers.message.undelivered.UndeliveredMessageLogPersister;
 import pl.allegro.tech.hermes.consumers.supervisor.process.ConsumerProcessFactory;
@@ -31,7 +29,6 @@ import static pl.allegro.tech.hermes.api.Subscription.State.ACTIVE;
 import static pl.allegro.tech.hermes.api.Subscription.State.PENDING;
 import static pl.allegro.tech.hermes.consumers.health.Checks.SUBSCRIPTIONS;
 import static pl.allegro.tech.hermes.consumers.health.Checks.SUBSCRIPTIONS_COUNT;
-import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.COMMIT;
 
 public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
     private static final Logger logger = LoggerFactory.getLogger(NonblockingConsumersSupervisor.class);
@@ -39,7 +36,6 @@ public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
     private final ConsumerProcessSupervisor backgroundProcess;
     private final UndeliveredMessageLogPersister undeliveredMessageLogPersister;
     private final Duration backgroundSupervisorInterval;
-    private final OffsetCommitter offsetCommitter;
     private final SubscriptionRepository subscriptionRepository;
 
     private final ScheduledExecutorService scheduledExecutor;
@@ -47,15 +43,13 @@ public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
     public NonblockingConsumersSupervisor(CommonConsumerParameters commonConsumerParameters,
                                           ConsumersExecutorService executor,
                                           ConsumerFactory consumerFactory,
-                                          OffsetQueue offsetQueue,
                                           ConsumerPartitionAssignmentState consumerPartitionAssignmentState,
                                           Retransmitter retransmitter,
                                           UndeliveredMessageLogPersister undeliveredMessageLogPersister,
                                           SubscriptionRepository subscriptionRepository,
                                           MetricsFacade metrics,
                                           ConsumerMonitor monitor,
-                                          Clock clock,
-                                          Duration commitOffsetPeriod) {
+                                          Clock clock) {
         this.undeliveredMessageLogPersister = undeliveredMessageLogPersister;
         this.subscriptionRepository = subscriptionRepository;
         this.backgroundSupervisorInterval = commonConsumerParameters.getBackgroundSupervisor().getInterval();
@@ -68,15 +62,6 @@ public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
                 commonConsumerParameters.getSignalProcessingQueueSize(),
                 commonConsumerParameters.getBackgroundSupervisor().getKillAfter());
         this.scheduledExecutor = createExecutorForSupervision();
-        this.offsetCommitter = new OffsetCommitter(
-                offsetQueue,
-                consumerPartitionAssignmentState,
-                (offsets) -> offsets.subscriptionNames().forEach(subscription ->
-                        backgroundProcess.accept(Signal.of(COMMIT, subscription, offsets.batchFor(subscription)))
-                ),
-                (int) commitOffsetPeriod.toSeconds(),
-                metrics
-        );
         monitor.register(SUBSCRIPTIONS, backgroundProcess::runningSubscriptionsStatus);
         monitor.register(SUBSCRIPTIONS_COUNT, backgroundProcess::countRunningProcesses);
     }
@@ -137,7 +122,6 @@ public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
                 backgroundSupervisorInterval.toMillis(),
                 backgroundSupervisorInterval.toMillis(),
                 TimeUnit.MILLISECONDS);
-        offsetCommitter.start();
         undeliveredMessageLogPersister.start();
     }
 
@@ -145,7 +129,6 @@ public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
     public void shutdown() {
         backgroundProcess.shutdown();
         scheduledExecutor.shutdown();
-        offsetCommitter.shutdown();
         undeliveredMessageLogPersister.shutdown();
     }
 }

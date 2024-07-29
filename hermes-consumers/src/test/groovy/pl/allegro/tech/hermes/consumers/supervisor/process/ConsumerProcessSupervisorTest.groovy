@@ -23,7 +23,11 @@ import java.time.ZoneId
 import java.util.function.Consumer
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS
-import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.*
+import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.RETRANSMIT
+import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.START
+import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.STOP
+import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.UPDATE_SUBSCRIPTION
+import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.UPDATE_TOPIC
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust
 
@@ -39,7 +43,6 @@ class ConsumerProcessSupervisorTest extends Specification {
             retransmit        : Signal.of(RETRANSMIT, subscriptionName),
             updateSubscription: Signal.of(UPDATE_SUBSCRIPTION, subscriptionName, subscription1),
             updateTopic       : Signal.of(UPDATE_TOPIC, subscriptionName, topic1),
-            commit            : Signal.of(COMMIT, subscriptionName)
     ]
 
     ConsumerProcessSupervisor supervisor

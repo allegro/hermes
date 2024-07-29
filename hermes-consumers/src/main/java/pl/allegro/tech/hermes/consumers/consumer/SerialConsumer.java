@@ -9,14 +9,15 @@ import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.CommonConsumerParameters;
 import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResolver;
 import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
-import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
+import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignmentState;
+import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetCommitter;
+import pl.allegro.tech.hermes.consumers.consumer.offset.PendingOffsets;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.profiling.ConsumerProfiler;
 import pl.allegro.tech.hermes.consumers.consumer.profiling.ConsumerRun;
 import pl.allegro.tech.hermes.consumers.consumer.profiling.DefaultConsumerProfiler;
 import pl.allegro.tech.hermes.consumers.consumer.profiling.Measurement;
 import pl.allegro.tech.hermes.consumers.consumer.profiling.NoOpConsumerProfiler;
-import pl.allegro.tech.hermes.consumers.consumer.rate.AdjustableSemaphore;
 import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
@@ -24,9 +25,9 @@ import pl.allegro.tech.hermes.consumers.consumer.receiver.UninitializedMessageRe
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
 import static pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset.subscriptionPartitionOffset;
@@ -42,10 +43,11 @@ public class SerialConsumer implements Consumer {
     private final MessageConverterResolver messageConverterResolver;
     private final ConsumerMessageSender sender;
     private final boolean useTopicMessageSizeEnabled;
-    private final OffsetQueue offsetQueue;
+    private final PendingOffsets pendingOffsets;
     private final ConsumerAuthorizationHandler consumerAuthorizationHandler;
-    private final AdjustableSemaphore inflightSemaphore;
     private final SubscriptionLoadRecorder loadRecorder;
+    private final OffsetCommitter offsetCommitter;
+    private final Duration commitPeriod;
 
     private final int defaultInflight;
     private final Duration signalProcessingInterval;
@@ -54,6 +56,8 @@ public class SerialConsumer implements Consumer {
     private Subscription subscription;
 
     private MessageReceiver messageReceiver;
+
+    private Instant lastCommitTime;
 
     public SerialConsumer(ReceiverFactory messageReceiverFactory,
                           MetricsFacade metrics,
@@ -64,32 +68,35 @@ public class SerialConsumer implements Consumer {
                           MessageConverterResolver messageConverterResolver,
                           Topic topic,
                           CommonConsumerParameters commonConsumerParameters,
-                          OffsetQueue offsetQueue,
                           ConsumerAuthorizationHandler consumerAuthorizationHandler,
-                          SubscriptionLoadRecorder loadRecorder) {
+                          SubscriptionLoadRecorder loadRecorder,
+                          ConsumerPartitionAssignmentState consumerPartitionAssignmentState,
+                          Duration commitPeriod,
+                          int offsetQueueSize) {
         this.defaultInflight = commonConsumerParameters.getSerialConsumer().getInflightSize();
         this.signalProcessingInterval = commonConsumerParameters.getSerialConsumer().getSignalProcessingInterval();
-        this.inflightSemaphore = new AdjustableSemaphore(calculateInflightSize(subscription));
         this.messageReceiverFactory = messageReceiverFactory;
         this.metrics = metrics;
         this.subscription = subscription;
         this.rateLimiter = rateLimiter;
         this.useTopicMessageSizeEnabled = commonConsumerParameters.isUseTopicMessageSizeEnabled();
-        this.offsetQueue = offsetQueue;
+        this.pendingOffsets = new PendingOffsets(subscription.getQualifiedName(), metrics, calculateInflightSize(subscription), offsetQueueSize);
         this.consumerAuthorizationHandler = consumerAuthorizationHandler;
         this.trackers = trackers;
         this.messageConverterResolver = messageConverterResolver;
         this.loadRecorder = loadRecorder;
         this.messageReceiver = new UninitializedMessageReceiver();
         this.topic = topic;
+        this.offsetCommitter = new OffsetCommitter(consumerPartitionAssignmentState, metrics);
         this.sender = consumerMessageSenderFactory.create(
                 subscription,
                 rateLimiter,
-                offsetQueue,
-                inflightSemaphore::release,
+                pendingOffsets,
                 loadRecorder,
                 metrics
         );
+        this.commitPeriod = commitPeriod;
+        this.lastCommitTime = Instant.now();
     }
 
     private int calculateInflightSize(Subscription subscription) {
@@ -106,8 +113,9 @@ public class SerialConsumer implements Consumer {
                 loadRecorder.recordSingleOperation();
                 profiler.startPartialMeasurement(Measurement.SIGNALS_INTERRUPT_RUN);
                 signalsInterrupt.run();
+                commitIfReady();
                 profiler.stopPartialMeasurement();
-            } while (!inflightSemaphore.tryAcquire(signalProcessingInterval.toMillis(), TimeUnit.MILLISECONDS));
+            } while (!pendingOffsets.tryAcquireSlot(signalProcessingInterval));
 
             profiler.measure(Measurement.MESSAGE_RECEIVER_NEXT);
             Optional<Message> maybeMessage = messageReceiver.next();
@@ -126,7 +134,7 @@ public class SerialConsumer implements Consumer {
                 Message convertedMessage = messageConverterResolver.converterFor(message, subscription).convert(message, topic);
                 sendMessage(convertedMessage, profiler);
             } else {
-                inflightSemaphore.release();
+                pendingOffsets.releaseSlot();
                 profiler.flushMeasurements(ConsumerRun.EMPTY);
             }
         } catch (InterruptedException e) {
@@ -137,13 +145,27 @@ public class SerialConsumer implements Consumer {
         }
     }
 
-    private void sendMessage(Message message, ConsumerProfiler profiler) {
+    private void commitIfReady() {
+        if (isReadyToCommit()) {
+            Set<SubscriptionPartitionOffset> offsetsToCommit = offsetCommitter.calculateOffsetsToBeCommitted(pendingOffsets.getOffsetsSnapshotAndReleaseProcessedSlots());
+            if (!offsetsToCommit.isEmpty()) {
+                commit(offsetsToCommit);
+            }
+            lastCommitTime = Instant.now();
+        }
+    }
+
+    private boolean isReadyToCommit() {
+        return Duration.between(lastCommitTime, Instant.now()).toMillis() > commitPeriod.toMillis();
+    }
+
+    private void sendMessage(Message message, ConsumerProfiler profiler) throws InterruptedException {
         profiler.measure(Measurement.OFFER_INFLIGHT_OFFSET);
-        offsetQueue.offerInflightOffset(
+        pendingOffsets.markAsInflight(
                 subscriptionPartitionOffset(subscription.getQualifiedName(),
-                message.getPartitionOffset(),
-                message.getPartitionAssignmentTerm())
-        );
+                        message.getPartitionOffset(),
+                        message.getPartitionAssignmentTerm()
+                ));
 
         profiler.measure(Measurement.TRACKERS_LOG_INFLIGHT);
         trackers.get(subscription).logInflight(toMessageMetadata(message, subscription));
@@ -162,7 +184,14 @@ public class SerialConsumer implements Consumer {
     }
 
     private void initializeMessageReceiver() {
-        this.messageReceiver = messageReceiverFactory.createMessageReceiver(topic, subscription, rateLimiter, loadRecorder, metrics);
+        this.messageReceiver = messageReceiverFactory.createMessageReceiver(
+                topic,
+                subscription,
+                rateLimiter,
+                loadRecorder,
+                metrics,
+                pendingOffsets::markAsProcessed
+        );
     }
 
     /**
@@ -181,7 +210,7 @@ public class SerialConsumer implements Consumer {
     @Override
     public void updateSubscription(Subscription newSubscription) {
         logger.info("Updating consumer for subscription {}", subscription.getQualifiedName());
-        inflightSemaphore.setMaxPermits(calculateInflightSize(newSubscription));
+        pendingOffsets.setInflightSize(calculateInflightSize(newSubscription));
         rateLimiter.updateSubscription(newSubscription);
         sender.updateSubscription(newSubscription);
         messageReceiver.update(newSubscription);
