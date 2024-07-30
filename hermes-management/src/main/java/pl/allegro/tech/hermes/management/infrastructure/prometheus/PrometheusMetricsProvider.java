@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.management.infrastructure.prometheus;
 
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.management.infrastructure.metrics.MetricsQuery;
 import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringMetricsContainer;
 import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringSubscriptionMetricsProvider;
 import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringTopicMetricsProvider;
@@ -41,15 +40,15 @@ public class PrometheusMetricsProvider implements MonitoringSubscriptionMetricsP
 
     @Override
     public MonitoringSubscriptionMetrics subscriptionMetrics(SubscriptionName subscriptionName) {
-        MetricsQuery subscriptionDeliveredQuery = forSubscription(consumerMetricName(SUBSCRIPTION_DELIVERED), subscriptionName, additionalFilters);
-        MetricsQuery subscriptionTimeoutsQuery = forSubscription(consumerMetricName(SUBSCRIPTION_TIMEOUTS), subscriptionName, additionalFilters);
-        MetricsQuery subscriptionThroughputQuery = forSubscription(consumerMetricName(SUBSCRIPTION_THROUGHPUT), subscriptionName, additionalFilters);
-        MetricsQuery subscriptionOtherErrorsQuery = forSubscription(consumerMetricName(SUBSCRIPTION_OTHER_ERRORS), subscriptionName, additionalFilters);
-        MetricsQuery subscriptionBatchesQuery = forSubscription(consumerMetricName(SUBSCRIPTION_BATCHES), subscriptionName, additionalFilters);
-        MetricsQuery subscriptionRetriesQuery = forSubscription(consumerMetricName(SUBSCRIPTION_RETRIES), subscriptionName, additionalFilters);
-        MetricsQuery subscription2xx = forSubscriptionStatusCode(consumerMetricName(SUBSCRIPTION_STATUS_CODES), subscriptionName, "2.*", additionalFilters);
-        MetricsQuery subscription4xx = forSubscriptionStatusCode(consumerMetricName(SUBSCRIPTION_STATUS_CODES), subscriptionName, "4.*", additionalFilters);
-        MetricsQuery subscription5xx = forSubscriptionStatusCode(consumerMetricName(SUBSCRIPTION_STATUS_CODES), subscriptionName, "5.*", additionalFilters);
+        String subscriptionDeliveredQuery = forSubscription(consumerMetricName(SUBSCRIPTION_DELIVERED), subscriptionName, additionalFilters);
+        String subscriptionTimeoutsQuery = forSubscription(consumerMetricName(SUBSCRIPTION_TIMEOUTS), subscriptionName, additionalFilters);
+        String subscriptionThroughputQuery = forSubscription(consumerMetricName(SUBSCRIPTION_THROUGHPUT), subscriptionName, additionalFilters);
+        String subscriptionOtherErrorsQuery = forSubscription(consumerMetricName(SUBSCRIPTION_OTHER_ERRORS), subscriptionName, additionalFilters);
+        String subscriptionBatchesQuery = forSubscription(consumerMetricName(SUBSCRIPTION_BATCHES), subscriptionName, additionalFilters);
+        String subscriptionRetriesQuery = forSubscription(consumerMetricName(SUBSCRIPTION_RETRIES), subscriptionName, additionalFilters);
+        String subscription2xx = forSubscriptionStatusCode(consumerMetricName(SUBSCRIPTION_STATUS_CODES), subscriptionName, "2.*", additionalFilters);
+        String subscription4xx = forSubscriptionStatusCode(consumerMetricName(SUBSCRIPTION_STATUS_CODES), subscriptionName, "4.*", additionalFilters);
+        String subscription5xx = forSubscriptionStatusCode(consumerMetricName(SUBSCRIPTION_STATUS_CODES), subscriptionName, "5.*", additionalFilters);
 
         MonitoringMetricsContainer prometheusMetricsContainer = prometheusClient.readMetrics(
                 subscriptionDeliveredQuery, subscriptionTimeoutsQuery, subscriptionRetriesQuery, subscriptionThroughputQuery,
@@ -71,9 +70,9 @@ public class PrometheusMetricsProvider implements MonitoringSubscriptionMetricsP
 
     @Override
     public MonitoringTopicMetrics topicMetrics(TopicName topicName) {
-        MetricsQuery topicRateQuery = forTopic(frontendMetricName(TOPIC_RATE), topicName, additionalFilters);
-        MetricsQuery topicDeliveryRateQuery = forTopic(consumerMetricName(TOPIC_DELIVERY_RATE), topicName, additionalFilters);
-        MetricsQuery topicThroughputQuery = forTopic(frontendMetricName(TOPIC_THROUGHPUT_RATE), topicName, additionalFilters);
+        String topicRateQuery = forTopic(frontendMetricName(TOPIC_RATE), topicName, additionalFilters);
+        String topicDeliveryRateQuery = forTopic(consumerMetricName(TOPIC_DELIVERY_RATE), topicName, additionalFilters);
+        String topicThroughputQuery = forTopic(frontendMetricName(TOPIC_THROUGHPUT_RATE), topicName, additionalFilters);
 
         MonitoringMetricsContainer prometheusMetricsContainer = prometheusClient.readMetrics(
                 topicRateQuery, topicDeliveryRateQuery, topicThroughputQuery);

@@ -28,17 +28,19 @@ class HybridPrometheusBasedSubscriptionMetricsRepositoryTest extends Specificati
     private HybridSubscriptionMetricsRepository repository = new HybridSubscriptionMetricsRepository(prometheusMetricsProvider,
             summedSharedCounter, zookeeperPaths, lagSource)
 
-    private final static MetricsQuery deliveredQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_delivered_total', group='group', topic='topic', subscription='subscription', service=~'hermes'}[1m]))")
-    private final static MetricsQuery timeoutsQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_timeouts_total', group='group', topic='topic', subscription='subscription', service=~'hermes'}[1m]))")
-    private final static MetricsQuery retriesQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_retries_total', group='group', topic='topic', subscription='subscription', service=~'hermes'}[1m]))")
-    private final static MetricsQuery throughputQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_throughput_bytes_total', group='group', topic='topic', subscription='subscription', service=~'hermes'}[1m]))")
-    private final static MetricsQuery otherErrorsQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_other_errors_total', group='group', topic='topic', subscription='subscription', service=~'hermes'}[1m]))")
-    private final static MetricsQuery batchesQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_batches_total', group='group', topic='topic', subscription='subscription', service=~'hermes'}[1m]))")
-    private final static MetricsQuery status2xxQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_http_status_codes_total', group='group', topic='topic', subscription='subscription', status_code=~'2.*', service=~'hermes'}[1m]))")
-    private final static MetricsQuery status4xxQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_http_status_codes_total', group='group', topic='topic', subscription='subscription', status_code=~'4.*', service=~'hermes'}[1m]))")
-    private final static MetricsQuery status5xxQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_http_status_codes_total', group='group', topic='topic', subscription='subscription', status_code=~'5.*', service=~'hermes'}[1m]))")
+    private final static String subscriptionQuery = "sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_%s_total', group='group', topic='topic', subscription='subscription', service=~'hermes'}[1m]))";
+    private final static String deliveredQuery = String.format(subscriptionQuery, "delivered")
+    private final static String timeoutsQuery = String.format(subscriptionQuery, "timeouts")
+    private final static String retriesQuery = String.format(subscriptionQuery, "retries")
+    private final static String throughputQuery = String.format(subscriptionQuery, "throughput_bytes")
+    private final static String otherErrorsQuery = String.format(subscriptionQuery, "other_errors")
+    private final static String batchesQuery = String.format(subscriptionQuery, "batches")
+    // these queries are different as they contains additional status code filters
+    private final static String status2xxQuery = "sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_http_status_codes_total', group='group', topic='topic', subscription='subscription', status_code=~'2.*', service=~'hermes'}[1m]))"
+    private final static String status4xxQuery = "sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_http_status_codes_total', group='group', topic='topic', subscription='subscription', status_code=~'4.*', service=~'hermes'}[1m]))"
+    private final static String status5xxQuery = "sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_http_status_codes_total', group='group', topic='topic', subscription='subscription', status_code=~'5.*', service=~'hermes'}[1m]))"
 
-    private static final List<MetricsQuery> queries = List.of(
+    private static final List<String> queries = List.of(
             deliveredQuery, timeoutsQuery, retriesQuery, throughputQuery, otherErrorsQuery, batchesQuery,
             status2xxQuery, status4xxQuery, status5xxQuery
     )

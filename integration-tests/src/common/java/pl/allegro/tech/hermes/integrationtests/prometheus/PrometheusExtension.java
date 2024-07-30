@@ -9,7 +9,6 @@ import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.management.infrastructure.metrics.MetricsQuery;
 
 import java.time.Duration;
 import java.util.List;
@@ -53,25 +52,25 @@ public class PrometheusExtension implements AfterEachCallback, BeforeAllCallback
     @SuppressWarnings("checkstyle:VariableDeclarationUsageDistance")
     public void stubSubscriptionMetrics(SubscriptionMetrics metrics) {
         SubscriptionName subName = metrics.name();
-        MetricsQuery deliveredQuery = forSubscription("hermes_consumers_subscription_delivered_total", subName, "");
-        MetricsQuery timeoutsQuery = forSubscription("hermes_consumers_subscription_timeouts_total", subName, "");
-        MetricsQuery retriesQuery = forSubscription("hermes_consumers_subscription_retries_total", subName, "");
-        MetricsQuery throughputQuery = forSubscription("hermes_consumers_subscription_throughput_bytes_total", subName, "");
-        MetricsQuery errorsQuery = forSubscription("hermes_consumers_subscription_other_errors_total", subName, "");
-        MetricsQuery batchesQuery = forSubscription("hermes_consumers_subscription_batches_total", subName, "");
-        MetricsQuery statusCodes2xxQuery = forSubscriptionStatusCode("hermes_consumers_subscription_http_status_codes_total", subName, "2.*", "");
-        MetricsQuery statusCodes4xxQuery = forSubscriptionStatusCode("hermes_consumers_subscription_http_status_codes_total", subName, "4.*", "");
-        MetricsQuery statusCodes5xxQuery = forSubscriptionStatusCode("hermes_consumers_subscription_http_status_codes_total", subName, "5.*", "");
+        String deliveredQuery = forSubscription("hermes_consumers_subscription_delivered_total", subName, "");
+        String timeoutsQuery = forSubscription("hermes_consumers_subscription_timeouts_total", subName, "");
+        String retriesQuery = forSubscription("hermes_consumers_subscription_retries_total", subName, "");
+        String throughputQuery = forSubscription("hermes_consumers_subscription_throughput_bytes_total", subName, "");
+        String errorsQuery = forSubscription("hermes_consumers_subscription_other_errors_total", subName, "");
+        String batchesQuery = forSubscription("hermes_consumers_subscription_batches_total", subName, "");
+        String statusCodes2xxQuery = forSubscriptionStatusCode("hermes_consumers_subscription_http_status_codes_total", subName, "2.*", "");
+        String statusCodes4xxQuery = forSubscriptionStatusCode("hermes_consumers_subscription_http_status_codes_total", subName, "4.*", "");
+        String statusCodes5xxQuery = forSubscriptionStatusCode("hermes_consumers_subscription_http_status_codes_total", subName, "5.*", "");
 
-        stub(deliveredQuery.query(), metrics.toPrometheusRateResponse());
-        stub(timeoutsQuery.query(), metrics.toPrometheusDefaultResponse());
-        stub(retriesQuery.query(), metrics.toPrometheusDefaultResponse());
-        stub(throughputQuery.query(), metrics.toPrometheusThroughputResponse());
-        stub(errorsQuery.query(), metrics.toPrometheusDefaultResponse());
-        stub(batchesQuery.query(), metrics.toPrometheusDefaultResponse());
-        stub(statusCodes2xxQuery.query(), metrics.toPrometheusStatusCodesResponse());
-        stub(statusCodes4xxQuery.query(), metrics.toPrometheusStatusCodesResponse());
-        stub(statusCodes5xxQuery.query(), metrics.toPrometheusStatusCodesResponse());
+        stub(deliveredQuery, metrics.toPrometheusRateResponse());
+        stub(timeoutsQuery, metrics.toPrometheusDefaultResponse());
+        stub(retriesQuery, metrics.toPrometheusDefaultResponse());
+        stub(throughputQuery, metrics.toPrometheusThroughputResponse());
+        stub(errorsQuery, metrics.toPrometheusDefaultResponse());
+        stub(batchesQuery, metrics.toPrometheusDefaultResponse());
+        stub(statusCodes2xxQuery, metrics.toPrometheusStatusCodesResponse());
+        stub(statusCodes4xxQuery, metrics.toPrometheusStatusCodesResponse());
+        stub(statusCodes5xxQuery, metrics.toPrometheusStatusCodesResponse());
     }
 
     private void stub(String query, PrometheusResponse response) {
@@ -90,13 +89,13 @@ public class PrometheusExtension implements AfterEachCallback, BeforeAllCallback
 
     public void stubTopicMetrics(TopicMetrics metrics) {
         TopicName topicName = metrics.name();
-        MetricsQuery requestsQuery = forTopic("hermes_frontend_topic_requests_total", topicName, "");
-        MetricsQuery deliveredQuery = forTopic("hermes_consumers_subscription_delivered_total", topicName, "");
-        MetricsQuery throughputQuery = forTopic("hermes_frontend_topic_throughput_bytes_total", topicName, "");
+        String requestsQuery = forTopic("hermes_frontend_topic_requests_total", topicName, "");
+        String deliveredQuery = forTopic("hermes_consumers_subscription_delivered_total", topicName, "");
+        String throughputQuery = forTopic("hermes_frontend_topic_throughput_bytes_total", topicName, "");
 
-        stub(requestsQuery.query(), metrics.toPrometheusRequestsResponse());
-        stub(deliveredQuery.query(), metrics.toDeliveredResponse());
-        stub(throughputQuery.query(), metrics.toPrometheusThroughputResponse());
+        stub(requestsQuery, metrics.toPrometheusRequestsResponse());
+        stub(deliveredQuery, metrics.toDeliveredResponse());
+        stub(throughputQuery, metrics.toPrometheusThroughputResponse());
     }
 
     public void stubDelay(Duration duration) {

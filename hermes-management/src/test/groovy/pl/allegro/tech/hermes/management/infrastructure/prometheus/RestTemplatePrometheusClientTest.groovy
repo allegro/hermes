@@ -13,7 +13,6 @@ import org.junit.Rule
 import org.springframework.http.client.ClientHttpRequestFactory
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory
 import org.springframework.web.client.RestTemplate
-import pl.allegro.tech.hermes.management.infrastructure.metrics.MetricsQuery
 import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringMetricsContainer
 import pl.allegro.tech.hermes.test.helper.util.Ports
 import spock.lang.Specification
@@ -32,15 +31,15 @@ import static pl.allegro.tech.hermes.api.MetricDecimalValue.unavailable
 class RestTemplatePrometheusClientTest extends Specification {
 
     private static final int PROMETHEUS_HTTP_PORT = Ports.nextAvailable()
-    def subscriptionDeliveredQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_delivered_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1' service=~'hermes'}[1m]))")
-    def subscriptionTimeoutsQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_timeouts_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', service=~'hermes'}[1m]))")
-    def subscriptionRetriesQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_retries_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', service=~'hermes'}[1m]))")
-    def subscriptionThroughputQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_throughput_bytes_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', service=~'hermes'}[1m]))")
-    def subscriptionErrorsQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_other_errors_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', service=~'hermes'}[1m]))")
-    def subscriptionBatchesQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_batches_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', service=~'hermes'}[1m]))")
-    def subscription2xxStatusCodesQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_http_status_codes_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', status_code=~'2.*', service=~'hermes'}[1m]))")
-    def subscription4xxStatusCodesQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_http_status_codes_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', status_code=~'4.*', service=~'hermes'}[1m]))")
-    def subscription5xxStatusCodesQuery = new MetricsQuery("sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_http_status_codes_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', status_code=~'5.*', service=~'hermes'}[1m]))")
+    def subscriptionDeliveredQuery = "sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_delivered_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1' service=~'hermes'}[1m]))"
+    def subscriptionTimeoutsQuery = "sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_timeouts_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', service=~'hermes'}[1m]))"
+    def subscriptionRetriesQuery = "sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_retries_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', service=~'hermes'}[1m]))"
+    def subscriptionThroughputQuery = "sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_throughput_bytes_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', service=~'hermes'}[1m]))"
+    def subscriptionErrorsQuery = "sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_other_errors_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', service=~'hermes'}[1m]))"
+    def subscriptionBatchesQuery = "sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_batches_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', service=~'hermes'}[1m]))"
+    def subscription2xxStatusCodesQuery = "sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_http_status_codes_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', status_code=~'2.*', service=~'hermes'}[1m]))"
+    def subscription4xxStatusCodesQuery = "sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_http_status_codes_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', status_code=~'4.*', service=~'hermes'}[1m]))"
+    def subscription5xxStatusCodesQuery = "sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_http_status_codes_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', status_code=~'5.*', service=~'hermes'}[1m]))"
 
     def queries = List.of(subscriptionDeliveredQuery, subscriptionTimeoutsQuery, subscriptionRetriesQuery, subscriptionThroughputQuery,
             subscriptionErrorsQuery, subscriptionBatchesQuery, subscription2xxStatusCodesQuery, subscription4xxStatusCodesQuery,
@@ -157,7 +156,7 @@ class RestTemplatePrometheusClientTest extends Specification {
 
     private void mockPrometheus(List<FileStub> stubs) {
         stubs.forEach { s ->
-            String encodedQuery = URLEncoder.encode(s.query.query(), StandardCharsets.UTF_8)
+            String encodedQuery = URLEncoder.encode(s.query, StandardCharsets.UTF_8)
             wireMockServer.stubFor(WireMock.get(urlEqualTo(String.format("/api/v1/query?query=%s", encodedQuery)))
                     .willReturn(WireMock.aResponse()
                             .withStatus(200)
@@ -166,9 +165,9 @@ class RestTemplatePrometheusClientTest extends Specification {
         }
     }
 
-    private void mockPrometheusTimeout(List<MetricsQuery> queries, Duration delay) {
+    private void mockPrometheusTimeout(List<String> queries, Duration delay) {
         queries.forEach { q ->
-            String encodedQuery = URLEncoder.encode(q.query(), StandardCharsets.UTF_8)
+            String encodedQuery = URLEncoder.encode(q, StandardCharsets.UTF_8)
             wireMockServer.stubFor(WireMock.get(urlEqualTo(String.format("/api/v1/query?query=%s", encodedQuery)))
                     .willReturn(WireMock.aResponse()
                             .withHeader("Content-Type", MediaType.APPLICATION_JSON)
@@ -191,15 +190,15 @@ class RestTemplatePrometheusClientTest extends Specification {
     }
 
     static class FileStub {
-        FileStub(MetricsQuery query, String fileName) {
+        FileStub(String query, String fileName) {
             this.query = query
             this.fileName = fileName
         }
-        MetricsQuery query;
+        String query;
         String fileName
     }
 
-    FileStub emptyStub(MetricsQuery query) {
+    FileStub emptyStub(String query) {
         return new FileStub(query, "prometheus_empty_response.json")
     }
 }

@@ -4,7 +4,6 @@ import com.google.common.base.Ticker;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import pl.allegro.tech.hermes.management.infrastructure.metrics.MetricsQuery;
 import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringMetricsContainer;
 
 import java.util.List;
@@ -22,11 +21,11 @@ public class CachingPrometheusClient implements PrometheusClient {
       topic or subscriptions. That's why it is safe to use a list of queries as a caching key.
       The only thing to remember about is that the key should be immutable list of queries (query is immutable by definition).
 
-      Maybe it will be worth to cache it per MetricsQuery except of List<MetricsQuery> when there will be too much overhead
+      Maybe it will be worth to cache it per query except of queries when there will be too much overhead
       of refreshing all sub/topic metrics if the single fetch fails (currently we invalidate whole metrics container
       when one of the sub metric is unavailable)
      */
-    private final LoadingCache<List<MetricsQuery>, MonitoringMetricsContainer> prometheusMetricsCache;
+    private final LoadingCache<List<String>, MonitoringMetricsContainer> prometheusMetricsCache;
 
     public CachingPrometheusClient(PrometheusClient underlyingPrometheusClient, Ticker ticker,
                                    long cacheTtlInSeconds, long cacheSize) {
@@ -39,7 +38,7 @@ public class CachingPrometheusClient implements PrometheusClient {
     }
 
     @Override
-    public MonitoringMetricsContainer readMetrics(List<MetricsQuery> queries) {
+    public MonitoringMetricsContainer readMetrics(List<String> queries) {
         try {
             MonitoringMetricsContainer monitoringMetricsContainer = prometheusMetricsCache.get(queries);
             if (monitoringMetricsContainer.hasUnavailableMetrics()) {
@@ -53,9 +52,9 @@ public class CachingPrometheusClient implements PrometheusClient {
         }
     }
 
-    private class PrometheusMetricsCacheLoader extends CacheLoader<List<MetricsQuery>, MonitoringMetricsContainer> {
+    private class PrometheusMetricsCacheLoader extends CacheLoader<List<String>, MonitoringMetricsContainer> {
         @Override
-        public MonitoringMetricsContainer load(List<MetricsQuery> queries) {
+        public MonitoringMetricsContainer load(List<String> queries) {
             return underlyingPrometheusClient.readMetrics(queries);
         }
     }

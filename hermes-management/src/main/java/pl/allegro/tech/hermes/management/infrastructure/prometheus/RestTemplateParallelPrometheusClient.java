@@ -7,10 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 import pl.allegro.tech.hermes.api.MetricDecimalValue;
-import pl.allegro.tech.hermes.management.infrastructure.metrics.MetricsQuery;
 import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringMetricsContainer;
 
 import java.net.URI;
@@ -49,15 +47,15 @@ public class RestTemplateParallelPrometheusClient implements PrometheusClient {
     }
 
     @Override
-    public MonitoringMetricsContainer readMetrics(List<MetricsQuery> queries) {
+    public MonitoringMetricsContainer readMetrics(List<String> queries) {
         return fetchInParallelFromPrometheus(queries);
     }
 
-    private MonitoringMetricsContainer fetchInParallelFromPrometheus(List<MetricsQuery> queries) {
-        CompletableFuture<Map<MetricsQuery, MetricDecimalValue>> aggregatedFuture = getAggregatedCompletableFuture(queries);
+    private MonitoringMetricsContainer fetchInParallelFromPrometheus(List<String> queries) {
+        CompletableFuture<Map<String, MetricDecimalValue>> aggregatedFuture = getAggregatedCompletableFuture(queries);
 
         try {
-            Map<MetricsQuery, MetricDecimalValue> metrics = aggregatedFuture.get(parallelFetchingTimeout.toMillis(), TimeUnit.MILLISECONDS);
+            Map<String, MetricDecimalValue> metrics = aggregatedFuture.get(parallelFetchingTimeout.toMillis(), TimeUnit.MILLISECONDS);
             return MonitoringMetricsContainer.initialized(metrics);
         } catch (InterruptedException e) {
             // possibly let know the caller that the thread was interrupted
@@ -70,9 +68,9 @@ public class RestTemplateParallelPrometheusClient implements PrometheusClient {
         }
     }
 
-    private CompletableFuture<Map<MetricsQuery, MetricDecimalValue>> getAggregatedCompletableFuture(List<MetricsQuery> queries) {
+    private CompletableFuture<Map<String, MetricDecimalValue>> getAggregatedCompletableFuture(List<String> queries) {
         // has to be collected to run in parallel
-        List<CompletableFuture<Pair<MetricsQuery, MetricDecimalValue>>> futures = queries.stream()
+        List<CompletableFuture<Pair<String, MetricDecimalValue>>> futures = queries.stream()
                 .map(this::readSingleMetric)
                 .toList();
 
@@ -83,13 +81,13 @@ public class RestTemplateParallelPrometheusClient implements PrometheusClient {
                 );
     }
 
-    private CompletableFuture<Pair<MetricsQuery, MetricDecimalValue>> readSingleMetric(MetricsQuery query) {
+    private CompletableFuture<Pair<String, MetricDecimalValue>> readSingleMetric(String query) {
         return CompletableFuture.supplyAsync(() -> queryPrometheus(query), executorService);
     }
 
-    private Pair<MetricsQuery, MetricDecimalValue> queryPrometheus(MetricsQuery query) {
+    private Pair<String, MetricDecimalValue> queryPrometheus(String query) {
         try {
-            URI queryUri = URI.create(prometheusUri.toString() + "/api/v1/query?query=" + encode(query.query(), UTF_8));
+            URI queryUri = URI.create(prometheusUri.toString() + "/api/v1/query?query=" + encode(query, UTF_8));
             PrometheusResponse response = restTemplate.exchange(queryUri,
                     HttpMethod.GET, HttpEntity.EMPTY, PrometheusResponse.class).getBody();
 

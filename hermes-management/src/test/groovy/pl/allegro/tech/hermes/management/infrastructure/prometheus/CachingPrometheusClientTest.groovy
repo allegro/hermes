@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.management.infrastructure.prometheus
 
-import pl.allegro.tech.hermes.management.infrastructure.metrics.MetricsQuery
 import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringMetricsContainer
 import pl.allegro.tech.hermes.test.helper.cache.FakeTicker
 import spock.lang.Specification
@@ -18,7 +17,7 @@ class CachingPrometheusClientTest extends Specification {
 
     def underlyingClient = Mock(PrometheusClient)
     def ticker = new FakeTicker()
-    def queries = List.of(new MetricsQuery("query"))
+    def queries = List.of("query")
 
     @Subject
     def cachingClient = new CachingPrometheusClient(underlyingClient, ticker, CACHE_TTL_IN_SECONDS, CACHE_SIZE)
@@ -26,14 +25,14 @@ class CachingPrometheusClientTest extends Specification {
     def "should return metrics from the underlying client"() {
         given:
         underlyingClient.readMetrics(queries) >> MonitoringMetricsContainer.initialized(
-                [new MetricsQuery("metric_1"): of("1"), new MetricsQuery("metric_2"): of("2")])
+                ["metric_1": of("1"), "metric_2": of("2")])
 
         when:
         def metrics = cachingClient.readMetrics(queries)
 
         then:
-        metrics.metricValue(new MetricsQuery("metric_1")) == of("1")
-        metrics.metricValue(new MetricsQuery("metric_2")) == of("2")
+        metrics.metricValue("metric_1") == of("1")
+        metrics.metricValue("metric_2") == of("2")
     }
 
     def "should return metrics from cache while TTL has not expired"() {
@@ -44,7 +43,7 @@ class CachingPrometheusClientTest extends Specification {
 
         then:
         1 * underlyingClient.readMetrics(queries) >> MonitoringMetricsContainer.initialized(
-                [new MetricsQuery("metric_1"): of("1"), new MetricsQuery("metric_2"): of("2")])
+                ["metric_1": of("1"), "metric_2": of("2")])
     }
 
     def "should get metrics from the underlying client after TTL expires"() {
@@ -55,7 +54,7 @@ class CachingPrometheusClientTest extends Specification {
 
         then:
         2 * underlyingClient.readMetrics(queries) >> MonitoringMetricsContainer.initialized(
-                [new MetricsQuery("metric_1"): of("1"), new MetricsQuery("metric_2"): of("2")])
+                ["metric_1": of("1"), "metric_2": of("2")])
     }
 
     def "should invalidate partially unavailable data and retry fetch on the next client metrics read"() {
@@ -65,7 +64,7 @@ class CachingPrometheusClientTest extends Specification {
 
         then:
         2 * underlyingClient.readMetrics(queries) >> MonitoringMetricsContainer.initialized(
-                [new MetricsQuery("metric_1"): unavailable(), new MetricsQuery("metric_2"): of("2")])
+                ["metric_1": unavailable(), "metric_2": of("2")])
     }
 
     def "should invalidate completely unavailable data and retry fetch on the next client metrics read"() {
