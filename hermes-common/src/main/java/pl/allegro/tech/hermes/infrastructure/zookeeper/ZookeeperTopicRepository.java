@@ -80,36 +80,42 @@ public class ZookeeperTopicRepository extends ZookeeperBasedRepository implement
 
     /**
      * To remove topic node, we must remove topic node and its children. The tree looks like this:
-     * - topic
-     * ----- /subscriptions (required)
-     * ----- /preview (optional)
-     * ----- /metrics (optional)
-     * --------------- /volume
-     * --------------- /published
-     * <p>
-     * One way to remove the whole tree for topic that would be to use 'deletingChildrenIfNeeded()':
-     * e.g. zookeeper.delete().deletingChildrenIfNeeded().forPath(topicPath).
-     * However, deletingChildrenIfNeeded is not atomic. It first tries to remove the node ('topic')
-     * and upon receiving 'KeeperException.NotEmptyException' it tries to remove children recursively
+     * <ul>
+     * <li>- topic
+     * <li>----- /subscriptions (required)
+     * <li>----- /preview (optional)
+     * <li>----- /metrics (optional)
+     * <li>--------------- /volume
+     * <li>--------------- /published
+     * </ul>
+     *
+     * <p>One way to remove the whole tree for topic that would be to use <code>deletingChildrenIfNeeded()</code>:
+     * e.g. <code>zookeeper.delete().deletingChildrenIfNeeded().forPath(topicPath)</code>.
+     * However, <code>deletingChildrenIfNeeded</code> is not atomic. It first tries to remove the node <code>topic</code>
+     * and upon receiving <code>KeeperException.NotEmptyException</code> it tries to remove children recursively
      * and then retries the node removal. This means that there is a potentially large time gap between
-     * removal of 'topic/subscriptions' node and 'topic' node, especially when topic removal is being done
+     * removal of <code>topic/subscriptions</code> node and <code>topic</code> node, especially when topic removal is being done
      * in remote DC.
-     * <p>
-     * It turns out that 'PathChildrenCache' used by 'HierarchicalCacheLevel' in
-     * Consumers and Frontend listens for 'topics/subscriptions' changes and recreates that node when deleted.
-     * If the recreation happens between the 'topic/subscriptions' and 'topic' node removal
-     * than the whole removal process must be repeated resulting in a lengthy loop that may even result in StackOverflowException.
+     *
+     * <p>It turns out that <code>PathChildrenCache</code> used by <code>HierarchicalCacheLevel</code> in
+     * Consumers and Frontend listens for <code>topics/subscriptions</code> changes and recreates that node when deleted.
+     * If the recreation happens between the <code>topic/subscriptions</code> and <code>topic</code> node removal
+     * than the whole removal process must be repeated resulting in a lengthy loop that may even result in <code>StackOverflowException</code>.
      * Example of that scenario would be
-     * 1. DELETE 'topic' - issued by management, fails with KeeperException.NotEmptyException
-     * 2. DELETE 'topic/subscriptions' - issued by management, succeeds
-     * 3. CREATE 'topic/subscriptions' - issued by frontend, succeeds
-     * 4. DELETE 'topic' - issued by management, fails with KeeperException.NotEmptyException
-     * [...]
-     * <p>
-     * To solve this we must remove 'topic' and 'topic/subscriptions' atomically. However, we must also remove
-     * other 'topic' children. Transaction API does not allow for 'optional' deletes so we:
-     * 1. find all children beforehand
-     * 2. delete all children in one transaction
+     * <ol>
+     * <li> DELETE <code>topic</code> - issued by management, fails with KeeperException.NotEmptyException
+     * <li> DELETE <code>topic/subscriptions</code> - issued by management, succeeds
+     * <li> CREATE <code>topic/subscriptions</code> - issued by frontend, succeeds
+     * <li> DELETE <code>topic</code> - issued by management, fails with KeeperException.NotEmptyException
+     * <li> [...]
+     * </ol>
+     *
+     * <p>To solve this we must remove <code>topic</code> and <code>topic/subscriptions</code> atomically. However, we must also remove
+     * other <code>topic</code> children. Transaction API does not allow for optional deletes so we:
+     * <ol>
+     * <li> find all children paths
+     * <li> delete all children in one transaction
+     * </ol>
      */
     @Override
     public void removeTopic(TopicName topicName) {
