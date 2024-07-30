@@ -124,11 +124,10 @@ public class ZookeeperTopicRepository extends ZookeeperBasedRepository implement
 
         try {
             deleteInTransaction(pathsForRemoval);
-        } catch (Exception ex) {
-            throw new InternalProcessingException(ex);
+        } catch (Exception e) {
+            throw new InternalProcessingException(e);
         }
     }
-
 
     @Override
     public void updateTopic(Topic topic) {
@@ -147,25 +146,10 @@ public class ZookeeperTopicRepository extends ZookeeperBasedRepository implement
         ensureTopicExists(topicName);
 
         logger.info("Touching topic: " + topicName.qualifiedName());
-        removeTopicChildren(topicName);
         try {
             touch(paths.topicPath(topicName));
         } catch (Exception ex) {
             throw new InternalProcessingException(ex);
-        }
-    }
-
-    private void removeTopicChildren(TopicName topicName) {
-        try {
-            removeIfExists(paths.topicPreviewPath(topicName));
-        } catch (Exception e) {
-            throw new InternalProcessingException(e);
-        }
-
-        try {
-            removeIfExists(paths.topicMetricsPath(topicName));
-        } catch (Exception e) {
-            throw new InternalProcessingException(e);
         }
     }
 
