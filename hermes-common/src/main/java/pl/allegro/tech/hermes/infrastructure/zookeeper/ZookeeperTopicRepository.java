@@ -106,6 +106,7 @@ public class ZookeeperTopicRepository extends ZookeeperBasedRepository implement
     @Override
     public void removeTopic(TopicName topicName) {
         ensureTopicExists(topicName);
+        logger.info("Removing topic: " + topicName);
 
         List<String> pathsForRemoval = new ArrayList<>();
         String topicMetricsPath = paths.topicMetricsPath(topicName);
