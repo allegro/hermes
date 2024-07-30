@@ -382,14 +382,14 @@ public class TopicService {
     }
 
     private void removeTopic(Topic topic, RequestUser removedBy) {
-        logger.info("Removing topic {} from ZK clusters", topic.getQualifiedName());
+        logger.info("Removing topic: {} from ZK clusters", topic.getQualifiedName());
         long start = System.currentTimeMillis();
         multiDcExecutor.executeByUser(new RemoveTopicRepositoryCommand(topic.getName()), removedBy);
-        logger.info("Removed topic {} from ZK clusters in: {}ms", topic.getQualifiedName(), System.currentTimeMillis() - start);
-        logger.info("Removing topic {} from Kafka clusters", topic.getQualifiedName());
+        logger.info("Removed topic: {} from ZK clusters in: {} ms", topic.getQualifiedName(), System.currentTimeMillis() - start);
+        logger.info("Removing topic: {} from Kafka clusters", topic.getQualifiedName());
         start = System.currentTimeMillis();
         multiDCAwareService.manageTopic(brokerTopicManagement -> brokerTopicManagement.removeTopic(topic));
-        logger.info("Removed topic {} from Kafka clusters in: {}ms", topic.getQualifiedName(), System.currentTimeMillis() - start);
+        logger.info("Removed topic: {} from Kafka clusters in: {} ms", topic.getQualifiedName(), System.currentTimeMillis() - start);
         auditor.objectRemoved(removedBy.getUsername(), topic);
         topicOwnerCache.onRemovedTopic(topic);
     }
