@@ -1,25 +1,20 @@
 package pl.allegro.tech.hermes.client
 
-import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.junit.WireMockClassRule
+import jakarta.ws.rs.client.ClientBuilder
 import okhttp3.OkHttpClient
-import org.springframework.web.reactive.function.client.WebClient
-import pl.allegro.tech.hermes.client.webclient.WebClientHermesSender
 import org.junit.ClassRule
+import org.springframework.web.client.RestClient
+import org.springframework.web.reactive.function.client.WebClient
 import pl.allegro.tech.hermes.client.jersey.JerseyHermesSender
 import pl.allegro.tech.hermes.client.okhttp.OkHttpHermesSender
+import pl.allegro.tech.hermes.client.restclient.RestClientHermesSender
+import pl.allegro.tech.hermes.client.webclient.WebClientHermesSender
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
-import jakarta.ws.rs.client.ClientBuilder
-
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse
-import static com.github.tomakehurst.wiremock.client.WireMock.containing
-import static com.github.tomakehurst.wiremock.client.WireMock.equalTo
-import static com.github.tomakehurst.wiremock.client.WireMock.post
-import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
+import static com.github.tomakehurst.wiremock.client.WireMock.*
 import static pl.allegro.tech.hermes.client.HermesMessage.hermesMessage
 
 class HermesSenderTest extends Specification {
@@ -29,7 +24,7 @@ class HermesSenderTest extends Specification {
     WireMockClassRule service = new WireMockClassRule(14523)
 
     void setup() {
-        WireMock.reset()
+        reset()
     }
 
     @Unroll
@@ -54,10 +49,11 @@ class HermesSenderTest extends Specification {
                 .withRequestBody(containing("Hello!")))
 
         where:
-        sender                                                  | name
-        new JerseyHermesSender(ClientBuilder.newClient())       | 'JerseySender'
-        new OkHttpHermesSender(new OkHttpClient())              | 'OkHttpSender'
-        new WebClientHermesSender(WebClient.create())           | 'WebClientSender'
+        sender                                            | name
+        new JerseyHermesSender(ClientBuilder.newClient()) | 'JerseySender'
+        new OkHttpHermesSender(new OkHttpClient())        | 'OkHttpSender'
+        new WebClientHermesSender(WebClient.create())     | 'WebClientSender'
+        new RestClientHermesSender(RestClient.create())   | 'RestClient'
     }
 
     @Unroll
@@ -81,10 +77,11 @@ class HermesSenderTest extends Specification {
                 .withRequestBody(containing("Hello!")))
 
         where:
-        sender                                                  | name
-        new JerseyHermesSender(ClientBuilder.newClient())       | 'JerseySender'
-        new OkHttpHermesSender(new OkHttpClient())              | 'OkHttpSender'
-        new WebClientHermesSender(WebClient.create())           | 'WebClientSender'
+        sender                                            | name
+        new JerseyHermesSender(ClientBuilder.newClient()) | 'JerseySender'
+        new OkHttpHermesSender(new OkHttpClient())        | 'OkHttpSender'
+        new WebClientHermesSender(WebClient.create())     | 'WebClientSender'
+        new RestClientHermesSender(RestClient.create())   | 'RestClient'
     }
 
     @Unroll
@@ -108,10 +105,11 @@ class HermesSenderTest extends Specification {
                 .withRequestBody(containing("Hello!")))
 
         where:
-        sender                                                  | name
-        new JerseyHermesSender(ClientBuilder.newClient())       | 'JerseySender'
-        new OkHttpHermesSender(new OkHttpClient())              | 'OkHttpSender'
-        new WebClientHermesSender(WebClient.create())           | 'WebClientSender'
+        sender                                            | name
+        new JerseyHermesSender(ClientBuilder.newClient()) | 'JerseySender'
+        new OkHttpHermesSender(new OkHttpClient())        | 'OkHttpSender'
+        new WebClientHermesSender(WebClient.create())     | 'WebClientSender'
+        new RestClientHermesSender(RestClient.create())   | 'RestClient'
     }
 
     @Unroll
@@ -126,9 +124,9 @@ class HermesSenderTest extends Specification {
 
         service.stubFor(
                 post(urlEqualTo('/topics/topic.test'))
-                    .willReturn(aResponse()
-                        .withStatus(201)
-                        .withHeader(header, 'messageId'))
+                        .willReturn(aResponse()
+                                .withStatus(201)
+                                .withHeader(header, 'messageId'))
         )
 
         when:
@@ -143,17 +141,23 @@ class HermesSenderTest extends Specification {
         response.messageId == 'messageId'
 
         where:
-        sender                                                  | name                  | header
-        new JerseyHermesSender(ClientBuilder.newClient())       | 'JerseySender'        | 'Hermes-Message-Id'
-        new OkHttpHermesSender(new OkHttpClient())              | 'OkHttpSender'        | 'Hermes-Message-Id'
-        new WebClientHermesSender(WebClient.create())           | 'WebClientSender'     | 'Hermes-Message-Id'
+        sender                                            | name              | header
+        new JerseyHermesSender(ClientBuilder.newClient()) | 'JerseySender'    | 'Hermes-Message-Id'
+        new OkHttpHermesSender(new OkHttpClient())        | 'OkHttpSender'    | 'Hermes-Message-Id'
+        new WebClientHermesSender(WebClient.create())     | 'WebClientSender' | 'Hermes-Message-Id'
+        new RestClientHermesSender(RestClient.create())   | 'RestClient'      | 'Hermes-Message-Id'
 
-        new JerseyHermesSender(ClientBuilder.newClient())       | 'JerseySender'        | 'hermes-message-id'
-        new OkHttpHermesSender(new OkHttpClient())              | 'OkHttpSender'        | 'hermes-message-id'
-        new WebClientHermesSender(WebClient.create())           | 'WebClientSender'     | 'hermes-message-id'
 
-        new JerseyHermesSender(ClientBuilder.newClient())       | 'JerseySender'        | 'HERMES-MESSAGE-ID'
-        new OkHttpHermesSender(new OkHttpClient())              | 'OkHttpSender'        | 'HERMES-MESSAGE-ID'
-        new WebClientHermesSender(WebClient.create())           | 'WebClientSender'     | 'HERMES-MESSAGE-ID'
+        new JerseyHermesSender(ClientBuilder.newClient()) | 'JerseySender'    | 'hermes-message-id'
+        new OkHttpHermesSender(new OkHttpClient())        | 'OkHttpSender'    | 'hermes-message-id'
+        new WebClientHermesSender(WebClient.create())     | 'WebClientSender' | 'hermes-message-id'
+        new RestClientHermesSender(RestClient.create())   | 'RestClient'      | 'hermes-message-id'
+
+
+        new JerseyHermesSender(ClientBuilder.newClient()) | 'JerseySender'    | 'HERMES-MESSAGE-ID'
+        new OkHttpHermesSender(new OkHttpClient())        | 'OkHttpSender'    | 'HERMES-MESSAGE-ID'
+        new WebClientHermesSender(WebClient.create())     | 'WebClientSender' | 'HERMES-MESSAGE-ID'
+        new RestClientHermesSender(RestClient.create())   | 'RestClient'      | 'HERMES-MESSAGE-ID'
+
     }
 }
