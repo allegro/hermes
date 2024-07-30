@@ -93,10 +93,18 @@ public class ZookeeperTopicRepository extends ZookeeperBasedRepository implement
      * and upon receiving 'KeeperException.NotEmptyException' it tries to remove children recursively
      * and then retries the node removal. This means that there is a potentially large time gap between
      * removal of 'topic/subscriptions' node and 'topic' node, especially when topic removal is being done
-     * in remote DC.  It turns out that 'PathChildrenCache' used for 'HierarchicalCacheLevel' in
-     * consumers and management recreates 'topic/subscriptions' node when deleted. If the recreation is faster
-     * than the removal of 'topic' node, than the whole removal process must be repeated resulting in a lengthy loop
-     * that may even result in StackOverflowException.
+     * in remote DC.
+     * <p>
+     * It turns out that 'PathChildrenCache' used by 'HierarchicalCacheLevel' in
+     * Consumers and Frontend listens for 'topics/subscriptions' changes and recreates that node when deleted.
+     * If the recreation happens between the 'topic/subscriptions' and 'topic' node removal
+     * than the whole removal process must be repeated resulting in a lengthy loop that may even result in StackOverflowException.
+     * Example of that scenario would be
+     * 1. DELETE 'topic' - issued by management, fails with KeeperException.NotEmptyException
+     * 2. DELETE 'topic/subscriptions' - issued by management, succeeds
+     * 3. CREATE 'topic/subscriptions' - issued by frontend, succeeds
+     * 4. DELETE 'topic' - issued by management, fails with KeeperException.NotEmptyException
+     * [...]
      * <p>
      * To solve this we must remove 'topic' and 'topic/subscriptions' atomically. However, we must also remove
      * other 'topic' children. Transaction API does not allow for 'optional' deletes so we:
