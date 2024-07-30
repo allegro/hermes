@@ -14,7 +14,7 @@ import static java.lang.annotation.ElementType.TYPE;
 @Target({TYPE})
 @Constraint(validatedBy = OneSourceRetransmissionValidator.class)
 public @interface OneSourceRetransmission {
-    String message() default "Only one source of retransmission data is allowed - source topic or source view";
+    String message() default "must contain one defined source of retransmission data - source topic or source view";
 
     Class[] groups() default {};
 

@@ -111,8 +111,7 @@ public class OfflineRetransmissionManagementTest {
         response.expectStatus().isBadRequest();
         assertThat(response.expectBody(String.class).returnResult().getResponseBody()).contains(
                 List.of(
-                        "sourceTopic must not be empty",
-                        "targetTopic must not be empty",
+                        "must contain one defined source of retransmission data - source topic or source view",
                         "startTimestamp must not be null",
                         "endTimestamp must not be null")
         );
