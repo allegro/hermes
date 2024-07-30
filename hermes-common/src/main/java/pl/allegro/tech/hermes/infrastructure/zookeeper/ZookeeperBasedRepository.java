@@ -196,11 +196,6 @@ public abstract class ZookeeperBasedRepository {
         zookeeper.setData().forPath(path, oldData);
     }
 
-    protected void removeIfExists(String path) throws Exception {
-        ensureConnected();
-        zookeeper.delete().quietly().guaranteed().deletingChildrenIfNeeded().forPath(path);
-    }
-
     protected void remove(String path) throws Exception {
         ensureConnected();
         zookeeper.delete().guaranteed().deletingChildrenIfNeeded().forPath(path);
