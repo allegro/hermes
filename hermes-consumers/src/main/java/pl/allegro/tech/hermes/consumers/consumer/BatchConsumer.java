@@ -254,7 +254,7 @@ public class BatchConsumer implements Consumer {
                 .retryIfResult(result -> consuming && !result.succeeded() && shouldRetryOnClientError(retryClientErrors, result))
                 .withWaitStrategy(fixedWait(messageBackoff, MILLISECONDS))
                 .withStopStrategy(attempt -> attempt.getDelaySinceFirstAttempt() > messageTtlMillis
-                        || Thread.currentThread().isInterrupted())
+                        || Thread.currentThread().isInterrupted() || !consuming)
                 .withRetryListener(getRetryListener(result -> {
                     batch.incrementRetryCounter();
                     markSendingResult(batch, result);
