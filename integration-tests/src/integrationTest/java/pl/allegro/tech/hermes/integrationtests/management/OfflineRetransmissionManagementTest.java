@@ -15,6 +15,7 @@ import pl.allegro.tech.hermes.management.TestSecurityProvider;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
@@ -68,7 +69,7 @@ public class OfflineRetransmissionManagementTest {
         var targetTopic = hermes.initHelper().createTopic(topicWithRandomName().build());
 
         // when
-        var request = createRequest(null, targetTopic.getQualifiedName(), "testView");
+        var request = createRequest(null, targetTopic.getQualifiedName(), "testViewPath");
         var response = hermes.api().createOfflineRetransmissionTask(request);
         var now = Instant.now();
 
@@ -80,8 +81,8 @@ public class OfflineRetransmissionManagementTest {
         assertThat(allTasks.size()).isEqualTo(1);
         assertThat(allTasks.get(0).getStartTimestamp()).isEqualTo(request.getStartTimestamp());
         assertThat(allTasks.get(0).getEndTimestamp()).isEqualTo(request.getEndTimestamp());
-        assertThat(allTasks.get(0).getSourceTopic()).isEqualTo(null);
-        assertThat(allTasks.get(0).getSourceViewPath()).isEqualTo("testViewPath");
+        assertThat(allTasks.get(0).getSourceTopic()).isEqualTo(Optional.empty());
+        assertThat(allTasks.get(0).getSourceViewPath()).isEqualTo(Optional.of("testViewPath"));
         assertThat(allTasks.get(0).getTargetTopic()).isEqualTo(request.getTargetTopic());
         assertThat(allTasks.get(0).getCreatedAt()).isBefore(now);
     }
@@ -96,7 +97,7 @@ public class OfflineRetransmissionManagementTest {
     public void shouldReturnClientErrorWhenRequestingRetransmissionWithEmptyData() {
         // given
         OfflineRetransmissionRequest request = new OfflineRetransmissionRequest(
-                "",
+                null,
                 "",
                 "",
                 null,
@@ -155,7 +156,7 @@ public class OfflineRetransmissionManagementTest {
         Topic sourceTopic = hermes.initHelper().createTopic(topicWithRandomName().build());
         Topic targetTopic = hermes.initHelper().createTopic(topicWithRandomName().build());
         OfflineRetransmissionRequest request = new OfflineRetransmissionRequest(
-                "",
+                null,
                 sourceTopic.getQualifiedName(),
                 targetTopic.getQualifiedName(),
                 Instant.now().toString(),

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.InjectableValues;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +43,7 @@ public class ManagementConfiguration {
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         mapper.disable(SerializationFeature.WRITE_NULL_MAP_VALUES);
-        mapper.registerModule(new JavaTimeModule());
+        mapper.registerModules(new JavaTimeModule(), new Jdk8Module());
 
         final InjectableValues defaultSchemaIdAwareSerializationEnabled = new InjectableValues.Std().addValue(
                 Topic.DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY,
