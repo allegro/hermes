@@ -183,13 +183,8 @@ public abstract class ZookeeperBasedRepository {
     }
 
     protected void remove(String path) throws Exception {
-        logger.info("Removing path {} from ZK", path);
-        long start = System.currentTimeMillis();
         ensureConnected();
-        logger.info("Ensured connected to ZK in {} ms", System.currentTimeMillis() - start);
-        start = System.currentTimeMillis();
         zookeeper.delete().guaranteed().deletingChildrenIfNeeded().forPath(path);
-        logger.info("Deleted path {} from ZK in {} ms", path, System.currentTimeMillis() - start);
     }
 
     private interface ThrowingReader<T> {

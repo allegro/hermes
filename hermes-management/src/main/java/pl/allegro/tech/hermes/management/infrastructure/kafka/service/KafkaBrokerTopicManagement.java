@@ -68,10 +68,10 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
                 .map(k -> kafkaAdminClient.deleteTopics(Collections.singletonList(k.name().asString())))
                 .map(DeleteTopicsResult::all)
                 .forEach(future -> {
-                    logger.info("Removing topic {} from Kafka dc: {}", topic, datacenterName);
+                    logger.info("Removing topic: {} from Kafka dc: {}", topic, datacenterName);
                     long start = System.currentTimeMillis();
                     waitForKafkaFuture(future);
-                    logger.info("Removed topic {} from Kafka dc: {} in {}ms", topic, datacenterName, System.currentTimeMillis() - start);
+                    logger.info("Removed topic: {} from Kafka dc: {} in {} ms", topic, datacenterName, System.currentTimeMillis() - start);
                 });
     }
 
