@@ -13,6 +13,7 @@ import pl.allegro.tech.hermes.domain.topic.TopicAlreadyExistsException;
 import pl.allegro.tech.hermes.domain.topic.TopicNotExistsException;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -77,17 +78,57 @@ public class ZookeeperTopicRepository extends ZookeeperBasedRepository implement
         }
     }
 
+    /**
+     * To remove topic node, we must remove topic node and its children. The tree looks like this:
+     * - topic
+     * ----- /subscriptions (required)
+     * ----- /preview (optional)
+     * ----- /metrics (optional)
+     * --------------- /volume
+     * --------------- /published
+     * <p>
+     * One way to remove the whole tree for topic that would be to use 'deletingChildrenIfNeeded()':
+     * e.g. zookeeper.delete().deletingChildrenIfNeeded().forPath(topicPath).
+     * However, deletingChildrenIfNeeded is not atomic. It first tries to remove the node ('topic')
+     * and upon receiving 'KeeperException.NotEmptyException' it tries to remove children recursively
+     * and then retries the node removal. This means that there is a potentially large time gap between
+     * removal of 'topic/subscriptions' node and 'topic' node, especially when topic removal is being done
+     * in remote DC.  It turns out that 'PathChildrenCache' used for 'HierarchicalCacheLevel' in
+     * consumers and management recreates 'topic/subscriptions' node when deleted. If the recreation is faster
+     * than the removal of 'topic' node, than the whole removal process must be repeated resulting in a lengthy loop
+     * that may even result in StackOverflowException.
+     * <p>
+     * To solve this we must remove 'topic' and 'topic/subscriptions' atomically. However, we must also remove
+     * other 'topic' children. Transaction API does not allow for 'optional' deletes so we:
+     * 1. find all children beforehand
+     * 2. delete all children in one transaction
+     */
     @Override
     public void removeTopic(TopicName topicName) {
         ensureTopicExists(topicName);
-        String topicPath = paths.topicPath(topicName);
-        logger.info("Removing topic: " + topicName);
+
+        List<String> pathsForRemoval = new ArrayList<>();
+        String topicMetricsPath = paths.topicMetricsPath(topicName);
+        if (pathExists(topicMetricsPath)) {
+            pathsForRemoval.addAll(childrenPathsOf(topicMetricsPath));
+            pathsForRemoval.add(topicMetricsPath);
+        }
+
+        String topicPreviewPath = paths.topicPreviewPath(topicName);
+        if (pathExists(topicPreviewPath)) {
+            pathsForRemoval.add(topicPreviewPath);
+        }
+
+        pathsForRemoval.add(paths.subscriptionsPath(topicName));
+        pathsForRemoval.add(paths.topicPath(topicName));
+
         try {
-            deleteInTransaction(topicPath, paths.subscriptionsPath(topicName));
-        } catch (Exception e) {
-            throw new InternalProcessingException(e);
+            deleteInTransaction(pathsForRemoval);
+        } catch (Exception ex) {
+            throw new InternalProcessingException(ex);
         }
     }
+
 
     @Override
     public void updateTopic(Topic topic) {
@@ -106,10 +147,25 @@ public class ZookeeperTopicRepository extends ZookeeperBasedRepository implement
         ensureTopicExists(topicName);
 
         logger.info("Touching topic: " + topicName.qualifiedName());
+        removeTopicChildren(topicName);
         try {
             touch(paths.topicPath(topicName));
         } catch (Exception ex) {
             throw new InternalProcessingException(ex);
+        }
+    }
+
+    private void removeTopicChildren(TopicName topicName) {
+        try {
+            removeIfExists(paths.topicPreviewPath(topicName));
+        } catch (Exception e) {
+            throw new InternalProcessingException(e);
+        }
+
+        try {
+            removeIfExists(paths.topicMetricsPath(topicName));
+        } catch (Exception e) {
+            throw new InternalProcessingException(e);
         }
     }
 

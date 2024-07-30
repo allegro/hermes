@@ -28,7 +28,7 @@ public class ZookeeperMessagePreviewRepository extends ZookeeperBasedRepository 
     @Override
     public List<MessagePreview> loadPreview(TopicName topicName) {
         try {
-            return Optional.of(paths.topicPath(topicName, ZookeeperPaths.PREVIEW_PATH))
+            return Optional.of(paths.topicPreviewPath(topicName))
                     .filter(this::pathExists)
                     .flatMap(p -> readFrom(p, new TypeReference<List<MessagePreview>>() {}, true))
                     .orElseGet(ArrayList::new);
@@ -50,7 +50,7 @@ public class ZookeeperMessagePreviewRepository extends ZookeeperBasedRepository 
         logger.debug("Persisting {} messages for preview of topic: {}", messages.size(), topic.qualifiedName());
         try {
             if (pathExists(paths.topicPath(topic))) {
-                String previewPath = paths.topicPath(topic, ZookeeperPaths.PREVIEW_PATH);
+                String previewPath = paths.topicPreviewPath(topic);
                 ensurePathExists(previewPath);
                 overwrite(previewPath, messages);
             }
