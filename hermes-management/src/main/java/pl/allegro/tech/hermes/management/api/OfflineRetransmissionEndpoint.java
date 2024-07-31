@@ -36,6 +36,7 @@ public class OfflineRetransmissionEndpoint {
     private final OfflineRetransmissionService retransmissionService;
     private final RetransmissionPermissions permissions;
     private final OfflineRetransmissionAuditor auditor;
+    private final Logger logger = LoggerFactory.getLogger(OfflineRetransmissionEndpoint.class);
 
     public OfflineRetransmissionEndpoint(OfflineRetransmissionService retransmissionService,
                                          TopicRepository topicRepository, ManagementRights managementRights) {
@@ -47,7 +48,7 @@ public class OfflineRetransmissionEndpoint {
     @POST
     @Consumes(APPLICATION_JSON)
     public Response createRetransmissionTask(@Valid OfflineRetransmissionRequest request, @Context ContainerRequestContext requestContext) {
-        System.out.println("Offline retransmission request: " + request);
+        logger.info("Offline retransmission request: {}", request);
         retransmissionService.validateRequest(request);
         permissions.ensurePermissionsToBothTopics(request, requestContext);
         var task = retransmissionService.createTask(request);
