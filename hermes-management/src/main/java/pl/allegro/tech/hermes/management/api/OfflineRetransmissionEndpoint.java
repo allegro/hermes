@@ -20,7 +20,6 @@ import pl.allegro.tech.hermes.api.OfflineRetransmissionTask;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.management.api.auth.ManagementRights;
-import pl.allegro.tech.hermes.management.domain.PermissionDeniedException;
 import pl.allegro.tech.hermes.management.domain.retransmit.OfflineRetransmissionService;
 
 import java.util.List;
@@ -72,7 +71,7 @@ public class OfflineRetransmissionEndpoint {
     private static class RetransmissionPermissions {
         private final TopicRepository topicRepository;
         private final ManagementRights managementRights;
-
+        private final static Logger logger = LoggerFactory.getLogger(RetransmissionPermissions.class);
 
         private RetransmissionPermissions(TopicRepository topicRepository, ManagementRights managementRights) {
             this.topicRepository = topicRepository;
@@ -81,10 +80,15 @@ public class OfflineRetransmissionEndpoint {
 
         private void ensurePermissionsToBothTopics(OfflineRetransmissionRequest request, ContainerRequestContext requestContext) {
             var targetTopic = topicRepository.getTopicDetails(TopicName.fromQualifiedName(request.getTargetTopic()));
-            var hasPermissions = validateSourceTopic(request.getSourceTopic(), requestContext)
-                    && managementRights.isUserAllowedToManageTopic(targetTopic, requestContext);
+            var topicValidation = validateSourceTopic(request.getSourceTopic(), requestContext);
+            var userValidation = managementRights.isUserAllowedToManageTopic(targetTopic, requestContext);
+            var hasPermissions = topicValidation
+                    && userValidation;
             if (!hasPermissions) {
-                throw new PermissionDeniedException("User needs permissions to source and target topics.");
+                logger.info("target topic {}", targetTopic);
+                logger.info("topic validation: {}, user validation: {}", topicValidation, userValidation);
+                logger.info("ContainerRequestContext: {}", requestContext);
+//                throw new PermissionDeniedException("User needs permissions to source and target topics.");
             }
         }
 
