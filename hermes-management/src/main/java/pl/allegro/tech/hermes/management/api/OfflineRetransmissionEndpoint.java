@@ -47,6 +47,7 @@ public class OfflineRetransmissionEndpoint {
     @POST
     @Consumes(APPLICATION_JSON)
     public Response createRetransmissionTask(@Valid OfflineRetransmissionRequest request, @Context ContainerRequestContext requestContext) {
+        System.out.println("Offline retransmission request: " + request);
         retransmissionService.validateRequest(request);
         permissions.ensurePermissionsToBothTopics(request, requestContext);
         var task = retransmissionService.createTask(request);
