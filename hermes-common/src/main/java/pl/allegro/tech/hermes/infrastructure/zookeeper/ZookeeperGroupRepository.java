@@ -69,7 +69,7 @@ public class ZookeeperGroupRepository extends ZookeeperBasedRepository implement
     /**
      * Atomic removal of <code>group</code> and <code>group/topics</code>
      * nodes is required to prevent lengthy loop during removal, see:
-     * {@link pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperTopicRepository#removeTopic(TopicName)}
+     * {@link pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperTopicRepository#removeTopic(TopicName)}.
      */
     @Override
     public void removeGroup(String groupName) {
