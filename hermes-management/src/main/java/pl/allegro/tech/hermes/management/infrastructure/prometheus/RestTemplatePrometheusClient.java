@@ -101,7 +101,7 @@ public class RestTemplatePrometheusClient implements PrometheusClient {
             return Pair.of(query, result);
         } catch (HttpStatusCodeException ex) {
             logger.warn("Unable to read from Prometheus. Query: {}, Status code: {}. Response body: {}",
-                    query, ex.getStatusCode(), ex.getResponseBodyAs(String.class), ex);
+                    query, ex.getStatusCode(), ex.getResponseBodyAsString(), ex);
             return Pair.of(query, MetricDecimalValue.unavailable());
         } catch (Exception ex) {
             logger.warn("Unable to read from Prometheus. Query: {}", query, ex);
