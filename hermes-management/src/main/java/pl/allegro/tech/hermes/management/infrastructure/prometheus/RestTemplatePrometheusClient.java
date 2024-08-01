@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import pl.allegro.tech.hermes.api.MetricDecimalValue;
 import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringMetricsContainer;
@@ -24,25 +25,26 @@ import static java.net.URLEncoder.encode;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 
-public class RestTemplateParallelPrometheusClient implements PrometheusClient {
+public class RestTemplatePrometheusClient implements PrometheusClient {
 
-    private static final Logger logger = LoggerFactory.getLogger(RestTemplateParallelPrometheusClient.class);
+    private static final Logger logger = LoggerFactory.getLogger(RestTemplatePrometheusClient.class);
 
     private final URI prometheusUri;
     private final RestTemplate restTemplate;
     private final ExecutorService executorService;
-    private final Duration parallelFetchingTimeout;
+    private final Duration fetchingTimeout;
     private final MeterRegistry meterRegistry;
 
 
-    public RestTemplateParallelPrometheusClient(RestTemplate restTemplate,
-                                                URI prometheusUri,
-                                                ExecutorService executorService,
-                                                Duration parallelFetchingTimeoutMillis, MeterRegistry meterRegistry) {
+    public RestTemplatePrometheusClient(RestTemplate restTemplate,
+                                        URI prometheusUri,
+                                        ExecutorService executorService,
+                                        Duration fetchingTimeoutMillis,
+                                        MeterRegistry meterRegistry) {
         this.restTemplate = restTemplate;
         this.prometheusUri = prometheusUri;
         this.executorService = executorService;
-        this.parallelFetchingTimeout = parallelFetchingTimeoutMillis;
+        this.fetchingTimeout = fetchingTimeoutMillis;
         this.meterRegistry = meterRegistry;
     }
 
@@ -55,7 +57,7 @@ public class RestTemplateParallelPrometheusClient implements PrometheusClient {
         CompletableFuture<Map<String, MetricDecimalValue>> aggregatedFuture = getAggregatedCompletableFuture(queries);
 
         try {
-            Map<String, MetricDecimalValue> metrics = aggregatedFuture.get(parallelFetchingTimeout.toMillis(), TimeUnit.MILLISECONDS);
+            Map<String, MetricDecimalValue> metrics = aggregatedFuture.get(fetchingTimeout.toMillis(), TimeUnit.MILLISECONDS);
             return MonitoringMetricsContainer.initialized(metrics);
         } catch (InterruptedException e) {
             // possibly let know the caller that the thread was interrupted
@@ -97,8 +99,12 @@ public class RestTemplateParallelPrometheusClient implements PrometheusClient {
             MetricDecimalValue result = parseResponse(response);
             meterRegistry.counter("read-metric-from-prometheus.success").increment();
             return Pair.of(query, result);
-        } catch (Exception exception) {
-            logger.warn("Unable to read from Prometheus...", exception);
+        } catch (HttpStatusCodeException ex) {
+            logger.warn("Unable to read from Prometheus. Query: {}, Status code: {}. Response body: {}",
+                    query, ex.getStatusCode(), ex.getResponseBodyAs(String.class), ex);
+            return Pair.of(query, MetricDecimalValue.unavailable());
+        } catch (Exception ex) {
+            logger.warn("Unable to read from Prometheus. Query: {}", query, ex);
             meterRegistry.counter("read-metric-from-prometheus.error").increment();
             return Pair.of(query, MetricDecimalValue.unavailable());
         }

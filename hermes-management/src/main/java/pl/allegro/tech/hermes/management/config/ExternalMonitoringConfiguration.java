@@ -19,7 +19,7 @@ import org.springframework.web.client.RestTemplate;
 import pl.allegro.tech.hermes.management.infrastructure.prometheus.CachingPrometheusClient;
 import pl.allegro.tech.hermes.management.infrastructure.prometheus.PrometheusClient;
 import pl.allegro.tech.hermes.management.infrastructure.prometheus.PrometheusMetricsProvider;
-import pl.allegro.tech.hermes.management.infrastructure.prometheus.RestTemplateParallelPrometheusClient;
+import pl.allegro.tech.hermes.management.infrastructure.prometheus.RestTemplatePrometheusClient;
 
 import java.net.URI;
 import java.time.Duration;
@@ -45,12 +45,12 @@ public class ExternalMonitoringConfiguration {
                                              PrometheusMonitoringClientProperties clientProperties,
                                              @Qualifier("prometheusFetcherExecutorService") ExecutorService executorService,
                                              MeterRegistry meterRegistry) {
-        RestTemplateParallelPrometheusClient underlyingPrometheusClient =
-                new RestTemplateParallelPrometheusClient(
+        RestTemplatePrometheusClient underlyingPrometheusClient =
+                new RestTemplatePrometheusClient(
                         monitoringRestTemplate,
                         URI.create(clientProperties.getExternalMonitoringUrl()),
                         executorService,
-                        Duration.ofMillis(clientProperties.getParallelFetchingTimeoutMillis()),
+                        Duration.ofMillis(clientProperties.getFetchingTimeoutMillis()),
                         meterRegistry);
         return new CachingPrometheusClient(
                 underlyingPrometheusClient,
@@ -85,7 +85,7 @@ public class ExternalMonitoringConfiguration {
     @Bean("prometheusFetcherExecutorService")
     @ConditionalOnMissingBean(name = "prometheusFetcherExecutorService")
     public ExecutorService executorService(ExternalMonitoringClientProperties clientProperties) {
-        return Executors.newFixedThreadPool(clientProperties.getParallelFetchingThreads(),
+        return Executors.newFixedThreadPool(clientProperties.getFetchingThreads(),
                 new ThreadFactoryBuilder().setNameFormat("prometheus-metrics-fetcher-%d").build()
         );
     }

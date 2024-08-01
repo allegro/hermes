@@ -14,8 +14,8 @@ public class ExternalMonitoringClientProperties {
 
     private int cacheSize = 100_000;
 
-    private int parallelFetchingTimeoutMillis = 5000;
-    private int parallelFetchingThreads = 30;
+    private int fetchingTimeoutMillis = 5000;
+    private int fetchingThreads = 30;
 
     private String externalMonitoringUrl = "http://localhost:18090";
 
@@ -76,19 +76,19 @@ public class ExternalMonitoringClientProperties {
         this.externalMonitoringUrl = externalMonitoringUrl;
     }
 
-    public int getParallelFetchingThreads() {
-        return parallelFetchingThreads;
+    public int getFetchingThreads() {
+        return fetchingThreads;
     }
 
-    public void setParallelFetchingThreads(int parallelFetchingThreads) {
-        this.parallelFetchingThreads = parallelFetchingThreads;
+    public void setFetchingThreads(int fetchingThreads) {
+        this.fetchingThreads = fetchingThreads;
     }
 
-    public int getParallelFetchingTimeoutMillis() {
-        return parallelFetchingTimeoutMillis;
+    public int getFetchingTimeoutMillis() {
+        return fetchingTimeoutMillis;
     }
 
-    public void setParallelFetchingTimeoutMillis(int parallelFetchingTimeoutMillis) {
-        this.parallelFetchingTimeoutMillis = parallelFetchingTimeoutMillis;
+    public void setFetchingTimeoutMillis(int fetchingTimeoutMillis) {
+        this.fetchingTimeoutMillis = fetchingTimeoutMillis;
     }
 }

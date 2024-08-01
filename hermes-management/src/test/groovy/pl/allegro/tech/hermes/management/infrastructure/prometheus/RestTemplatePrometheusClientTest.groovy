@@ -51,12 +51,12 @@ class RestTemplatePrometheusClientTest extends Specification {
             wireMockConfig()
                     .port(PROMETHEUS_HTTP_PORT).usingFilesUnderClasspath("prometheus-stubs"))
 
-    private RestTemplateParallelPrometheusClient client
+    private RestTemplatePrometheusClient client
 
     void setup() {
         ExecutorService executorService = Executors.newFixedThreadPool(10)
         RestTemplate restTemplate = createRestTemplateWithTimeout(Duration.ofSeconds(1))
-        client = new RestTemplateParallelPrometheusClient(restTemplate, URI.create("http://localhost:$PROMETHEUS_HTTP_PORT"),
+        client = new RestTemplatePrometheusClient(restTemplate, URI.create("http://localhost:$PROMETHEUS_HTTP_PORT"),
                 executorService, Duration.ofSeconds(5), new SimpleMeterRegistry())
         wireMockServer.resetAll()
     }

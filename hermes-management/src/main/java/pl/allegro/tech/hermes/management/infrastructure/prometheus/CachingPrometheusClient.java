@@ -19,7 +19,6 @@ public class CachingPrometheusClient implements PrometheusClient {
       Metrics will always be requested in the context of a single subscription/topic. The single sub/topic will
       always result in the same list of metrics queries. There is no overlapping between metrics used in the context of
       topic or subscriptions. That's why it is safe to use a list of queries as a caching key.
-      The only thing to remember about is that the key should be immutable list of queries (query is immutable by definition).
 
       Maybe it will be worth to cache it per query except of queries when there will be too much overhead
       of refreshing all sub/topic metrics if the single fetch fails (currently we invalidate whole metrics container
@@ -40,7 +39,7 @@ public class CachingPrometheusClient implements PrometheusClient {
     @Override
     public MonitoringMetricsContainer readMetrics(List<String> queries) {
         try {
-            MonitoringMetricsContainer monitoringMetricsContainer = prometheusMetricsCache.get(queries);
+            MonitoringMetricsContainer monitoringMetricsContainer = prometheusMetricsCache.get(List.copyOf(queries));
             if (monitoringMetricsContainer.hasUnavailableMetrics()) {
                 // try to reload the on the next fetch
                 prometheusMetricsCache.invalidate(queries);
