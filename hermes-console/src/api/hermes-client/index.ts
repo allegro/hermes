@@ -206,21 +206,9 @@ export function fetchConsumerGroups(
   );
 }
 
-export function fetchConsistencyGroups(): ResponsePromise<string[]> {
-  return axios.get<string[]>('/consistency/groups');
-}
-
 export function fetchInconsistentGroups(
-  groups: string[],
 ): ResponsePromise<InconsistentGroup[]> {
-  return axios.get<InconsistentGroup[]>('/consistency/inconsistencies/groups', {
-    params: {
-      groupNames: groups,
-    },
-    paramsSerializer: {
-      indexes: null,
-    },
-  });
+  return axios.get<InconsistentGroup[]>('/consistency/inconsistencies/groups');
 }
 
 export function fetchInconsistentTopics(): ResponsePromise<string[]> {

@@ -626,17 +626,6 @@ export const fetchConsistencyGroupsHandler = ({
     return HttpResponse.json(groups);
   });
 
-export const fetchConsistencyGroupsErrorHandler = ({
-  errorCode = 500,
-}: {
-  errorCode?: number;
-}) =>
-  http.get(`${url}/consistency/groups`, () => {
-    return new HttpResponse(undefined, {
-      status: errorCode,
-    });
-  });
-
 export const fetchGroupInconsistenciesHandler = ({
   groupsInconsistency,
 }: {

@@ -105,16 +105,6 @@
         </v-btn>
       </v-col>
     </v-row>
-    <v-row>
-      <v-col md="12" v-if="consistencyStore.fetchInProgress">
-        <v-progress-linear
-          :model-value="consistencyStore.progressPercent"
-          :buffer-value="100"
-          color="blue"
-          data-testid="consistency-progress-bar"
-        ></v-progress-linear>
-      </v-col>
-    </v-row>
     <v-row dense>
       <v-col md="12">
         <v-text-field

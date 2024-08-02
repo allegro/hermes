@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia';
 import {
-  fetchConsistencyGroups,
   fetchInconsistentGroups,
 } from '@/api/hermes-client';
 import type { ConsistencyStoreState } from '@/store/consistency/types';
@@ -9,22 +8,11 @@ import type {
   InconsistentTopic,
 } from '@/api/inconsistent-group';
 
-const partition = (array: string[], batch_size: number): string[][] => {
-  const output: string[][] = [];
-  for (let i = 0; i < array.length; i += batch_size) {
-    output[output.length] = array.slice(i, i + batch_size);
-  }
-  return output;
-};
-
-const batch_size = 10;
 
 export const useConsistencyStore = defineStore('consistency', {
   state: (): ConsistencyStoreState => {
     return {
       groups: [],
-      progressPercent: 0,
-      fetchInProgress: false,
       error: {
         fetchError: null,
       },
@@ -33,23 +21,11 @@ export const useConsistencyStore = defineStore('consistency', {
   actions: {
     async fetch() {
       this.groups = [];
-      this.progressPercent = 0;
-      this.fetchInProgress = true;
       this.error.fetchError = null;
       try {
-        const groups = (await fetchConsistencyGroups()).data;
-        const batches = partition(groups, batch_size);
-        let processed = 0;
-        for (const batch of batches) {
-          const partialResult = (await fetchInconsistentGroups(batch)).data;
-          processed += batch.length;
-          this.groups = this.groups.concat(partialResult);
-          this.progressPercent = Math.floor((processed / groups.length) * 100);
-        }
+        this.groups = (await fetchInconsistentGroups()).data;
       } catch (e) {
         this.error.fetchError = e as Error;
-      } finally {
-        this.fetchInProgress = false;
       }
     },
   },

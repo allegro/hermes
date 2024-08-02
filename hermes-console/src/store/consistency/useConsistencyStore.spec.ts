@@ -24,8 +24,6 @@ describe('useConsistencyStore', () => {
 
     // then
     expect(consistencyStore.groups).toEqual([]);
-    expect(consistencyStore.progressPercent).toEqual(0);
-    expect(consistencyStore.fetchInProgress).toBeFalsy();
   });
 
   it('should fetch group consistency', async () => {
@@ -64,15 +62,6 @@ describe('useConsistencyStore', () => {
       ),
     ).toEqual(dummyGroupInconsistency[0].inconsistentTopics[0]);
     expect(consistencyStore.topic('whatever', 'topic')).toBeUndefined();
-  });
-
-  it('should set error when fetching consistency groups fails', async () => {
-    server.use(fetchConsistencyGroupsErrorHandler({}));
-    server.listen();
-    const consistencyStore = useConsistencyStore();
-    await consistencyStore.fetch();
-
-    expect(consistencyStore.error.fetchError).not.toBeNull();
   });
 
   it('should set error when fetching group inconsistencies fails', async () => {

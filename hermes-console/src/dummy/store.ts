@@ -33,8 +33,6 @@ export const authStoreState: AuthStoreState = {
 };
 
 export const consistencyStoreState: ConsistencyStoreState = {
-  fetchInProgress: false,
-  progressPercent: 0,
   error: {
     fetchError: null,
   },

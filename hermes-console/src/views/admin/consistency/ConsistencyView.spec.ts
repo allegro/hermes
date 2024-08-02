@@ -105,48 +105,6 @@ describe('ConsistencyView', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('should show progress bar when fetching consistency data', () => {
-    // when
-    vi.mocked(useInconsistentTopics).mockReturnValueOnce(
-      useInconsistentTopicsStub,
-    );
-    const { queryByTestId } = render(ConsistencyView, {
-      testPinia: createTestingPinia({
-        initialState: {
-          consistency: {
-            ...consistencyStoreState,
-            fetchInProgress: true,
-          },
-        },
-        stubActions: false,
-      }),
-    });
-
-    // then
-    expect(queryByTestId('consistency-progress-bar')).toBeVisible();
-  });
-
-  it('should not show progress bar when fetching consistency data is not in progress', () => {
-    // when
-    vi.mocked(useInconsistentTopics).mockReturnValueOnce(
-      useInconsistentTopicsStub,
-    );
-    const { queryByTestId } = render(ConsistencyView, {
-      testPinia: createTestingPinia({
-        initialState: {
-          consistency: {
-            ...consistencyStoreState,
-            fetchInProgress: false,
-          },
-        },
-        stubActions: false,
-      }),
-    });
-
-    // then
-    expect(queryByTestId('consistency-progress-bar')).not.toBeInTheDocument();
-  });
-
   it('should show error message when fetching consistency failed', () => {
     // given
     vi.mocked(useInconsistentTopics).mockReturnValueOnce(

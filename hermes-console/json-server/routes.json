@@ -1,8 +1,6 @@
 {
   "/consistency/inconsistencies/topics": "/inconsistentTopics",
-  "/consistency/groups": "/consistencyGroups",
-  "/consistency/inconsistencies/groups?groupNames=pl.allegro.public.offer*": "/inconsistentGroups",
-  "/consistency/inconsistencies/groups?groupNames=pl.allegro.public.group2*": "/inconsistentGroups2",
+  "/consistency/inconsistencies/groups": "/inconsistentGroups",
   "/groups": "/groups",
   "/owners/sources/Service%20Catalog/:id": "/topicsOwners/:id",
   "/readiness/datacenters": "/readinessDatacenters",
