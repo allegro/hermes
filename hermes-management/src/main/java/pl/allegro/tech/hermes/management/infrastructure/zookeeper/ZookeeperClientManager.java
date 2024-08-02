@@ -57,8 +57,8 @@ public class ZookeeperClientManager {
     private StorageProperties createPropertiesForSingleCluster() {
         StorageProperties clusterProperties = new StorageProperties();
         clusterProperties.setConnectionString(properties.getConnectionString());
-        clusterProperties.setConnectTimeout(properties.getConnectTimeout());
-        clusterProperties.setSessionTimeout(properties.getSessionTimeout());
+        clusterProperties.setConnectTimeout((int) properties.getConnectionTimeout().toMillis());
+        clusterProperties.setSessionTimeout((int) properties.getSessionTimeout().toMillis());
         clusterProperties.setDatacenter(DefaultDatacenterNameProvider.DEFAULT_DC_NAME);
         return clusterProperties;
     }

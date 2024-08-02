@@ -40,7 +40,7 @@ public class ConsistencyEndpoint {
     @Produces({APPLICATION_JSON})
     @Path("/inconsistencies/groups")
     public Response listInconsistentGroups(@QueryParam("groupNames") List<String> groupNames) {
-        List<InconsistentGroup> inconsistentGroups = dcConsistencyService.listInconsistentGroups(new HashSet<>(groupNames));
+        List<InconsistentGroup> inconsistentGroups = dcConsistencyService.listInconsistentGroups();
         return Response.ok()
                 .entity(new GenericEntity<List<InconsistentGroup>>(inconsistentGroups) {
                 })

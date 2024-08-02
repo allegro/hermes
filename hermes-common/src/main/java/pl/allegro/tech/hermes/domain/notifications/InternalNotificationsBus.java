@@ -9,5 +9,7 @@ public interface InternalNotificationsBus {
 
     void registerTopicCallback(TopicCallback callback);
 
+    void registerGroupCallback(GroupCallback callback);
+
     void registerAdminCallback(AdminCallback callback);
 }

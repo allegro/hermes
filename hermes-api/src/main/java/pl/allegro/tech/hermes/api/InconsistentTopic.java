@@ -30,4 +30,13 @@ public class InconsistentTopic {
     public List<InconsistentSubscription> getInconsistentSubscriptions() {
         return inconsistentSubscriptions;
     }
+
+    @Override
+    public String toString() {
+        return "InconsistentTopic{" +
+                "name='" + name + '\'' +
+                ", inconsistentMetadata=" + inconsistentMetadata +
+                ", inconsistentSubscriptions=" + inconsistentSubscriptions +
+                '}';
+    }
 }

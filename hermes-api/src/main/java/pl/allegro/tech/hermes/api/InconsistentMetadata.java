@@ -21,4 +21,12 @@ public class InconsistentMetadata {
     public String getContent() {
         return content;
     }
+
+    @Override
+    public String toString() {
+        return "InconsistentMetadata{" +
+                "datacenter='" + datacenter + '\'' +
+                ", content='" + content + '\'' +
+                '}';
+    }
 }

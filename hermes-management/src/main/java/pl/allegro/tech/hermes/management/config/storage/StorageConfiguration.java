@@ -8,6 +8,9 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import pl.allegro.tech.hermes.common.di.factories.ModelAwareZookeeperNotifyingCacheFactory;
+import pl.allegro.tech.hermes.common.di.factories.ZookeeperParameters;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.domain.CredentialsRepository;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
 import pl.allegro.tech.hermes.domain.oauth.OAuthProviderRepository;
@@ -27,7 +30,11 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperSubscriptionRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperTopicRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperWorkloadConstraintsRepository;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.cache.ModelAwareZookeeperNotifyingCache;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.notifications.ZookeeperInternalNotificationBus;
 import pl.allegro.tech.hermes.management.domain.blacklist.TopicBlacklistRepository;
+import pl.allegro.tech.hermes.management.domain.consistency.DcConsistencyService;
+import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
 import pl.allegro.tech.hermes.management.domain.mode.ModeService;
 import pl.allegro.tech.hermes.management.domain.readiness.DatacenterReadinessRepository;
@@ -36,9 +43,13 @@ import pl.allegro.tech.hermes.management.infrastructure.blacklist.ZookeeperTopic
 import pl.allegro.tech.hermes.management.infrastructure.metrics.SummedSharedCounter;
 import pl.allegro.tech.hermes.management.infrastructure.readiness.ZookeeperDatacenterReadinessRepository;
 import pl.allegro.tech.hermes.management.infrastructure.retransmit.ZookeeperOfflineRetransmissionRepository;
+import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZKTreeCache;
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClient;
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClientManager;
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperRepositoryManager;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -63,10 +74,35 @@ public class StorageConfiguration {
         }
     }
 
-    @Bean(initMethod = "start", destroyMethod = "stop")
-    ZookeeperClientManager clientManager() {
-        return new ZookeeperClientManager(storageClustersProperties, dcNameProvider());
+    @Bean
+    DcConsistencyService dcConsistencyService(ZookeeperClientManager clientManager,
+                                              ObjectMapper objectMapper,
+                                              MetricsFacade metricsFacade,
+                                              ZookeeperParameters zookeeperParameters) {
+
+        List<DatacenterBoundRepositoryHolder<ZKTreeCache>> repos = new ArrayList<>();
+
+        for (ZookeeperClient client : clientManager.getClients()) {
+            ModelAwareZookeeperNotifyingCache notifyingCache = new ModelAwareZookeeperNotifyingCacheFactory(
+                    client.getCuratorFramework(),  metricsFacade, zookeeperParameters
+            ).provide();
+
+            ZookeeperInternalNotificationBus notificationBus = new ZookeeperInternalNotificationBus(objectMapper, notifyingCache);
+            ZKTreeCache treeCache = new ZKTreeCache(notificationBus);
+            DatacenterBoundRepositoryHolder<ZKTreeCache> repository = new DatacenterBoundRepositoryHolder<>(treeCache, client.getDatacenterName());
+            repos.add(repository);
+        }
+
+        return new DcConsistencyService(
+              repos, objectMapper
+        );
     }
+
+    @Bean(initMethod = "start", destroyMethod = "stop")
+    ZookeeperClientManager clientManager(DatacenterNameProvider dcNameProvider) {
+        return new ZookeeperClientManager(storageClustersProperties, dcNameProvider);
+    }
+
 
     @Bean
     ZookeeperGroupRepositoryFactory zookeeperGroupRepositoryFactory() {
@@ -74,8 +110,8 @@ public class StorageConfiguration {
     }
 
     @Bean(initMethod = "start")
-    ZookeeperRepositoryManager repositoryManager(ZookeeperGroupRepositoryFactory zookeeperGroupRepositoryFactory) {
-        return new ZookeeperRepositoryManager(clientManager(), dcNameProvider(), objectMapper,
+    ZookeeperRepositoryManager repositoryManager(ZookeeperClientManager clientManager, ZookeeperGroupRepositoryFactory zookeeperGroupRepositoryFactory) {
+        return new ZookeeperRepositoryManager(clientManager, dcNameProvider(), objectMapper,
                 zookeeperPaths(), zookeeperGroupRepositoryFactory);
     }
 
@@ -86,11 +122,11 @@ public class StorageConfiguration {
 
     @Bean
     MultiDatacenterRepositoryCommandExecutor multiDcRepositoryCommandExecutor(
-            ZookeeperGroupRepositoryFactory zookeeperGroupRepositoryFactory,
+            ZookeeperRepositoryManager repositoryManager,
             ModeService modeService
     ) {
         return new MultiDatacenterRepositoryCommandExecutor(
-                repositoryManager(zookeeperGroupRepositoryFactory),
+                repositoryManager,
                 storageClustersProperties.isTransactional(),
                 modeService
         );
@@ -106,67 +142,68 @@ public class StorageConfiguration {
         );
     }
 
+
     @Bean
-    GroupRepository groupRepository() {
-        ZookeeperClient localClient = clientManager().getLocalClient();
+    GroupRepository groupRepository(ZookeeperClientManager clientManager) {
+        ZookeeperClient localClient = clientManager.getLocalClient();
         return new ZookeeperGroupRepository(localClient.getCuratorFramework(), objectMapper, zookeeperPaths());
     }
 
     @Bean
-    CredentialsRepository credentialsRepository() {
-        ZookeeperClient localClient = clientManager().getLocalClient();
+    CredentialsRepository credentialsRepository(ZookeeperClientManager clientManager) {
+        ZookeeperClient localClient = clientManager.getLocalClient();
         return new ZookeeperCredentialsRepository(localClient.getCuratorFramework(), objectMapper, zookeeperPaths());
     }
 
     @Bean
-    TopicRepository topicRepository() {
-        ZookeeperClient localClient = clientManager().getLocalClient();
+    TopicRepository topicRepository(ZookeeperClientManager clientManager, GroupRepository groupRepository) {
+        ZookeeperClient localClient = clientManager.getLocalClient();
         return new ZookeeperTopicRepository(localClient.getCuratorFramework(), objectMapper, zookeeperPaths(),
-                groupRepository());
+                groupRepository);
     }
 
     @Bean
-    SubscriptionRepository subscriptionRepository() {
-        ZookeeperClient localClient = clientManager().getLocalClient();
+    SubscriptionRepository subscriptionRepository(ZookeeperClientManager clientManager, TopicRepository topicRepository) {
+        ZookeeperClient localClient = clientManager.getLocalClient();
         return new ZookeeperSubscriptionRepository(localClient.getCuratorFramework(), objectMapper, zookeeperPaths(),
-                topicRepository());
+                topicRepository);
     }
 
     @Bean
-    OAuthProviderRepository oAuthProviderRepository() {
-        ZookeeperClient localClient = clientManager().getLocalClient();
+    OAuthProviderRepository oAuthProviderRepository(ZookeeperClientManager clientManager) {
+        ZookeeperClient localClient = clientManager.getLocalClient();
         return new ZookeeperOAuthProviderRepository(localClient.getCuratorFramework(), objectMapper, zookeeperPaths());
     }
 
     @Bean
-    MessagePreviewRepository messagePreviewRepository() {
-        ZookeeperClient localClient = clientManager().getLocalClient();
+    MessagePreviewRepository messagePreviewRepository(ZookeeperClientManager clientManager) {
+        ZookeeperClient localClient = clientManager.getLocalClient();
         return new ZookeeperMessagePreviewRepository(localClient.getCuratorFramework(), objectMapper, zookeeperPaths());
     }
 
     @Bean
-    TopicBlacklistRepository topicBlacklistRepository() {
-        ZookeeperClient localClient = clientManager().getLocalClient();
+    TopicBlacklistRepository topicBlacklistRepository(ZookeeperClientManager clientManager) {
+        ZookeeperClient localClient = clientManager.getLocalClient();
         return new ZookeeperTopicBlacklistRepository(localClient.getCuratorFramework(), objectMapper, zookeeperPaths());
     }
 
     @Bean
-    WorkloadConstraintsRepository workloadConstraintsRepository() {
-        ZookeeperClient localClient = clientManager().getLocalClient();
+    WorkloadConstraintsRepository workloadConstraintsRepository(ZookeeperClientManager clientManager) {
+        ZookeeperClient localClient = clientManager.getLocalClient();
         return new ZookeeperWorkloadConstraintsRepository(localClient.getCuratorFramework(), objectMapper, zookeeperPaths());
     }
 
     @Bean
     @Primary
     @Qualifier("zookeeperOfflineRetransmissionRepository")
-    OfflineRetransmissionRepository zookeeperOfflineRetransmissionRepository() {
-        ZookeeperClient localClient = clientManager().getLocalClient();
+    OfflineRetransmissionRepository zookeeperOfflineRetransmissionRepository(ZookeeperClientManager clientManager) {
+        ZookeeperClient localClient = clientManager.getLocalClient();
         return new ZookeeperOfflineRetransmissionRepository(localClient.getCuratorFramework(), objectMapper, zookeeperPaths());
     }
 
     @Bean
-    DatacenterReadinessRepository readinessRepository() {
-        ZookeeperClient localClient = clientManager().getLocalClient();
+    DatacenterReadinessRepository readinessRepository(ZookeeperClientManager clientManager) {
+        ZookeeperClient localClient = clientManager.getLocalClient();
         return new ZookeeperDatacenterReadinessRepository(localClient.getCuratorFramework(), objectMapper, zookeeperPaths());
     }
 }

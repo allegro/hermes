@@ -23,4 +23,12 @@ public class InconsistentSubscription {
     public List<InconsistentMetadata> getInconsistentMetadata() {
         return inconsistentMetadata;
     }
+
+    @Override
+    public String toString() {
+        return "InconsistentSubscription{" +
+                "name='" + name + '\'' +
+                ", inconsistentMetadata=" + inconsistentMetadata +
+                '}';
+    }
 }

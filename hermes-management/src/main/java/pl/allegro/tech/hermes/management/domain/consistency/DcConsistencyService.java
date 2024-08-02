@@ -2,9 +2,6 @@ package pl.allegro.tech.hermes.management.domain.consistency;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import jakarta.annotation.PreDestroy;
-import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.InconsistentGroup;
 import pl.allegro.tech.hermes.api.InconsistentMetadata;
@@ -14,13 +11,9 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.domain.group.GroupNotExistsException;
-import pl.allegro.tech.hermes.domain.group.GroupRepository;
-import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicNotExistsException;
-import pl.allegro.tech.hermes.domain.topic.TopicRepository;
-import pl.allegro.tech.hermes.management.config.ConsistencyCheckerProperties;
 import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
-import pl.allegro.tech.hermes.management.domain.dc.RepositoryManager;
+import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZKTreeCache;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,46 +21,25 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.function.Function;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
-@Component
 public class DcConsistencyService {
-    private final ExecutorService executor;
-    private final List<DatacenterBoundRepositoryHolder<GroupRepository>> groupRepositories;
-    private final List<DatacenterBoundRepositoryHolder<TopicRepository>> topicRepositories;
-    private final List<DatacenterBoundRepositoryHolder<SubscriptionRepository>> subscriptionRepositories;
+    private final List<DatacenterBoundRepositoryHolder<ZKTreeCache>> checkers;
     private final ObjectMapper objectMapper;
 
-    public DcConsistencyService(RepositoryManager repositoryManager,
-                                ObjectMapper objectMapper,
-                                ConsistencyCheckerProperties properties) {
-        this.groupRepositories = repositoryManager.getRepositories(GroupRepository.class);
-        this.topicRepositories = repositoryManager.getRepositories(TopicRepository.class);
-        this.subscriptionRepositories = repositoryManager.getRepositories(SubscriptionRepository.class);
+    public DcConsistencyService(List<DatacenterBoundRepositoryHolder<ZKTreeCache>> checkers,
+                                ObjectMapper objectMapper) {
+        this.checkers = checkers;
         this.objectMapper = objectMapper;
-        this.executor = Executors.newFixedThreadPool(
-                properties.getThreadPoolSize(),
-                new ThreadFactoryBuilder()
-                        .setNameFormat("consistency-checker-%d")
-                        .build()
-        );
     }
 
-    @PreDestroy
-    public void stop() {
-        executor.shutdown();
-    }
-
-    public List<InconsistentGroup> listInconsistentGroups(Set<String> groupNames) {
+    public List<InconsistentGroup> listInconsistentGroups() {
         List<InconsistentGroup> inconsistentGroups = new ArrayList<>();
-        for (MetadataCopies copies : listCopiesOfGroups(groupNames)) {
+        for (MetadataCopies copies : listCopiesOfGroups()) {
             List<InconsistentMetadata> inconsistentMetadata = findInconsistentMetadata(copies);
             List<InconsistentTopic> inconsistentTopics = listInconsistentTopics(copies.getId());
             if (!inconsistentMetadata.isEmpty() || !inconsistentTopics.isEmpty()) {
@@ -77,26 +49,17 @@ public class DcConsistencyService {
         return inconsistentGroups;
     }
 
-    private List<MetadataCopies> listCopiesOfGroups(Set<String> groupNames) {
-        Map<String, Future<List<Group>>> futuresPerDatacenter = new HashMap<>();
-        for (DatacenterBoundRepositoryHolder<GroupRepository> repositoryHolder : groupRepositories) {
-            Future<List<Group>> future = executor.submit(() -> listGroups(repositoryHolder.getRepository(), groupNames));
-            futuresPerDatacenter.put(repositoryHolder.getDatacenterName(), future);
+    private List<MetadataCopies> listCopiesOfGroups() {
+        Map<String, List<Group>> groupsPerDatacenter = new HashMap<>();
+        for (DatacenterBoundRepositoryHolder<ZKTreeCache> repositoryHolder : checkers) {
+            List<Group> groups = listGroups(repositoryHolder.getRepository());
+            groupsPerDatacenter.put(repositoryHolder.getDatacenterName(), groups);
         }
-        return listCopies(futuresPerDatacenter, Group::getGroupName);
+        return listCopies(groupsPerDatacenter, Group::getGroupName);
     }
 
-    private List<Group> listGroups(GroupRepository repository, Set<String> groupNames) {
-        List<Group> groups = new ArrayList<>();
-        for (String groupName : groupNames) {
-            try {
-                Group group = repository.getGroupDetails(groupName);
-                groups.add(group);
-            } catch (GroupNotExistsException e) {
-                // ignore
-            }
-        }
-        return groups;
+    private List<Group> listGroups(ZKTreeCache repository) {
+        return repository.getGroups();
     }
 
     private List<InconsistentTopic> listInconsistentTopics(String group) {
@@ -112,15 +75,15 @@ public class DcConsistencyService {
     }
 
     private List<MetadataCopies> listCopiesOfTopicsFromGroup(String group) {
-        Map<String, Future<List<Topic>>> futuresPerDatacenter = new HashMap<>();
-        for (DatacenterBoundRepositoryHolder<TopicRepository> repositoryHolder : topicRepositories) {
-            Future<List<Topic>> future = executor.submit(() -> listTopics(repositoryHolder.getRepository(), group));
-            futuresPerDatacenter.put(repositoryHolder.getDatacenterName(), future);
+        Map<String, List<Topic>> topicPerDatacenter = new HashMap<>();
+        for (DatacenterBoundRepositoryHolder<ZKTreeCache> repositoryHolder : checkers) {
+            List<Topic> topics = listTopics(repositoryHolder.getRepository(), group);
+            topicPerDatacenter.put(repositoryHolder.getDatacenterName(), topics);
         }
-        return listCopies(futuresPerDatacenter, Topic::getQualifiedName);
+        return listCopies(topicPerDatacenter, Topic::getQualifiedName);
     }
 
-    private List<Topic> listTopics(TopicRepository topicRepository, String group) {
+    private List<Topic> listTopics(ZKTreeCache topicRepository, String group) {
         try {
             return topicRepository.listTopics(group);
         } catch (GroupNotExistsException e) {
@@ -136,29 +99,27 @@ public class DcConsistencyService {
     }
 
     private List<MetadataCopies> listCopiesOfSubscriptionsFromTopic(String topic) {
-        Map<String, Future<List<Subscription>>> futuresPerDatacenter = new HashMap<>();
-        for (DatacenterBoundRepositoryHolder<SubscriptionRepository> repositoryHolder : subscriptionRepositories) {
-            Future<List<Subscription>> future = executor.submit(
-                    () -> listSubscriptions(repositoryHolder.getRepository(), topic)
-            );
-            futuresPerDatacenter.put(repositoryHolder.getDatacenterName(), future);
+        Map<String, List<Subscription>> subscriptionsPerDatacenter = new HashMap<>();
+        for (DatacenterBoundRepositoryHolder<ZKTreeCache> repositoryHolder : checkers) {
+            List<Subscription> subscriptions = listSubscriptions(repositoryHolder.getRepository(), topic);
+            subscriptionsPerDatacenter.put(repositoryHolder.getDatacenterName(), subscriptions);
         }
-        return listCopies(futuresPerDatacenter, subscription -> subscription.getQualifiedName().getQualifiedName());
+        return listCopies(subscriptionsPerDatacenter, subscription -> subscription.getQualifiedName().getQualifiedName());
     }
 
-    private List<Subscription> listSubscriptions(SubscriptionRepository subscriptionRepository, String topic) {
+    private List<Subscription> listSubscriptions(ZKTreeCache checker, String topic) {
         try {
-            return subscriptionRepository.listSubscriptions(TopicName.fromQualifiedName(topic));
+            return checker.listSubscriptions(TopicName.fromQualifiedName(topic));
         } catch (TopicNotExistsException e) {
             return emptyList();
         }
     }
 
-    private <T> List<MetadataCopies> listCopies(Map<String, Future<List<T>>> futuresPerDatacenter, Function<T, String> idResolver) {
+    private <T> List<MetadataCopies> listCopies(Map<String, List<T>> entitiesPerDatacenter, Function<T, String> idResolver) {
         Map<String, MetadataCopies> copiesPerId = new HashMap<>();
-        Set<String> datacenters = futuresPerDatacenter.keySet();
-        for (Map.Entry<String, Future<List<T>>> entry : futuresPerDatacenter.entrySet()) {
-            List<T> entities = resolveFuture(entry.getValue());
+        Set<String> datacenters = entitiesPerDatacenter.keySet();
+        for (Map.Entry<String, List<T>> entry : entitiesPerDatacenter.entrySet()) {
+            List<T> entities = entry.getValue();
             String datacenter = entry.getKey();
             for (T entity : entities) {
                 String id = idResolver.apply(entity);
@@ -191,21 +152,13 @@ public class DcConsistencyService {
     }
 
     public Set<String> listAllGroupNames() {
-        List<Future<List<String>>> results = new ArrayList<>();
-        for (DatacenterBoundRepositoryHolder<GroupRepository> repositoryHolder : groupRepositories) {
-            Future<List<String>> submit = executor.submit(() -> repositoryHolder.getRepository().listGroupNames());
-            results.add(submit);
+        List<List<String>> results = new ArrayList<>();
+        for (DatacenterBoundRepositoryHolder<ZKTreeCache> repositoryHolder : checkers) {
+            List<String> groups = repositoryHolder.getRepository().listGroupNames();
+            results.add(groups);
         }
-        return results.stream().map(this::resolveFuture)
+        return results.stream()
                 .flatMap(Collection::stream)
                 .collect(toSet());
-    }
-
-    private <T> T resolveFuture(Future<T> future) {
-        try {
-            return future.get();
-        } catch (Exception e) {
-            throw new ConsistencyCheckingException("Fetching metadata failed", e);
-        }
     }
 }

@@ -30,4 +30,13 @@ public class InconsistentGroup {
     public List<InconsistentTopic> getInconsistentTopics() {
         return inconsistentTopics;
     }
+
+    @Override
+    public String toString() {
+        return "InconsistentGroup{" +
+                "name='" + name + '\'' +
+                ", inconsistentMetadata=" + inconsistentMetadata +
+                ", inconsistentTopics=" + inconsistentTopics +
+                '}';
+    }
 }

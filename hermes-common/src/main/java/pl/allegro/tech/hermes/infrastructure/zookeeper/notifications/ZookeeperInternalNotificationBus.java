@@ -5,9 +5,11 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.curator.framework.recipes.cache.ChildData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.domain.notifications.AdminCallback;
+import pl.allegro.tech.hermes.domain.notifications.GroupCallback;
 import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
 import pl.allegro.tech.hermes.domain.notifications.SubscriptionCallback;
 import pl.allegro.tech.hermes.domain.notifications.TopicCallback;
@@ -63,6 +65,24 @@ public class ZookeeperInternalNotificationBus implements InternalNotificationsBu
                     break;
                 case CHILD_REMOVED:
                     readSilently(e.getData(), Topic.class).ifPresent(callback::onTopicRemoved);
+                    break;
+                default:
+                    break;
+            }
+        });
+    }
+
+    public void registerGroupCallback(GroupCallback callback) {
+        modelNotifyingCache.registerGroupCallback((e) -> {
+            switch (e.getType()) {
+                case CHILD_ADDED:
+                    readSilently(e.getData(), Group.class).ifPresent(callback::onGroupCreated);
+                    break;
+                case CHILD_UPDATED:
+                    readSilently(e.getData(), Group.class).ifPresent(callback::onGroupChanged);
+                    break;
+                case CHILD_REMOVED:
+                    readSilently(e.getData(), Group.class).ifPresent(callback::onGroupRemoved);
                     break;
                 default:
                     break;

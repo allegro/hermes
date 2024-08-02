@@ -2,17 +2,20 @@ package pl.allegro.tech.hermes.management.config.storage;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
+import pl.allegro.tech.hermes.common.di.factories.ZookeeperParameters;
 import pl.allegro.tech.hermes.infrastructure.dc.DcNameSource;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
 @ConfigurationProperties(prefix = "storage")
-public class StorageClustersProperties {
+public class StorageClustersProperties implements ZookeeperParameters {
 
     private String pathPrefix = "/hermes";
     private int retryTimes = 3;
     private int retrySleep = 1000;
+    private Duration maxSleepTime = Duration.ofSeconds(30);
     private int sharedCountersExpiration = 72;
     private DcNameSource datacenterNameSource;
     private String datacenterNameSourceEnv = "DC";
@@ -21,6 +24,8 @@ public class StorageClustersProperties {
     private String connectionString = "localhost:2181";
     private int sessionTimeout = 10000;
     private int connectTimeout = 1000;
+    private int processingThreadPoolSize = 5;
+
     private List<StorageProperties> clusters = new ArrayList<>();
 
     @NestedConfigurationProperty
@@ -114,20 +119,73 @@ public class StorageClustersProperties {
         this.connectionString = connectionString;
     }
 
-    public int getSessionTimeout() {
-        return sessionTimeout;
+    public Duration getSessionTimeout() {
+        return Duration.ofMillis(sessionTimeout);
     }
 
     public void setSessionTimeout(int sessionTimeout) {
         this.sessionTimeout = sessionTimeout;
     }
 
-    public int getConnectTimeout() {
-        return connectTimeout;
-    }
-
     public void setConnectTimeout(int connectTimeout) {
         this.connectTimeout = connectTimeout;
     }
 
+    public void setMaxSleepTime(Duration maxSleepTime) {
+        this.maxSleepTime = maxSleepTime;
+    }
+
+    public void setProcessingThreadPoolSize(int processingThreadPoolSize) {
+        this.processingThreadPoolSize = processingThreadPoolSize;
+    }
+
+    @Override
+    public Duration getBaseSleepTime() {
+        return Duration.ofMillis(retrySleep);
+    }
+
+    @Override
+    public Duration getMaxSleepTime() {
+        return maxSleepTime;
+    }
+
+    @Override
+    public int getMaxRetries() {
+        return retryTimes;
+    }
+
+    @Override
+    public Duration getConnectionTimeout() {
+        return Duration.ofMillis(connectTimeout);
+    }
+
+    @Override
+    public String getRoot() {
+        return pathPrefix;
+    }
+
+    @Override
+    public int getProcessingThreadPoolSize() {
+        return processingThreadPoolSize;
+    }
+
+    @Override
+    public boolean isAuthorizationEnabled() {
+        return authorization != null;
+    }
+
+    @Override
+    public String getScheme() {
+        return authorization.getScheme();
+    }
+
+    @Override
+    public String getUser() {
+        return authorization.getUser();
+    }
+
+    @Override
+    public String getPassword() {
+        return authorization.getPassword();
+    }
 }
