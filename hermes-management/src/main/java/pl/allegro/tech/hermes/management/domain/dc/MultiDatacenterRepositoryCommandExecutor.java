@@ -61,7 +61,7 @@ public class MultiDatacenterRepositoryCommandExecutor {
                     throw ExceptionWrapper.wrapInInternalProcessingExceptionIfNeeded(e, command.toString(), repoHolder.getDatacenterName());
                 }
             } catch (Exception e) {
-                logger.warn("Failed to execute repository command: {} in ZK dc: {}", command, System.currentTimeMillis() - start, e);
+                logger.warn("Failed to execute repository command: {} in ZK dc: {} in: {} ms", command, repoHolder.getDatacenterName(), System.currentTimeMillis() - start, e);
                 if (isRollbackEnabled) {
                     rollback(executedRepoHolders, command);
                 }
