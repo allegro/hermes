@@ -75,13 +75,17 @@ public class DcConsistencyService {
                         .build()
         );
         if (properties.isPeriodicCheckEnabled()) {
-            scheduler.scheduleAtFixedRate(this::reportConsistency, 0, properties.getRefreshInterval().getSeconds(), TimeUnit.SECONDS);
+            scheduler.scheduleAtFixedRate(this::reportConsistency,
+                    properties.getInitialRefreshDelay().getSeconds(),
+                    properties.getRefreshInterval().getSeconds(),
+                    TimeUnit.SECONDS);
         }
     }
 
     @PreDestroy
     public void stop() {
         executor.shutdown();
+        scheduler.shutdown();
     }
 
     private void reportConsistency() {
