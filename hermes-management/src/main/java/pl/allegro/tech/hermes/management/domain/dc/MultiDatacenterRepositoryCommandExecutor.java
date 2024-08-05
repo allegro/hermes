@@ -55,7 +55,7 @@ public class MultiDatacenterRepositoryCommandExecutor {
             } catch (RepositoryNotAvailableException e) {
                 logger.warn("Execute failed with an RepositoryNotAvailableException error", e);
                 if (isRollbackEnabled) {
-                    rollback(executedRepoHolders, command);
+                    rollback(executedRepoHolders, command, e);
                 }
                 if (shouldStopExecutionOnFailure) {
                     throw ExceptionWrapper.wrapInInternalProcessingExceptionIfNeeded(e, command.toString(), repoHolder.getDatacenterName());
@@ -63,19 +63,19 @@ public class MultiDatacenterRepositoryCommandExecutor {
             } catch (Exception e) {
                 logger.warn("Failed to execute repository command: {} in ZK dc: {} in: {} ms", command, repoHolder.getDatacenterName(), System.currentTimeMillis() - start, e);
                 if (isRollbackEnabled) {
-                    rollback(executedRepoHolders, command);
+                    rollback(executedRepoHolders, command, e);
                 }
                 throw ExceptionWrapper.wrapInInternalProcessingExceptionIfNeeded(e, command.toString(), repoHolder.getDatacenterName());
             }
         }
     }
 
-    private <T> void rollback(List<DatacenterBoundRepositoryHolder<T>> repoHolders, RepositoryCommand<T> command) {
+    private <T> void rollback(List<DatacenterBoundRepositoryHolder<T>> repoHolders, RepositoryCommand<T> command, Exception exception) {
         long start = System.currentTimeMillis();
         for (DatacenterBoundRepositoryHolder<T> repoHolder : repoHolders) {
             logger.info("Executing rollback of repository command: {} in ZK dc: {}", command, repoHolder.getDatacenterName());
             try {
-                command.rollback(repoHolder);
+                command.rollback(repoHolder, exception);
                 logger.info("Successfully executed rollback of repository command: {} in ZK dc: {} in: {} ms", command, repoHolder.getDatacenterName(), System.currentTimeMillis() - start);
             } catch (Exception e) {
                 logger.error("Rollback procedure failed for command {} on DC {}", command, repoHolder.getDatacenterName(), e);
