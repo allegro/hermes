@@ -527,7 +527,7 @@ public class QueryEndpointTest {
         );
         String queryGetAllSubscriptionsMetrics = "{\"query\": {}}";
         String queryGetSubscriptionsMetricsWithPositiveRate = "{\"query\": {\"rate\": {\"gt\": 0}}}";
-        prometheus.stubDelay(ofMinutes(10));
+        prometheus.stubDelay(Duration.ofMillis(3000));
 
         waitAtMost(adjust(Duration.ofMinutes(1))).untilAsserted(() -> {
             // when

@@ -10,6 +10,7 @@ import static java.lang.Double.parseDouble;
 public class MetricDecimalValue {
     private static final String UNAVAILABLE_STRING = "unavailable";
     private static final MetricDecimalValue UNAVAILABLE = new MetricDecimalValue(false, "-1.0");
+    private static final MetricDecimalValue DEFAULT_VALUE = new MetricDecimalValue(true, "0.0");
 
     private final boolean available;
     private final String value;
@@ -21,6 +22,10 @@ public class MetricDecimalValue {
 
     public static MetricDecimalValue unavailable() {
         return UNAVAILABLE;
+    }
+
+    public static MetricDecimalValue defaultValue() {
+        return DEFAULT_VALUE;
     }
 
     public static MetricDecimalValue of(String value) {
@@ -64,5 +69,13 @@ public class MetricDecimalValue {
     @Override
     public int hashCode() {
         return Objects.hash(available, value);
+    }
+
+    @Override
+    public String toString() {
+        return "MetricDecimalValue{"
+                + "available=" + available
+                + ", value='" + value + '\''
+                + '}';
     }
 }

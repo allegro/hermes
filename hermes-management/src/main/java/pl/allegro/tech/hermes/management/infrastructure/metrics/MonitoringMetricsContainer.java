@@ -29,18 +29,22 @@ public class MonitoringMetricsContainer {
         return new MonitoringMetricsContainer(false, new HashMap<>());
     }
 
-    public MonitoringMetricsContainer addMetricValue(String metricPath, MetricDecimalValue value) {
+    public MonitoringMetricsContainer addMetricValue(String query, MetricDecimalValue value) {
         if (!isAvailable) {
             throw new IllegalStateException("Adding value to unavailable metrics container");
         }
-        this.metrics.put(metricPath, value);
+        this.metrics.put(query, value);
         return this;
     }
 
-    public MetricDecimalValue metricValue(String metricPath) {
+    public MetricDecimalValue metricValue(String query) {
         if (!isAvailable) {
             return MetricDecimalValue.unavailable();
         }
-        return metrics.getOrDefault(metricPath, DEFAULT_VALUE);
+        return metrics.getOrDefault(query, DEFAULT_VALUE);
+    }
+
+    public boolean hasUnavailableMetrics() {
+        return !isAvailable || metrics.entrySet().stream().anyMatch(e -> !e.getValue().isAvailable());
     }
 }
