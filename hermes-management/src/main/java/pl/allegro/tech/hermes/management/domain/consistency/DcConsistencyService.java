@@ -36,6 +36,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
 import static java.util.Collections.emptyList;
@@ -52,7 +53,7 @@ public class DcConsistencyService {
     private final List<DatacenterBoundRepositoryHolder<TopicRepository>> topicRepositories;
     private final List<DatacenterBoundRepositoryHolder<SubscriptionRepository>> subscriptionRepositories;
     private final ObjectMapper objectMapper;
-    private final MetricsFacade metricsFacade;
+    private final AtomicBoolean isStorageConsistent = new AtomicBoolean(true);
 
     public DcConsistencyService(RepositoryManager repositoryManager,
                                 ObjectMapper objectMapper,
@@ -62,7 +63,6 @@ public class DcConsistencyService {
         this.topicRepositories = repositoryManager.getRepositories(TopicRepository.class);
         this.subscriptionRepositories = repositoryManager.getRepositories(SubscriptionRepository.class);
         this.objectMapper = objectMapper;
-        this.metricsFacade = metricsFacade;
         this.executor = Executors.newFixedThreadPool(
                 properties.getThreadPoolSize(),
                 new ThreadFactoryBuilder()
@@ -79,6 +79,7 @@ public class DcConsistencyService {
                     properties.getInitialRefreshDelay().getSeconds(),
                     properties.getRefreshInterval().getSeconds(),
                     TimeUnit.SECONDS);
+            metricsFacade.consistency().registerStorageConsistencyGauge(isStorageConsistent, isConsistent -> isConsistent.get() ? 1 : 0);
         }
     }
 
@@ -94,7 +95,7 @@ public class DcConsistencyService {
         List<InconsistentGroup> inconsistentGroups = listInconsistentGroups(groups);
         long durationSeconds = (System.currentTimeMillis() - start) / 1000;
         logger.info("Consistency check finished in {}s, number of inconsistent groups: {}", durationSeconds, inconsistentGroups.size());
-        metricsFacade.consistency().registerStorageConsistencyGauge(inconsistentGroups.isEmpty());
+        isStorageConsistent.set(inconsistentGroups.isEmpty());
     }
 
     public List<InconsistentGroup> listInconsistentGroups(Set<String> groupNames) {
