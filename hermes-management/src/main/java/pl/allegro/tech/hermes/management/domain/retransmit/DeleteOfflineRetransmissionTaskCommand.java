@@ -21,7 +21,7 @@ class DeleteOfflineRetransmissionTaskCommand extends RepositoryCommand<OfflineRe
     }
 
     @Override
-    public void rollback(DatacenterBoundRepositoryHolder<OfflineRetransmissionRepository> holder) {
+    public void rollback(DatacenterBoundRepositoryHolder<OfflineRetransmissionRepository> holder, Exception exception) {
 
     }
 
