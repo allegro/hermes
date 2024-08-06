@@ -13,6 +13,7 @@ import pl.allegro.tech.hermes.api.InconsistentMetadata;
 import pl.allegro.tech.hermes.api.InconsistentSubscription;
 import pl.allegro.tech.hermes.api.InconsistentTopic;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
@@ -108,6 +109,67 @@ public class DcConsistencyService {
             }
         }
         return inconsistentGroups;
+    }
+
+    private record DatacenterRepositoryHolderSyncRequest<R>(
+            DatacenterBoundRepositoryHolder<R> primaryHolder,
+            List<DatacenterBoundRepositoryHolder<R>> replicaHolders
+    ) {
+    }
+
+    private <R> DatacenterRepositoryHolderSyncRequest<R> partition(List<DatacenterBoundRepositoryHolder<R>> repositoryHolders, String primaryDatacenter) {
+        List<DatacenterBoundRepositoryHolder<R>> replicas = new ArrayList<>();
+        DatacenterBoundRepositoryHolder<R> primary = null;
+        for (DatacenterBoundRepositoryHolder<R> repositoryHolder : repositoryHolders) {
+            if (repositoryHolder.getRepository().equals(primaryDatacenter)) {
+                primary = repositoryHolder;
+            } else {
+                replicas.add(repositoryHolder);
+            }
+        }
+        if (primary == null) {
+            throw new SynchronizationException("Source of truth datacenter not found: " + primaryDatacenter);
+        }
+        return new DatacenterRepositoryHolderSyncRequest<>(primary, replicas);
+    }
+
+    public void syncGroup(String groupName, String sourceOfTruthDatacenter) {
+        var request = partition(groupRepositories, sourceOfTruthDatacenter);
+        var primary = request.primaryHolder.getRepository().getGroupDetails(groupName);
+        for (var holder : request.replicaHolders) {
+            var repository = holder.getRepository();
+            if (repository.groupExists(groupName)) {
+                repository.updateGroup(primary);
+            } else {
+                repository.createGroup(primary);
+            }
+        }
+    }
+
+    public void syncTopic(TopicName topicName, String sourceOfTruthDatacenter) {
+        var request = partition(topicRepositories, sourceOfTruthDatacenter);
+        var primary = request.primaryHolder.getRepository().getTopicDetails(topicName);
+        for (var holder : request.replicaHolders) {
+            var repository = holder.getRepository();
+            if (repository.topicExists(topicName)) {
+                repository.updateTopic(primary);
+            } else {
+                repository.createTopic(primary);
+            }
+        }
+    }
+
+    public void syncSubscription(SubscriptionName subscriptionName, String sourceOfTruthDatacenter) {
+        var request = partition(subscriptionRepositories, sourceOfTruthDatacenter);
+        var primary = request.primaryHolder.getRepository().getSubscriptionDetails(subscriptionName);
+        for (var holder : request.replicaHolders) {
+            var repository = holder.getRepository();
+            if (repository.subscriptionExists(subscriptionName.getTopicName(), subscriptionName.getName())) {
+                repository.updateSubscription(primary);
+            } else {
+                repository.createSubscription(primary);
+            }
+        }
     }
 
     private List<MetadataCopies> listCopiesOfGroups(Set<String> groupNames) {

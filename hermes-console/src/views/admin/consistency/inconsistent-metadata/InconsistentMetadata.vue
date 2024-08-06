@@ -8,6 +8,10 @@
 
   const { t } = useI18n();
 
+  const emit = defineEmits<{
+    sync: [datacenter: string];
+  }>();
+
   const prettyJson = (jsonString: string | undefined): string => {
     if (jsonString === undefined) {
       return 'null';
@@ -15,6 +19,10 @@
       return JSON.parse(jsonString);
     }
   };
+
+  function sync(datacenter: string) {
+    emit('sync', datacenter);
+  }
 </script>
 
 <template>
@@ -40,6 +48,16 @@
         </tr>
       </tbody>
     </v-table>
+    <v-card-text dev> Sync state to Datacenter </v-card-text>
+    <v-card-actions>
+      <v-btn
+        v-for="meta in metadata"
+        @click="sync(meta.datacenter)"
+        :key="meta.datacenter"
+      >
+        {{ meta.datacenter }}
+      </v-btn>
+    </v-card-actions>
   </v-card>
   <v-banner
     v-else
