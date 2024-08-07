@@ -31,6 +31,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -38,6 +39,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static java.util.Collections.emptyList;
@@ -134,40 +137,76 @@ public class DcConsistencyService {
     }
 
     public void syncGroup(String groupName, String sourceOfTruthDatacenter) {
-        var request = partition(groupRepositories, sourceOfTruthDatacenter);
-        var primary = request.primaryHolder.getRepository().getGroupDetails(groupName);
-        for (var holder : request.replicaHolders) {
-            var repository = holder.getRepository();
-            if (repository.groupExists(groupName)) {
-                repository.updateGroup(primary);
-            } else {
-                repository.createGroup(primary);
-            }
-        }
+        sync(groupRepositories, sourceOfTruthDatacenter,
+                repo -> repo.groupExists(groupName),
+                repo -> {
+                    try {
+                        return Optional.of(repo.getGroupDetails(groupName));
+                    } catch (GroupNotExistsException ignored) {
+                        return Optional.empty();
+                    }
+                },
+                GroupRepository::createGroup,
+                GroupRepository::updateGroup,
+                repo -> repo.removeGroup(groupName)
+        );
     }
 
     public void syncTopic(TopicName topicName, String sourceOfTruthDatacenter) {
-        var request = partition(topicRepositories, sourceOfTruthDatacenter);
-        var primary = request.primaryHolder.getRepository().getTopicDetails(topicName);
-        for (var holder : request.replicaHolders) {
-            var repository = holder.getRepository();
-            if (repository.topicExists(topicName)) {
-                repository.updateTopic(primary);
-            } else {
-                repository.createTopic(primary);
-            }
-        }
+        sync(topicRepositories, sourceOfTruthDatacenter,
+                repo -> repo.topicExists(topicName),
+                repo -> {
+                    try {
+                        return Optional.of(repo.getTopicDetails(topicName));
+                    } catch (TopicNotExistsException ignored) {
+                        return Optional.empty();
+                    }
+                },
+                TopicRepository::createTopic,
+                TopicRepository::updateTopic,
+                repo -> repo.removeTopic(topicName)
+        );
     }
 
     public void syncSubscription(SubscriptionName subscriptionName, String sourceOfTruthDatacenter) {
-        var request = partition(subscriptionRepositories, sourceOfTruthDatacenter);
-        var primary = request.primaryHolder.getRepository().getSubscriptionDetails(subscriptionName);
+        sync(subscriptionRepositories, sourceOfTruthDatacenter,
+                repo -> repo.subscriptionExists(subscriptionName.getTopicName(), subscriptionName.getName()),
+                repo -> {
+                    try {
+                        return Optional.of(repo.getSubscriptionDetails(subscriptionName));
+                    } catch (TopicNotExistsException ignored) {
+                        return Optional.empty();
+                    }
+                },
+                SubscriptionRepository::createSubscription,
+                SubscriptionRepository::updateSubscription,
+                repo -> repo.removeSubscription(subscriptionName.getTopicName(), subscriptionName.getName())
+        );
+    }
+
+    private <R, S> void sync(List<DatacenterBoundRepositoryHolder<R>> repositories,
+                             String sourceOfTruthDatacenter,
+                             Function<R, Boolean> exists,
+                             Function<R, Optional<S>> get,
+                             BiConsumer<R, S> create,
+                             BiConsumer<R, S> update,
+                             Consumer<R> delete
+    ) {
+        var request = partition(repositories, sourceOfTruthDatacenter);
+        var primaryRepository = request.primaryHolder.getRepository();
+        Optional<S> primary = get.apply(primaryRepository);
+        var primaryPresent = primary.isPresent();
+
         for (var holder : request.replicaHolders) {
             var repository = holder.getRepository();
-            if (repository.subscriptionExists(subscriptionName.getTopicName(), subscriptionName.getName())) {
-                repository.updateSubscription(primary);
-            } else {
-                repository.createSubscription(primary);
+            var replicaPresent = exists.apply(repository);
+
+            if (primaryPresent && replicaPresent) {
+                update.accept(repository, primary.get());
+            } else if (primaryPresent) {
+                create.accept(repository, primary.get());
+            } else if (replicaPresent) {
+                delete.accept(repository);
             }
         }
     }
@@ -303,6 +342,4 @@ public class DcConsistencyService {
             throw new ConsistencyCheckingException("Fetching metadata failed", e);
         }
     }
-
-
 }
