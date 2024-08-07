@@ -1,5 +1,9 @@
+import {
+  syncGroup as doSyncGroup,
+  syncSubscription as doSyncSubscription,
+  syncTopic as doSyncTopic,
+} from '@/api/hermes-client';
 import { ref, type Ref } from 'vue';
-import { syncGroups, syncSubscriptions, syncTopics } from '@/api/hermes-client';
 
 export interface UseSync {
   errorMessage: Ref<Error | null | undefined>;
@@ -20,7 +24,7 @@ export function useSync(): UseSync {
 
   const syncGroup = async (groupName: string, primaryDatacenter: string) => {
     try {
-      await syncGroups(groupName, primaryDatacenter);
+      await doSyncGroup(groupName, primaryDatacenter);
     } catch (e) {
       errorMessage.value = e as Error;
     }
@@ -31,7 +35,7 @@ export function useSync(): UseSync {
     primaryDatacenter: string,
   ) => {
     try {
-      await syncTopics(topicQualifiedName, primaryDatacenter);
+      await doSyncTopic(topicQualifiedName, primaryDatacenter);
     } catch (e) {
       errorMessage.value = e as Error;
     }
@@ -43,7 +47,7 @@ export function useSync(): UseSync {
     primaryDatacenter: string,
   ) => {
     try {
-      await syncSubscriptions(
+      await doSyncSubscription(
         topicQualifiedName,
         subscriptionName,
         primaryDatacenter,
