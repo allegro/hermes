@@ -19,6 +19,7 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.domain.group.GroupNotExistsException;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
+import pl.allegro.tech.hermes.domain.subscription.SubscriptionNotExistsException;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicNotExistsException;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
@@ -124,7 +125,7 @@ public class DcConsistencyService {
         List<DatacenterBoundRepositoryHolder<R>> replicas = new ArrayList<>();
         DatacenterBoundRepositoryHolder<R> primary = null;
         for (DatacenterBoundRepositoryHolder<R> repositoryHolder : repositoryHolders) {
-            if (repositoryHolder.getRepository().equals(primaryDatacenter)) {
+            if (repositoryHolder.getDatacenterName().equals(primaryDatacenter)) {
                 primary = repositoryHolder;
             } else {
                 replicas.add(repositoryHolder);
@@ -174,7 +175,7 @@ public class DcConsistencyService {
                 repo -> {
                     try {
                         return Optional.of(repo.getSubscriptionDetails(subscriptionName));
-                    } catch (TopicNotExistsException ignored) {
+                    } catch (SubscriptionNotExistsException ignored) {
                         return Optional.empty();
                     }
                 },
