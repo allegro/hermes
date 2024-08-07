@@ -70,9 +70,9 @@ public class OfflineRetransmissionEndpoint {
     }
 
     private static class RetransmissionPermissions {
+        private final Logger logger = LoggerFactory.getLogger(RetransmissionPermissions.class);
         private final TopicRepository topicRepository;
         private final ManagementRights managementRights;
-        private final static Logger logger = LoggerFactory.getLogger(RetransmissionPermissions.class);
 
         private RetransmissionPermissions(TopicRepository topicRepository, ManagementRights managementRights) {
             this.topicRepository = topicRepository;
