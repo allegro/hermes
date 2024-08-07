@@ -30,7 +30,7 @@ public class RemoveSubscriptionRepositoryCommand extends RepositoryCommand<Subsc
     }
 
     @Override
-    public void rollback(DatacenterBoundRepositoryHolder<SubscriptionRepository> holder) {
+    public void rollback(DatacenterBoundRepositoryHolder<SubscriptionRepository> holder, Exception exception) {
         holder.getRepository().createSubscription(backup);
     }
 
