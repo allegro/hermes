@@ -9,10 +9,6 @@ public class OneSourceRetransmissionValidator implements ConstraintValidator<One
     public static final String EMPTY_STRING = "";
 
     @Override
-    public void initialize(OneSourceRetransmission oneSourceRetransmission) {
-    }
-
-    @Override
     public boolean isValid(OfflineRetransmissionRequest offlineRetransmissionRequest, ConstraintValidatorContext context) {
         var sourceViewPath = offlineRetransmissionRequest.getSourceViewPath();
         var sourceTopic = offlineRetransmissionRequest.getSourceTopic();

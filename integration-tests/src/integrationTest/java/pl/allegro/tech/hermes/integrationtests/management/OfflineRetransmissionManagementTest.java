@@ -15,7 +15,6 @@ import pl.allegro.tech.hermes.management.TestSecurityProvider;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
@@ -81,8 +80,8 @@ public class OfflineRetransmissionManagementTest {
         assertThat(allTasks.size()).isEqualTo(1);
         assertThat(allTasks.get(0).getStartTimestamp()).isEqualTo(request.getStartTimestamp());
         assertThat(allTasks.get(0).getEndTimestamp()).isEqualTo(request.getEndTimestamp());
-        assertThat(allTasks.get(0).getSourceTopic()).isEqualTo(Optional.empty());
-        assertThat(allTasks.get(0).getSourceViewPath()).isEqualTo(Optional.of("testViewPath"));
+        assertThat(allTasks.get(0).getSourceTopic()).isEmpty();
+        assertThat(allTasks.get(0).getSourceViewPath()).hasValue("testViewPath");
         assertThat(allTasks.get(0).getTargetTopic()).isEqualTo(request.getTargetTopic());
         assertThat(allTasks.get(0).getCreatedAt()).isBefore(now);
     }

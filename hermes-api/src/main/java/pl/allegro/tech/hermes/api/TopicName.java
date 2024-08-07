@@ -5,8 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 
@@ -15,7 +13,6 @@ import static pl.allegro.tech.hermes.api.constraints.Names.ALLOWED_NAME_REGEX;
 public class TopicName {
 
     public static final char GROUP_SEPARATOR = '.';
-    private static final Logger logger = LoggerFactory.getLogger(TopicName.class);
 
     @NotEmpty
     @Pattern(regexp = ALLOWED_NAME_REGEX)
@@ -42,8 +39,7 @@ public class TopicName {
 
         int index = qualifiedName.lastIndexOf(GROUP_SEPARATOR);
         if (index == -1) {
-            logger.info("Invalid qualified name {}", qualifiedName);
-            throw new IllegalArgumentException("Missing group");
+            throw new IllegalArgumentException("Invalid qualified name " + qualifiedName);
         }
 
         String groupName = qualifiedName.substring(0, index);

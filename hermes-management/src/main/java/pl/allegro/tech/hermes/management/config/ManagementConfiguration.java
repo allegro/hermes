@@ -43,7 +43,7 @@ public class ManagementConfiguration {
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         mapper.disable(SerializationFeature.WRITE_NULL_MAP_VALUES);
-        mapper.registerModules(new JavaTimeModule(), new Jdk8Module());
+        mapper.registerModules(new JavaTimeModule(), new Jdk8Module()); // Jdk8Module is required for Jackson to serialize & deserialize Optional type
 
         final InjectableValues defaultSchemaIdAwareSerializationEnabled = new InjectableValues.Std().addValue(
                 Topic.DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY,

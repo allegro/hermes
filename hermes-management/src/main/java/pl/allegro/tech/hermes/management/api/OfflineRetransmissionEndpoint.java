@@ -81,9 +81,9 @@ public class OfflineRetransmissionEndpoint {
 
         private void ensurePermissionsToBothTopics(OfflineRetransmissionRequest request, ContainerRequestContext requestContext) {
             var targetTopic = topicRepository.getTopicDetails(TopicName.fromQualifiedName(request.getTargetTopic()));
-            var hasPermissions = validateSourceTopic(request.getSourceTopic(), requestContext)
-                    && managementRights.isUserAllowedToManageTopic(targetTopic, requestContext);
+            var hasPermissions = validateSourceTopic(request.getSourceTopic(), requestContext) && managementRights.isUserAllowedToManageTopic(targetTopic, requestContext);
             if (!hasPermissions) {
+                logger.info("User {} has no permissions to make retransmission {}", requestContext.getSecurityContext().getUserPrincipal(), request);
                 throw new PermissionDeniedException("User needs permissions to source and target topics.");
             }
         }
