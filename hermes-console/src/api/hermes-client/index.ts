@@ -465,7 +465,7 @@ export function verifyFilters(
   );
 }
 
-export function syncGroups(
+export function syncGroup(
   groupName: string,
   primaryDatacenter: string,
 ): ResponsePromise<void> {
@@ -476,7 +476,7 @@ export function syncGroups(
   });
 }
 
-export function syncTopics(
+export function syncTopic(
   topicQualifiedName: string,
   primaryDatacenter: string,
 ): ResponsePromise<void> {
@@ -491,7 +491,7 @@ export function syncTopics(
   );
 }
 
-export function syncSubscriptions(
+export function syncSubscription(
   topicQualifiedName: string,
   subscriptionName: string,
   primaryDatacenter: string,
