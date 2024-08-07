@@ -332,7 +332,6 @@ public class SubscriptionManagementTest {
         WebTestClient.ResponseSpec response = hermes.api().getSubscriptionHealth(topic.getQualifiedName(), subscription.getName());
 
         // then
-
         assertThat(response.expectBody(SubscriptionHealth.class).returnResult().getResponseBody())
                 .isEqualTo(SubscriptionHealth.HEALTHY);
     }
@@ -386,8 +385,8 @@ public class SubscriptionManagementTest {
         // given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
         Subscription subscription = subscriptionWithRandomName(topic.getName())
-                        .withDeliveryType(DeliveryType.BATCH)
-                        .withContentType(ContentType.AVRO)
+                .withDeliveryType(DeliveryType.BATCH)
+                .withContentType(ContentType.AVRO)
                 .build();
 
         // when

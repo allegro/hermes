@@ -8,13 +8,17 @@ public class ExternalMonitoringClientProperties {
 
     private int maxConnections = 100;
 
-    private int maxConnectionsPerRoute = 10;
+    private int maxConnectionsPerRoute = 100;
 
     private int cacheTtlSeconds = 55;
 
     private int cacheSize = 100_000;
 
+    private int fetchingTimeoutMillis = 5000;
+    private int fetchingThreads = 30;
+
     private String externalMonitoringUrl = "http://localhost:18090";
+
 
     public int getConnectionTimeoutMillis() {
         return connectionTimeoutMillis;
@@ -70,5 +74,21 @@ public class ExternalMonitoringClientProperties {
 
     public void setExternalMonitoringUrl(String externalMonitoringUrl) {
         this.externalMonitoringUrl = externalMonitoringUrl;
+    }
+
+    public int getFetchingThreads() {
+        return fetchingThreads;
+    }
+
+    public void setFetchingThreads(int fetchingThreads) {
+        this.fetchingThreads = fetchingThreads;
+    }
+
+    public int getFetchingTimeoutMillis() {
+        return fetchingTimeoutMillis;
+    }
+
+    public void setFetchingTimeoutMillis(int fetchingTimeoutMillis) {
+        this.fetchingTimeoutMillis = fetchingTimeoutMillis;
     }
 }
