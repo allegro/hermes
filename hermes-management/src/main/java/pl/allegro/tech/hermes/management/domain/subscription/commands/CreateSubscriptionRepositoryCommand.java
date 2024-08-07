@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.management.domain.subscription.commands;
 
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.domain.subscription.SubscriptionAlreadyExistsException;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryCommand;
@@ -22,7 +23,11 @@ public class CreateSubscriptionRepositoryCommand extends RepositoryCommand<Subsc
     }
 
     @Override
-    public void rollback(DatacenterBoundRepositoryHolder<SubscriptionRepository> holder) {
+    public void rollback(DatacenterBoundRepositoryHolder<SubscriptionRepository> holder, Exception exception) {
+        if (exception instanceof SubscriptionAlreadyExistsException) {
+            // prevents removal of already existing subscription
+            return;
+        }
         holder.getRepository().removeSubscription(subscription.getTopicName(), subscription.getName());
     }
 

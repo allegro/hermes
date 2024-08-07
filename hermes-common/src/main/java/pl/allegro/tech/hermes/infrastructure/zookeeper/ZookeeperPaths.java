@@ -77,6 +77,14 @@ public class ZookeeperPaths {
         return Joiner.on(URL_SEPARATOR).join(topicsPath(topicName.getGroupName()), topicName.getName(), (Object[]) tail);
     }
 
+    public String topicPreviewPath(TopicName topicName) {
+        return topicPath(topicName, ZookeeperPaths.PREVIEW_PATH);
+    }
+
+    public String topicMetricsPath(TopicName topicName) {
+        return topicPath(topicName, METRICS_PATH);
+    }
+
     public String subscriptionPath(TopicName topicName, String subscriptionName, String... tail) {
         return Joiner.on(URL_SEPARATOR).join(subscriptionsPath(topicName), subscriptionName, (Object[]) tail);
     }
