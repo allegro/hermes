@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.common.metric;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
+import pl.allegro.tech.hermes.metrics.HermesTimer;
 
 import java.util.concurrent.TimeUnit;
 import java.util.function.ToDoubleFunction;
@@ -85,6 +86,12 @@ public class ProducerMetrics {
 
     public <T> void registerProducerInflightRequestGauge(T stateObj, ToDoubleFunction<T> f) {
         meterRegistry.gauge(INFLIGHT_REQUESTS, stateObj, f);
+    }
+
+    public HermesTimer sendLatency(String sender, String datacenter) {
+        return HermesTimer.from(
+                meterRegistry.timer("kafka-producer.send-latency", tags(sender, datacenter))
+        );
     }
 
     private static Tags tags(String sender, String datacenter) {

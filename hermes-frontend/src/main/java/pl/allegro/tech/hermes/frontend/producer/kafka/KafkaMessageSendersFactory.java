@@ -80,14 +80,14 @@ public class KafkaMessageSendersFactory {
                                        KafkaProducerParameters remoteKafkaProducerParameters,
                                        String senderName) {
         KafkaMessageSenders.Tuple localProducers = new KafkaMessageSenders.Tuple(
-                sender(kafkaParameters, localKafkaProducerParameters, ACK_LEADER),
-                sender(kafkaParameters, localKafkaProducerParameters, ACK_ALL)
+                sender(kafkaParameters, localKafkaProducerParameters, ACK_LEADER, senderName),
+                sender(kafkaParameters, localKafkaProducerParameters, ACK_ALL, senderName)
         );
 
         List<KafkaMessageSenders.Tuple> remoteProducers = remoteKafkaParameters.stream().map(
                 kafkaProperties -> new KafkaMessageSenders.Tuple(
-                        sender(kafkaProperties, remoteKafkaProducerParameters, ACK_LEADER),
-                        sender(kafkaProperties, remoteKafkaProducerParameters, ACK_ALL))).toList();
+                        sender(kafkaProperties, remoteKafkaProducerParameters, ACK_LEADER, senderName),
+                        sender(kafkaProperties, remoteKafkaProducerParameters, ACK_ALL, senderName))).toList();
         KafkaMessageSenders senders = new KafkaMessageSenders(
                 topicMetadataLoadingExecutor,
                 localMinInSyncReplicasLoader,
@@ -100,7 +100,8 @@ public class KafkaMessageSendersFactory {
 
     private KafkaMessageSender<byte[], byte[]> sender(KafkaParameters kafkaParameters,
                                                       KafkaProducerParameters kafkaProducerParameters,
-                                                      String acks) {
+                                                      String acks,
+                                                      String senderName) {
         Map<String, Object> props = new HashMap<>();
         props.put(BOOTSTRAP_SERVERS_CONFIG, kafkaParameters.getBrokerList());
         props.put(MAX_BLOCK_MS_CONFIG, (int) kafkaProducerParameters.getMaxBlock().toMillis());
@@ -133,7 +134,8 @@ public class KafkaMessageSendersFactory {
                 brokerLatencyReporter,
                 metricsFacade,
                 kafkaParameters.getDatacenter(),
-                chaosScheduler
+                chaosScheduler,
+                senderName
         );
     }
 
