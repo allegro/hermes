@@ -200,6 +200,7 @@ public class BatchConsumer implements Consumer {
     @Override
     public void updateSubscription(Subscription subscription) {
         this.subscription = subscription;
+        receiver.updateSubscription(subscription);
     }
 
     @Override
