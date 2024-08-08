@@ -27,6 +27,7 @@ public class MetricsFacade {
     private final OffsetCommitsMetrics offsetCommitsMetrics;
     private final MaxRateMetrics maxRateMetrics;
     private final BrokerMetrics brokerMetrics;
+    private final ConsistencyMetrics consistencyMetrics;
 
     public MetricsFacade(MeterRegistry meterRegistry) {
         this.meterRegistry = meterRegistry;
@@ -45,6 +46,7 @@ public class MetricsFacade {
         this.offsetCommitsMetrics = new OffsetCommitsMetrics(meterRegistry);
         this.maxRateMetrics = new MaxRateMetrics(meterRegistry);
         this.brokerMetrics = new BrokerMetrics(meterRegistry);
+        this.consistencyMetrics = new ConsistencyMetrics(meterRegistry);
     }
 
     public TopicMetrics topics() {
@@ -105,6 +107,10 @@ public class MetricsFacade {
 
     public BrokerMetrics broker() {
         return brokerMetrics;
+    }
+
+    public ConsistencyMetrics consistency() {
+        return consistencyMetrics;
     }
 
     public void unregisterAllMetricsRelatedTo(SubscriptionName subscription) {
