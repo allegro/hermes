@@ -94,6 +94,15 @@ server.post(
   },
 );
 
+server.post(
+  '/consistency/sync/topics/pl.allegro.public.group.DummyEvent*',
+  (req, res) => {
+    res.status(404).jsonp({
+      message: 'Group pl.allegro.public.group not found',
+    });
+  },
+);
+
 server.post('/filters/:topic', (req, res) => {
   res.jsonp(filterDebug);
 });

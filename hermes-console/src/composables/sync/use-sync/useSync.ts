@@ -1,3 +1,4 @@
+import { dispatchErrorNotification } from '@/utils/notification-utils';
 import {
   syncGroup as doSyncGroup,
   syncSubscription as doSyncSubscription,
@@ -41,12 +42,14 @@ export function useSync(): UseSync {
       await consistencyStore.refresh(groupName);
       return true;
     } catch (e: any) {
-      await notificationStore.dispatchNotification({
-        text: useGlobalI18n().t('notifications.sync.failure', {
+      errorMessage.value = e as Error;
+      dispatchErrorNotification(
+        e,
+        notificationStore,
+        useGlobalI18n().t('notifications.sync.failure', {
           group: groupName,
         }),
-        type: 'error',
-      });
+      );
       return false;
     }
   };
@@ -68,12 +71,13 @@ export function useSync(): UseSync {
       return true;
     } catch (e: any) {
       errorMessage.value = e as Error;
-      await notificationStore.dispatchNotification({
-        text: useGlobalI18n().t('notifications.sync.failure', {
+      dispatchErrorNotification(
+        e,
+        notificationStore,
+        useGlobalI18n().t('notifications.sync.failure', {
           group,
         }),
-        type: 'error',
-      });
+      );
       return false;
     }
   };
@@ -98,14 +102,15 @@ export function useSync(): UseSync {
       });
       await consistencyStore.refresh(group);
       return true;
-    } catch (e) {
+    } catch (e: any) {
       errorMessage.value = e as Error;
-      await notificationStore.dispatchNotification({
-        text: useGlobalI18n().t('notifications.sync.failure', {
+      dispatchErrorNotification(
+        e,
+        notificationStore,
+        useGlobalI18n().t('notifications.sync.failure', {
           group,
         }),
-        type: 'error',
-      });
+      );
       return false;
     }
   };
