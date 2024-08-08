@@ -88,10 +88,11 @@ server.put(
 );
 
 server.post(
-    '/consistency/sync/topics/pl.allegro.public.group.DummyEvent/subscriptions/barbaz-service*', (req, res) => {
-      res.sendStatus(200)
-    }
-)
+  '/consistency/sync/topics/pl.allegro.public.group.DummyEvent/subscriptions/barbaz-service*',
+  (req, res) => {
+    res.sendStatus(200);
+  },
+);
 
 server.post('/filters/:topic', (req, res) => {
   res.jsonp(filterDebug);
