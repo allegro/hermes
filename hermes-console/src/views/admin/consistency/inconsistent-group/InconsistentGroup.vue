@@ -36,8 +36,11 @@
     },
   ];
 
-  function sync(datacenter: string) {
-    syncGroup(groupId, datacenter);
+  async function sync(datacenter: string) {
+    const succeeded = await syncGroup(groupId, datacenter);
+    if (succeeded) {
+      router.push('/ui/consistency');
+    }
   }
 </script>
 

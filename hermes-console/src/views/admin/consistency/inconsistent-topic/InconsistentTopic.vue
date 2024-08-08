@@ -2,10 +2,11 @@
   import { parseSubscriptionFqn } from '@/utils/subscription-utils/subscription-utils';
   import { useConsistencyStore } from '@/store/consistency/useConsistencyStore';
   import { useI18n } from 'vue-i18n';
-  import { useRoute } from 'vue-router';
+  import { useRoute, useRouter } from 'vue-router';
   import { useSync } from '@/composables/sync/use-sync/useSync';
   import InconsistentMetadata from '@/views/admin/consistency/inconsistent-metadata/InconsistentMetadata.vue';
 
+  const router = useRouter();
   const route = useRoute();
   const { t } = useI18n();
 
@@ -35,20 +36,26 @@
     },
   ];
 
-  function doSyncTopic(datacenter: string) {
-    syncTopic(topicId, datacenter);
+  async function doSyncTopic(datacenter: string) {
+    const succeeded = await syncTopic(topicId, datacenter);
+    if (succeeded) {
+      router.push('/ui/consistency');
+    }
   }
 
-  function doSyncSubscription(
+  async function doSyncSubscription(
     subscriptionQualifiedName: string,
     datacenter: string,
   ) {
     const subscriptionName = parseSubscriptionFqn(subscriptionQualifiedName);
-    syncSubscription(
+    const succeeded = await syncSubscription(
       subscriptionName.topicName,
       subscriptionName.subscriptionName,
       datacenter,
     );
+    if (succeeded) {
+      router.push('/ui/consistency');
+    }
   }
 </script>
 
