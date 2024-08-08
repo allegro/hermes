@@ -65,7 +65,7 @@ export const useConsistencyStore = defineStore('consistency', {
         }
         if (groupIndex == -1) return;
         if (refreshedGroup.length == 0) {
-          this.groups = this.groups.splice(groupIndex, 1);
+          this.groups.splice(groupIndex, 1);
         } else {
           this.groups[groupIndex] = refreshedGroup[0];
         }
