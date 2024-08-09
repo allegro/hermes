@@ -52,6 +52,29 @@ export const useConsistencyStore = defineStore('consistency', {
         this.fetchInProgress = false;
       }
     },
+    async refresh(group: string) {
+      this.fetchInProgress = true;
+      try {
+        const refreshedGroup = (await fetchInconsistentGroups([group])).data;
+        let groupIndex = -1;
+        for (let i = 0; i < this.groups.length; i++) {
+          if (this.groups[i].name == group) {
+            groupIndex = i;
+            break;
+          }
+        }
+        if (groupIndex == -1) return;
+        if (refreshedGroup.length == 0) {
+          this.groups.splice(groupIndex, 1);
+        } else {
+          this.groups[groupIndex] = refreshedGroup[0];
+        }
+      } catch (e) {
+        this.error.fetchError = e as Error;
+      } finally {
+        this.fetchInProgress = false;
+      }
+    },
   },
   getters: {
     group(

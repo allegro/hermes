@@ -58,3 +58,34 @@ export const dummyGroupInconsistency3: InconsistentGroup[] = [
     inconsistentTopics: [],
   },
 ];
+
+export const dummyGroupInconsistency4: InconsistentGroup[] = [
+  {
+    name: 'pl.allegro.public.group',
+    inconsistentMetadata: [
+      {
+        datacenter: 'DC1',
+        content: '{"lorem": "ipsum"}',
+      },
+      {
+        datacenter: 'DC2',
+        content: '{"lorem": "ipsum"}',
+      },
+    ],
+    inconsistentTopics: [],
+  },
+  {
+    name: 'pl.allegro.public.group2',
+    inconsistentMetadata: [
+      {
+        datacenter: 'DC1',
+        content: '{"lorem": "ipsum"}',
+      },
+      {
+        datacenter: 'DC2',
+        content: '{"lorem": "ipsum"}',
+      },
+    ],
+    inconsistentTopics: [],
+  },
+];

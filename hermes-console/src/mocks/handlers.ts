@@ -975,3 +975,47 @@ export const subscriptionFilterVerificationErrorHandler = ({
       status: 500,
     });
   });
+
+export const syncGroupHandler = ({
+  groupName,
+  statusCode,
+}: {
+  groupName: string;
+  statusCode: number;
+}) =>
+  http.post(`${url}/consistency/sync/groups/${groupName}`, () => {
+    return new HttpResponse(undefined, {
+      status: statusCode,
+    });
+  });
+
+export const syncTopicHandler = ({
+  topicName,
+  statusCode,
+}: {
+  topicName: string;
+  statusCode: number;
+}) =>
+  http.post(`${url}/consistency/sync/topics/${topicName}`, () => {
+    return new HttpResponse(undefined, {
+      status: statusCode,
+    });
+  });
+
+export const syncSubscriptionHandler = ({
+  topicName,
+  statusCode,
+  subscriptionName,
+}: {
+  topicName: string;
+  subscriptionName: string;
+  statusCode: number;
+}) =>
+  http.post(
+    `${url}/consistency/sync/topics/${topicName}/subscriptions/${subscriptionName}`,
+    () => {
+      return new HttpResponse(undefined, {
+        status: statusCode,
+      });
+    },
+  );
