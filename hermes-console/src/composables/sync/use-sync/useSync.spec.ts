@@ -100,4 +100,76 @@ describe('useSync', () => {
       });
     });
   });
+
+  it('should show success notification when group sync is successful', async () => {
+    const groupName = 'group';
+
+    server.use(syncGroupHandler({ groupName, statusCode: 200 }));
+    server.listen();
+
+    const notificationStore = notificationStoreSpy();
+
+    // when
+    const { syncGroup } = useSync();
+    const result = await syncGroup(groupName, 'DC1');
+
+    // then
+    expect(result).toBeTruthy();
+
+    await waitFor(() => {
+      expectNotificationDispatched(notificationStore, {
+        type: 'success',
+        text: 'notifications.sync.success',
+      });
+    });
+  });
+
+  it('should show success notification when topic sync is successful', async () => {
+    // given
+    const topicName = 'group.topic';
+    server.use(syncTopicHandler({ topicName, statusCode: 200 }));
+    server.listen();
+
+    const notificationStore = notificationStoreSpy();
+
+    // when
+    const { syncTopic } = useSync();
+    const result = await syncTopic(topicName, 'DC1');
+
+    // then
+    expect(result).toBeTruthy();
+
+    await waitFor(() => {
+      expectNotificationDispatched(notificationStore, {
+        type: 'success',
+        text: 'notifications.sync.success',
+      });
+    });
+  });
+
+  it('should show success notification when subscription sync is successful', async () => {
+    // given
+    const topicName = 'group.topic';
+    const subscriptionName = 'subscription';
+    server.use(
+      syncSubscriptionHandler({ topicName, subscriptionName, statusCode: 200 }),
+    );
+    server.listen();
+
+    const notificationStore = notificationStoreSpy();
+
+    // when
+    const { syncSubscription } = useSync();
+    const result = await syncSubscription(topicName, subscriptionName, 'DC1');
+
+    // then
+    expect(result).toBeTruthy();
+
+    await waitFor(() => {
+      expectNotificationDispatched(notificationStore, {
+        type: 'error',
+        text: 'notifications.sync.failure',
+      });
+    });
+  });
 });
