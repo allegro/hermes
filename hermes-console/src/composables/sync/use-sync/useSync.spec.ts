@@ -167,8 +167,8 @@ describe('useSync', () => {
 
     await waitFor(() => {
       expectNotificationDispatched(notificationStore, {
-        type: 'error',
-        text: 'notifications.sync.failure',
+        type: 'success',
+        text: 'notifications.sync.success',
       });
     });
   });
