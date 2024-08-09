@@ -115,30 +115,8 @@ public class DcConsistencyService {
         return inconsistentGroups;
     }
 
-    private record DatacenterRepositoryHolderSyncRequest<R>(
-            DatacenterBoundRepositoryHolder<R> primaryHolder,
-            List<DatacenterBoundRepositoryHolder<R>> replicaHolders
-    ) {
-    }
-
-    private <R> DatacenterRepositoryHolderSyncRequest<R> partition(List<DatacenterBoundRepositoryHolder<R>> repositoryHolders, String primaryDatacenter) {
-        List<DatacenterBoundRepositoryHolder<R>> replicas = new ArrayList<>();
-        DatacenterBoundRepositoryHolder<R> primary = null;
-        for (DatacenterBoundRepositoryHolder<R> repositoryHolder : repositoryHolders) {
-            if (repositoryHolder.getDatacenterName().equals(primaryDatacenter)) {
-                primary = repositoryHolder;
-            } else {
-                replicas.add(repositoryHolder);
-            }
-        }
-        if (primary == null) {
-            throw new SynchronizationException("Source of truth datacenter not found: " + primaryDatacenter);
-        }
-        return new DatacenterRepositoryHolderSyncRequest<>(primary, replicas);
-    }
-
-    public void syncGroup(String groupName, String sourceOfTruthDatacenter) {
-        sync(groupRepositories, sourceOfTruthDatacenter,
+    public void syncGroup(String groupName, String primaryDatacenter) {
+        sync(groupRepositories, primaryDatacenter,
                 repo -> repo.groupExists(groupName),
                 repo -> {
                     try {
@@ -153,8 +131,8 @@ public class DcConsistencyService {
         );
     }
 
-    public void syncTopic(TopicName topicName, String sourceOfTruthDatacenter) {
-        sync(topicRepositories, sourceOfTruthDatacenter,
+    public void syncTopic(TopicName topicName, String primaryDatacenter) {
+        sync(topicRepositories, primaryDatacenter,
                 repo -> repo.topicExists(topicName),
                 repo -> {
                     try {
@@ -169,8 +147,8 @@ public class DcConsistencyService {
         );
     }
 
-    public void syncSubscription(SubscriptionName subscriptionName, String sourceOfTruthDatacenter) {
-        sync(subscriptionRepositories, sourceOfTruthDatacenter,
+    public void syncSubscription(SubscriptionName subscriptionName, String primaryDatacenter) {
+        sync(subscriptionRepositories, primaryDatacenter,
                 repo -> repo.subscriptionExists(subscriptionName.getTopicName(), subscriptionName.getName()),
                 repo -> {
                     try {
@@ -342,5 +320,27 @@ public class DcConsistencyService {
         } catch (Exception e) {
             throw new ConsistencyCheckingException("Fetching metadata failed", e);
         }
+    }
+
+    private record DatacenterRepositoryHolderSyncRequest<R>(
+            DatacenterBoundRepositoryHolder<R> primaryHolder,
+            List<DatacenterBoundRepositoryHolder<R>> replicaHolders
+    ) {
+    }
+
+    private <R> DatacenterRepositoryHolderSyncRequest<R> partition(List<DatacenterBoundRepositoryHolder<R>> repositoryHolders, String primaryDatacenter) {
+        List<DatacenterBoundRepositoryHolder<R>> replicas = new ArrayList<>();
+        DatacenterBoundRepositoryHolder<R> primary = null;
+        for (DatacenterBoundRepositoryHolder<R> repositoryHolder : repositoryHolders) {
+            if (repositoryHolder.getDatacenterName().equals(primaryDatacenter)) {
+                primary = repositoryHolder;
+            } else {
+                replicas.add(repositoryHolder);
+            }
+        }
+        if (primary == null) {
+            throw new SynchronizationException("Source of truth datacenter not found: " + primaryDatacenter);
+        }
+        return new DatacenterRepositoryHolderSyncRequest<>(primary, replicas);
     }
 }
