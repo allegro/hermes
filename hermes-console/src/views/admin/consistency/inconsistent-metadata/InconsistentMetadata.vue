@@ -54,6 +54,7 @@
         v-for="meta in metadata"
         @click="sync(meta.datacenter)"
         :key="meta.datacenter"
+        :data-testid="`sync-datacenter-${meta.datacenter}`"
       >
         {{ meta.datacenter }}
       </v-btn>
