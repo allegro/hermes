@@ -2,9 +2,11 @@ package pl.allegro.tech.hermes.management.domain.consistency
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import pl.allegro.tech.hermes.api.Group
 import pl.allegro.tech.hermes.api.Subscription
 import pl.allegro.tech.hermes.api.Topic
+import pl.allegro.tech.hermes.common.metric.MetricsFacade
 import pl.allegro.tech.hermes.domain.group.GroupNotExistsException
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository
 import pl.allegro.tech.hermes.domain.topic.TopicNotExistsException
@@ -36,6 +38,7 @@ class StorageSyncSpec extends MultiZookeeperIntegrationTest {
 
     ModeService modeService
     MultiDatacenterRepositoryCommandExecutor executor
+    MetricsFacade metricsFacade = new MetricsFacade(new SimpleMeterRegistry())
 
     def objectMapper = new ObjectMapper().registerModule(new JavaTimeModule())
     def paths = new ZookeeperPaths('/hermes')
@@ -70,7 +73,7 @@ class StorageSyncSpec extends MultiZookeeperIntegrationTest {
         assertNodeContains(DC_2_NAME, groupPath, group)
 
         and:
-        def consistencyService = new DcConsistencyService(repositoryManager, objectMapper, new ConsistencyCheckerProperties())
+        def consistencyService = new DcConsistencyService(repositoryManager, objectMapper, new ConsistencyCheckerProperties(), metricsFacade)
 
         when:
         consistencyService.syncGroup(group.groupName, DC_2_NAME)
@@ -91,7 +94,7 @@ class StorageSyncSpec extends MultiZookeeperIntegrationTest {
         assertNodeContains(DC_2_NAME, groupPath, group)
 
         and:
-        def consistencyService = new DcConsistencyService(repositoryManager, objectMapper, new ConsistencyCheckerProperties())
+        def consistencyService = new DcConsistencyService(repositoryManager, objectMapper, new ConsistencyCheckerProperties(), metricsFacade)
 
         when:
         consistencyService.syncGroup(group.groupName, DC_1_NAME)
@@ -112,7 +115,7 @@ class StorageSyncSpec extends MultiZookeeperIntegrationTest {
         assertNodeContains(DC_2_NAME, topicPath, topic)
 
         and:
-        def consistencyService = new DcConsistencyService(repositoryManager, objectMapper, new ConsistencyCheckerProperties())
+        def consistencyService = new DcConsistencyService(repositoryManager, objectMapper, new ConsistencyCheckerProperties(), metricsFacade)
 
         when:
         consistencyService.syncTopic(topic.getName(), DC_2_NAME)
@@ -133,7 +136,7 @@ class StorageSyncSpec extends MultiZookeeperIntegrationTest {
         assertNodeContains(DC_2_NAME, topicPath, topic)
 
         and:
-        def consistencyService = new DcConsistencyService(repositoryManager, objectMapper, new ConsistencyCheckerProperties())
+        def consistencyService = new DcConsistencyService(repositoryManager, objectMapper, new ConsistencyCheckerProperties(), metricsFacade)
 
         when:
         consistencyService.syncTopic(topic.getName(), DC_1_NAME)
@@ -156,7 +159,7 @@ class StorageSyncSpec extends MultiZookeeperIntegrationTest {
         assertNodesAreDifferent(topicPath, Topic.class)
 
         and:
-        def consistencyService = new DcConsistencyService(repositoryManager, objectMapper, new ConsistencyCheckerProperties())
+        def consistencyService = new DcConsistencyService(repositoryManager, objectMapper, new ConsistencyCheckerProperties(), metricsFacade)
 
         when:
         consistencyService.syncTopic(topic.getName(), DC_1_NAME)
@@ -177,7 +180,7 @@ class StorageSyncSpec extends MultiZookeeperIntegrationTest {
         assertNodeContains(DC_2_NAME, subscriptionPath, subscription)
 
         and:
-        def consistencyService = new DcConsistencyService(repositoryManager, objectMapper, new ConsistencyCheckerProperties())
+        def consistencyService = new DcConsistencyService(repositoryManager, objectMapper, new ConsistencyCheckerProperties(), metricsFacade)
 
         when:
         consistencyService.syncSubscription(subscription.getQualifiedName(), DC_2_NAME)
@@ -200,7 +203,7 @@ class StorageSyncSpec extends MultiZookeeperIntegrationTest {
         assertNodesAreDifferent(subscriptionPath, Subscription.class)
 
         and:
-        def consistencyService = new DcConsistencyService(repositoryManager, objectMapper, new ConsistencyCheckerProperties())
+        def consistencyService = new DcConsistencyService(repositoryManager, objectMapper, new ConsistencyCheckerProperties(), metricsFacade)
 
         when:
         consistencyService.syncSubscription(subscription.getQualifiedName(), DC_1_NAME)
@@ -221,7 +224,7 @@ class StorageSyncSpec extends MultiZookeeperIntegrationTest {
         assertNodeContains(DC_2_NAME, subscriptionPath, subscription)
 
         and:
-        def consistencyService = new DcConsistencyService(repositoryManager, objectMapper, new ConsistencyCheckerProperties())
+        def consistencyService = new DcConsistencyService(repositoryManager, objectMapper, new ConsistencyCheckerProperties(), metricsFacade)
 
         when:
         consistencyService.syncSubscription(subscription.getQualifiedName(), DC_1_NAME)
@@ -238,7 +241,7 @@ class StorageSyncSpec extends MultiZookeeperIntegrationTest {
         removeNode(DC_1_NAME, paths.groupPath(group.getGroupName()))
 
         and:
-        def consistencyService = new DcConsistencyService(repositoryManager, objectMapper, new ConsistencyCheckerProperties())
+        def consistencyService = new DcConsistencyService(repositoryManager, objectMapper, new ConsistencyCheckerProperties(), metricsFacade)
 
         when:
         consistencyService.syncTopic(topic.getName(), DC_2_NAME)
@@ -255,7 +258,7 @@ class StorageSyncSpec extends MultiZookeeperIntegrationTest {
         removeNode(DC_1_NAME, paths.groupPath(group.getGroupName()))
 
         and:
-        def consistencyService = new DcConsistencyService(repositoryManager, objectMapper, new ConsistencyCheckerProperties())
+        def consistencyService = new DcConsistencyService(repositoryManager, objectMapper, new ConsistencyCheckerProperties(), metricsFacade)
 
         when:
         consistencyService.syncSubscription(subscription.getQualifiedName(), DC_2_NAME)
@@ -272,7 +275,7 @@ class StorageSyncSpec extends MultiZookeeperIntegrationTest {
         removeNode(DC_1_NAME, paths.topicPath(topic.getName()))
 
         and:
-        def consistencyService = new DcConsistencyService(repositoryManager, objectMapper, new ConsistencyCheckerProperties())
+        def consistencyService = new DcConsistencyService(repositoryManager, objectMapper, new ConsistencyCheckerProperties(), metricsFacade)
 
         when:
         consistencyService.syncSubscription(subscription.getQualifiedName(), DC_2_NAME)
