@@ -29,7 +29,7 @@ done
 
 
 ROOT_DIR="$(pwd)/$DIR"
-CONFLUENT_IMAGES_TAG="7.2.2"
+CONFLUENT_IMAGES_TAG="6.1.0"
 
 echo "root dir: $ROOT_DIR"
 echo "confluent images tags: $CONFLUENT_IMAGES_TAG"
