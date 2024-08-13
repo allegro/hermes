@@ -50,7 +50,7 @@ public class OfflineRetransmissionEndpoint {
     public Response createRetransmissionTask(@Valid OfflineRetransmissionRequest request, @Context ContainerRequestContext requestContext) {
         logger.info("Offline retransmission request: {}", request);
         retransmissionService.validateRequest(request);
-        permissions.ensurePermissionsToBothTopics(request, requestContext);
+        permissions.ensurePermissions(request, requestContext);
         var task = retransmissionService.createTask(request);
         auditor.auditRetransmissionCreation(request, requestContext, task);
         return Response.status(Response.Status.CREATED).build();
@@ -79,7 +79,7 @@ public class OfflineRetransmissionEndpoint {
             this.managementRights = managementRights;
         }
 
-        private void ensurePermissionsToBothTopics(OfflineRetransmissionRequest request, ContainerRequestContext requestContext) {
+        private void ensurePermissions(OfflineRetransmissionRequest request, ContainerRequestContext requestContext) {
             var targetTopic = topicRepository.getTopicDetails(TopicName.fromQualifiedName(request.getTargetTopic()));
             var hasPermissions = validateSourceTopic(request.getSourceTopic(), requestContext) && managementRights.isUserAllowedToManageTopic(targetTopic, requestContext);
             if (!hasPermissions) {
