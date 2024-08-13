@@ -140,6 +140,7 @@ public class ZookeeperTopicRepository extends ZookeeperBasedRepository implement
         try {
             deleteInTransaction(pathsForRemoval);
         } catch (Exception e) {
+            logger.info("Failed to remove topic: {}, children: {}", topicName, allChildrenPathsOf(paths.topicPath(topicName)));
             throw new InternalProcessingException(e);
         }
     }

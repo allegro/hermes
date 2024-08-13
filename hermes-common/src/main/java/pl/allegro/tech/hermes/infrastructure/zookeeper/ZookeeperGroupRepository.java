@@ -84,6 +84,7 @@ public class ZookeeperGroupRepository extends ZookeeperBasedRepository implement
         try {
             deleteInTransaction(pathsToDelete);
         } catch (Exception e) {
+            logger.info("Failed to remove group: {}, children: {}", groupName, allChildrenPathsOf(paths.groupPath(groupName)));
             throw new InternalProcessingException(e);
         }
     }

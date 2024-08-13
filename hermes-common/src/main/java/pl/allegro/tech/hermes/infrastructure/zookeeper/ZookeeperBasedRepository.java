@@ -17,8 +17,11 @@ import pl.allegro.tech.hermes.infrastructure.MalformedDataException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
@@ -76,6 +79,25 @@ public abstract class ZookeeperBasedRepository {
         } catch (Exception ex) {
             throw new InternalProcessingException(ex);
         }
+    }
+
+    public Set<String> allChildrenPathsOf(String nodePath) {
+        LinkedList<String> queue = new LinkedList<>();
+        queue.add(nodePath);
+
+        Set<String> visited = new HashSet<>();
+        visited.add(nodePath);
+
+        while (!queue.isEmpty()) {
+            var node = queue.poll();
+            for (String child : childrenPathsOf(node)) {
+                if (!visited.contains(child)) {
+                    queue.add(child);
+                    visited.add(child);
+                }
+            }
+        }
+        return visited;
     }
 
     protected List<String> childrenPathsOf(String path) {
