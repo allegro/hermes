@@ -11,6 +11,9 @@ import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.domain.group.GroupNotEmptyException;
+import pl.allegro.tech.hermes.domain.subscription.SubscriptionNotExistsException;
+import pl.allegro.tech.hermes.domain.topic.TopicNotEmptyException;
+import pl.allegro.tech.hermes.domain.topic.TopicNotExistsException;
 import pl.allegro.tech.hermes.env.BrokerOperations;
 import pl.allegro.tech.hermes.integrationtests.prometheus.PrometheusExtension;
 import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscriber;
@@ -110,7 +113,11 @@ public class HermesExtension implements BeforeAllCallback, AfterAllCallback, Ext
         SubscriptionService service = management.subscriptionService();
         List<Subscription> subscriptions = service.getAllSubscriptions();
         for (Subscription subscription : subscriptions) {
-            service.removeSubscription(subscription.getTopicName(), subscription.getName(), testUser);
+            try {
+                service.removeSubscription(subscription.getTopicName(), subscription.getName(), testUser);
+            } catch (SubscriptionNotExistsException e) {
+                logger.warn("Error during removing subscription: {}", subscription, e);
+            }
         }
 
         waitAtMost(adjust(Duration.ofMinutes(1))).untilAsserted(() ->
@@ -122,7 +129,11 @@ public class HermesExtension implements BeforeAllCallback, AfterAllCallback, Ext
         TopicService service = management.topicService();
         List<Topic> topics = service.getAllTopics();
         for (Topic topic : topics) {
-            service.removeTopicWithSchema(topic, testUser);
+            try {
+                service.removeTopicWithSchema(topic, testUser);
+            } catch (TopicNotExistsException | TopicNotEmptyException e) {
+                logger.warn("Error during removing group: {}", topic, e);
+            }
         }
 
         waitAtMost(adjust(Duration.ofMinutes(1))).untilAsserted(() ->
