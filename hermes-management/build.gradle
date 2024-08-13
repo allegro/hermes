@@ -1,7 +1,7 @@
 plugins {
     id 'java-library'
     id 'application'
-    id "com.github.node-gradle.node" version "2.2.4"
+//    id "com.github.node-gradle.node" version "2.2.4"
 }
 
 mainClassName = 'pl.allegro.tech.hermes.management.HermesManagement'
@@ -47,49 +47,49 @@ dependencies {
     testImplementation group: 'org.testcontainers', name: 'kafka', version: versions.testcontainers
 }
 
-node {
-    version = '20.4.0'
-    distBaseUrl = 'https://nodejs.org/dist'
-    download = true
-    workDir = file("${project.buildDir}/nodejs")
-    npmWorkDir = file("${project.buildDir}/npm")
-    nodeModulesDir = file("${project.rootDir}/hermes-console")
-}
+//node {
+//    version = '20.4.0'
+//    distBaseUrl = 'https://nodejs.org/dist'
+//    download = true
+//    workDir = file("${project.buildDir}/nodejs")
+//    npmWorkDir = file("${project.buildDir}/npm")
+//    nodeModulesDir = file("${project.rootDir}/hermes-console")
+//}
 
-yarnSetup.dependsOn(nodeSetup)
-yarn.dependsOn(npmSetup)
+//yarnSetup.dependsOn(nodeSetup)
+//yarn.dependsOn(npmSetup)
 
-task buildHermesConsole(type: YarnTask, dependsOn: yarn) {
-    def tasksThatDontRequireConsole = [
-            'integrationTest',
-            'slowIntegrationTest',
-            'check'
-    ]
+//task buildHermesConsole(type: YarnTask, dependsOn: yarn) {
+//    def tasksThatDontRequireConsole = [
+//            'integrationTest',
+//            'slowIntegrationTest',
+//            'check'
+//    ]
+//
+//    onlyIf {
+//        tasksThatDontRequireConsole.intersect(gradle.startParameter.taskNames).isEmpty()
+//    }
+//
+//    args = ['build-only']
+//}
+//
+//task attachHermesConsole(type: Copy, dependsOn: 'buildHermesConsole') {
+//    from '../hermes-console/dist'
+//    def staticDirectory = sourceSets.main.output.resourcesDir.path + '/static'
+//    // remove previous static dir if exists and start with clear setup
+//    delete staticDirectory
+//    into(staticDirectory)
+//}
 
-    onlyIf {
-        tasksThatDontRequireConsole.intersect(gradle.startParameter.taskNames).isEmpty()
-    }
-
-    args = ['build-only']
-}
-
-task attachHermesConsole(type: Copy, dependsOn: 'buildHermesConsole') {
-    from '../hermes-console/dist'
-    def staticDirectory = sourceSets.main.output.resourcesDir.path + '/static'
-    // remove previous static dir if exists and start with clear setup
-    delete staticDirectory
-    into(staticDirectory)
-}
-
-tasks.register('prepareIndexTemplate') {
-    doLast {
-        def indexPath = sourceSets.main.output.resourcesDir.path + '/static/index.html'
-        ant.move file: indexPath,
-                tofile: indexPath + '.ftl'
-    }
-}
-
-jar.dependsOn(attachHermesConsole, 'prepareIndexTemplate')
-
-run.dependsOn(attachHermesConsole, 'prepareIndexTemplate')
+//tasks.register('prepareIndexTemplate') {
+//    doLast {
+//        def indexPath = sourceSets.main.output.resourcesDir.path + '/static/index.html'
+//        ant.move file: indexPath,
+//                tofile: indexPath + '.ftl'
+//    }
+//}
+//
+//jar.dependsOn(attachHermesConsole, 'prepareIndexTemplate')
+//
+//run.dependsOn(attachHermesConsole, 'prepareIndexTemplate')
 
