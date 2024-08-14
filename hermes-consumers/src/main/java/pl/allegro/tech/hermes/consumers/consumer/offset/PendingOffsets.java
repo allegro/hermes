@@ -49,10 +49,6 @@ public class PendingOffsets {
         slots.put(subscriptionPartitionOffset, MessageState.PROCESSED);
     }
 
-    public void markAsFiltered(SubscriptionPartitionOffset subscriptionPartitionOffset) {
-        slots.put(subscriptionPartitionOffset, MessageState.FILTERED);
-    }
-
     public boolean tryAcquireSlot(Duration processingInterval) throws InterruptedException {
         if (inflightSemaphore.tryAcquire(processingInterval.toMillis(), TimeUnit.MILLISECONDS)) {
             if (maxPendingOffsetsSemaphore.tryAcquire(processingInterval.toMillis(), TimeUnit.MILLISECONDS)) {
@@ -73,11 +69,9 @@ public class PendingOffsets {
 
         for (Map.Entry<SubscriptionPartitionOffset, MessageState> entry : slots.entrySet()) {
             offsetSnapshot.put(entry.getKey(), entry.getValue());
-            if (entry.getValue() == MessageState.PROCESSED) {
+            if (entry.getValue() != MessageState.INFLIGHT) {
                 slots.remove(entry.getKey());
                 permitsReleased++;
-            } else if (entry.getValue() == MessageState.FILTERED) {
-                slots.remove(entry.getKey());
             }
         }
         maxPendingOffsetsSemaphore.release(permitsReleased);

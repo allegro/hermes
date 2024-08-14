@@ -53,6 +53,8 @@ public class Message implements FilterableMessage {
 
     private long currentMessageBackoff = -1;
 
+    private boolean isFiltered = false;
+
     public Message(String id,
                    String topic,
                    byte[] content,
@@ -122,7 +124,7 @@ public class Message implements FilterableMessage {
 
     public synchronized void incrementRetryCounter(Collection<URI> succeededUris) {
         this.retryCounter++;
-        this.succeededUris.addAll(succeededUris.stream().map(URI::toString).collect(toList()));
+        this.succeededUris.addAll(succeededUris.stream().map(URI::toString).toList());
     }
 
     public synchronized int getRetryCounter() {
@@ -204,6 +206,14 @@ public class Message implements FilterableMessage {
 
     public String getSubscription() {
         return subscription;
+    }
+
+    public boolean isFiltered() {
+        return isFiltered;
+    }
+
+    public void setFiltered(boolean filtered) {
+        isFiltered = filtered;
     }
 
     public static class Builder {
