@@ -49,10 +49,6 @@ public class PendingOffsets {
         slots.put(subscriptionPartitionOffset, MessageState.PROCESSED);
     }
 
-    public void markAsFiltered(SubscriptionPartitionOffset subscriptionPartitionOffset) {
-        slots.put(subscriptionPartitionOffset, MessageState.FILTERED);
-    }
-
     public boolean tryAcquireSlot(Duration processingInterval) throws InterruptedException {
         if (inflightSemaphore.tryAcquire(processingInterval.toMillis(), TimeUnit.MILLISECONDS)) {
             if (maxPendingOffsetsSemaphore.tryAcquire(processingInterval.toMillis(), TimeUnit.MILLISECONDS)) {
