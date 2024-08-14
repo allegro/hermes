@@ -190,7 +190,7 @@ public class SerialConsumer implements Consumer {
                 rateLimiter,
                 loadRecorder,
                 metrics,
-                pendingOffsets::markAsProcessed
+                pendingOffsets::markAsFiltered
         );
     }
 
