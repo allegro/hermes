@@ -82,6 +82,7 @@ public class ZookeeperGroupRepository extends ZookeeperBasedRepository implement
                 paths.groupPath(groupName)
         );
         try {
+            logger.info("During group removal will remove paths: {}", pathsToDelete);
             deleteInTransaction(pathsToDelete);
         } catch (Exception e) {
             logger.info("Failed to remove group: {}, children: {}", groupName, allChildrenPathsOf(paths.groupPath(groupName)));

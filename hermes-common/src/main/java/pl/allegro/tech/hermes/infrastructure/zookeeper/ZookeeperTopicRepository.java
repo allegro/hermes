@@ -138,6 +138,7 @@ public class ZookeeperTopicRepository extends ZookeeperBasedRepository implement
         pathsForRemoval.add(paths.topicPath(topicName));
 
         try {
+            logger.info("During topic removal will remove paths: {}", pathsForRemoval);
             deleteInTransaction(pathsForRemoval);
         } catch (Exception e) {
             logger.info("Failed to remove topic: {}, children: {}", topicName, allChildrenPathsOf(paths.topicPath(topicName)));
