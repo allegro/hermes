@@ -47,7 +47,7 @@ describe('useSync', () => {
     await waitFor(() => {
       expectNotificationDispatched(notificationStore, {
         type: 'error',
-        title: 'notifications.sync.failure',
+        title: 'notifications.consistency.sync.failure',
       });
     });
   });
@@ -70,7 +70,7 @@ describe('useSync', () => {
     await waitFor(() => {
       expectNotificationDispatched(notificationStore, {
         type: 'error',
-        title: 'notifications.sync.failure',
+        title: 'notifications.consistency.sync.failure',
       });
     });
   });
@@ -96,7 +96,7 @@ describe('useSync', () => {
     await waitFor(() => {
       expectNotificationDispatched(notificationStore, {
         type: 'error',
-        title: 'notifications.sync.failure',
+        title: 'notifications.consistency.sync.failure',
       });
     });
   });
@@ -119,7 +119,7 @@ describe('useSync', () => {
     await waitFor(() => {
       expectNotificationDispatched(notificationStore, {
         type: 'success',
-        text: 'notifications.sync.success',
+        text: 'notifications.consistency.sync.success',
       });
     });
   });
@@ -142,7 +142,7 @@ describe('useSync', () => {
     await waitFor(() => {
       expectNotificationDispatched(notificationStore, {
         type: 'success',
-        text: 'notifications.sync.success',
+        text: 'notifications.consistency.sync.success',
       });
     });
   });
@@ -168,7 +168,7 @@ describe('useSync', () => {
     await waitFor(() => {
       expectNotificationDispatched(notificationStore, {
         type: 'success',
-        text: 'notifications.sync.success',
+        text: 'notifications.consistency.sync.success',
       });
     });
   });

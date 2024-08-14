@@ -5,13 +5,11 @@ import {
   syncTopic as doSyncTopic,
 } from '@/api/hermes-client';
 import { groupName } from '@/utils/topic-utils/topic-utils';
-import { ref, type Ref } from 'vue';
 import { useConsistencyStore } from '@/store/consistency/useConsistencyStore';
 import { useGlobalI18n } from '@/i18n';
 import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
 
 export interface UseSync {
-  errorMessage: Ref<Error | null | undefined>;
   syncGroup: (groupName: string, primaryDatacenter: string) => Promise<boolean>;
   syncTopic: (
     topicQualifiedName: string,
@@ -25,8 +23,6 @@ export interface UseSync {
 }
 
 export function useSync(): UseSync {
-  const errorMessage: Ref<Error | null | undefined> = ref();
-
   const notificationStore = useNotificationsStore();
   const consistencyStore = useConsistencyStore();
 
@@ -34,7 +30,7 @@ export function useSync(): UseSync {
     try {
       await doSyncGroup(groupName, primaryDatacenter);
       await notificationStore.dispatchNotification({
-        text: useGlobalI18n().t('notifications.sync.success', {
+        text: useGlobalI18n().t('notifications.consistency.sync.success', {
           group: groupName,
         }),
         type: 'success',
@@ -42,11 +38,10 @@ export function useSync(): UseSync {
       await consistencyStore.refresh(groupName);
       return true;
     } catch (e: any) {
-      errorMessage.value = e as Error;
       dispatchErrorNotification(
         e,
         notificationStore,
-        useGlobalI18n().t('notifications.sync.failure', {
+        useGlobalI18n().t('notifications.consistency.sync.failure', {
           group: groupName,
         }),
       );
@@ -62,7 +57,7 @@ export function useSync(): UseSync {
     try {
       await doSyncTopic(topicQualifiedName, primaryDatacenter);
       await notificationStore.dispatchNotification({
-        text: useGlobalI18n().t('notifications.sync.success', {
+        text: useGlobalI18n().t('notifications.consistency.sync.success', {
           group,
         }),
         type: 'success',
@@ -70,11 +65,10 @@ export function useSync(): UseSync {
       await consistencyStore.refresh(group);
       return true;
     } catch (e: any) {
-      errorMessage.value = e as Error;
       dispatchErrorNotification(
         e,
         notificationStore,
-        useGlobalI18n().t('notifications.sync.failure', {
+        useGlobalI18n().t('notifications.consistency.sync.failure', {
           group,
         }),
       );
@@ -95,7 +89,7 @@ export function useSync(): UseSync {
         primaryDatacenter,
       );
       await notificationStore.dispatchNotification({
-        text: useGlobalI18n().t('notifications.sync.success', {
+        text: useGlobalI18n().t('notifications.consistency.sync.success', {
           group,
         }),
         type: 'success',
@@ -103,11 +97,10 @@ export function useSync(): UseSync {
       await consistencyStore.refresh(group);
       return true;
     } catch (e: any) {
-      errorMessage.value = e as Error;
       dispatchErrorNotification(
         e,
         notificationStore,
-        useGlobalI18n().t('notifications.sync.failure', {
+        useGlobalI18n().t('notifications.consistency.sync.failure', {
           group,
         }),
       );
@@ -116,7 +109,6 @@ export function useSync(): UseSync {
   };
 
   return {
-    errorMessage,
     syncGroup,
     syncSubscription,
     syncTopic,

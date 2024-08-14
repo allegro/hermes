@@ -708,9 +708,11 @@ const en_US = {
         failure: "Couldn't delete topic {topic}",
       },
     },
-    sync: {
-      success: 'Synchronization of {group} succeeded',
-      failure: 'Synchronization of {group} failed',
+    consistency: {
+      sync: {
+        success: 'Synchronization of {group} succeeded',
+        failure: 'Synchronization of {group} failed',
+      },
     },
     subscription: {
       create: {
