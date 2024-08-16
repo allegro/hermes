@@ -22,7 +22,7 @@ public class SetReadinessCommand extends RepositoryCommand<DatacenterReadinessRe
     }
 
     @Override
-    public void rollback(DatacenterBoundRepositoryHolder<DatacenterReadinessRepository> holder) { }
+    public void rollback(DatacenterBoundRepositoryHolder<DatacenterReadinessRepository> holder, Exception exception) { }
 
     @Override
     public Class<DatacenterReadinessRepository> getRepositoryType() {

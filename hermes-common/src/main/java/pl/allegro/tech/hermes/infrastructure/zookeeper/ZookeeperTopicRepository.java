@@ -13,6 +13,7 @@ import pl.allegro.tech.hermes.domain.topic.TopicAlreadyExistsException;
 import pl.allegro.tech.hermes.domain.topic.TopicNotExistsException;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -77,12 +78,67 @@ public class ZookeeperTopicRepository extends ZookeeperBasedRepository implement
         }
     }
 
+    /**
+     * To remove topic node, we must remove topic node and its children. The tree looks like this:
+     * <ul>
+     * <li>- topic
+     * <li>----- /subscriptions (required)
+     * <li>----- /preview (optional)
+     * <li>----- /metrics (optional)
+     * <li>--------------- /volume
+     * <li>--------------- /published
+     * </ul>
+     *
+     * <p>One way to remove the whole tree for topic that would be to use <code>deletingChildrenIfNeeded()</code>:
+     * e.g. <code>zookeeper.delete().deletingChildrenIfNeeded().forPath(topicPath)</code>.
+     * However, <code>deletingChildrenIfNeeded</code> is not atomic. It first tries to remove the node <code>topic</code>
+     * and upon receiving <code>KeeperException.NotEmptyException</code> it tries to remove children recursively
+     * and then retries the node removal. This means that there is a potentially large time gap between
+     * removal of <code>topic/subscriptions</code> node and <code>topic</code> node, especially when topic removal is being done
+     * in remote DC.
+     *
+     * <p>It turns out that <code>PathChildrenCache</code> used by <code>HierarchicalCacheLevel</code> in
+     * Consumers and Frontend listens for <code>topics/subscriptions</code> changes and recreates that node when deleted.
+     * If the recreation happens between the <code>topic/subscriptions</code> and <code>topic</code> node removal
+     * than the whole removal process must be repeated resulting in a lengthy loop that may even result in <code>StackOverflowException</code>.
+     * Example of that scenario would be
+     * <ol>
+     * <li> DELETE <code>topic</code> - issued by management, fails with KeeperException.NotEmptyException
+     * <li> DELETE <code>topic/subscriptions</code> - issued by management, succeeds
+     * <li> CREATE <code>topic/subscriptions</code> - issued by frontend, succeeds
+     * <li> DELETE <code>topic</code> - issued by management, fails with KeeperException.NotEmptyException
+     * <li> [...]
+     * </ol>
+     *
+     * <p>To solve this we must remove <code>topic</code> and <code>topic/subscriptions</code> atomically. However, we must also remove
+     * other <code>topic</code> children. Transaction API does not allow for optional deletes so we:
+     * <ol>
+     * <li> find all children paths
+     * <li> delete all children in one transaction
+     * </ol>
+     */
     @Override
     public void removeTopic(TopicName topicName) {
         ensureTopicExists(topicName);
         logger.info("Removing topic: " + topicName);
+
+        List<String> pathsForRemoval = new ArrayList<>();
+        String topicMetricsPath = paths.topicMetricsPath(topicName);
+        if (pathExists(topicMetricsPath)) {
+            pathsForRemoval.addAll(childrenPathsOf(topicMetricsPath));
+            pathsForRemoval.add(topicMetricsPath);
+        }
+
+        String topicPreviewPath = paths.topicPreviewPath(topicName);
+        if (pathExists(topicPreviewPath)) {
+            pathsForRemoval.add(topicPreviewPath);
+        }
+
+        pathsForRemoval.add(paths.subscriptionsPath(topicName));
+        pathsForRemoval.add(paths.topicPath(topicName));
+
         try {
-            remove(paths.topicPath(topicName));
+            deleteInTransaction(pathsForRemoval);
         } catch (Exception e) {
             throw new InternalProcessingException(e);
         }

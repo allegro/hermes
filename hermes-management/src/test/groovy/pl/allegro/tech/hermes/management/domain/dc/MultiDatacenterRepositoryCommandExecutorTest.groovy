@@ -66,7 +66,7 @@ class MultiDatacenterRepositoryCommandExecutorTest extends Specification {
         executor.execute(command)
 
         then:
-        1 * command.rollback(holder1)
+        1 * command.rollback(holder1, _)
 
         thrown InternalProcessingException
     }
@@ -104,7 +104,7 @@ class MultiDatacenterRepositoryCommandExecutorTest extends Specification {
         executor.executeByUser(command, ADMIN)
 
         then:
-        1 * command.rollback(holder1)
+        1 * command.rollback(holder1, _)
 
         thrown InternalProcessingException
     }
@@ -160,7 +160,7 @@ class MultiDatacenterRepositoryCommandExecutorTest extends Specification {
         executor.executeByUser(command, NON_ADMIN)
 
         then:
-        1 * command.rollback(holder1)
+        1 * command.rollback(holder1, _)
 
         thrown InternalProcessingException
     }
