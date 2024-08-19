@@ -37,6 +37,9 @@ public class Topic {
     private boolean jsonToAvroDryRunEnabled = false;
     @NotNull
     private Ack ack;
+    public static final String DEFAULT_FALLBACK_TO_REMOTE_DATACENTER_KEY = "defaultFallbackToRemoteDatacenterEnabled";
+    private final boolean fallbackToRemoteDatacenterEnabled;
+    private PublishingChaosPolicy chaos;
     @NotNull
     private ContentType contentType;
     @Min(MIN_MESSAGE_SIZE)
@@ -56,7 +59,10 @@ public class Topic {
     private Instant modifiedAt;
 
     public Topic(TopicName name, String description, OwnerId owner, RetentionTime retentionTime,
-                 boolean migratedFromJsonType, Ack ack, boolean trackingEnabled, ContentType contentType, boolean jsonToAvroDryRunEnabled,
+                 boolean migratedFromJsonType, Ack ack,
+                 @JacksonInject(value = DEFAULT_FALLBACK_TO_REMOTE_DATACENTER_KEY, useInput = OptBoolean.TRUE)
+                 Boolean fallbackToRemoteDatacenterEnabled,
+                 PublishingChaosPolicy chaos, boolean trackingEnabled, ContentType contentType, boolean jsonToAvroDryRunEnabled,
                  @JacksonInject(value = DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY, useInput = OptBoolean.TRUE)
                  Boolean schemaIdAwareSerializationEnabled,
                  int maxMessageSize, PublishingAuth publishingAuth, boolean subscribingRestricted,
@@ -66,6 +72,8 @@ public class Topic {
         this.owner = owner;
         this.retentionTime = retentionTime;
         this.ack = (ack == null ? Ack.LEADER : ack);
+        this.fallbackToRemoteDatacenterEnabled = fallbackToRemoteDatacenterEnabled;
+        this.chaos = chaos;
         this.trackingEnabled = trackingEnabled;
         this.migratedFromJsonType = migratedFromJsonType;
         this.contentType = contentType;
@@ -88,6 +96,9 @@ public class Topic {
             @JsonProperty("retentionTime") RetentionTime retentionTime,
             @JsonProperty("jsonToAvroDryRun") boolean jsonToAvroDryRunEnabled,
             @JsonProperty("ack") Ack ack,
+            @JacksonInject(value = DEFAULT_FALLBACK_TO_REMOTE_DATACENTER_KEY, useInput = OptBoolean.TRUE)
+            @JsonProperty("fallbackToRemoteDatacenterEnabled") Boolean fallbackToRemoteDatacenterEnabled,
+            @JsonProperty("chaos") PublishingChaosPolicy chaos,
             @JsonProperty("trackingEnabled") boolean trackingEnabled,
             @JsonProperty("migratedFromJsonType") boolean migratedFromJsonType,
             @JsonProperty("schemaIdAwareSerializationEnabled")
@@ -103,10 +114,10 @@ public class Topic {
             @JsonProperty("modifiedAt") Instant modifiedAt
     ) {
         this(TopicName.fromQualifiedName(qualifiedName), description, owner, retentionTime, migratedFromJsonType, ack,
+                fallbackToRemoteDatacenterEnabled, chaos == null ? PublishingChaosPolicy.disabled() : chaos,
                 trackingEnabled, contentType, jsonToAvroDryRunEnabled, schemaIdAwareSerializationEnabled,
                 maxMessageSize == null ? DEFAULT_MAX_MESSAGE_SIZE : maxMessageSize,
-                publishingAuth == null ? PublishingAuth.disabled() : publishingAuth,
-                subscribingRestricted,
+                publishingAuth == null ? PublishingAuth.disabled() : publishingAuth, subscribingRestricted,
                 offlineStorage == null ? TopicDataOfflineStorage.defaultOfflineStorage() : offlineStorage,
                 labels == null ? Collections.emptySet() : labels,
                 createdAt, modifiedAt
@@ -119,9 +130,9 @@ public class Topic {
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, description, owner, retentionTime, migratedFromJsonType, trackingEnabled, ack, contentType,
-                jsonToAvroDryRunEnabled, schemaIdAwareSerializationEnabled, maxMessageSize,
-                publishingAuth, subscribingRestricted, offlineStorage, labels);
+        return Objects.hash(name, description, owner, retentionTime, migratedFromJsonType, trackingEnabled, ack,
+                fallbackToRemoteDatacenterEnabled, chaos, contentType, jsonToAvroDryRunEnabled, schemaIdAwareSerializationEnabled,
+                maxMessageSize, publishingAuth, subscribingRestricted, offlineStorage, labels);
     }
 
     @Override
@@ -143,6 +154,8 @@ public class Topic {
                 && Objects.equals(this.migratedFromJsonType, other.migratedFromJsonType)
                 && Objects.equals(this.schemaIdAwareSerializationEnabled, other.schemaIdAwareSerializationEnabled)
                 && Objects.equals(this.ack, other.ack)
+                && Objects.equals(this.fallbackToRemoteDatacenterEnabled, other.fallbackToRemoteDatacenterEnabled)
+                && Objects.equals(this.chaos, other.chaos)
                 && Objects.equals(this.contentType, other.contentType)
                 && Objects.equals(this.maxMessageSize, other.maxMessageSize)
                 && Objects.equals(this.subscribingRestricted, other.subscribingRestricted)
@@ -176,6 +189,14 @@ public class Topic {
 
     public Ack getAck() {
         return ack;
+    }
+
+    public boolean isFallbackToRemoteDatacenterEnabled() {
+        return fallbackToRemoteDatacenterEnabled;
+    }
+
+    public PublishingChaosPolicy getChaos() {
+        return chaos;
     }
 
     public ContentType getContentType() {

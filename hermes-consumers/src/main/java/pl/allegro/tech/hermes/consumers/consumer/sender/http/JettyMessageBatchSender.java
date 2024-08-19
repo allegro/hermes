@@ -1,9 +1,8 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 
-import org.apache.http.entity.ContentType;
-import org.apache.http.protocol.HTTP;
-import org.eclipse.jetty.client.api.ContentResponse;
-import org.eclipse.jetty.client.api.Request;
+import org.apache.hc.core5.http.ContentType;
+import org.eclipse.jetty.client.ContentResponse;
+import org.eclipse.jetty.client.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.EndpointAddress;
@@ -22,6 +21,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
+import static jakarta.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static pl.allegro.tech.hermes.api.AvroMediaType.AVRO_BINARY;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.BATCH_ID;
@@ -81,7 +81,7 @@ public class JettyMessageBatchSender implements MessageBatchSender {
 
         ContentType contentType = getMediaType(batch.getContentType());
         headers.put(BATCH_ID.getName(), batch.getId());
-        headers.put(HTTP.CONTENT_TYPE, contentType.getMimeType());
+        headers.put(CONTENT_TYPE, contentType.getMimeType());
         headers.put(RETRY_COUNT.getName(), Integer.toString(batch.getRetryCounter()));
 
         if (batch.hasSubscriptionIdentityHeaders()) {

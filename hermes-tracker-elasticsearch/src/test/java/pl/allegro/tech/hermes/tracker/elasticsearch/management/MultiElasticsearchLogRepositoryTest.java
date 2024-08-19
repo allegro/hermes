@@ -1,24 +1,21 @@
 package pl.allegro.tech.hermes.tracker.elasticsearch.management;
 
-import com.codahale.metrics.MetricRegistry;
 import com.google.common.collect.ImmutableMap;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import org.testng.annotations.AfterSuite;
-import org.testng.annotations.BeforeSuite;
-import org.testng.annotations.Test;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import pl.allegro.tech.hermes.api.MessageTrace;
 import pl.allegro.tech.hermes.api.PublishedMessageTrace;
 import pl.allegro.tech.hermes.api.PublishedMessageTraceStatus;
 import pl.allegro.tech.hermes.api.SentMessageTrace;
 import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
-import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.tracker.consumers.MessageMetadata;
 import pl.allegro.tech.hermes.tracker.consumers.TestMessageMetadata;
 import pl.allegro.tech.hermes.tracker.elasticsearch.ElasticsearchResource;
 import pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware;
-import pl.allegro.tech.hermes.tracker.elasticsearch.SchemaManager;
 import pl.allegro.tech.hermes.tracker.elasticsearch.consumers.ConsumersDailyIndexFactory;
 import pl.allegro.tech.hermes.tracker.elasticsearch.consumers.ConsumersElasticsearchLogRepository;
 import pl.allegro.tech.hermes.tracker.elasticsearch.consumers.ConsumersIndexFactory;
@@ -28,6 +25,7 @@ import pl.allegro.tech.hermes.tracker.elasticsearch.frontend.FrontendIndexFactor
 import pl.allegro.tech.hermes.tracker.management.LogRepository;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -36,9 +34,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static com.jayway.awaitility.Awaitility.await;
-import static com.jayway.awaitility.Duration.ONE_MINUTE;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static pl.allegro.tech.hermes.common.http.ExtraRequestHeadersCollector.extraRequestHeadersCollector;
 
 
@@ -51,8 +48,7 @@ public class MultiElasticsearchLogRepositoryTest implements LogSchemaAware {
     private static final FrontendIndexFactory frontendIndexFactory = new FrontendDailyIndexFactory(clock);
     private static final ConsumersIndexFactory consumersIndexFactory = new ConsumersDailyIndexFactory(clock);
     private static final MetricsFacade metricsFacade = new MetricsFacade(
-            new SimpleMeterRegistry(),
-            new HermesMetrics(new MetricRegistry(), new PathsCompiler(""))
+            new SimpleMeterRegistry()
     );
 
     private static final ElasticsearchResource elasticsearch1 = new ElasticsearchResource();
@@ -62,12 +58,20 @@ public class MultiElasticsearchLogRepositoryTest implements LogSchemaAware {
     private FrontendElasticsearchLogRepository frontendLogRepository;
     private ConsumersElasticsearchLogRepository consumersLogRepository;
 
-    @BeforeSuite
-    public void before() throws Throwable {
+    @BeforeClass
+    public static void beforeAll() throws Throwable {
         elasticsearch1.before();
         elasticsearch2.before();
+    }
 
-        SchemaManager schemaManager = new SchemaManager(elasticsearch1.client(), frontendIndexFactory, consumersIndexFactory, false);
+    @AfterClass
+    public static void afterAll() {
+        elasticsearch1.after();
+        elasticsearch2.after();
+    }
+
+    @Before
+    public void setUp() {
         logRepository = new MultiElasticsearchLogRepository(Arrays.asList(elasticsearch1.client(), elasticsearch2.client()));
 
         frontendLogRepository = new FrontendElasticsearchLogRepository.Builder(
@@ -81,33 +85,28 @@ public class MultiElasticsearchLogRepositoryTest implements LogSchemaAware {
                 .build();
     }
 
-    @AfterSuite
-    public void after() {
-        elasticsearch1.after();
-        elasticsearch2.after();
-    }
-
     @Test
     public void shouldGetMessageStatus() {
         // given
+        String datacenter = "dc1";
         Map<String, String> extraRequestHeaders = ImmutableMap.of("x-header1", "value1", "x-header2", "value2");
         MessageMetadata messageMetadata = TestMessageMetadata.of("1234", "elasticsearch1.messageStatus", "subscription");
         long timestamp = System.currentTimeMillis();
 
         // when
-        frontendLogRepository.logPublished("1234", timestamp, "elasticsearch1.messageStatus", "localhost", extraRequestHeaders);
+        frontendLogRepository.logPublished("1234", timestamp, "elasticsearch1.messageStatus", "localhost", datacenter, extraRequestHeaders);
         consumersLogRepository.logSuccessful(messageMetadata, "localhost", timestamp);
 
         // then
         assertThat(fetchMessageStatus(messageMetadata))
-                .contains(publishedMessageTrace(messageMetadata, extraRequestHeaders, timestamp, PublishedMessageTraceStatus.SUCCESS))
+                .contains(publishedMessageTrace(messageMetadata, extraRequestHeaders, timestamp, PublishedMessageTraceStatus.SUCCESS, datacenter))
                 .contains(sentMessageTrace(messageMetadata, timestamp, SentMessageTraceStatus.SUCCESS));
     }
 
     private List<MessageTrace> fetchMessageStatus(MessageMetadata messageMetadata) {
         List<MessageTrace> status = new ArrayList<>();
 
-        await().atMost(ONE_MINUTE).until(() -> {
+        await().atMost(Duration.ofMinutes(1)).until(() -> {
             status.clear();
             status.addAll(logRepository.getMessageStatus(messageMetadata.getTopic(), messageMetadata.getSubscription(),
                     messageMetadata.getMessageId()));
@@ -134,7 +133,7 @@ public class MultiElasticsearchLogRepositoryTest implements LogSchemaAware {
     }
 
     private PublishedMessageTrace publishedMessageTrace(MessageMetadata messageMetadata, Map<String, String> extraRequestHeaders,
-                                                        long timestamp, PublishedMessageTraceStatus status) {
+                                                        long timestamp, PublishedMessageTraceStatus status, String storageDatacenter) {
         return new PublishedMessageTrace(messageMetadata.getMessageId(),
                 timestamp,
                 messageMetadata.getTopic(),
@@ -143,6 +142,8 @@ public class MultiElasticsearchLogRepositoryTest implements LogSchemaAware {
                 null,
                 CLUSTER_NAME,
                 extraRequestHeaders.entrySet().stream()
-                    .collect(extraRequestHeadersCollector()));
+                    .collect(extraRequestHeadersCollector()),
+                storageDatacenter
+                );
     }
 }

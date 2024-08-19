@@ -11,7 +11,7 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.common.collect.ImmutableSet;
 import jakarta.inject.Named;
 import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.api.Request;
+import org.eclipse.jetty.client.Request;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -283,11 +283,11 @@ public class ConsumerSenderConfiguration {
     @Bean
     public FutureAsyncTimeout futureAsyncTimeoutFactory(InstrumentedExecutorServiceFactory executorFactory,
                                                         SenderAsyncTimeoutProperties senderAsyncTimeoutProperties) {
-        ScheduledExecutorService timeoutExecutorService = executorFactory.getScheduledExecutorService(
-                "async-timeout",
-                senderAsyncTimeoutProperties.getThreadPoolSize(),
-                senderAsyncTimeoutProperties.isThreadPoolMonitoringEnabled()
-        );
+        ScheduledExecutorService timeoutExecutorService = executorFactory.scheduledExecutorBuilder(
+                        "async-timeout",
+                        senderAsyncTimeoutProperties.getThreadPoolSize()
+                ).withMonitoringEnabled(senderAsyncTimeoutProperties.isThreadPoolMonitoringEnabled())
+                .create();
         return new FutureAsyncTimeout(timeoutExecutorService);
     }
 }

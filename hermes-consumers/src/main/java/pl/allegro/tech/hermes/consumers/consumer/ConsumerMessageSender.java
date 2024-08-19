@@ -7,7 +7,12 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
-import pl.allegro.tech.hermes.consumers.consumer.rate.InflightsPool;
+import pl.allegro.tech.hermes.consumers.consumer.offset.PendingOffsets;
+import pl.allegro.tech.hermes.consumers.consumer.profiling.ConsumerProfiler;
+import pl.allegro.tech.hermes.consumers.consumer.profiling.ConsumerRun;
+import pl.allegro.tech.hermes.consumers.consumer.profiling.DefaultConsumerProfiler;
+import pl.allegro.tech.hermes.consumers.consumer.profiling.Measurement;
+import pl.allegro.tech.hermes.consumers.consumer.profiling.NoOpConsumerProfiler;
 import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.result.ErrorHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.SuccessHandler;
@@ -16,6 +21,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResultLogInfo;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
+import pl.allegro.tech.hermes.metrics.HermesCounter;
 import pl.allegro.tech.hermes.metrics.HermesTimer;
 import pl.allegro.tech.hermes.metrics.HermesTimerContext;
 
@@ -33,6 +39,7 @@ import java.util.concurrent.atomic.LongAdder;
 
 import static java.lang.String.format;
 import static org.apache.commons.lang3.math.NumberUtils.INTEGER_ZERO;
+import static pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset.subscriptionPartitionOffset;
 
 public class ConsumerMessageSender {
 
@@ -42,10 +49,12 @@ public class ConsumerMessageSender {
     private final List<ErrorHandler> errorHandlers;
     private final MessageSenderFactory messageSenderFactory;
     private final Clock clock;
-    private final InflightsPool inflight;
+    private final PendingOffsets pendingOffsets;
     private final SubscriptionLoadRecorder loadRecorder;
     private final HermesTimer consumerLatencyTimer;
+    private final HermesCounter retries;
     private final SerialConsumerRateLimiter rateLimiter;
+    private final HermesTimer rateLimiterAcquireTimer;
     private final FutureAsyncTimeout async;
     private final int asyncTimeoutMs;
     private final LongAdder inflightCount = new LongAdder();
@@ -62,7 +71,7 @@ public class ConsumerMessageSender {
                                  List<ErrorHandler> errorHandlers,
                                  SerialConsumerRateLimiter rateLimiter,
                                  ExecutorService deliveryReportingExecutor,
-                                 InflightsPool inflight,
+                                 PendingOffsets pendingOffsets,
                                  MetricsFacade metrics,
                                  int asyncTimeoutMs,
                                  FutureAsyncTimeout futureAsyncTimeout,
@@ -79,9 +88,11 @@ public class ConsumerMessageSender {
         this.asyncTimeoutMs = asyncTimeoutMs;
         this.messageSender = messageSender(subscription);
         this.subscription = subscription;
-        this.inflight = inflight;
+        this.pendingOffsets = pendingOffsets;
         this.consumerLatencyTimer = metrics.subscriptions().latency(subscription.getQualifiedName());
         metrics.subscriptions().registerInflightGauge(subscription.getQualifiedName(), this, sender -> sender.inflightCount.doubleValue());
+        this.retries = metrics.subscriptions().retries(subscription.getQualifiedName());
+        this.rateLimiterAcquireTimer = metrics.subscriptions().rateLimiterAcquire(subscription.getQualifiedName());
     }
 
     public void initialize() {
@@ -102,13 +113,14 @@ public class ConsumerMessageSender {
         }
     }
 
-    public void sendAsync(Message message) {
+    public void sendAsync(Message message, ConsumerProfiler profiler) {
         inflightCount.increment();
-        sendAsync(message, calculateMessageDelay(message.getPublishingTimestamp()));
+        sendAsync(message, calculateMessageDelay(message.getPublishingTimestamp()), profiler);
     }
 
-    private void sendAsync(Message message, int delayMillis) {
-        retrySingleThreadExecutor.schedule(() -> sendMessage(message), delayMillis, TimeUnit.MILLISECONDS);
+    private void sendAsync(Message message, int delayMillis, ConsumerProfiler profiler) {
+        profiler.measure(Measurement.SCHEDULE_MESSAGE_SENDING);
+        retrySingleThreadExecutor.schedule(() -> sendMessage(message, profiler), delayMillis, TimeUnit.MILLISECONDS);
     }
 
     private int calculateMessageDelay(long publishingMessageTimestamp) {
@@ -129,18 +141,27 @@ public class ConsumerMessageSender {
      * Method is calling MessageSender and is registering listeners to handle response.
      * Main responsibility of this method is that no message will be fully processed or rejected without release on semaphore.
      */
-    private void sendMessage(final Message message) {
+    private void sendMessage(final Message message, ConsumerProfiler profiler) {
         loadRecorder.recordSingleOperation();
+        profiler.measure(Measurement.ACQUIRE_RATE_LIMITER);
+        acquireRateLimiterWithTimer();
         HermesTimerContext timer = consumerLatencyTimer.time();
+        profiler.measure(Measurement.MESSAGE_SENDER_SEND);
         CompletableFuture<MessageSendingResult> response = messageSender.send(message);
 
-        response.thenAcceptAsync(new ResponseHandlingListener(message, timer), deliveryReportingExecutor)
+        response.thenAcceptAsync(new ResponseHandlingListener(message, timer, profiler), deliveryReportingExecutor)
                 .exceptionally(e -> {
                     logger.error(
                             "An error occurred while handling message sending response of subscription {} [partition={}, offset={}, id={}]",
                             subscription.getQualifiedName(), message.getPartition(), message.getOffset(), message.getId(), e);
                     return null;
                 });
+    }
+
+    private void acquireRateLimiterWithTimer() {
+        HermesTimerContext acquireTimer = rateLimiterAcquireTimer.time();
+        rateLimiter.acquire();
+        acquireTimer.close();
     }
 
     private MessageSender messageSender(Subscription subscription) {
@@ -189,20 +210,26 @@ public class ConsumerMessageSender {
         return message.isTtlExceeded(remainingTtl);
     }
 
-    private void handleFailedSending(Message message, MessageSendingResult result) {
-        retrySending(message, result);
+    private void handleFailedSending(Message message, MessageSendingResult result, ConsumerProfiler profiler) {
         errorHandlers.forEach(h -> h.handleFailed(message, subscription, result));
+        retrySendingOrDiscard(message, result, profiler);
     }
 
-    private void retrySending(Message message, MessageSendingResult result) {
+    private void retrySendingOrDiscard(Message message, MessageSendingResult result, ConsumerProfiler profiler) {
         List<URI> succeededUris = result.getSucceededUris(ConsumerMessageSender.this::messageSentSucceeded);
         message.incrementRetryCounter(succeededUris);
 
         long retryDelay = extractRetryDelay(message, result);
         if (shouldAttemptResending(message, result, retryDelay)) {
-            retrySingleThreadExecutor.schedule(() -> resend(message, result), retryDelay, TimeUnit.MILLISECONDS);
+            retries.increment();
+            profiler.flushMeasurements(ConsumerRun.RETRIED);
+            ConsumerProfiler resendProfiler = subscription.isProfilingEnabled()
+                    ? new DefaultConsumerProfiler(subscription.getQualifiedName(), subscription.getProfilingThresholdMs()) : new NoOpConsumerProfiler();
+            resendProfiler.startMeasurements(Measurement.SCHEDULE_RESEND);
+            resendProfiler.saveRetryDelay(retryDelay);
+            retrySingleThreadExecutor.schedule(() -> resend(message, result, resendProfiler), retryDelay, TimeUnit.MILLISECONDS);
         } else {
-            handleMessageDiscarding(message, result);
+            handleMessageDiscarding(message, result, profiler);
         }
     }
 
@@ -216,11 +243,11 @@ public class ConsumerMessageSender {
         return result.getRetryAfterMillis().map(delay -> Math.min(delay, ttl)).orElse(defaultBackoff);
     }
 
-    private void resend(Message message, MessageSendingResult result) {
+    private void resend(Message message, MessageSendingResult result, ConsumerProfiler profiler) {
         if (result.isLoggable()) {
             result.getLogInfo().forEach(logInfo -> logResultInfo(message, logInfo));
         }
-        sendMessage(message);
+        sendMessage(message, profiler);
     }
 
     private void logResultInfo(Message message, MessageSendingResultLogInfo logInfo) {
@@ -231,16 +258,20 @@ public class ConsumerMessageSender {
                 logInfo.getFailure());
     }
 
-    private void handleMessageDiscarding(Message message, MessageSendingResult result) {
-        inflight.release();
+    private void handleMessageDiscarding(Message message, MessageSendingResult result, ConsumerProfiler profiler) {
+        pendingOffsets.markAsProcessed(subscriptionPartitionOffset(subscription.getQualifiedName(),
+                message.getPartitionOffset(), message.getPartitionAssignmentTerm()));
         inflightCount.decrement();
         errorHandlers.forEach(h -> h.handleDiscarded(message, subscription, result));
+        profiler.flushMeasurements(ConsumerRun.DISCARDED);
     }
 
-    private void handleMessageSendingSuccess(Message message, MessageSendingResult result) {
-        inflight.release();
+    private void handleMessageSendingSuccess(Message message, MessageSendingResult result, ConsumerProfiler profiler) {
+        pendingOffsets.markAsProcessed(subscriptionPartitionOffset(subscription.getQualifiedName(),
+                message.getPartitionOffset(), message.getPartitionAssignmentTerm()));
         inflightCount.decrement();
         successHandlers.forEach(h -> h.handleSuccess(message, subscription, result));
+        profiler.flushMeasurements(ConsumerRun.DELIVERED);
     }
 
     private boolean messageSentSucceeded(MessageSendingResult result) {
@@ -264,21 +295,24 @@ public class ConsumerMessageSender {
 
         private final Message message;
         private final HermesTimerContext timer;
+        private final ConsumerProfiler profiler;
 
-        public ResponseHandlingListener(Message message, HermesTimerContext timer) {
+        public ResponseHandlingListener(Message message, HermesTimerContext timer, ConsumerProfiler profiler) {
             this.message = message;
             this.timer = timer;
+            this.profiler = profiler;
         }
 
         @Override
         public void accept(MessageSendingResult result) {
             timer.close();
             loadRecorder.recordSingleOperation();
+            profiler.measure(Measurement.HANDLERS);
             if (running) {
                 if (result.succeeded()) {
-                    handleMessageSendingSuccess(message, result);
+                    handleMessageSendingSuccess(message, result, profiler);
                 } else {
-                    handleFailedSending(message, result);
+                    handleFailedSending(message, result, profiler);
                 }
             } else {
                 logger.warn("Process of subscription {} is not running. "

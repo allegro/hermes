@@ -1,36 +1,18 @@
 package pl.allegro.tech.hermes.tracker.frontend;
 
 import com.google.common.collect.ImmutableMap;
-import org.testng.ITestContext;
-import org.testng.ITestNGMethod;
-import org.testng.annotations.BeforeSuite;
-import org.testng.annotations.BeforeTest;
-import org.testng.annotations.Listeners;
-import org.testng.annotations.Test;
-import pl.allegro.tech.hermes.api.PublishedMessageTraceStatus;
-import pl.allegro.tech.hermes.test.helper.retry.Retry;
-import pl.allegro.tech.hermes.test.helper.retry.RetryListener;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.Map;
 
 import static java.lang.System.currentTimeMillis;
-import static pl.allegro.tech.hermes.api.PublishedMessageTraceStatus.ERROR;
-import static pl.allegro.tech.hermes.api.PublishedMessageTraceStatus.INFLIGHT;
-import static pl.allegro.tech.hermes.api.PublishedMessageTraceStatus.SUCCESS;
 
-@Listeners({RetryListener.class})
 public abstract class AbstractLogRepositoryTest {
 
     private LogRepository logRepository;
 
-    @BeforeSuite
-    public void setUpRetry(ITestContext context) {
-        for (ITestNGMethod method : context.getAllTestMethods()) {
-            method.setRetryAnalyzerClass(Retry.class);
-        }
-    }
-
-    @BeforeTest
+    @Before
     public void setup() {
         logRepository = createRepository();
     }
@@ -43,13 +25,14 @@ public abstract class AbstractLogRepositoryTest {
         String id = "publishedMessage";
         String topic = "group.sentMessage";
         String hostname = "172.16.254.1";
+        String datacenter = "dc1";
         Map<String, String> extraRequestHeaders = ImmutableMap.of("header1", "value1", "header2", "value2");
 
         // when
-        logRepository.logPublished(id, currentTimeMillis(), topic, hostname, extraRequestHeaders);
+        logRepository.logPublished(id, currentTimeMillis(), topic, hostname, datacenter, extraRequestHeaders);
 
         // then
-        awaitUntilMessageIsPersisted(topic, id, hostname, SUCCESS, "header1", "value1", "header2", "value2");
+        awaitUntilSuccessMessageIsPersisted(topic, id, hostname, datacenter, "header1", "value1", "header2", "value2");
     }
 
     @Test
@@ -64,7 +47,7 @@ public abstract class AbstractLogRepositoryTest {
         logRepository.logError(id, currentTimeMillis(), topic, "reason", hostname, extraRequestHeaders);
 
         // then
-        awaitUntilMessageIsPersisted(topic, id, "reason", hostname, ERROR, "header1", "value1", "header2", "value2");
+        awaitUntilErrorMessageIsPersisted(topic, id, "reason", hostname, "header1", "value1", "header2", "value2");
     }
 
     @Test
@@ -79,25 +62,33 @@ public abstract class AbstractLogRepositoryTest {
         logRepository.logInflight(id, currentTimeMillis(), topic, hostname, extraRequestHeaders);
 
         // then
-        awaitUntilMessageIsPersisted(topic, id, hostname, INFLIGHT, "header1", "value1", "header2", "value2");
+        awaitUntilInflightMessageIsPersisted(topic, id, hostname, "header1", "value1", "header2", "value2");
     }
 
-    protected abstract void awaitUntilMessageIsPersisted(
-        String topic,
-        String id,
-        String remoteHostname,
-        PublishedMessageTraceStatus status,
-        String... extraRequestHeadersKeywords
+    protected abstract void awaitUntilSuccessMessageIsPersisted(
+            String topic,
+            String id,
+            String remoteHostname,
+            String storageDatacenter,
+            String... extraRequestHeadersKeywords
     )
-        throws Exception;
+            throws Exception;
 
-    protected abstract void awaitUntilMessageIsPersisted(
-        String topic,
-        String id,
-        String reason,
-        String remoteHostname,
-        PublishedMessageTraceStatus status,
-        String... extraRequestHeadersKeywords
+    protected abstract void awaitUntilInflightMessageIsPersisted(
+            String topic,
+            String id,
+            String remoteHostname,
+            String... extraRequestHeadersKeywords
     )
-        throws Exception;
+            throws Exception;
+
+
+    protected abstract void awaitUntilErrorMessageIsPersisted(
+            String topic,
+            String id,
+            String reason,
+            String remoteHostname,
+            String... extraRequestHeadersKeywords
+    )
+            throws Exception;
 }

@@ -39,7 +39,7 @@ public class TopicName {
 
         int index = qualifiedName.lastIndexOf(GROUP_SEPARATOR);
         if (index == -1) {
-            throw new IllegalArgumentException("Missing group");
+            throw new IllegalArgumentException("Invalid qualified name " + qualifiedName);
         }
 
         String groupName = qualifiedName.substring(0, index);

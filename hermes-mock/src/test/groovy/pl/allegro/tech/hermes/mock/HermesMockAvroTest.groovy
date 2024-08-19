@@ -3,10 +3,12 @@ package pl.allegro.tech.hermes.mock
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.avro.Schema
 import org.apache.avro.reflect.ReflectData
-import wiremock.org.apache.hc.core5.http.HttpStatus;
+import org.springframework.util.MultiValueMap
+import org.springframework.util.MultiValueMapAdapter
+import pl.allegro.tech.hermes.test.helper.client.integration.FrontendTestClient
+import wiremock.org.apache.hc.core5.http.HttpStatus
 import org.junit.ClassRule
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader
-import pl.allegro.tech.hermes.test.helper.endpoint.HermesPublisher
 import pl.allegro.tech.hermes.test.helper.util.Ports
 import spock.lang.Shared
 import spock.lang.Specification
@@ -33,7 +35,7 @@ class HermesMockAvroTest extends Specification {
 
     JsonAvroConverter jsonAvroConverter = new JsonAvroConverter()
 
-    HermesPublisher publisher = new HermesPublisher("http://localhost:$port")
+    FrontendTestClient publisher = new FrontendTestClient(port)
 
     def setup() {
         hermes.resetReceivedRequest()
@@ -68,8 +70,8 @@ class HermesMockAvroTest extends Specification {
             hermes.expect().singleMessageOnTopic(topicName)
             hermes.expect().singleMessageOnTopic(topicName2)
 
-            response.status == HttpStatus.SC_CREATED
-            response2.status == HttpStatus.SC_CREATED
+            response.expectStatus().isCreated()
+            response2.expectStatus().isCreated()
     }
 
     def "should receive an Avro message matched by pattern different nullable schema"() {
@@ -99,8 +101,8 @@ class HermesMockAvroTest extends Specification {
             hermes.expect().singleMessageOnTopic(topicName)
             hermes.expect().singleMessageOnTopic(topicName2)
 
-            response.status == HttpStatus.SC_CREATED
-            response2.status == HttpStatus.SC_CREATED
+            response.expectStatus().isCreated()
+            response2.expectStatus().isCreated()
     }
 
     def "should receive an Avro message matched by pattern"() {
@@ -118,7 +120,7 @@ class HermesMockAvroTest extends Specification {
 
         then: "check for any single message on the topic and check for correct response"
             hermes.expect().singleMessageOnTopic(topicName)
-            response.status == HttpStatus.SC_CREATED
+            response.expectStatus().isCreated()
     }
 
     def "should not match avro pattern"() {
@@ -135,7 +137,7 @@ class HermesMockAvroTest extends Specification {
             def response = publish(topicName, message)
 
         then: "check for correct response status"
-            response.status == HttpStatus.SC_NOT_FOUND
+            response.expectStatus().isNotFound()
     }
 
     def "should receive an Avro message"() {
@@ -149,7 +151,7 @@ class HermesMockAvroTest extends Specification {
         then: "check for any single message on the topic and check for single specific avro message"
             hermes.expect().singleMessageOnTopic(topicName)
             hermes.expect().singleAvroMessageOnTopic(topicName, schema)
-            response.status == HttpStatus.SC_CREATED
+            response.expectStatus().isCreated()
     }
 
     def "should respond with a delay"() {
@@ -377,8 +379,8 @@ class HermesMockAvroTest extends Specification {
         def response2 = publish(topicName, new TestMessage(pattern2, value))
 
         then: "check for any single message on the topic and check for correct response"
-        response1.status == HttpStatus.SC_CREATED
-        response2.status == HttpStatus.SC_CREATED
+        response1.expectStatus().isCreated()
+        response2.expectStatus().isCreated()
 
         when: "first stub mapping is removed and two messages are sent again"
         hermes.define().removeStubMapping(avroTopicStub1)
@@ -386,8 +388,8 @@ class HermesMockAvroTest extends Specification {
         response2 = publish(topicName, new TestMessage(pattern2, value))
 
         then: "removed stub mapping should response with not found, second stub on same topic should return 201 status"
-        response1.status == HttpStatus.SC_NOT_FOUND
-        response2.status == HttpStatus.SC_CREATED
+        response1.expectStatus().isNotFound()
+        response2.expectStatus().isCreated()
     }
 
     def asAvro(TestMessage message) {
@@ -419,6 +421,7 @@ class HermesMockAvroTest extends Specification {
     }
 
     def publish(String topic, byte[] avro) {
-        publisher.publish(topic, avro)
+        MultiValueMap headers = new MultiValueMapAdapter<>(Map.of("Content-Type", List.of("avro/binary")))
+        publisher.publish(topic, avro, headers)
     }
 }

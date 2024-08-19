@@ -327,10 +327,10 @@ const en_US = {
       modificationDate: 'Modification date',
       tooltips: {
         acknowledgement:
-          'Specifies the strength of guarantees that acknowledged message was indeed persisted. In ' +
-          '"Leader" mode ACK is required only from topic leader, which is fast and gives 99.99999% guarantee. It might ' +
-          'be not enough when cluster is unstable. "All" mode means message needs to be saved on all replicas before ' +
-          'sending ACK, which is quite slow but gives 100% guarantee that message has been persisted.',
+          'Specifies the strength of guarantees that acknowledged message was indeed persisted. ' +
+          'With `ACK leader` message writes are replicated asynchronously, thus the acknowledgment latency will be low. However, message write may be lost when there is a topic leadership change - e.g. due to rebalance or broker restart. ' +
+          'With `ACK all` messages writes are synchronously replicated to replicas. Write acknowledgement latency will be much higher than with leader ACK,' +
+          ' it will also have higher variance due to tail latency. However, messages will be persisted as long as the whole replica set does not go down simultaneously.',
         retentionTime:
           'For how many hours/days message is available for subscribers after being published.',
         authorizedPublishers:
@@ -472,8 +472,13 @@ const en_US = {
       subscriberLatency: 'Subscriber latency',
       delivered: 'Delivered',
       discarded: 'Discarded',
+      timeouts: 'Timeouts',
+      otherErrors: 'Other errors',
+      codes2xx: 'Codes 2xx',
+      codes4xx: 'Codes 4xx',
+      codes5xx: 'Codes 5xx',
+      retries: 'Retries',
       lag: 'Lag',
-      outputRate: 'Output rate',
       tooltips: {
         subscriberLatency:
           'Latency of acknowledging messages by subscribing service as ' +
@@ -481,10 +486,8 @@ const en_US = {
         lag:
           'Total number of events waiting to be delivered. Each subscription ' +
           'has a "natural" lag, which depends on production rate.',
-        outputRate:
-          'Maximum sending rate calculated based on receiving service ' +
-          'performance. For well-performing service output rate should be ' +
-          'equal to rate limit.',
+        retries:
+          'Total number of message sending retries. Retrying messages significantly reduces the rate on subscriptions.',
       },
     },
     propertiesCard: {
@@ -507,7 +510,7 @@ const en_US = {
       retryClientErrors: 'Retry on 4xx status',
       retryBackoff: 'Retry backoff',
       backoffMultiplier: 'Retry backoff multiplier',
-      backoffMaxInterval: 'Retry backoff max interval',
+      backoffMaxIntervalInSec: 'Retry backoff max interval',
       monitoringSeverity: 'Monitoring severity',
       monitoringReaction: 'Monitoring reaction',
       http2: 'Deliver using http/2',

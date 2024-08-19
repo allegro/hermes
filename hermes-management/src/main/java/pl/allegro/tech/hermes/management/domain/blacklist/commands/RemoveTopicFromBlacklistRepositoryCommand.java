@@ -23,7 +23,7 @@ public class RemoveTopicFromBlacklistRepositoryCommand extends RepositoryCommand
     }
 
     @Override
-    public void rollback(DatacenterBoundRepositoryHolder<TopicBlacklistRepository> holder) {
+    public void rollback(DatacenterBoundRepositoryHolder<TopicBlacklistRepository> holder, Exception exception) {
         if (exists) {
             holder.getRepository().add(qualifiedTopicName);
         }

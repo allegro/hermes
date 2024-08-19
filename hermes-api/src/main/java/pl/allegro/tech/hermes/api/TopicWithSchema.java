@@ -18,10 +18,10 @@ public class TopicWithSchema extends Topic {
 
     public TopicWithSchema(Topic topic, String schema) {
         this(schema, topic.getQualifiedName(), topic.getDescription(), topic.getOwner(), topic.getRetentionTime(),
-                topic.isJsonToAvroDryRunEnabled(), topic.getAck(), topic.isTrackingEnabled(), topic.wasMigratedFromJsonType(),
-                topic.isSchemaIdAwareSerializationEnabled(), topic.getContentType(), topic.getMaxMessageSize(),
-                topic.getPublishingAuth(), topic.isSubscribingRestricted(), topic.getOfflineStorage(), topic.getLabels(),
-                topic.getCreatedAt(), topic.getModifiedAt());
+                topic.isJsonToAvroDryRunEnabled(), topic.getAck(), topic.isFallbackToRemoteDatacenterEnabled(),
+                topic.getChaos(), topic.isTrackingEnabled(), topic.wasMigratedFromJsonType(), topic.isSchemaIdAwareSerializationEnabled(),
+                topic.getContentType(), topic.getMaxMessageSize(), topic.getPublishingAuth(), topic.isSubscribingRestricted(),
+                topic.getOfflineStorage(), topic.getLabels(), topic.getCreatedAt(), topic.getModifiedAt());
     }
 
     @JsonCreator
@@ -32,6 +32,10 @@ public class TopicWithSchema extends Topic {
                            @JsonProperty("retentionTime") RetentionTime retentionTime,
                            @JsonProperty("jsonToAvroDryRun") boolean jsonToAvroDryRunEnabled,
                            @JsonProperty("ack") Ack ack,
+                           @JsonProperty("fallbackToRemoteDatacenterEnabled")
+                           @JacksonInject(value = DEFAULT_FALLBACK_TO_REMOTE_DATACENTER_KEY, useInput = OptBoolean.TRUE)
+                           boolean fallbackToRemoteDatacenterEnabled,
+                           @JsonProperty("chaos") PublishingChaosPolicy chaos,
                            @JsonProperty("trackingEnabled") boolean trackingEnabled,
                            @JsonProperty("migratedFromJsonType") boolean migratedFromJsonType,
                            @JsonProperty("schemaIdAwareSerializationEnabled")
@@ -45,9 +49,10 @@ public class TopicWithSchema extends Topic {
                            @JsonProperty("labels") Set<TopicLabel> labels,
                            @JsonProperty("createdAt") Instant createdAt,
                            @JsonProperty("modifiedAt") Instant modifiedAt) {
-        super(qualifiedName, description, owner, retentionTime, jsonToAvroDryRunEnabled, ack, trackingEnabled,
-                migratedFromJsonType, schemaIdAwareSerializationEnabled, contentType, maxMessageSize,
-                publishingAuth, subscribingRestricted, offlineStorage, labels, createdAt, modifiedAt);
+        super(qualifiedName, description, owner, retentionTime, jsonToAvroDryRunEnabled, ack,
+                fallbackToRemoteDatacenterEnabled, chaos, trackingEnabled, migratedFromJsonType, schemaIdAwareSerializationEnabled,
+                contentType, maxMessageSize, publishingAuth, subscribingRestricted, offlineStorage, labels, createdAt,
+                modifiedAt);
         this.topic = convertToTopic();
         this.schema = schema;
     }
@@ -62,10 +67,10 @@ public class TopicWithSchema extends Topic {
 
     private Topic convertToTopic() {
         return new Topic(this.getQualifiedName(), this.getDescription(), this.getOwner(), this.getRetentionTime(),
-                this.isJsonToAvroDryRunEnabled(), this.getAck(), this.isTrackingEnabled(), this.wasMigratedFromJsonType(),
-                this.isSchemaIdAwareSerializationEnabled(), this.getContentType(), this.getMaxMessageSize(),
-                this.getPublishingAuth(), this.isSubscribingRestricted(), this.getOfflineStorage(), this.getLabels(),
-                this.getCreatedAt(), this.getModifiedAt());
+                this.isJsonToAvroDryRunEnabled(), this.getAck(), this.isFallbackToRemoteDatacenterEnabled(), this.getChaos(),
+                this.isTrackingEnabled(), this.wasMigratedFromJsonType(), this.isSchemaIdAwareSerializationEnabled(),
+                this.getContentType(), this.getMaxMessageSize(), this.getPublishingAuth(), this.isSubscribingRestricted(),
+                this.getOfflineStorage(), this.getLabels(), this.getCreatedAt(), this.getModifiedAt());
     }
 
     public String getSchema() {

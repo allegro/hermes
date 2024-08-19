@@ -28,7 +28,7 @@ public class CreateTopicConstraintsRepositoryCommand extends RepositoryCommand<W
     }
 
     @Override
-    public void rollback(DatacenterBoundRepositoryHolder<WorkloadConstraintsRepository> holder) {
+    public void rollback(DatacenterBoundRepositoryHolder<WorkloadConstraintsRepository> holder, Exception exception) {
         if (!exist) {
             holder.getRepository().deleteConstraints(topicName);
         }

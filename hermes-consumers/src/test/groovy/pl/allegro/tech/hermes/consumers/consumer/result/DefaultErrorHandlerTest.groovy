@@ -5,10 +5,8 @@ import pl.allegro.tech.hermes.api.TrackingMode
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog
 import pl.allegro.tech.hermes.common.metric.MetricsFacade
 import pl.allegro.tech.hermes.consumers.consumer.Message
-import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult
 import pl.allegro.tech.hermes.consumers.test.MessageBuilder
-import pl.allegro.tech.hermes.test.helper.metrics.TestMetricsFacadeFactory
 import pl.allegro.tech.hermes.tracker.consumers.Trackers
 import spock.lang.Specification
 
@@ -17,8 +15,6 @@ import java.time.Clock
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription
 
 class DefaultErrorHandlerTest extends Specification {
-
-    private OffsetQueue offsetQueue = new OffsetQueue(TestMetricsFacadeFactory.create(), 200_000)
 
     private UndeliveredMessageLog undeliveredLog = Mock(UndeliveredMessageLog)
 
@@ -30,9 +26,9 @@ class DefaultErrorHandlerTest extends Specification {
             .withTrackingMode(TrackingMode.TRACK_ALL).build()
 
     private DefaultErrorHandler handler = new DefaultErrorHandler(
-            offsetQueue, Stub(MetricsFacade), undeliveredLog, Clock.systemUTC(), trackers, "cluster", subscription.qualifiedName)
+            Stub(MetricsFacade), undeliveredLog, Clock.systemUTC(), trackers, "cluster", subscription.qualifiedName)
 
-    def "should save tracking information on message failure but not commit message"() {
+    def "should save tracking information on message failure"() {
         given:
         Message message = MessageBuilder.withTestMessage().withPartitionOffset('kafka_topic', 0, 123L).build()
         MessageSendingResult result = MessageSendingResult.failedResult(500)
@@ -42,10 +38,9 @@ class DefaultErrorHandlerTest extends Specification {
 
         then:
         sendingTracker.hasFailedLog('kafka_topic', 0, 123L)
-        offsetQueue.drainCommittedOffsets({ o -> assert !(o.partition == 0 && o.offset == 123L) })
     }
 
-    def "should commit message and save tracking information on message discard"() {
+    def "should save tracking information on message discard"() {
         given:
         Message message = MessageBuilder.withTestMessage().withPartitionOffset('kafka_topic', 0, 123L).build()
         MessageSendingResult result = MessageSendingResult.failedResult(500)
@@ -55,6 +50,5 @@ class DefaultErrorHandlerTest extends Specification {
 
         then:
         sendingTracker.hasDiscardedLog('kafka_topic', 0, 123L)
-        offsetQueue.drainCommittedOffsets({ o -> assert o.partition == 0 && o.offset == 123L })
     }
 }

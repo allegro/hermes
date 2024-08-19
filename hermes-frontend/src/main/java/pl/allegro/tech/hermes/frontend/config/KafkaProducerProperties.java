@@ -20,6 +20,8 @@ public class KafkaProducerProperties implements KafkaProducerParameters {
 
     private Duration requestTimeout = Duration.ofMinutes(30);
 
+    private Duration deliveryTimeout = Duration.ofMinutes(30);
+
     private int batchSize = 16 * 1024;
 
     private int tcpSendBuffer = 128 * 1024;
@@ -33,6 +35,8 @@ public class KafkaProducerProperties implements KafkaProducerParameters {
     private int maxInflightRequestsPerConnection = 5;
 
     private boolean reportNodeMetricsEnabled = false;
+
+    private boolean idempotenceEnabled = false;
 
     @Override
     public Duration getMaxBlock() {
@@ -149,5 +153,22 @@ public class KafkaProducerProperties implements KafkaProducerParameters {
 
     public void setReportNodeMetricsEnabled(boolean reportNodeMetricsEnabled) {
         this.reportNodeMetricsEnabled = reportNodeMetricsEnabled;
+    }
+
+    @Override
+    public Duration getDeliveryTimeout() {
+        return deliveryTimeout;
+    }
+
+    public void setDeliveryTimeout(Duration deliveryTimeout) {
+        this.deliveryTimeout = deliveryTimeout;
+    }
+
+    public boolean isIdempotenceEnabled() {
+        return idempotenceEnabled;
+    }
+
+    public void setIdempotenceEnabled(boolean idempotenceEnabled) {
+        this.idempotenceEnabled = idempotenceEnabled;
     }
 }

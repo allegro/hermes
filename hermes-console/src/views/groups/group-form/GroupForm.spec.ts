@@ -79,8 +79,6 @@ describe('GroupForm', () => {
     );
 
     // then
-    expect(
-      getByText('groups.groupForm.save').closest('button'),
-    ).not.toBeEnabled();
+    expect(getByText('groups.groupForm.save').closest('button')).toBeEnabled();
   });
 });

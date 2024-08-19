@@ -24,7 +24,7 @@ public class UpdateCredentialsRepositoryCommand extends RepositoryCommand<Creden
     }
 
     @Override
-    public void rollback(DatacenterBoundRepositoryHolder<CredentialsRepository> holder) {
+    public void rollback(DatacenterBoundRepositoryHolder<CredentialsRepository> holder, Exception exception) {
     }
 
     @Override

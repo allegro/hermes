@@ -16,7 +16,6 @@ import pl.allegro.tech.hermes.consumers.config.SubscriptionConfiguration;
 import pl.allegro.tech.hermes.consumers.config.WorkloadProperties;
 import pl.allegro.tech.hermes.consumers.config.ZookeeperProperties;
 import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignmentState;
-import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.health.ConsumerMonitor;
 import pl.allegro.tech.hermes.consumers.message.undelivered.UndeliveredMessageLogPersister;
 import pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistry;
@@ -56,9 +55,9 @@ import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
-import static com.jayway.awaitility.Awaitility.await;
-import static com.jayway.awaitility.Duration.ONE_SECOND;
 import static java.util.stream.Collectors.toList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.mock;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
@@ -138,7 +137,7 @@ class ConsumerTestRuntimeEnvironment {
         workloadProperties.setMonitorScanInterval(Duration.ofSeconds(1));
 
         ModelAwareZookeeperNotifyingCache modelAwareCache = new ModelAwareZookeeperNotifyingCacheFactory(
-                curator, zookeeperProperties
+                curator, metricsSupplier.get(), zookeeperProperties
         ).provide();
 
         InternalNotificationsBus notificationsBus =
@@ -154,13 +153,13 @@ class ConsumerTestRuntimeEnvironment {
                 new ZookeeperSubscriptionIdProvider(curator, zookeeperPaths), new CommonConsumerProperties());
 
         ConsumerAssignmentCache consumerAssignmentCache =
-            new ConsumerAssignmentCache(
-                curator,
-                workloadProperties.getNodeId(),
-                kafkaProperties.getClusterName(),
-                zookeeperPaths,
-                subscriptionIds
-            );
+                new ConsumerAssignmentCache(
+                        curator,
+                        workloadProperties.getNodeId(),
+                        kafkaProperties.getClusterName(),
+                        zookeeperPaths,
+                        subscriptionIds
+                );
         try {
             consumerAssignmentCache.start();
         } catch (Exception e) {
@@ -168,22 +167,22 @@ class ConsumerTestRuntimeEnvironment {
         }
 
         ClusterAssignmentCache clusterAssignmentCache =
-            new ClusterAssignmentCache(
-                curator,
-                kafkaProperties.getClusterName(),
-                zookeeperPaths,
-                subscriptionIds,
-                nodesRegistry
-            );
+                new ClusterAssignmentCache(
+                        curator,
+                        kafkaProperties.getClusterName(),
+                        zookeeperPaths,
+                        subscriptionIds,
+                        nodesRegistry
+                );
 
         ConsumerAssignmentRegistry consumerAssignmentRegistry =
-            new ConsumerAssignmentRegistry(
-                curator,
-                workloadProperties.getRegistryBinaryEncoderAssignmentsBufferSizeBytes(),
-                kafkaProperties.getClusterName(),
-                zookeeperPaths,
-                subscriptionIds
-            );
+                new ConsumerAssignmentRegistry(
+                        curator,
+                        workloadProperties.getRegistryBinaryEncoderAssignmentsBufferSizeBytes(),
+                        kafkaProperties.getClusterName(),
+                        zookeeperPaths,
+                        subscriptionIds
+                );
 
         return new WorkloadSupervisor(
                 consumersSupervisor,
@@ -222,15 +221,13 @@ class ConsumerTestRuntimeEnvironment {
         return new NonblockingConsumersSupervisor(commonConsumerProperties,
                 new ConsumersExecutorService(new CommonConsumerProperties().getThreadPoolSize(), metrics),
                 consumerFactory,
-                mock(OffsetQueue.class),
                 partitionAssignmentState,
                 mock(Retransmitter.class),
                 mock(UndeliveredMessageLogPersister.class),
                 subscriptionRepository,
                 metrics,
                 mock(ConsumerMonitor.class),
-                Clock.systemDefaultZone(),
-                Duration.ofSeconds(60));
+                Clock.systemDefaultZone());
     }
 
     ConsumersRuntimeMonitor monitor(String consumerId,
@@ -239,7 +236,7 @@ class ConsumerTestRuntimeEnvironment {
                                     Duration monitorScanInterval) {
         CuratorFramework curator = consumerZookeeperConnections.get(consumerId);
         ModelAwareZookeeperNotifyingCache modelAwareCache =
-                new ModelAwareZookeeperNotifyingCacheFactory(curator, zookeeperProperties).provide();
+                new ModelAwareZookeeperNotifyingCacheFactory(curator, metricsSupplier.get(), zookeeperProperties).provide();
         InternalNotificationsBus notificationsBus =
                 new ZookeeperInternalNotificationBus(objectMapper, modelAwareCache);
         SubscriptionsCache subscriptionsCache = new NotificationsBasedSubscriptionCache(
@@ -270,8 +267,9 @@ class ConsumerTestRuntimeEnvironment {
         consumerZookeeperConnections.get(node.consumerId()).close();
     }
 
-    void killAll() {
+    void cleanState() {
         consumerZookeeperConnections.values().forEach(CuratorFramework::close);
+        subscriptionsCaches.clear();
     }
 
     private WorkloadSupervisor startNode(WorkloadSupervisor workloadSupervisor) {
@@ -285,7 +283,7 @@ class ConsumerTestRuntimeEnvironment {
     }
 
     void waitForRegistration(String consumerId) {
-        await().atMost(adjust(ONE_SECOND)).until(() -> isRegistered(consumerId));
+        await().atMost(adjust(Duration.ofSeconds(1))).until(() -> isRegistered(consumerId));
     }
 
     private boolean isRegistered(String nodeId) {
@@ -297,9 +295,7 @@ class ConsumerTestRuntimeEnvironment {
     }
 
     void awaitUntilAssignmentExists(SubscriptionName subscription, WorkloadSupervisor node) {
-        await().atMost(adjust(ONE_SECOND)).until(() -> {
-            node.assignedSubscriptions().contains(subscription);
-        });
+        await().atMost(adjust(Duration.ofSeconds(2))).until(() -> node.assignedSubscriptions().contains(subscription));
     }
 
     List<SubscriptionName> createSubscription(int howMany) {
@@ -321,11 +317,11 @@ class ConsumerTestRuntimeEnvironment {
             topicRepository.createTopic(topic(subscription.getTopicName()).build());
         }
         subscriptionRepository.createSubscription(subscription);
-        await().atMost(adjust(ONE_SECOND)).until(
+        await().atMost(adjust(Duration.ofSeconds(2))).untilAsserted(
                 () -> {
-                    subscriptionRepository.subscriptionExists(subscription.getTopicName(), subscription.getName());
+                    assertThat(subscriptionRepository.subscriptionExists(subscription.getTopicName(), subscription.getName())).isTrue();
                     subscriptionsCaches.forEach(subscriptionsCache ->
-                            subscriptionsCache.listActiveSubscriptionNames().contains(subscriptionName));
+                            assertThat(subscriptionsCache.listActiveSubscriptionNames().contains(subscriptionName)).isTrue());
                 }
         );
         return subscription.getQualifiedName();

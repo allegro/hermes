@@ -1,0 +1,83 @@
+repositories {
+    mavenCentral()
+    maven { url 'https://repository.jboss.org/nexus/content/groups/public' }
+}
+
+dependencies {
+    testImplementation project(':hermes-common')
+    testImplementation project(':hermes-test-helper')
+    testImplementation project(':hermes-management')
+    testImplementation project(':hermes-consumers')
+    testImplementation project(':hermes-frontend')
+    testImplementation project(':hermes-client')
+
+    testImplementation group: 'org.testcontainers', name: 'testcontainers', version: versions.testcontainers
+    testImplementation group: 'org.testcontainers', name: 'gcloud', version: versions.testcontainers
+    testImplementation group: 'com.squareup.okhttp3', name: 'okhttp', version: versions.okhttp
+    testImplementation group: 'org.springframework', name: 'spring-webflux', version: versions.spring_web
+    testImplementation group: 'org.springframework', name: 'spring-test', version: versions.spring_web
+    testImplementation group: 'org.eclipse.jetty', name: 'jetty-reactive-httpclient', version: '4.0.3'
+    testImplementation group: 'org.awaitility', name: 'awaitility', version: '4.2.0'
+    testImplementation group: 'org.reactivestreams', name: 'reactive-streams', version: '1.0.4'
+    // TODO: can we update it ? Which version of server our clients use ?
+    testImplementation(group: 'org.hornetq', name: 'hornetq-jms-server', version: '2.4.1.Final') {
+        exclude module: 'hornetq-native'
+    }
+
+    testImplementation group: 'org.assertj', name: 'assertj-core', version: versions.assertj
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: versions.junit_jupiter
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: versions.junit_jupiter
+    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: versions.junit_jupiter
+}
+
+def common = sourceSets.create('common')
+configurations.named(common.implementationConfigurationName).configure {
+    extendsFrom(configurations.testImplementation)
+}
+configurations.named(common.runtimeOnlyConfigurationName).configure {
+    extendsFrom(configurations.testRuntimeOnly)
+}
+
+registerIntegrationTestTask('integrationTest', common)
+registerIntegrationTestTask('slowIntegrationTest', common)
+
+def registerIntegrationTestTask(String name, SourceSet common) {
+    def integrationTest = sourceSets.create(name)
+
+    integrationTest.compileClasspath += common.output
+    integrationTest.runtimeClasspath += common.output
+
+    configurations[integrationTest.implementationConfigurationName].extendsFrom(configurations.testImplementation)
+    configurations[integrationTest.runtimeOnlyConfigurationName].extendsFrom(configurations.testRuntimeOnly)
+
+    tasks.register(name, Test) {
+        logging.captureStandardOutput LogLevel.INFO
+
+        def args = []
+        if (project.hasProperty('tests.timeout.multiplier')) {
+            args += "-Dtests.timeout.multiplier=${project.property('tests.timeout.multiplier')}"
+        }
+
+        if (project.hasProperty("confluentImagesTag")) {
+            args += "-DconfluentImagesTag=${project.property("confluentImagesTag")}"
+        }
+
+        args += chronicleMapJvmArgs
+
+        jvmArgs = args
+        minHeapSize "2000m"
+        maxHeapSize "3500m"
+
+        group = 'Verification'
+        description = 'Runs the integration tests.'
+        useJUnitPlatform()
+
+        testClassesDirs = integrationTest.output.classesDirs
+        classpath = configurations[integrationTest.runtimeClasspathConfigurationName] + integrationTest.output + common.output
+
+        testLogging {
+            exceptionFormat = 'full'
+            events "passed", "skipped", "failed", "standardError", "standardOut"
+        }
+    }
+}

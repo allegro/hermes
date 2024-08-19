@@ -2,18 +2,21 @@ package pl.allegro.tech.hermes.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import pl.allegro.tech.hermes.api.constraints.AdminPermitted;
 
+import java.util.EnumSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 public class RetentionTime {
     private static final TimeUnit DEFAULT_UNIT = TimeUnit.DAYS;
 
+    public static RetentionTime MAX = new RetentionTime(7, TimeUnit.DAYS);
+    public static Set<TimeUnit> allowedUnits = EnumSet.of(TimeUnit.SECONDS, TimeUnit.MINUTES, TimeUnit.HOURS, TimeUnit.DAYS);
+
+
     @Min(0)
-    @Max(value = 7, groups = AdminPermitted.class)
     private final int duration;
 
     private final TimeUnit retentionUnit;

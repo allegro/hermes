@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.consumers.uri;
 
 import com.google.common.base.Splitter;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.net.URI;
 import java.util.List;

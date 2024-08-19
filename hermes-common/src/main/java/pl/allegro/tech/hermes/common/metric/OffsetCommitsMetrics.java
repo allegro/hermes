@@ -7,46 +7,39 @@ import pl.allegro.tech.hermes.metrics.counters.HermesCounters;
 
 public class OffsetCommitsMetrics {
 
-    private final HermesMetrics hermesMetrics;
     private final MeterRegistry meterRegistry;
 
-    OffsetCommitsMetrics(HermesMetrics hermesMetrics, MeterRegistry meterRegistry) {
-        this.hermesMetrics = hermesMetrics;
+    OffsetCommitsMetrics(MeterRegistry meterRegistry) {
         this.meterRegistry = meterRegistry;
     }
 
     public HermesCounter skippedCounter() {
         return HermesCounters.from(
-                meterRegistry.counter("offset-commits.skipped"),
-                hermesMetrics.counter("offset-committer.skipped")
+                meterRegistry.counter("offset-commits.skipped")
         );
     }
 
     public HermesCounter obsoleteCounter() {
         return HermesCounters.from(
-                meterRegistry.counter("offset-commits.obsolete"),
-                hermesMetrics.counter("offset-committer.obsolete")
+                meterRegistry.counter("offset-commits.obsolete")
         );
     }
 
     public HermesCounter committedCounter() {
         return HermesCounters.from(
-                meterRegistry.counter("offset-commits.committed"),
-                hermesMetrics.counter("offset-committer.committed")
+                meterRegistry.counter("offset-commits.committed")
         );
     }
 
     public HermesTimer duration() {
         return HermesTimer.from(
-                meterRegistry.timer("offset-commits.duration"),
-                hermesMetrics.timer("offset-committer.duration")
+                meterRegistry.timer("offset-commits.duration")
         );
     }
 
     public HermesCounter failuresCounter() {
         return HermesCounters.from(
-                meterRegistry.counter("offset-commits.failures"),
-                hermesMetrics.counter("offset-committer.failed")
+                meterRegistry.counter("offset-commits.failures")
         );
     }
 }

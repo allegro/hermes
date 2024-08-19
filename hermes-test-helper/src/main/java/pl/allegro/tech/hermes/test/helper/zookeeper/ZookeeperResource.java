@@ -19,10 +19,6 @@ public class ZookeeperResource extends ExternalResource {
     private final boolean initializeOnce;
 
     private final Consumer<Starter> initializer;
-
-    public ZookeeperResource(int curatorPort, boolean initializeOnce) {
-        this(curatorPort, initializeOnce, starter -> {});
-    }
     
     public ZookeeperResource(int curatorPort, boolean initializeOnce, Consumer<Starter> initializer) {
         this.curatorPort = curatorPort;
@@ -34,10 +30,6 @@ public class ZookeeperResource extends ExternalResource {
         return zookeeperStarter.curator();
     }
 
-    public int curatorPort() {
-        return curatorPort;
-    }
-    
     @Override
     protected void before() throws Throwable {
         if (initializeOnce) {
@@ -59,16 +51,6 @@ public class ZookeeperResource extends ExternalResource {
             zookeeperStarter.registerShutdownHook();
         }
     }
-
-    public void deleteData(String path) throws Exception {
-        if (zookeeperStarter.curator().checkExists().forPath(path) != null) {
-            zookeeperStarter.curator().delete().deletingChildrenIfNeeded().forPath(path);
-        }
-    }
-
-    public void deleteAllNodes() throws Exception {
-        zookeeperStarter.curator().delete().guaranteed().deletingChildrenIfNeeded().forPath("/hermes");
-    }
     
     public static final class Starter {
 
@@ -87,10 +69,6 @@ public class ZookeeperResource extends ExternalResource {
 
         public CuratorFramework curator() {
             return curator;
-        }
-
-        public int curatorPort() {
-            return curatorPort;
         }
 
         void start() {
@@ -116,13 +94,7 @@ public class ZookeeperResource extends ExternalResource {
         }
         
         void registerShutdownHook() {
-            Runtime.getRuntime().addShutdownHook(new Thread() {
-                @Override
-                public void run() {
-                    Starter.this.stop();
-                }
-            });
+            Runtime.getRuntime().addShutdownHook(new Thread(Starter.this::stop));
         }
-        
     }
 }

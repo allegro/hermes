@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.infrastructure.zookeeper;
 
 import com.google.common.base.Joiner;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
@@ -27,8 +27,7 @@ public class ZookeeperPaths {
     public static final String MAX_RATE_PATH = "max-rate";
     public static final String MAX_RATE_HISTORY_PATH = "history";
     public static final String STORAGE_HEALTH_PATH = "storage-health";
-    public static final String FRONTEND_PATH = "frontend";
-    public static final String READINESS_PATH = "readiness";
+    public static final String DATACENTER_READINESS_PATH = "datacenter-readiness";
     public static final String OFFLINE_RETRANSMISSION_PATH = "offline-retransmission";
     public static final String OFFLINE_RETRANSMISSION_TASKS_PATH = "tasks";
 
@@ -76,6 +75,14 @@ public class ZookeeperPaths {
 
     public String topicPath(TopicName topicName, String... tail) {
         return Joiner.on(URL_SEPARATOR).join(topicsPath(topicName.getGroupName()), topicName.getName(), (Object[]) tail);
+    }
+
+    public String topicPreviewPath(TopicName topicName) {
+        return topicPath(topicName, ZookeeperPaths.PREVIEW_PATH);
+    }
+
+    public String topicMetricsPath(TopicName topicName) {
+        return topicPath(topicName, METRICS_PATH);
     }
 
     public String subscriptionPath(TopicName topicName, String subscriptionName, String... tail) {
@@ -151,8 +158,8 @@ public class ZookeeperPaths {
         return Joiner.on(URL_SEPARATOR).join(basePath, STORAGE_HEALTH_PATH, String.format("%s_%s", host, port));
     }
 
-    public String frontendReadinessPath() {
-        return Joiner.on(URL_SEPARATOR).join(basePath, FRONTEND_PATH, READINESS_PATH);
+    public String datacenterReadinessPath() {
+        return Joiner.on(URL_SEPARATOR).join(basePath, DATACENTER_READINESS_PATH);
     }
 
     public String offlineRetransmissionPath() {

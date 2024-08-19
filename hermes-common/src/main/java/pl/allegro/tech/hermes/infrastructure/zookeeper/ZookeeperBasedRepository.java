@@ -3,8 +3,10 @@ package pl.allegro.tech.hermes.infrastructure.zookeeper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.api.transaction.CuratorTransactionFinal;
+import org.apache.curator.utils.ZKPaths;
 import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +20,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 public abstract class ZookeeperBasedRepository {
 
@@ -73,6 +76,13 @@ public abstract class ZookeeperBasedRepository {
         } catch (Exception ex) {
             throw new InternalProcessingException(ex);
         }
+    }
+
+    protected List<String> childrenPathsOf(String path) {
+        List<String> childNodes = childrenOf(path);
+        return childNodes.stream()
+                .map(child -> ZKPaths.makePath(path, child))
+                .collect(Collectors.toList());
     }
 
     @SuppressWarnings("unchecked")
@@ -154,6 +164,20 @@ public abstract class ZookeeperBasedRepository {
                 .create().forPath(childPath)
                 .and()
                 .commit();
+    }
+
+    protected void deleteInTransaction(List<String> paths) throws Exception {
+        if (paths.isEmpty()) {
+            throw new InternalProcessingException("Attempting to remove empty set of paths from ZK");
+        }
+        ensureConnected();
+        CuratorTransactionFinal transaction = zookeeper.inTransaction().delete().forPath(paths.get(0)).and();
+
+        for (int i = 1; i < paths.size(); i++) {
+            transaction = transaction.delete().forPath(paths.get(i)).and();
+        }
+
+        transaction.commit();
     }
 
     protected void create(String path, Object value) throws Exception {

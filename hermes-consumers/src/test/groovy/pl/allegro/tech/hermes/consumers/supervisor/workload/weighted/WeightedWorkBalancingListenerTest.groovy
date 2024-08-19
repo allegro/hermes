@@ -1,14 +1,11 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload.weighted
 
-import com.codahale.metrics.MetricFilter
-import com.codahale.metrics.MetricRegistry
+
 import io.micrometer.core.instrument.search.Search
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import pl.allegro.tech.hermes.api.SubscriptionName
-import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.common.metric.MetricsFacade
 import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkDistributionChanges
-import pl.allegro.tech.hermes.metrics.PathsCompiler
 import pl.allegro.tech.hermes.test.helper.time.ModifiableClock
 import spock.lang.Specification
 import spock.lang.Subject
@@ -25,12 +22,10 @@ class WeightedWorkBalancingListenerTest extends Specification {
     def subscriptionProfileRegistry = new MockSubscriptionProfileRegistry()
     def weightWindowSize = Duration.ofMinutes(1)
     def currentLoadProvider = new CurrentLoadProvider()
-    def metricsRegistry = new MetricRegistry()
     def meterRegistry = new SimpleMeterRegistry()
     def metrics = new WeightedWorkloadMetricsReporter(
             new MetricsFacade(
-                    meterRegistry,
-                    new HermesMetrics(metricsRegistry, new PathsCompiler("host"))
+                    meterRegistry
             )
     )
 
@@ -180,8 +175,6 @@ class WeightedWorkBalancingListenerTest extends Specification {
         listener.onBeforeBalancing(["c2"])
 
         then:
-        metricsRegistry.getGauges(MetricFilter.contains(".c2.")).size() == 1
-        metricsRegistry.getGauges(MetricFilter.contains(".c1.")).size() == 0
         Search.in(meterRegistry).tag("consumer-id", "c2").gauges().size() == 1
         Search.in(meterRegistry).tag("consumer-id", "c1").gauges().size() == 0
     }
@@ -195,7 +188,6 @@ class WeightedWorkBalancingListenerTest extends Specification {
         listener.onBalancingSkipped()
 
         then:
-        metricsRegistry.getGauges().size() == 0
         Search.in(meterRegistry).gauges().size() == 0
     }
 

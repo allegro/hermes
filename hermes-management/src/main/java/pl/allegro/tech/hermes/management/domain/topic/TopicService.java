@@ -5,7 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.MessageTextPreview;
 import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.PatchData;
@@ -161,6 +160,7 @@ public class TopicService {
 
         if (!retrieved.equals(modified)) {
             Instant beforeMigrationInstant = clock.instant();
+            // TODO: this does not work as intended, uses == instead of equals
             if (retrieved.getRetentionTime() != modified.getRetentionTime()) {
                 multiDCAwareService.manageTopic(brokerTopicManagement ->
                         brokerTopicManagement.updateTopic(modified)
@@ -382,8 +382,14 @@ public class TopicService {
     }
 
     private void removeTopic(Topic topic, RequestUser removedBy) {
+        logger.info("Removing topic: {} from ZK clusters", topic.getQualifiedName());
+        long start = System.currentTimeMillis();
         multiDcExecutor.executeByUser(new RemoveTopicRepositoryCommand(topic.getName()), removedBy);
+        logger.info("Removed topic: {} from ZK clusters in: {} ms", topic.getQualifiedName(), System.currentTimeMillis() - start);
+        logger.info("Removing topic: {} from Kafka clusters", topic.getQualifiedName());
+        start = System.currentTimeMillis();
         multiDCAwareService.manageTopic(brokerTopicManagement -> brokerTopicManagement.removeTopic(topic));
+        logger.info("Removed topic: {} from Kafka clusters in: {} ms", topic.getQualifiedName(), System.currentTimeMillis() - start);
         auditor.objectRemoved(removedBy.getUsername(), topic);
         topicOwnerCache.onRemovedTopic(topic);
     }

@@ -49,8 +49,8 @@ class InflightSizeValidatorTest extends Specification {
         subscriptionValidator.checkCreation(subscription, regularUser)
 
         then:
-        def exception = thrown(ConstraintViolationException)
-        exception.message == "serialSubscriptionPolicy.inflightSize: must be null"
+        def exception = thrown(SubscriptionValidationException)
+        exception.message == "Inflight size can't be set by non admin users"
     }
 
     def "creating subscription with inflight size should be allowed for admin users"() {
@@ -91,8 +91,101 @@ class InflightSizeValidatorTest extends Specification {
         user << [regularUser, admin]
     }
 
-    private static Subscription subscriptionWithInflight(Integer inflightSize) {
+    def "changing inflight should not be allowed for users"() {
+        given:
+        def previous = subscriptionWithInflight(previousInflight)
+        def updated = subscriptionWithInflight(updatedInflight)
+        when:
+        subscriptionValidator.checkModification(updated, regularUser, previous)
+
+        then:
+        def exception = thrown(SubscriptionValidationException)
+        exception.message == message
+
+        where:
+        previousInflight | updatedInflight || message
+        null             | 60              || "Inflight size can't be changed by non admin users. Changed from: null, to: 60"
+        60               | null            || "Inflight size can't be changed by non admin users. Changed from: 60, to: null"
+        60               | 120             || "Inflight size can't be changed by non admin users. Changed from: 60, to: 120"
+    }
+
+    def "changing inflight should be allowed for admins"() {
+        given:
+        def previous = subscriptionWithInflight(previousInflight)
+        def updated = subscriptionWithInflight(updatedInflight)
+        when:
+        subscriptionValidator.checkModification(updated, admin, previous)
+
+        then:
+        noExceptionThrown()
+
+        where:
+        previousInflight | updatedInflight
+        null             | 60
+        60               | null
+        60               | 120
+    }
+
+    def "updating subscription with non default inflight should be allowed for all users"() {
+        given:
+        def previous = subscriptionWithInflight(120, "lorem ipsum")
+        def updated = subscriptionWithInflight(120, "dolor sit amet")
+
+        when:
+        subscriptionValidator.checkModification(updated, user, previous)
+
+        then:
+        noExceptionThrown()
+
+        where:
+        user << [regularUser, admin]
+    }
+
+    def "resetting subscription policy should be allowed for all users"() {
+        def previous = subscriptionWithInflight(120)
+        def updated = subscriptionWithInflight(null)
+        updated.serialSubscriptionPolicy = null
+
+        when:
+        subscriptionValidator.checkModification(updated, user, previous)
+
+        then:
+        noExceptionThrown()
+
+        where:
+        user << [regularUser, admin]
+    }
+
+    def "changing subscription policy from null to policy with not null inflight should not be allowed for regular user"() {
+        def previous = subscriptionWithInflight(null)
+        previous.serialSubscriptionPolicy = null
+
+        def updated = subscriptionWithInflight(120)
+
+        when:
+        subscriptionValidator.checkModification(updated, regularUser, previous)
+
+        then:
+        def exception = thrown(SubscriptionValidationException)
+        exception.message == "Inflight size can't be changed by non admin users. Changed from: null, to: 120"
+    }
+
+    def "changing subscription policy from null to policy with not null inflight should  be allowed for admin"() {
+        def previous = subscriptionWithInflight(null)
+        previous.serialSubscriptionPolicy = null
+
+        def updated = subscriptionWithInflight(120)
+
+        when:
+        subscriptionValidator.checkModification(updated, admin, previous)
+
+        then:
+        noExceptionThrown()
+    }
+
+    private static Subscription subscriptionWithInflight(Integer inflightSize, String description = "lorem ipsum") {
         return subscription("group.topic", "subscription")
+                .withDescription(description)
                 .withSubscriptionPolicy(
                         SubscriptionPolicy.Builder.subscriptionPolicy()
                                 .withInflightSize(inflightSize)

@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 
 import com.google.common.collect.ImmutableSet;
 import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.api.Request;
+import org.eclipse.jetty.client.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.EndpointAddress;

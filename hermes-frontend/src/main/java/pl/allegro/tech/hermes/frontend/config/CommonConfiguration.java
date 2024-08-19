@@ -1,12 +1,10 @@
 package pl.allegro.tech.hermes.frontend.config;
 
-import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.micrometer.prometheus.PrometheusConfig;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
-import jakarta.inject.Named;
 import org.apache.curator.framework.CuratorFramework;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -16,7 +14,6 @@ import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
 import pl.allegro.tech.hermes.common.clock.ClockFactory;
 import pl.allegro.tech.hermes.common.di.factories.CuratorClientFactory;
 import pl.allegro.tech.hermes.common.di.factories.HermesCuratorClientFactory;
-import pl.allegro.tech.hermes.common.di.factories.MetricRegistryFactory;
 import pl.allegro.tech.hermes.common.di.factories.MicrometerRegistryParameters;
 import pl.allegro.tech.hermes.common.di.factories.ModelAwareZookeeperNotifyingCacheFactory;
 import pl.allegro.tech.hermes.common.di.factories.ObjectMapperFactory;
@@ -33,12 +30,10 @@ import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageSchemaIdAwareCon
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageSchemaVersionTruncationContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
-import pl.allegro.tech.hermes.common.metric.HermesMetrics;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.common.metric.counter.zookeeper.ZookeeperCounterStorage;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
-import pl.allegro.tech.hermes.common.metric.executor.ThreadPoolMetrics;
 import pl.allegro.tech.hermes.common.util.InetAddressInstanceIdResolver;
 import pl.allegro.tech.hermes.common.util.InstanceIdResolver;
 import pl.allegro.tech.hermes.domain.filtering.MessageFilter;
@@ -83,13 +78,13 @@ import static io.micrometer.core.instrument.Clock.SYSTEM;
 @EnableConfigurationProperties({
         MetricRegistryProperties.class,
         MicrometerRegistryProperties.class,
-        GraphiteProperties.class,
         PrometheusProperties.class,
         SchemaProperties.class,
         ZookeeperClustersProperties.class,
         KafkaClustersProperties.class,
         ContentRootProperties.class,
-        DatacenterNameProperties.class
+        DatacenterNameProperties.class,
+        TopicDefaultsProperties.class
 })
 public class CommonConfiguration {
 
@@ -160,10 +155,11 @@ public class CommonConfiguration {
 
     @Bean(initMethod = "start", destroyMethod = "stop")
     public ModelAwareZookeeperNotifyingCache modelAwareZookeeperNotifyingCache(CuratorFramework curator,
+                                                                               MetricsFacade metricsFacade,
                                                                                ZookeeperClustersProperties zookeeperClustersProperties,
                                                                                DatacenterNameProvider datacenterNameProvider) {
         ZookeeperProperties zookeeperProperties = zookeeperClustersProperties.toZookeeperProperties(datacenterNameProvider);
-        return new ModelAwareZookeeperNotifyingCacheFactory(curator, zookeeperProperties).provide();
+        return new ModelAwareZookeeperNotifyingCacheFactory(curator, metricsFacade, zookeeperProperties).provide();
     }
 
     @Bean
@@ -175,13 +171,8 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public ThreadPoolMetrics threadPoolMetrics(MetricsFacade metricsFacade) {
-        return new ThreadPoolMetrics(metricsFacade);
-    }
-
-    @Bean
-    public InstrumentedExecutorServiceFactory instrumentedExecutorServiceFactory(ThreadPoolMetrics threadPoolMetrics) {
-        return new InstrumentedExecutorServiceFactory(threadPoolMetrics);
+    public InstrumentedExecutorServiceFactory instrumentedExecutorServiceFactory(MetricsFacade metricsFacade) {
+        return new InstrumentedExecutorServiceFactory(metricsFacade);
     }
 
     @Bean
@@ -193,8 +184,8 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public ObjectMapper objectMapper(SchemaProperties schemaProperties) {
-        return new ObjectMapperFactory(schemaProperties.isIdSerializationEnabled()).provide();
+    public ObjectMapper objectMapper(SchemaProperties schemaProperties, TopicDefaultsProperties topicDefaults) {
+        return new ObjectMapperFactory(schemaProperties.isIdSerializationEnabled(), topicDefaults.isFallbackToRemoteDatacenterEnabled()).provide();
     }
 
     @Bean
@@ -288,23 +279,8 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public HermesMetrics hermesMetrics(MetricRegistry metricRegistry,
-                                       PathsCompiler pathsCompiler) {
-        return new HermesMetrics(metricRegistry, pathsCompiler);
-    }
-
-    @Bean
-    public MetricsFacade micrometerHermesMetrics(MeterRegistry meterRegistry, HermesMetrics hermesMetrics) {
-        return new MetricsFacade(meterRegistry, hermesMetrics);
-    }
-
-    @Bean
-    public MetricRegistry metricRegistry(MetricRegistryProperties metricRegistryProperties,
-                                         GraphiteProperties graphiteProperties,
-                                         InstanceIdResolver instanceIdResolver,
-                                         @Named("moduleName") String moduleName) {
-        return new MetricRegistryFactory(metricRegistryProperties, graphiteProperties,
-                instanceIdResolver, moduleName).provide();
+    public MetricsFacade micrometerHermesMetrics(MeterRegistry meterRegistry) {
+        return new MetricsFacade(meterRegistry);
     }
 
     @Bean

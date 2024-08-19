@@ -33,3 +33,22 @@ console:
         label: SERIAL
       - value: BATCH
         label: BATCH
+prometheus:
+  client:
+    enabled: true
+
+management:
+  server:
+    servlet:
+      context-path: /
+
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  jersey:
+    type: filter
+    filter:
+      order: 2147483647
+  mvc:
+    servlet:
+      path: /

@@ -15,7 +15,7 @@
   }
   function onTopicBlankClick(topic: Topic) {
     const group = groupName(topic.name);
-    window.open(`/ui/groups/${group}//topics/${topic.name}`, '_blank');
+    window.open(`/ui/groups/${group}/topics/${topic.name}`, '_blank');
   }
 </script>
 

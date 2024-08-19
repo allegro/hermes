@@ -13,7 +13,7 @@ import {
   dummyUndeliveredMessages,
   secondDummySubscription,
 } from '@/dummy/subscription';
-import { rest } from 'msw';
+import { http, HttpResponse } from 'msw';
 import type { AccessTokenResponse } from '@/api/access-token-response';
 import type { ConstraintsConfig } from '@/api/constraints';
 import type { ConsumerGroup } from '@/api/consumer-group';
@@ -43,8 +43,8 @@ export const fetchTopicHandler = ({
 }: {
   topic?: TopicWithSchema;
 }) =>
-  rest.get(`${url}/topics/${topic.name}`, (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(topic));
+  http.get(`${url}/topics/${topic.name}`, () => {
+    return HttpResponse.json(topic);
   });
 
 export const fetchTopicErrorHandler = ({
@@ -54,21 +54,20 @@ export const fetchTopicErrorHandler = ({
   topicName: string;
   errorCode?: number;
 }) =>
-  rest.get(`${url}/topics/${topicName}`, (req, res, ctx) => {
-    return res(ctx.status(errorCode), ctx.json(undefined));
+  http.get(`${url}/topics/${topicName}`, () => {
+    return new HttpResponse(undefined, {
+      status: errorCode,
+    });
   });
 
 export const fetchOwnerHandler = ({ owner = dummyOwner }: { owner?: Owner }) =>
-  rest.get(
-    `${url}/owners/sources/Service%20Catalog/${owner.id}`,
-    (req, res, ctx) => {
-      return res(ctx.status(200), ctx.json(owner));
-    },
-  );
+  http.get(`${url}/owners/sources/Service%20Catalog/${owner.id}`, () => {
+    return HttpResponse.json(owner);
+  });
 
 export const fetchOwnerSourcesHandler = (body: any) =>
-  rest.get(`${url}/owners/sources`, (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(body));
+  http.get(`${url}/owners/sources`, () => {
+    return HttpResponse.json(body);
   });
 
 export const fetchOwnerErrorHandler = ({
@@ -78,12 +77,11 @@ export const fetchOwnerErrorHandler = ({
   owner: string;
   errorCode?: number;
 }) =>
-  rest.get(
-    `${url}/owners/sources/Service%20Catalog/${owner}`,
-    (req, res, ctx) => {
-      return res(ctx.status(errorCode), ctx.json(undefined));
-    },
-  );
+  http.get(`${url}/owners/sources/Service%20Catalog/${owner}`, () => {
+    return new HttpResponse(undefined, {
+      status: errorCode,
+    });
+  });
 
 export const fetchTopicMessagesPreviewHandler = ({
   topicName,
@@ -92,8 +90,8 @@ export const fetchTopicMessagesPreviewHandler = ({
   topicName: string;
   messages?: MessagePreview[];
 }) =>
-  rest.get(`${url}/topics/${topicName}/preview`, (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(messages));
+  http.get(`${url}/topics/${topicName}/preview`, () => {
+    return HttpResponse.json(messages);
   });
 
 export const fetchTopicMessagesPreviewErrorHandler = ({
@@ -103,8 +101,10 @@ export const fetchTopicMessagesPreviewErrorHandler = ({
   topicName: string;
   errorCode?: number;
 }) =>
-  rest.get(`${url}/topics/${topicName}/preview`, (req, res, ctx) => {
-    return res(ctx.status(errorCode), ctx.json(undefined));
+  http.get(`${url}/topics/${topicName}/preview`, () => {
+    return new HttpResponse(undefined, {
+      status: errorCode,
+    });
   });
 
 export const fetchTopicMetricsHandler = ({
@@ -114,8 +114,8 @@ export const fetchTopicMetricsHandler = ({
   topicName: string;
   metrics?: TopicMetrics;
 }) =>
-  rest.get(`${url}/topics/${topicName}/metrics`, (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(metrics));
+  http.get(`${url}/topics/${topicName}/metrics`, () => {
+    return HttpResponse.json(metrics);
   });
 
 export const fetchTopicMetricsErrorHandler = ({
@@ -125,8 +125,10 @@ export const fetchTopicMetricsErrorHandler = ({
   topicName: string;
   errorCode?: number;
 }) =>
-  rest.get(`${url}/topics/${topicName}/metrics`, (req, res, ctx) => {
-    return res(ctx.status(errorCode), ctx.json(undefined));
+  http.get(`${url}/topics/${topicName}/metrics`, () => {
+    return new HttpResponse(undefined, {
+      status: errorCode,
+    });
   });
 
 export const fetchTopicSubscriptionsHandler = ({
@@ -136,8 +138,8 @@ export const fetchTopicSubscriptionsHandler = ({
   topicName: string;
   subscriptions?: string[];
 }) =>
-  rest.get(`${url}/topics/${topicName}/subscriptions`, (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(subscriptions));
+  http.get(`${url}/topics/${topicName}/subscriptions`, () => {
+    return HttpResponse.json(subscriptions);
   });
 
 export const fetchTopicSubscriptionsErrorHandler = ({
@@ -147,8 +149,10 @@ export const fetchTopicSubscriptionsErrorHandler = ({
   topicName: string;
   errorCode?: number;
 }) =>
-  rest.get(`${url}/topics/${topicName}/subscriptions`, (req, res, ctx) => {
-    return res(ctx.status(errorCode), ctx.json(undefined));
+  http.get(`${url}/topics/${topicName}/subscriptions`, () => {
+    return new HttpResponse(undefined, {
+      status: errorCode,
+    });
   });
 
 export const fetchTopicSubscriptionDetailsHandler = ({
@@ -156,10 +160,10 @@ export const fetchTopicSubscriptionDetailsHandler = ({
 }: {
   subscription?: Subscription;
 }) =>
-  rest.get(
+  http.get(
     `${url}/topics/${subscription.topicName}/subscriptions/${subscription.name}`,
-    (req, res, ctx) => {
-      return res(ctx.status(200), ctx.json(subscription));
+    () => {
+      return HttpResponse.json(subscription);
     },
   );
 
@@ -172,10 +176,12 @@ export const fetchTopicSubscriptionDetailsErrorHandler = ({
   subscriptionName: string;
   errorCode?: number;
 }) =>
-  rest.get(
+  http.get(
     `${url}/topics/${topicName}/subscriptions/${subscriptionName}`,
-    (req, res, ctx) => {
-      return res(ctx.status(errorCode), ctx.json(undefined));
+    () => {
+      return new HttpResponse(undefined, {
+        status: errorCode,
+      });
     },
   );
 
@@ -196,10 +202,10 @@ export const fetchSubscriptionHandler = ({
 }: {
   subscription?: Subscription;
 }) =>
-  rest.get(
+  http.get(
     `${url}/topics/${subscription.topicName}/subscriptions/${subscription.name}`,
-    (req, res, ctx) => {
-      return res(ctx.status(200), ctx.json(subscription));
+    () => {
+      return HttpResponse.json(subscription);
     },
   );
 
@@ -212,10 +218,10 @@ export const fetchSubscriptionMetricsHandler = ({
   subscriptionName?: string;
   subscriptionMetrics?: SubscriptionMetrics;
 }) =>
-  rest.get(
+  http.get(
     `${url}/topics/${topicName}/subscriptions/${subscriptionName}/metrics`,
-    (req, res, ctx) => {
-      return res(ctx.status(200), ctx.json(subscriptionMetrics));
+    () => {
+      return HttpResponse.json(subscriptionMetrics);
     },
   );
 
@@ -228,10 +234,10 @@ export const fetchSubscriptionHealthHandler = ({
   subscriptionName?: string;
   subscriptionHealth?: SubscriptionHealth;
 }) =>
-  rest.get(
+  http.get(
     `${url}/topics/${topicName}/subscriptions/${subscriptionName}/health`,
-    (req, res, ctx) => {
-      return res(ctx.status(200), ctx.json(subscriptionHealth));
+    () => {
+      return HttpResponse.json(subscriptionHealth);
     },
   );
 
@@ -244,10 +250,10 @@ export const fetchSubscriptionUndeliveredMessagesHandler = ({
   subscriptionName?: string;
   subscriptionUndeliveredMessages?: SentMessageTrace[];
 }) =>
-  rest.get(
+  http.get(
     `${url}/topics/${topicName}/subscriptions/${subscriptionName}/undelivered`,
-    (req, res, ctx) => {
-      return res(ctx.status(200), ctx.json(subscriptionUndeliveredMessages));
+    () => {
+      return HttpResponse.json(subscriptionUndeliveredMessages);
     },
   );
 
@@ -260,10 +266,10 @@ export const fetchSubscriptionLastUndeliveredMessageHandler = ({
   subscriptionName?: string;
   subscriptionLastUndeliveredMessage?: SentMessageTrace;
 }) =>
-  rest.get(
+  http.get(
     `${url}/topics/${topicName}/subscriptions/${subscriptionName}/undelivered/last`,
-    (req, res, ctx) => {
-      return res(ctx.status(200), ctx.json(subscriptionLastUndeliveredMessage));
+    () => {
+      return HttpResponse.json(subscriptionLastUndeliveredMessage);
     },
   );
 
@@ -274,10 +280,12 @@ export const fetchSubscriptionErrorHandler = ({
   subscription?: Subscription;
   errorCode?: number;
 }) =>
-  rest.get(
+  http.get(
     `${url}/topics/${subscription.topicName}/subscriptions/${subscription.name}`,
-    (req, res, ctx) => {
-      return res(ctx.status(errorCode), ctx.json(undefined));
+    () => {
+      return new HttpResponse(undefined, {
+        status: errorCode,
+      });
     },
   );
 
@@ -290,10 +298,12 @@ export const fetchSubscriptionMetricsErrorHandler = ({
   subscriptionName?: string;
   errorCode?: number;
 }) =>
-  rest.get(
+  http.get(
     `${url}/topics/${topicName}/subscriptions/${subscriptionName}/metrics`,
-    (req, res, ctx) => {
-      return res(ctx.status(errorCode), ctx.json(undefined));
+    () => {
+      return new HttpResponse(undefined, {
+        status: errorCode,
+      });
     },
   );
 
@@ -306,10 +316,12 @@ export const fetchSubscriptionHealthErrorHandler = ({
   subscriptionName?: string;
   errorCode?: number;
 }) =>
-  rest.get(
+  http.get(
     `${url}/topics/${topicName}/subscriptions/${subscriptionName}/health`,
-    (req, res, ctx) => {
-      return res(ctx.status(errorCode), ctx.json(undefined));
+    () => {
+      return new HttpResponse(undefined, {
+        status: errorCode,
+      });
     },
   );
 
@@ -322,10 +334,12 @@ export const fetchSubscriptionUndeliveredMessagesErrorHandler = ({
   subscriptionName?: string;
   errorCode?: number;
 }) =>
-  rest.get(
+  http.get(
     `${url}/topics/${topicName}/subscriptions/${subscriptionName}/undelivered`,
-    (req, res, ctx) => {
-      return res(ctx.status(errorCode), ctx.json(undefined));
+    () => {
+      return new HttpResponse(undefined, {
+        status: errorCode,
+      });
     },
   );
 
@@ -338,10 +352,12 @@ export const fetchSubscriptionLastUndeliveredMessageErrorHandler = ({
   subscriptionName?: string;
   errorCode?: number;
 }) =>
-  rest.get(
+  http.get(
     `${url}/topics/${topicName}/subscriptions/${subscriptionName}/undelivered/last`,
-    (req, res, ctx) => {
-      return res(ctx.status(errorCode), ctx.json(undefined));
+    () => {
+      return new HttpResponse(undefined, {
+        status: errorCode,
+      });
     },
   );
 
@@ -359,8 +375,8 @@ export const fetchConstraintsHandler = ({
 }: {
   constraints: ConstraintsConfig;
 }) =>
-  rest.get(`${url}/workload-constraints`, (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(constraints));
+  http.get(`${url}/workload-constraints`, () => {
+    return HttpResponse.json(constraints);
   });
 
 export const fetchConstraintsErrorHandler = ({
@@ -368,8 +384,10 @@ export const fetchConstraintsErrorHandler = ({
 }: {
   errorCode?: number;
 }) =>
-  rest.get(`${url}/workload-constraints`, (req, res, ctx) => {
-    return res(ctx.status(errorCode), ctx.json(undefined));
+  http.get(`${url}/workload-constraints`, () => {
+    return new HttpResponse(undefined, {
+      status: errorCode,
+    });
   });
 
 export const fetchReadinessHandler = ({
@@ -377,8 +395,8 @@ export const fetchReadinessHandler = ({
 }: {
   datacentersReadiness: DatacenterReadiness[];
 }) =>
-  rest.get(`${url}/readiness/datacenters`, (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(datacentersReadiness));
+  http.get(`${url}/readiness/datacenters`, () => {
+    return HttpResponse.json(datacentersReadiness);
   });
 
 export const fetchReadinessErrorHandler = ({
@@ -386,8 +404,10 @@ export const fetchReadinessErrorHandler = ({
 }: {
   errorCode?: number;
 }) =>
-  rest.get(`${url}/readiness/datacenters`, (req, res, ctx) => {
-    return res(ctx.status(errorCode), ctx.json(undefined));
+  http.get(`${url}/readiness/datacenters`, () => {
+    return new HttpResponse(undefined, {
+      status: errorCode,
+    });
   });
 
 export const fetchConsumerGroupsHandler = ({
@@ -399,10 +419,10 @@ export const fetchConsumerGroupsHandler = ({
   topicName: string;
   subscriptionName: string;
 }) =>
-  rest.get(
+  http.get(
     `${url}/topics/${topicName}/subscriptions/${subscriptionName}/consumer-groups`,
-    (req, res, ctx) => {
-      return res(ctx.status(200), ctx.json(consumerGroups));
+    () => {
+      return HttpResponse.json(consumerGroups);
     },
   );
 
@@ -415,10 +435,12 @@ export const fetchConsumerGroupsErrorHandler = ({
   topicName: string;
   subscriptionName: string;
 }) =>
-  rest.get(
+  http.get(
     `${url}/topics/${topicName}/subscriptions/${subscriptionName}/consumer-groups`,
-    (req, res, ctx) => {
-      return res(ctx.status(errorCode), ctx.json(undefined));
+    () => {
+      return new HttpResponse(undefined, {
+        status: errorCode,
+      });
     },
   );
 
@@ -427,8 +449,8 @@ export const fetchInconsistentTopicsHandler = ({
 }: {
   topics: string[];
 }) =>
-  rest.get(`${url}/consistency/inconsistencies/topics`, (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(topics));
+  http.get(`${url}/consistency/inconsistencies/topics`, () => {
+    return HttpResponse.json(topics);
   });
 
 export const fetchInconsistentTopicsErrorHandler = ({
@@ -436,8 +458,10 @@ export const fetchInconsistentTopicsErrorHandler = ({
 }: {
   errorCode?: number;
 }) =>
-  rest.get(`${url}/consistency/inconsistencies/topics`, (req, res, ctx) => {
-    return res(ctx.status(errorCode), ctx.json(undefined));
+  http.get(`${url}/consistency/inconsistencies/topics`, () => {
+    return new HttpResponse(undefined, {
+      status: errorCode,
+    });
   });
 
 export const fetchTopicNamesHandler = ({
@@ -445,8 +469,8 @@ export const fetchTopicNamesHandler = ({
 }: {
   topicNames: string[];
 }) =>
-  rest.get(`${url}/topics`, (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(topicNames));
+  http.get(`${url}/topics`, () => {
+    return HttpResponse.json(topicNames);
   });
 
 export const fetchTopicNamesErrorHandler = ({
@@ -454,8 +478,10 @@ export const fetchTopicNamesErrorHandler = ({
 }: {
   errorCode?: number;
 }) =>
-  rest.get(`${url}/topics`, (req, res, ctx) => {
-    return res(ctx.status(errorCode), ctx.json(undefined));
+  http.get(`${url}/topics`, () => {
+    return new HttpResponse(undefined, {
+      status: errorCode,
+    });
   });
 
 export const fetchGroupNamesHandler = ({
@@ -463,8 +489,8 @@ export const fetchGroupNamesHandler = ({
 }: {
   groupNames: string[];
 }) =>
-  rest.get(`${url}/groups`, (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(groupNames));
+  http.get(`${url}/groups`, () => {
+    return HttpResponse.json(groupNames);
   });
 
 export const fetchGroupNamesErrorHandler = ({
@@ -472,13 +498,15 @@ export const fetchGroupNamesErrorHandler = ({
 }: {
   errorCode?: number;
 }) =>
-  rest.get(`${url}/groups`, (req, res, ctx) => {
-    return res(ctx.status(errorCode), ctx.json(undefined));
+  http.get(`${url}/groups`, () => {
+    return new HttpResponse(undefined, {
+      status: errorCode,
+    });
   });
 
 export const fetchStatsHandler = ({ stats }: { stats: Stats }) =>
-  rest.get(`${url}/stats`, (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(stats));
+  http.get(`${url}/stats`, () => {
+    return HttpResponse.json(stats);
   });
 
 export const fetchStatsErrorHandler = ({
@@ -486,8 +514,10 @@ export const fetchStatsErrorHandler = ({
 }: {
   errorCode?: number;
 }) =>
-  rest.get(`${url}/stats`, (req, res, ctx) => {
-    return res(ctx.status(errorCode), ctx.json(undefined));
+  http.get(`${url}/stats`, () => {
+    return new HttpResponse(undefined, {
+      status: errorCode,
+    });
   });
 
 export const fetchTokenHandler = ({
@@ -495,8 +525,8 @@ export const fetchTokenHandler = ({
 }: {
   accessToken: AccessTokenResponse;
 }) =>
-  rest.post(`http://localhost:8080/token`, (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(accessToken));
+  http.post(`http://localhost:8080/token`, () => {
+    return HttpResponse.json(accessToken);
   });
 
 export const queryTopicsHandler = ({
@@ -504,8 +534,8 @@ export const queryTopicsHandler = ({
 }: {
   topics?: Topic[];
 }) =>
-  rest.post(`${url}/query/topics`, (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(topics));
+  http.post(`${url}/query/topics`, () => {
+    return HttpResponse.json(topics);
   });
 
 export const queryTopicsErrorHandler = ({
@@ -513,8 +543,10 @@ export const queryTopicsErrorHandler = ({
 }: {
   errorCode?: number;
 }) =>
-  rest.post(`${url}/query/topics`, (req, res, ctx) => {
-    return res(ctx.status(errorCode), ctx.json(undefined));
+  http.post(`${url}/query/topics`, () => {
+    return new HttpResponse(undefined, {
+      status: errorCode,
+    });
   });
 
 export const querySubscriptionsHandler = ({
@@ -522,8 +554,8 @@ export const querySubscriptionsHandler = ({
 }: {
   subscriptions?: Subscription[];
 }) =>
-  rest.post(`${url}/query/subscriptions`, (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(subscriptions));
+  http.post(`${url}/query/subscriptions`, () => {
+    return HttpResponse.json(subscriptions);
   });
 
 export const querySubscriptionsErrorHandler = ({
@@ -531,8 +563,10 @@ export const querySubscriptionsErrorHandler = ({
 }: {
   errorCode?: number;
 }) =>
-  rest.post(`${url}/query/subscriptions`, (req, res, ctx) => {
-    return res(ctx.status(errorCode), ctx.json(undefined));
+  http.post(`${url}/query/subscriptions`, () => {
+    return new HttpResponse(undefined, {
+      status: errorCode,
+    });
   });
 
 export const fetchRolesHandler = ({
@@ -542,8 +576,8 @@ export const fetchRolesHandler = ({
   roles: Role[];
   path: string;
 }) =>
-  rest.get(path, (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(roles));
+  http.get(path, () => {
+    return HttpResponse.json(roles);
   });
 
 export const fetchRolesErrorHandler = ({
@@ -553,8 +587,10 @@ export const fetchRolesErrorHandler = ({
   errorCode?: number;
   path: string;
 }) =>
-  rest.get(path, (req, res, ctx) => {
-    return res(ctx.status(errorCode), ctx.json(undefined));
+  http.get(path, () => {
+    return new HttpResponse(undefined, {
+      status: errorCode,
+    });
   });
 
 export const fetchMetricsDashboardUrlHandler = ({
@@ -564,8 +600,8 @@ export const fetchMetricsDashboardUrlHandler = ({
   dashboardUrl: DashboardUrl;
   path: string;
 }) =>
-  rest.get(path, (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(dashboardUrl));
+  http.get(path, () => {
+    return HttpResponse.json(dashboardUrl);
   });
 
 export const fetchMetricsDashboardUrlErrorHandler = ({
@@ -575,8 +611,10 @@ export const fetchMetricsDashboardUrlErrorHandler = ({
   errorCode?: number;
   path: string;
 }) =>
-  rest.get(path, (req, res, ctx) => {
-    return res(ctx.status(errorCode), ctx.json(undefined));
+  http.get(path, () => {
+    return new HttpResponse(undefined, {
+      status: errorCode,
+    });
   });
 
 export const fetchConsistencyGroupsHandler = ({
@@ -584,8 +622,8 @@ export const fetchConsistencyGroupsHandler = ({
 }: {
   groups: string[];
 }) =>
-  rest.get(`${url}/consistency/groups`, (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(groups));
+  http.get(`${url}/consistency/groups`, () => {
+    return HttpResponse.json(groups);
   });
 
 export const fetchConsistencyGroupsErrorHandler = ({
@@ -593,8 +631,10 @@ export const fetchConsistencyGroupsErrorHandler = ({
 }: {
   errorCode?: number;
 }) =>
-  rest.get(`${url}/consistency/groups`, (req, res, ctx) => {
-    return res(ctx.status(errorCode), ctx.json(undefined));
+  http.get(`${url}/consistency/groups`, () => {
+    return new HttpResponse(undefined, {
+      status: errorCode,
+    });
   });
 
 export const fetchGroupInconsistenciesHandler = ({
@@ -602,8 +642,8 @@ export const fetchGroupInconsistenciesHandler = ({
 }: {
   groupsInconsistency: InconsistentGroup[];
 }) =>
-  rest.get(`${url}/consistency/inconsistencies/groups`, (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(groupsInconsistency));
+  http.get(`${url}/consistency/inconsistencies/groups`, () => {
+    return HttpResponse.json(groupsInconsistency);
   });
 
 export const fetchGroupInconsistenciesErrorHandler = ({
@@ -611,13 +651,15 @@ export const fetchGroupInconsistenciesErrorHandler = ({
 }: {
   errorCode?: number;
 }) =>
-  rest.get(`${url}/consistency/inconsistencies/groups`, (req, res, ctx) => {
-    return res(ctx.status(errorCode), ctx.json(undefined));
+  http.get(`${url}/consistency/inconsistencies/groups`, () => {
+    return new HttpResponse(undefined, {
+      status: errorCode,
+    });
   });
 
 export const removeGroupHandler = ({ group }: { group: string }) =>
-  rest.delete(`/groups/${group}`, (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(undefined));
+  http.delete(`/groups/${group}`, () => {
+    return HttpResponse.json(undefined);
   });
 
 export const removeGroupErrorHandler = ({
@@ -627,13 +669,15 @@ export const removeGroupErrorHandler = ({
   group: string;
   errorCode: number;
 }) =>
-  rest.delete(`/groups/${group}`, (req, res, ctx) => {
-    return res(ctx.status(errorCode), ctx.json(undefined));
+  http.delete(`/groups/${group}`, () => {
+    return new HttpResponse(undefined, {
+      status: errorCode,
+    });
   });
 
 export const removeTopicHandler = ({ topic }: { topic: string }) =>
-  rest.delete(`/topics/${topic}`, (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(undefined));
+  http.delete(`/topics/${topic}`, () => {
+    return HttpResponse.json(undefined);
   });
 
 export const removeTopicErrorHandler = ({
@@ -643,13 +687,15 @@ export const removeTopicErrorHandler = ({
   topic: string;
   errorCode: number;
 }) =>
-  rest.delete(`/topics/${topic}`, (req, res, ctx) => {
-    return res(ctx.status(errorCode), ctx.json(undefined));
+  http.delete(`/topics/${topic}`, () => {
+    return new HttpResponse(undefined, {
+      status: errorCode,
+    });
   });
 
 export const removeInconsistentTopicHandler = () =>
-  rest.delete(`/consistency/inconsistencies/topics`, (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(undefined));
+  http.delete(`/consistency/inconsistencies/topics`, () => {
+    return HttpResponse.json(undefined);
   });
 
 export const removeInconsistentTopicErrorHandler = ({
@@ -657,8 +703,10 @@ export const removeInconsistentTopicErrorHandler = ({
 }: {
   errorCode: number;
 }) =>
-  rest.delete(`/consistency/inconsistencies/topics`, (req, res, ctx) => {
-    return res(ctx.status(errorCode), ctx.json(undefined));
+  http.delete(`/consistency/inconsistencies/topics`, () => {
+    return new HttpResponse(undefined, {
+      status: errorCode,
+    });
   });
 
 export const removeSubscriptionHandler = ({
@@ -668,12 +716,9 @@ export const removeSubscriptionHandler = ({
   topic: string;
   subscription: string;
 }) =>
-  rest.delete(
-    `/topics/${topic}/subscriptions/${subscription}`,
-    (req, res, ctx) => {
-      return res(ctx.status(200), ctx.json(undefined));
-    },
-  );
+  http.delete(`/topics/${topic}/subscriptions/${subscription}`, () => {
+    return HttpResponse.json(undefined);
+  });
 
 export const removeSubscriptionErrorHandler = ({
   topic,
@@ -684,12 +729,11 @@ export const removeSubscriptionErrorHandler = ({
   subscription: string;
   errorCode: number;
 }) =>
-  rest.delete(
-    `/topics/${topic}/subscriptions/${subscription}`,
-    (req, res, ctx) => {
-      return res(ctx.status(errorCode), ctx.json(undefined));
-    },
-  );
+  http.delete(`/topics/${topic}/subscriptions/${subscription}`, () => {
+    return new HttpResponse(undefined, {
+      status: errorCode,
+    });
+  });
 
 export const subscriptionStateHandler = ({
   topic,
@@ -698,12 +742,9 @@ export const subscriptionStateHandler = ({
   topic: string;
   subscription: string;
 }) =>
-  rest.put(
-    `/topics/${topic}/subscriptions/${subscription}/state`,
-    (req, res, ctx) => {
-      return res(ctx.status(200), ctx.json(undefined));
-    },
-  );
+  http.put(`/topics/${topic}/subscriptions/${subscription}/state`, () => {
+    return HttpResponse.json(undefined);
+  });
 
 export const subscriptionStateErrorHandler = ({
   topic,
@@ -714,20 +755,19 @@ export const subscriptionStateErrorHandler = ({
   subscription: string;
   errorCode: number;
 }) =>
-  rest.put(
-    `/topics/${topic}/subscriptions/${subscription}/state`,
-    (req, res, ctx) => {
-      return res(ctx.status(errorCode), ctx.json(undefined));
-    },
-  );
+  http.put(`/topics/${topic}/subscriptions/${subscription}/state`, () => {
+    return new HttpResponse(undefined, {
+      status: errorCode,
+    });
+  });
 
 export const switchReadinessHandler = ({
   datacenter,
 }: {
   datacenter: string;
 }) =>
-  rest.post(`/readiness/datacenters/${datacenter}`, (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(undefined));
+  http.post(`/readiness/datacenters/${datacenter}`, () => {
+    return HttpResponse.json(undefined);
   });
 
 export const switchReadinessErrorHandler = ({
@@ -737,8 +777,10 @@ export const switchReadinessErrorHandler = ({
   datacenter: string;
   errorCode: number;
 }) =>
-  rest.post(`/readiness/datacenters/${datacenter}`, (req, res, ctx) => {
-    return res(ctx.status(errorCode), ctx.json(undefined));
+  http.post(`/readiness/datacenters/${datacenter}`, () => {
+    return new HttpResponse(undefined, {
+      status: errorCode,
+    });
   });
 
 export const moveSubscriptionOffsetsHandler = ({
@@ -750,10 +792,12 @@ export const moveSubscriptionOffsetsHandler = ({
   subscriptionName: string;
   statusCode: number;
 }) =>
-  rest.post(
+  http.post(
     `${url}/topics/${topicName}/subscriptions/${subscriptionName}/moveOffsetsToTheEnd`,
-    (req, res, ctx) => {
-      return res(ctx.status(statusCode), ctx.json(undefined));
+    () => {
+      return new HttpResponse(undefined, {
+        status: statusCode,
+      });
     },
   );
 
@@ -762,8 +806,10 @@ export const upsertTopicConstraintHandler = ({
 }: {
   statusCode: number;
 }) =>
-  rest.put(`${url}/workload-constraints/topic`, (req, res, ctx) => {
-    return res(ctx.status(statusCode), ctx.json(undefined));
+  http.put(`${url}/workload-constraints/topic`, () => {
+    return new HttpResponse(undefined, {
+      status: statusCode,
+    });
   });
 
 export const upsertSubscriptionConstraintHandler = ({
@@ -771,8 +817,10 @@ export const upsertSubscriptionConstraintHandler = ({
 }: {
   statusCode: number;
 }) =>
-  rest.put(`${url}/workload-constraints/subscription`, (req, res, ctx) => {
-    return res(ctx.status(statusCode), ctx.json(undefined));
+  http.put(`${url}/workload-constraints/subscription`, () => {
+    return new HttpResponse(undefined, {
+      status: statusCode,
+    });
   });
 
 export const deleteTopicConstraintHandler = ({
@@ -782,12 +830,11 @@ export const deleteTopicConstraintHandler = ({
   statusCode: number;
   topicName: string;
 }) =>
-  rest.delete(
-    `${url}/workload-constraints/topic/${topicName}`,
-    (req, res, ctx) => {
-      return res(ctx.status(statusCode), ctx.json(undefined));
-    },
-  );
+  http.delete(`${url}/workload-constraints/topic/${topicName}`, () => {
+    return new HttpResponse(undefined, {
+      status: statusCode,
+    });
+  });
 
 export const deleteSubscriptionConstraintHandler = ({
   statusCode,
@@ -798,69 +845,73 @@ export const deleteSubscriptionConstraintHandler = ({
   topicName: string;
   subscriptionName: string;
 }) =>
-  rest.delete(
+  http.delete(
     `${url}/workload-constraints/subscription/${topicName}/${subscriptionName}`,
-    (req, res, ctx) => {
-      return res(ctx.status(statusCode), ctx.json(undefined));
+    () => {
+      return new HttpResponse(undefined, {
+        status: statusCode,
+      });
     },
   );
 
 export const createSubscriptionHandler = (topic: string) =>
-  rest.post(`${url}/topics/${topic}/subscriptions`, (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(undefined));
+  http.post(`${url}/topics/${topic}/subscriptions`, () => {
+    return HttpResponse.json(undefined);
   });
 
 export const createSubscriptionErrorHandler = (
   topic: string,
   errorCode: number,
 ) =>
-  rest.post(`${url}/topics/${topic}/subscriptions`, (req, res, ctx) => {
-    return res(ctx.status(errorCode), ctx.json(undefined));
+  http.post(`${url}/topics/${topic}/subscriptions`, () => {
+    return new HttpResponse(undefined, {
+      status: errorCode,
+    });
   });
 
 export const createTopicHandler = () =>
-  rest.post(`${url}/topics`, (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(undefined));
+  http.post(`${url}/topics`, () => {
+    return HttpResponse.json(undefined);
   });
 
 export const createTopicErrorHandler = (errorCode: number) =>
-  rest.post(`${url}/topics`, (req, res, ctx) => {
-    return res(ctx.status(errorCode), ctx.json(undefined));
+  http.post(`${url}/topics`, () => {
+    return new HttpResponse(undefined, {
+      status: errorCode,
+    });
   });
 
 export const editSubscriptionHandler = (topic: string, subscription: string) =>
-  rest.put(
-    `${url}/topics/${topic}/subscriptions/${subscription}`,
-    (req, res, ctx) => {
-      return res(ctx.status(200), ctx.json(undefined));
-    },
-  );
+  http.put(`${url}/topics/${topic}/subscriptions/${subscription}`, () => {
+    return HttpResponse.json(undefined);
+  });
 
 export const editSubscriptionErrorHandler = (
   topic: string,
   subscription: string,
   errorCode: number,
 ) =>
-  rest.put(
-    `${url}/topics/${topic}/subscriptions/${subscription}`,
-    (req, res, ctx) => {
-      return res(ctx.status(errorCode), ctx.json(undefined));
-    },
-  );
+  http.put(`${url}/topics/${topic}/subscriptions/${subscription}`, () => {
+    return new HttpResponse(undefined, {
+      status: errorCode,
+    });
+  });
 
 export const editTopicHandler = (topic: string) =>
-  rest.put(`${url}/topics/${topic}`, (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(undefined));
+  http.put(`${url}/topics/${topic}`, () => {
+    return HttpResponse.json(undefined);
   });
 
 export const editTopicErrorHandler = (topic: string, errorCode: number) =>
-  rest.put(`${url}/topics/${topic}`, (req, res, ctx) => {
-    return res(ctx.status(errorCode), ctx.json(undefined));
+  http.put(`${url}/topics/${topic}`, () => {
+    return new HttpResponse(undefined, {
+      status: errorCode,
+    });
   });
 
 export const createGroupHandler = ({ group }: { group: Group }) =>
-  rest.post(`${url}/groups`, (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(group));
+  http.post(`${url}/groups`, () => {
+    return HttpResponse.json(group);
   });
 
 export const createGroupErrorHandler = ({
@@ -868,8 +919,10 @@ export const createGroupErrorHandler = ({
 }: {
   errorCode?: number;
 }) =>
-  rest.post(`${url}/groups`, (req, res, ctx) => {
-    return res(ctx.status(errorCode), ctx.json(undefined));
+  http.post(`${url}/groups`, () => {
+    return new HttpResponse(undefined, {
+      status: errorCode,
+    });
   });
 
 export const createRetransmissionTaskHandler = ({
@@ -877,8 +930,10 @@ export const createRetransmissionTaskHandler = ({
 }: {
   statusCode: number;
 }) =>
-  rest.post(`${url}/offline-retransmission/tasks`, (req, res, ctx) => {
-    return res(ctx.status(statusCode), ctx.json(undefined));
+  http.post(`${url}/offline-retransmission/tasks`, () => {
+    return new HttpResponse(undefined, {
+      status: statusCode,
+    });
   });
 
 export const createRetransmissionHandler = ({
@@ -890,10 +945,12 @@ export const createRetransmissionHandler = ({
   topicName: string;
   subscriptionName: string;
 }) =>
-  rest.put(
+  http.put(
     `${url}/topics/${topicName}/subscriptions/${subscriptionName}/retransmission`,
-    (req, res, ctx) => {
-      return res(ctx.status(statusCode), ctx.json(undefined));
+    () => {
+      return new HttpResponse(undefined, {
+        status: statusCode,
+      });
     },
   );
 
@@ -904,8 +961,8 @@ export const subscriptionFilterVerificationHandler = ({
   topicName: string;
   response: MessageFiltersVerificationResponse;
 }) =>
-  rest.post(`${url}/filters/${topicName}`, (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(response));
+  http.post(`${url}/filters/${topicName}`, () => {
+    return HttpResponse.json(response);
   });
 
 export const subscriptionFilterVerificationErrorHandler = ({
@@ -913,6 +970,8 @@ export const subscriptionFilterVerificationErrorHandler = ({
 }: {
   topicName: string;
 }) =>
-  rest.post(`${url}/filters/${topicName}`, (req, res, ctx) => {
-    return res(ctx.status(500), ctx.json(undefined));
+  http.post(`${url}/filters/${topicName}`, () => {
+    return new HttpResponse(undefined, {
+      status: 500,
+    });
   });

@@ -21,7 +21,7 @@ public class OfflineRetransmissionService {
     }
 
     public void validateRequest(OfflineRetransmissionRequest request) {
-        TopicName sourceTopicName = TopicName.fromQualifiedName(request.getSourceTopic());
+        TopicName sourceTopicName = TopicName.fromQualifiedName(request.getSourceTopic().orElse(null));
         TopicName targetTopicName = TopicName.fromQualifiedName(request.getTargetTopic());
 
         ensureTopicsExist(sourceTopicName, targetTopicName);
@@ -29,8 +29,8 @@ public class OfflineRetransmissionService {
         ensureTopicIsNotStoredOffline(targetTopicName);
     }
 
-    public void createTask(OfflineRetransmissionRequest request) {
-        saveTask(request);
+    public OfflineRetransmissionTask createTask(OfflineRetransmissionRequest request) {
+        return saveTask(request);
     }
 
     public List<OfflineRetransmissionTask> getAllTasks() {
@@ -49,12 +49,11 @@ public class OfflineRetransmissionService {
     }
 
     private void ensureTopicsExist(TopicName sourceTopicName, TopicName targetTopicName) {
-        boolean sourceTopicExists = topicRepository.topicExists(sourceTopicName);
-        boolean targetTopicExists = topicRepository.topicExists(targetTopicName);
-        if (!sourceTopicExists) {
+        if (sourceTopicName != null && !topicRepository.topicExists(sourceTopicName)) {
             throw new OfflineRetransmissionValidationException("Source topic does not exist");
         }
-        if (!targetTopicExists) {
+
+        if (!topicRepository.topicExists(targetTopicName)) {
             throw new OfflineRetransmissionValidationException("Target topic does not exist");
         }
     }
@@ -73,9 +72,10 @@ public class OfflineRetransmissionService {
         }
     }
 
-    private void saveTask(OfflineRetransmissionRequest request) {
+    private OfflineRetransmissionTask saveTask(OfflineRetransmissionRequest request) {
         OfflineRetransmissionTask task =
                 new OfflineRetransmissionTask(UUID.randomUUID().toString(), request, Instant.now());
         offlineRetransmissionRepository.saveTask(task);
+        return task;
     }
 }

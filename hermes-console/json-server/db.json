@@ -128,7 +128,7 @@
     },
     {
       "datacenter": "DC3",
-      "status": "UNDEFINED"
+      "status": "READY"
     }
   ],
   "constraints": {
@@ -153,11 +153,6 @@
     {
       "name": "Service Catalog",
       "autocomplete": true,
-      "deprecated": false
-    },
-    {
-      "name": "Crowd Catalog",
-      "autocomplete": false,
       "deprecated": false
     },
     {
@@ -501,12 +496,13 @@
       "delivered": 39099,
       "discarded": 2137086,
       "volume": 1288032256,
-      "timeouts": "0.0",
-      "otherErrors": "0.0",
-      "codes2xx": "0",
-      "codes4xx": "0.0",
-      "codes5xx": "0.01",
-      "rate": "0",
+      "timeouts": "12.3028857479387",
+      "otherErrors": "16.3028857479387",
+      "codes2xx": "1236.3028857479387",
+      "codes4xx": "123.3028857479387",
+      "codes5xx": "6.3028857479387",
+      "retries": "24.3028857479387",
+      "rate": "1319.6064543974392",
       "throughput": "8.31",
       "batchRate": "0.0",
       "lag": "9055513"
@@ -521,6 +517,7 @@
       "codes2xx": "0",
       "codes4xx": "0.0",
       "codes5xx": "0.01",
+      "retries": "0.01",
       "rate": "0",
       "throughput": "8.36",
       "batchRate": "0.0",
@@ -591,10 +588,6 @@
     },
     "owner": {
       "sources": [
-        {
-          "name": "Crowd Catalog",
-          "placeholder": "Crowd group (or groups separated by ',')"
-        },
         {
           "name": "Service Catalog",
           "placeholder": "Service name from Service Catalog"
