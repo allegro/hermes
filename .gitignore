@@ -39,3 +39,7 @@ scripts/lib/
 scripts/pip-selfcheck.json
 
 .DS_Store
+.bloop
+.metals
+.vim
+bin
