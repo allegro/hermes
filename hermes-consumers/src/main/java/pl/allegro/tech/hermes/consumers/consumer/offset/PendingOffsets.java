@@ -69,7 +69,7 @@ public class PendingOffsets {
 
         for (Map.Entry<SubscriptionPartitionOffset, MessageState> entry : slots.entrySet()) {
             offsetSnapshot.put(entry.getKey(), entry.getValue());
-            if (entry.getValue() != MessageState.INFLIGHT) {
+            if (entry.getValue() == MessageState.PROCESSED) {
                 slots.remove(entry.getKey());
                 permitsReleased++;
             }

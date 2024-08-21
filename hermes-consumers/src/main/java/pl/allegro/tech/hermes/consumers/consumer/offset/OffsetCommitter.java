@@ -95,8 +95,7 @@ public class OffsetCommitter {
         try (HermesTimerContext ignored = timer.time()) {
             List<SubscriptionPartitionOffset> processedOffsets = new ArrayList<>();
             for (Map.Entry<SubscriptionPartitionOffset, MessageState> entry : offsets.entrySet()) {
-                // we consider filtered messages as processed
-                if (entry.getValue() != MessageState.INFLIGHT) {
+                if (entry.getValue() == MessageState.PROCESSED) {
                     processedOffsets.add(entry.getKey());
                 }
             }
