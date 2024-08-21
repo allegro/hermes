@@ -464,3 +464,45 @@ export function verifyFilters(
     },
   );
 }
+
+export function syncGroup(
+  groupName: string,
+  primaryDatacenter: string,
+): ResponsePromise<void> {
+  return axios.post<void>(`/consistency/sync/groups/${groupName}`, null, {
+    params: {
+      primaryDatacenter: primaryDatacenter,
+    },
+  });
+}
+
+export function syncTopic(
+  topicQualifiedName: string,
+  primaryDatacenter: string,
+): ResponsePromise<void> {
+  return axios.post<void>(
+    `/consistency/sync/topics/${topicQualifiedName}`,
+    null,
+    {
+      params: {
+        primaryDatacenter: primaryDatacenter,
+      },
+    },
+  );
+}
+
+export function syncSubscription(
+  topicQualifiedName: string,
+  subscriptionName: string,
+  primaryDatacenter: string,
+): ResponsePromise<void> {
+  return axios.post<void>(
+    `/consistency/sync/topics/${topicQualifiedName}/subscriptions/${subscriptionName}`,
+    null,
+    {
+      params: {
+        primaryDatacenter: primaryDatacenter,
+      },
+    },
+  );
+}
