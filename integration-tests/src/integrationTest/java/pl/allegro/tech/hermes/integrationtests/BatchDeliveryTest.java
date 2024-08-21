@@ -86,8 +86,8 @@ public class BatchDeliveryTest {
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
         hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName(), subscriber.getEndpoint())
                 .withSubscriptionPolicy(buildBatchPolicy()
-                                .withBatchSize(2)
-                                .withBatchTime(Integer.MAX_VALUE)
+                                .withBatchSize(1)
+                                .withBatchTime(3)
                                 .withBatchVolume(1024)
                                 .build())
                 .withFilter(MESSAGE_NAME_FILTER)
