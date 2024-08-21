@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import pl.allegro.tech.hermes.api.BatchSubscriptionPolicy;
 import pl.allegro.tech.hermes.api.ContentType;
+import pl.allegro.tech.hermes.api.MessageFilterSpecification;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesExtension;
@@ -23,10 +24,12 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
+import static com.google.common.collect.ImmutableMap.of;
 import static java.util.Arrays.stream;
 import static pl.allegro.tech.hermes.api.BatchSubscriptionPolicy.Builder.batchSubscriptionPolicy;
 import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
+import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscriptionWithRandomName;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
 
 public class BatchDeliveryTest {
@@ -39,9 +42,18 @@ public class BatchDeliveryTest {
     @RegisterExtension
     public static final TestSubscribersExtension subscribers = new TestSubscribersExtension();
 
+    static final AvroUser BOB = new AvroUser("Bob", 50, "blue");
+
+    static final AvroUser ALICE = new AvroUser("Alice", 20, "magenta");
+
     private static final TestMessage[] SMALL_BATCH = TestMessage.simpleMessages(2);
 
     private static final TestMessage SINGLE_MESSAGE = TestMessage.simple();
+
+    private static final TestMessage SINGLE_MESSAGE_FILTERED = BOB.asTestMessage();
+
+    private static final MessageFilterSpecification MESSAGE_NAME_FILTER =
+            new MessageFilterSpecification(of("type", "jsonpath", "path", ".name", "matcher", "^Bob.*"));
 
     @Test
     public void shouldDeliverMessagesInBatch() {
@@ -65,6 +77,28 @@ public class BatchDeliveryTest {
 
         // then
         expectSingleBatch(subscriber, SMALL_BATCH);
+    }
+
+    @Test
+    public void shouldFilterIncomingEventsForBatch() {
+        // given
+        TestSubscriber subscriber = subscribers.createSubscriber();
+        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
+        hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName(), subscriber.getEndpoint())
+                .withSubscriptionPolicy(buildBatchPolicy()
+                                .withBatchSize(2)
+                                .withBatchTime(Integer.MAX_VALUE)
+                                .withBatchVolume(1024)
+                                .build())
+                .withFilter(MESSAGE_NAME_FILTER)
+                .build());
+
+        // when
+        hermes.api().publishUntilSuccess(topic.getQualifiedName(), ALICE.asJson());
+        hermes.api().publishUntilSuccess(topic.getQualifiedName(), BOB.asJson());
+
+        // then
+        expectSingleBatch(subscriber, SINGLE_MESSAGE_FILTERED);
     }
 
     @Test
