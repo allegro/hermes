@@ -48,9 +48,16 @@
         </tr>
       </tbody>
     </v-table>
-    <v-card-text dev> Sync state to Datacenter </v-card-text>
+    <v-card-text>
+      <p class="text-h5">{{ $t('consistency.sync.header') }}</p>
+      <p class="text-subtitle-1 mt-2">
+        {{ $t('consistency.sync.explanation') }}
+      </p>
+    </v-card-text>
     <v-card-actions>
+      <p class="text mt-2 mr-4 ml-2">{{ $t('consistency.sync.cta') }}</p>
       <v-btn
+        class="bg-primary"
         v-for="meta in metadata"
         @click="sync(meta.datacenter)"
         :key="meta.datacenter"
