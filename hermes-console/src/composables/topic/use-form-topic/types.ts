@@ -50,7 +50,8 @@ export interface FormValidators {
   ownerSource: FieldValidator<string>[];
   owner: FieldValidator<any>[];
   contentType: FieldValidator<string>[];
-  retentionTimeDuration: FieldValidator<number>[];
+  retentionTimeDurationHours: FieldValidator<number>[];
+  retentionTimeDurationDays: FieldValidator<number>[];
   maxMessageSize: FieldValidator<number>[];
   offlineRetentionTime: FieldValidator<number>[];
   ack: FieldValidator<string>[];

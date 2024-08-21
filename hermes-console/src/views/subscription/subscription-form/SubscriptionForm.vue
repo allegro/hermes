@@ -1,11 +1,13 @@
 <script setup lang="ts">
   import { computed, ref } from 'vue';
+  import { isAdmin } from '@/utils/roles-util';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import { useCreateSubscription } from '@/composables/subscription/use-create-subscription/useCreateSubscription';
   import { useEditSubscription } from '@/composables/subscription/use-edit-subscription/useEditSubscription';
   import { useGlobalI18n } from '@/i18n';
   import { useImportSubscription } from '@/composables/subscription/use-import-subscription/useImportSubscription';
   import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
+  import { useRoles } from '@/composables/roles/use-roles/useRoles';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import SelectField from '@/components/select-field/SelectField.vue';
   import SubscriptionHeaderFilters from '@/views/subscription/subscription-form/subscription-header-filters/SubscriptionHeaderFilters.vue';
@@ -39,6 +41,7 @@
       ? useCreateSubscription(props.topic)
       : useEditSubscription(props.topic, props.subscription!!);
   const { importFormData } = useImportSubscription();
+  const roles = useRoles(null, null)?.roles;
   const showHighRequestTimeoutAlert = computed(
     () =>
       form.value.subscriptionPolicy.requestTimeout >=
@@ -69,7 +72,7 @@
   }
 
   async function submit() {
-    if (isFormValid.value) {
+    if (isFormValid.value || isAdmin(roles?.value)) {
       const isOperationSucceeded = await createOrUpdateSubscription();
       if (isOperationSucceeded) {
         emit('created', form.value.name);
@@ -85,6 +88,13 @@
 </script>
 
 <template>
+  <console-alert
+    v-if="isAdmin(roles)"
+    :title="$t('subscriptionForm.warnings.adminForm.title')"
+    :text="$t('subscriptionForm.warnings.adminForm.text')"
+    type="warning"
+    class="mb-4"
+  />
   <v-file-input
     v-if="operation === 'add'"
     :label="$t('subscriptionForm.actions.import')"
