@@ -111,12 +111,14 @@ public class MessageBatchReceiver {
         if (maybeMessage.isPresent()) {
             Message message = maybeMessage.get();
 
-            Message transformed = messageConverterResolver.converterFor(message, subscription).convert(message, topic);
-            transformed = message().fromMessage(transformed).withData(wrap(subscription, transformed)).build();
+            if (!message.isFiltered()) {
+                Message transformed = messageConverterResolver.converterFor(message, subscription).convert(message, topic);
+                transformed = message().fromMessage(transformed).withData(wrap(subscription, transformed)).build();
 
-            trackers.get(subscription).logInflight(toMessageMetadata(transformed, subscription, batchId));
+                trackers.get(subscription).logInflight(toMessageMetadata(transformed, subscription, batchId));
 
-            return Optional.of(transformed);
+                return Optional.of(transformed);
+            }
         }
         return Optional.empty();
     }
