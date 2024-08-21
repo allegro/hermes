@@ -81,21 +81,19 @@ public class MessageBatchReceiver {
             if (maybeMessage.isPresent()) {
                 Message message = maybeMessage.get();
 
-                if (!message.isFiltered()) {
-                    if (batch.canFit(message.getData())) {
-                        batch.append(message.getData(), toMessageMetadata(message, subscription, batch.getId()));
-                    } else if (batch.isBiggerThanTotalCapacity(message.getData())) {
-                        logger.error("Message size exceeds buffer total capacity [size={}, capacity={}, subscription={}]",
-                                message.getData().length, batch.getCapacity(), subscription.getQualifiedName());
-                        discarded.add(toMessageMetadata(message, subscription));
-                    } else {
-                        logger.debug(
-                                "Message too large for current batch [message_size={}, subscription={}]",
-                                message.getData().length, subscription.getQualifiedName()
-                        );
-                        checkArgument(inflight.offer(message));
-                        break;
-                    }
+                if (batch.canFit(message.getData())) {
+                    batch.append(message.getData(), toMessageMetadata(message, subscription, batch.getId()));
+                } else if (batch.isBiggerThanTotalCapacity(message.getData())) {
+                    logger.error("Message size exceeds buffer total capacity [size={}, capacity={}, subscription={}]",
+                            message.getData().length, batch.getCapacity(), subscription.getQualifiedName());
+                    discarded.add(toMessageMetadata(message, subscription));
+                } else {
+                    logger.debug(
+                            "Message too large for current batch [message_size={}, subscription={}]",
+                            message.getData().length, subscription.getQualifiedName()
+                    );
+                    checkArgument(inflight.offer(message));
+                    break;
                 }
             }
         }
