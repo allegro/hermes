@@ -2,6 +2,7 @@
   import { useConsistencyStore } from '@/store/consistency/useConsistencyStore';
   import { useI18n } from 'vue-i18n';
   import { useRouter } from 'vue-router';
+  import { useSync } from '@/composables/sync/use-sync/useSync';
   import InconsistentMetadata from '@/views/admin/consistency/inconsistent-metadata/InconsistentMetadata.vue';
 
   const router = useRouter();
@@ -13,6 +14,7 @@
   >;
 
   const consistencyStore = useConsistencyStore();
+  const { syncGroup } = useSync();
 
   const group = consistencyStore.group(groupId);
 
@@ -33,6 +35,13 @@
       title: groupId,
     },
   ];
+
+  async function sync(datacenter: string) {
+    const succeeded = await syncGroup(groupId, datacenter);
+    if (succeeded) {
+      router.push('/ui/consistency');
+    }
+  }
 </script>
 
 <template>
@@ -52,6 +61,7 @@
     <InconsistentMetadata
       :metadata="group.inconsistentMetadata"
       v-if="group"
+      @sync="sync"
       class="mt-8"
     ></InconsistentMetadata>
     <v-card
