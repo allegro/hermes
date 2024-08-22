@@ -44,10 +44,6 @@ public class ManagementTestClient {
 
     private static final String RETRANSMISSION_PATH = "/topics/{topicName}/subscriptions/{subscriptionName}/retransmission";
 
-    private static final String BLACKLIST_TOPICS_PATH = "/blacklist/topics";
-
-    private static final String BLACKLIST_TOPIC_PATH = "/blacklist/topics/{topicName}";
-
     private static final String LATEST_UNDELIVERED_MESSAGE = "/topics/{topicName}/subscriptions/{subscriptionName}/undelivered";
 
     private static final String TOPIC_PREVIEW = "/topics/{topicName}/preview";
@@ -254,26 +250,6 @@ public class ManagementTestClient {
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public WebTestClient.ResponseSpec blacklistTopic(String topicQualifiedName) {
-        return webTestClient.post().uri(BLACKLIST_TOPICS_PATH)
-                .body(Mono.just(List.of(topicQualifiedName)), List.class)
-                .exchange();
-    }
-
-    public WebTestClient.ResponseSpec unblacklistTopic(String topicQualifiedName) {
-        return webTestClient.delete().uri(UriBuilder.fromUri(managementContainerUrl)
-                        .path(BLACKLIST_TOPIC_PATH)
-                        .build(topicQualifiedName))
-                .exchange();
-    }
-
-    public WebTestClient.ResponseSpec isTopicBlacklisted(String topicQualifiedName) {
-        return webTestClient.get().uri(UriBuilder.fromUri(managementContainerUrl)
-                        .path(BLACKLIST_TOPIC_PATH)
-                        .build(topicQualifiedName))
-                .exchange();
     }
 
     public WebTestClient.ResponseSpec getLatestUndeliveredMessage(String topicQualifiedName, String subscriptionName) {
