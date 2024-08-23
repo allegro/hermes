@@ -22,8 +22,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-import static java.util.stream.Collectors.toList;
-
 /**
  * Implementation note: this class is partially mutable and may be accessed from multiple
  * threads involved in message lifecycle, it must be thread safe.
@@ -208,11 +206,11 @@ public class Message implements FilterableMessage {
         return subscription;
     }
 
-    public boolean isFiltered() {
+    public synchronized boolean isFiltered() {
         return isFiltered;
     }
 
-    public void setFiltered(boolean filtered) {
+    public synchronized void setFiltered(boolean filtered) {
         isFiltered = filtered;
     }
 
