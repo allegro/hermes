@@ -26,8 +26,10 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 import static com.google.common.collect.ImmutableMap.of;
 import static java.util.Arrays.stream;
+import static org.awaitility.Awaitility.waitAtMost;
 import static pl.allegro.tech.hermes.api.BatchSubscriptionPolicy.Builder.batchSubscriptionPolicy;
 import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
+import static pl.allegro.tech.hermes.integrationtests.assertions.HermesAssertions.assertThatMetrics;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscriptionWithRandomName;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
@@ -84,9 +86,9 @@ public class BatchDeliveryTest {
         // given
         TestSubscriber subscriber = subscribers.createSubscriber();
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
-        hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName(), subscriber.getEndpoint())
+        Subscription subscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName(), subscriber.getEndpoint())
                 .withSubscriptionPolicy(buildBatchPolicy()
-                                .withBatchSize(1)
+                                .withBatchSize(2)
                                 .withBatchTime(3)
                                 .withBatchVolume(1024)
                                 .build())
@@ -94,11 +96,26 @@ public class BatchDeliveryTest {
                 .build());
 
         // when
-        hermes.api().publishUntilSuccess(topic.getQualifiedName(), ALICE.asJson());
         hermes.api().publishUntilSuccess(topic.getQualifiedName(), BOB.asJson());
+        hermes.api().publishUntilSuccess(topic.getQualifiedName(), ALICE.asJson());
 
         // then
         expectSingleBatch(subscriber, SINGLE_MESSAGE_FILTERED);
+        waitAtMost(Duration.ofSeconds(10)).untilAsserted(() ->
+                hermes.api().getConsumersMetrics()
+                        .expectStatus()
+                        .isOk()
+                        .expectBody(String.class)
+                        .value((body) -> assertThatMetrics(body)
+                                .contains("hermes_consumers_subscription_filtered_out_total")
+                                .withLabels(
+                                        "group", topic.getName().getGroupName(),
+                                        "subscription", subscription.getName(),
+                                        "topic", topic.getName().getName()
+                                )
+                                .withValue(1.0)
+                        )
+        );
     }
 
     @Test
