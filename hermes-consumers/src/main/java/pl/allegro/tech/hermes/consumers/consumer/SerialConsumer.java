@@ -124,15 +124,19 @@ public class SerialConsumer implements Consumer {
             if (maybeMessage.isPresent()) {
                 Message message = maybeMessage.get();
 
-                if (logger.isDebugEnabled()) {
-                    logger.debug(
-                            "Read message {} partition {} offset {}",
-                            message.getContentType(), message.getPartition(), message.getOffset()
-                    );
-                }
+                if (message.isFiltered()) {
+                    profiler.flushMeasurements(ConsumerRun.FILTERED);
+                } else {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug(
+                                "Read message {} partition {} offset {}",
+                                message.getContentType(), message.getPartition(), message.getOffset()
+                        );
+                    }
 
-                Message convertedMessage = messageConverterResolver.converterFor(message, subscription).convert(message, topic);
-                sendMessage(convertedMessage, profiler);
+                    Message convertedMessage = messageConverterResolver.converterFor(message, subscription).convert(message, topic);
+                    sendMessage(convertedMessage, profiler);
+                }
             } else {
                 pendingOffsets.releaseSlot();
                 profiler.flushMeasurements(ConsumerRun.EMPTY);
