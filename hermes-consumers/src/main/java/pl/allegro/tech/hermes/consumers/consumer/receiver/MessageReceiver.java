@@ -12,8 +12,8 @@ public interface MessageReceiver {
 
     /**
      * Retrieves the next available message from the queue.
-     * <p>
-     * Depending on the context, the returned {@link Optional} can contain:
+     *
+     * <p>Depending on the context, the returned {@link Optional} can contain:
      * <ul>
      *   <li>A {@link Message} that contains a valid message ready to be sent.</li>
      *   <li>A {@link Message} with the `isFiltered` flag set, indicating that the message
