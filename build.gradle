@@ -87,6 +87,15 @@ allprojects {
         testImplementation group: 'org.assertj', name: 'assertj-core', version: versions.assertj
         testImplementation group: 'org.awaitility', name: 'awaitility', version: '4.2.1'
 
+        // Allure Spock adapter
+        testImplementation(platform("io.qameta.allure:allure-bom:2.24.0"))
+        testImplementation("io.qameta.allure:allure-spock2")
+        testImplementation("io.qameta.allure:allure-junit-platform")
+
+        // Spock framework
+        testImplementation(platform("org.spockframework:spock-bom:${versions.spock}"))
+        testImplementation("org.spockframework:spock-core")
+
         annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: versions.spring
     }
 
