@@ -26,9 +26,9 @@ public class GoogleBigQueryJsonStreamWriterFactory implements GoogleBigQueryStre
     private final Credentials credentials;
     private final BigQueryWriteClient writeClient;
 
-    public GoogleBigQueryJsonStreamWriterFactory(CredentialsProvider credentials, BigQueryWriteSettings writeSettings) throws IOException {
+    public GoogleBigQueryJsonStreamWriterFactory(CredentialsProvider credentials,  GoogleBigQueryJsonWriteClientProvider writeClientProvider) throws IOException {
         this.credentials = credentials.getCredentials();
-        this.writeClient = BigQueryWriteClient.create(writeSettings);
+        this.writeClient = writeClientProvider.getWriteClient();
     }
 
     public JsonStreamWriter getWriterForStream(String stream) {
