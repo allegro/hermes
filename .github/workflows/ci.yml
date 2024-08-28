@@ -58,7 +58,7 @@ jobs:
   allureReport:
     if: always()
     name: Generate Allure Report
-    needs: tests
+    needs: build
     runs-on: [ self-hosted, ubuntu-latest ]
     steps:
       - name: Download artifact unitTests
