@@ -69,7 +69,8 @@ allprojects {
             junit_jupiter     : '5.10.2',
             testcontainers    : '1.19.8',
             spring            : '3.2.4',
-            assertj           : '3.25.3'
+            assertj           : '3.25.3',
+            allure            : '2.25.0'
     ]
 
     repositories {
@@ -88,7 +89,7 @@ allprojects {
         testImplementation group: 'org.awaitility', name: 'awaitility', version: '4.2.1'
 
         // Allure Spock adapter
-        testImplementation(platform("io.qameta.allure:allure-bom:2.24.0"))
+        testImplementation(platform("io.qameta.allure:allure-bom:${versions.allure}"))
         testImplementation("io.qameta.allure:allure-spock2")
         testImplementation("io.qameta.allure:allure-junit-platform")
 

@@ -12,6 +12,7 @@ jobs:
     strategy:
       matrix:
         tasks: [
+          # Add/remove task in Allure Report job also
           {alias: "unitTests", name: "check"},
           {alias: "integrationTests", name: "integrationTest"},
           {alias: "slowIntegrationTests", name: "slowIntegrationTest"},
@@ -41,6 +42,43 @@ jobs:
           name: ${{ matrix.tasks.name }}-test-report
           path: '**/build/test-results/**/TEST-*.xml'
           retention-days: 90
+      - name: Generate test summary
+        uses: test-summary/action@v2
+        if: success() || failure()
+        with:
+          paths: '**/build/test-results/**/TEST-*.xml'
+          show: fail, skip
+      - name: Upload artifact
+        if: always() && matrix.tasks.alias != 'benchmark'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.tasks.alias }}
+          path: build/allure-results
+
+  allureReport:
+    if: always()
+    name: Generate Allure Report
+    needs: tests
+    runs-on: [ self-hosted, ubuntu-latest ]
+    steps:
+      - name: Download artifact unitTests
+        uses: actions/download-artifact@v4
+        if: always()
+        with:
+          name: unitTests
+          path: allure-results
+      - name: Download artifact integrationTests
+        uses: actions/download-artifact@v4
+        if: always()
+        with:
+          name: integrationTests
+          path: allure-results
+      - name: Download artifact slowIntegrationTests
+        uses: actions/download-artifact@v4
+        if: always()
+        with:
+          name: slowIntegrationTests
+          path: allure-results
       - name: Load test report history
         uses: actions/checkout@v4
         if: always()
@@ -49,22 +87,16 @@ jobs:
           ref: gh-pages
           path: gh-pages
       - name: Build test report
-        uses: simple-elf/allure-report-action@v1.7
+        uses: simple-elf/allure-report-action@v1.9
         if: always()
         with:
           gh_pages: gh-pages
           allure_history: allure-history
-          allure_results: build/allure-results
+          allure_results: allure-results
       - name: Publish test report
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         if: always()
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
           publish_dir: allure-history
-      - name: Generate test summary
-        uses: test-summary/action@v2
-        if: success() || failure()
-        with:
-          paths: '**/build/test-results/**/TEST-*.xml'
-          show: fail, skip
