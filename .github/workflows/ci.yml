@@ -29,7 +29,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ci-console
-          path: /allure-results
+          path: allure-results/
   build:
     runs-on: ubuntu-latest
     strategy:
