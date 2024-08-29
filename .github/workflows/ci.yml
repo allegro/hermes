@@ -25,7 +25,7 @@ jobs:
       - name: Run frontend tests
         run: yarn test:unit
       - name: Upload artifact
-        if: always()
+        if: always() && github.ref == 'refs/heads/master'
         uses: actions/upload-artifact@v4
         with:
           name: ci-console
@@ -72,14 +72,14 @@ jobs:
           paths: '**/build/test-results/**/TEST-*.xml'
           show: fail, skip
       - name: Upload artifact
-        if: always() && matrix.tasks.alias != 'benchmark'
+        if: always() && github.ref == 'refs/heads/master' && matrix.tasks.alias != 'benchmark'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.tasks.alias }}
           path: build/allure-results
 
   allureReport:
-    if: always()
+    if: always() && github.ref == 'refs/heads/master'
     name: Generate Allure Report
     needs: [ build, console ]
     runs-on: ubuntu-latest
