@@ -1,3 +1,4 @@
+import AllureReporter from 'allure-vitest/reporter';
 import { defineConfig } from 'vitest/config';
 import { fileURLToPath, URL } from 'node:url';
 import vue from '@vitejs/plugin-vue';
@@ -17,6 +18,7 @@ export default defineConfig({
     },
     environment: 'jsdom',
     globals: true,
-    setupFiles: ['vitest.setup.ts'],
+    setupFiles: ['vitest.setup.ts', 'allure-vitest/setup'],
+    reporters: ["default", new AllureReporter({})],
   },
 });

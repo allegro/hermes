@@ -7,6 +7,29 @@ on:
     branches: [ master ]
 
 jobs:
+  console:
+    name: ci-console
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./hermes-console
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Run linter
+        run: yarn && yarn lint
+      - name: Run frontend tests
+        run: yarn test:unit
+      - name: Upload artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-console
+          path: allure-results
   build:
     runs-on: ubuntu-latest
     strategy:
@@ -58,7 +81,7 @@ jobs:
   allureReport:
     if: always()
     name: Generate Allure Report
-    needs: build
+    needs: [ build, console ]
     runs-on: ubuntu-latest
     steps:
       - name: Download artifact unitTests
@@ -78,6 +101,12 @@ jobs:
         if: always()
         with:
           name: slowIntegrationTests
+          path: allure-results
+      - name: Download artifact ci-console
+        uses: actions/download-artifact@v4
+        if: always()
+        with:
+          name: ci-console
           path: allure-results
       - name: Load test report history
         uses: actions/checkout@v4
