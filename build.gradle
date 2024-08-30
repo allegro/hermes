@@ -81,17 +81,17 @@ allprojects {
         implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.4'
         implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.14.0'
 
+        // Allure Spock adapter
+        testImplementation(platform("io.qameta.allure:allure-bom:${versions.allure}"))
+        testImplementation("io.qameta.allure:allure-spock2")
+        testImplementation("io.qameta.allure:allure-junit-platform")
+
         testImplementation group: 'junit', name: 'junit', version: '4.11'
         testImplementation group: 'com.tngtech.java', name: 'junit-dataprovider', version: '1.10.0'
         testImplementation group: 'pl.pragmatists', name: 'JUnitParams', version: '1.0.2'
         testImplementation group: 'org.mockito', name: 'mockito-core', version: '5.11.0'
         testImplementation group: 'org.assertj', name: 'assertj-core', version: versions.assertj
         testImplementation group: 'org.awaitility', name: 'awaitility', version: '4.2.1'
-
-        // Allure Spock adapter
-        testImplementation(platform("io.qameta.allure:allure-bom:${versions.allure}"))
-        testImplementation("io.qameta.allure:allure-spock2")
-        testImplementation("io.qameta.allure:allure-junit-platform")
 
         annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: versions.spring
     }
