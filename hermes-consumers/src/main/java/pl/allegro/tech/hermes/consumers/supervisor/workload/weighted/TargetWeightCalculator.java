@@ -5,5 +5,5 @@ import java.util.Map;
 
 public interface TargetWeightCalculator {
 
-    Map<String, Weight> calculate(Collection<ConsumerNode> consumers);
+  Map<String, Weight> calculate(Collection<ConsumerNode> consumers);
 }

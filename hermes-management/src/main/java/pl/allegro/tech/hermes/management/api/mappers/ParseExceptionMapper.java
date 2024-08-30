@@ -8,13 +8,13 @@ import pl.allegro.tech.hermes.management.infrastructure.query.parser.ParseExcept
 @Provider
 public class ParseExceptionMapper extends AbstractExceptionMapper<ParseException> {
 
-    @Override
-    Response.Status httpStatus() {
-        return Response.Status.BAD_REQUEST;
-    }
+  @Override
+  Response.Status httpStatus() {
+    return Response.Status.BAD_REQUEST;
+  }
 
-    @Override
-    ErrorCode errorCode() {
-        return ErrorCode.FORMAT_ERROR;
-    }
+  @Override
+  ErrorCode errorCode() {
+    return ErrorCode.FORMAT_ERROR;
+  }
 }

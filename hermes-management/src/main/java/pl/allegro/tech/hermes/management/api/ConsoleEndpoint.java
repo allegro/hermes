@@ -14,26 +14,26 @@ import pl.allegro.tech.hermes.management.domain.console.ConsoleService;
 @Api(value = "/", description = "Hermes console")
 public class ConsoleEndpoint {
 
-    private ConsoleService service;
+  private ConsoleService service;
 
-    public ConsoleEndpoint(ConsoleService service) {
-        this.service = service;
-    }
+  public ConsoleEndpoint(ConsoleService service) {
+    this.service = service;
+  }
 
-    @GET
-    @Path("/console")
-    @Produces("application/javascript")
-    @ApiOperation(value = "Hermes console configuration", httpMethod = HttpMethod.GET)
-    @Deprecated
-    public String getConfiguration() {
-        return service.getConfiguration();
-    }
+  @GET
+  @Path("/console")
+  @Produces("application/javascript")
+  @ApiOperation(value = "Hermes console configuration", httpMethod = HttpMethod.GET)
+  @Deprecated
+  public String getConfiguration() {
+    return service.getConfiguration();
+  }
 
-    @GET
-    @Path("/console")
-    @Produces("application/json")
-    @ApiOperation(value = "Hermes console configuration", httpMethod = HttpMethod.GET)
-    public String getConfigurationJson() {
-        return service.getConfigurationJson();
-    }
+  @GET
+  @Path("/console")
+  @Produces("application/json")
+  @ApiOperation(value = "Hermes console configuration", httpMethod = HttpMethod.GET)
+  public String getConfigurationJson() {
+    return service.getConfigurationJson();
+  }
 }

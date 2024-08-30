@@ -6,8 +6,7 @@ import pl.allegro.tech.hermes.consumers.consumer.rate.calculator.OutputRateCalcu
 
 public class HermesConsumersAssertions extends Assertions {
 
-    public static OutputRateCalculationResultAssert assertThat(OutputRateCalculationResult actual) {
-        return OutputRateCalculationResultAssert.assertThat(actual);
-    }
-
+  public static OutputRateCalculationResultAssert assertThat(OutputRateCalculationResult actual) {
+    return OutputRateCalculationResultAssert.assertThat(actual);
+  }
 }

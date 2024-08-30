@@ -5,17 +5,17 @@ import org.springframework.stereotype.Service;
 @Service
 public class ConsoleService {
 
-    private ConsoleConfigurationRepository repository;
+  private ConsoleConfigurationRepository repository;
 
-    public ConsoleService(ConsoleConfigurationRepository repository) {
-        this.repository = repository;
-    }
+  public ConsoleService(ConsoleConfigurationRepository repository) {
+    this.repository = repository;
+  }
 
-    public String getConfiguration() {
-        return "var config = " + repository.getConfiguration();
-    }
+  public String getConfiguration() {
+    return "var config = " + repository.getConfiguration();
+  }
 
-    public String getConfigurationJson() {
-        return repository.getConfiguration();
-    }
+  public String getConfigurationJson() {
+    return repository.getConfiguration();
+  }
 }

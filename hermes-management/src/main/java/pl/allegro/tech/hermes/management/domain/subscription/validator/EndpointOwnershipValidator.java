@@ -5,5 +5,5 @@ import pl.allegro.tech.hermes.api.OwnerId;
 
 public interface EndpointOwnershipValidator {
 
-    void check(OwnerId owner, EndpointAddress endpoint);
+  void check(OwnerId owner, EndpointAddress endpoint);
 }

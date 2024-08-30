@@ -1,12 +1,11 @@
 package pl.allegro.tech.hermes.management.domain.readiness;
 
-import pl.allegro.tech.hermes.api.DatacenterReadiness;
-
 import java.util.List;
+import pl.allegro.tech.hermes.api.DatacenterReadiness;
 
 public interface DatacenterReadinessRepository {
 
-    List<DatacenterReadiness> getReadiness();
+  List<DatacenterReadiness> getReadiness();
 
-    void setReadiness(List<DatacenterReadiness> datacenterReadiness);
+  void setReadiness(List<DatacenterReadiness> datacenterReadiness);
 }

@@ -13,10 +13,11 @@ import pl.allegro.tech.hermes.env.IntegrationTestKafkaNamesMapperFactory;
 @EnableConfigurationProperties(KafkaClustersProperties.class)
 public class KafkaNamesMapperConfiguration {
 
-    @Bean
-    @Primary
-    @Profile("integration")
-    public KafkaNamesMapper testKafkaNamesMapper(KafkaClustersProperties kafkaClustersProperties) {
-        return new IntegrationTestKafkaNamesMapperFactory(kafkaClustersProperties.getNamespace()).create();
-    }
+  @Bean
+  @Primary
+  @Profile("integration")
+  public KafkaNamesMapper testKafkaNamesMapper(KafkaClustersProperties kafkaClustersProperties) {
+    return new IntegrationTestKafkaNamesMapperFactory(kafkaClustersProperties.getNamespace())
+        .create();
+  }
 }

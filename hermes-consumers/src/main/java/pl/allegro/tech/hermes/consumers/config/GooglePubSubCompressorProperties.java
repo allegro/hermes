@@ -5,33 +5,33 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "consumer.google.pubsub.compressor")
 public class GooglePubSubCompressorProperties {
 
-    private Boolean enabled = false;
+  private Boolean enabled = false;
 
-    private String compressionLevel = "high";
+  private String compressionLevel = "high";
 
-    private Long compressionThresholdBytes = 400L;
+  private Long compressionThresholdBytes = 400L;
 
-    public Boolean isEnabled() {
-        return enabled;
-    }
+  public Boolean isEnabled() {
+    return enabled;
+  }
 
-    public void setEnabled(Boolean enabled) {
-        this.enabled = enabled;
-    }
+  public void setEnabled(Boolean enabled) {
+    this.enabled = enabled;
+  }
 
-    public String getCompressionLevel() {
-        return compressionLevel;
-    }
+  public String getCompressionLevel() {
+    return compressionLevel;
+  }
 
-    public void setCompressionLevel(String compressionLevel) {
-        this.compressionLevel = compressionLevel;
-    }
+  public void setCompressionLevel(String compressionLevel) {
+    this.compressionLevel = compressionLevel;
+  }
 
-    public Long getCompressionThresholdBytes() {
-        return compressionThresholdBytes;
-    }
+  public Long getCompressionThresholdBytes() {
+    return compressionThresholdBytes;
+  }
 
-    public void setCompressionThresholdBytes(Long compressionThresholdBytes) {
-        this.compressionThresholdBytes = compressionThresholdBytes;
-    }
+  public void setCompressionThresholdBytes(Long compressionThresholdBytes) {
+    this.compressionThresholdBytes = compressionThresholdBytes;
+  }
 }

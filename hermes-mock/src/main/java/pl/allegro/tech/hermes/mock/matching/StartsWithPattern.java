@@ -6,16 +6,16 @@ import wiremock.com.fasterxml.jackson.annotation.JsonProperty;
 
 public class StartsWithPattern extends StringValuePattern {
 
-        public StartsWithPattern(@JsonProperty("startsWith") String expectedValue) {
-            super(expectedValue);
-        }
+  public StartsWithPattern(@JsonProperty("startsWith") String expectedValue) {
+    super(expectedValue);
+  }
 
-        public String getStartsWith() {
-            return expectedValue;
-        }
+  public String getStartsWith() {
+    return expectedValue;
+  }
 
-        @Override
-        public MatchResult match(String value) {
-            return MatchResult.of(value != null && value.startsWith(expectedValue));
-        }
+  @Override
+  public MatchResult match(String value) {
+    return MatchResult.of(value != null && value.startsWith(expectedValue));
+  }
 }

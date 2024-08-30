@@ -6,16 +6,16 @@ import pl.allegro.tech.hermes.common.exception.HermesException;
 
 public class TopicNotExistsException extends HermesException {
 
-    public TopicNotExistsException(TopicName topicName, Exception exception) {
-        super(String.format("Topic %s does not exist", topicName.qualifiedName()), exception);
-    }
+  public TopicNotExistsException(TopicName topicName, Exception exception) {
+    super(String.format("Topic %s does not exist", topicName.qualifiedName()), exception);
+  }
 
-    public TopicNotExistsException(TopicName topicName) {
-        this(topicName, null);
-    }
+  public TopicNotExistsException(TopicName topicName) {
+    this(topicName, null);
+  }
 
-    @Override
-    public ErrorCode getCode() {
-        return ErrorCode.TOPIC_NOT_EXISTS;
-    }
+  @Override
+  public ErrorCode getCode() {
+    return ErrorCode.TOPIC_NOT_EXISTS;
+  }
 }
