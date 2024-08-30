@@ -70,7 +70,7 @@ allprojects {
             testcontainers    : '1.19.8',
             spring            : '3.2.4',
             assertj           : '3.25.3',
-            allure            : '2.29.0'
+            allure            : '2.25.0'
     ]
 
     repositories {
