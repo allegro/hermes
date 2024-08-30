@@ -86,6 +86,10 @@ allprojects {
         testImplementation("io.qameta.allure:allure-spock2")
         testImplementation("io.qameta.allure:allure-junit-platform")
 
+        // Spock framework
+        testImplementation(platform("org.spockframework:spock-bom:${versions.spock}"))
+        testImplementation("org.spockframework:spock-core")
+
         testImplementation group: 'junit', name: 'junit', version: '4.11'
         testImplementation group: 'com.tngtech.java', name: 'junit-dataprovider', version: '1.10.0'
         testImplementation group: 'pl.pragmatists', name: 'JUnitParams', version: '1.0.2'
