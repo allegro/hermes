@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import { onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router';
   import { onMounted, ref } from 'vue';
   import { SearchFilter, useSearch } from '@/composables/search/useSearch';
   import { useI18n } from 'vue-i18n';
@@ -6,7 +7,6 @@
   import LoadingSpinner from '@/components/loading-spinner/LoadingSpinner.vue';
   import SubscriptionSearchResults from '@/views/search/subscription-search-results/SubscriptionSearchResults.vue';
   import TopicSearchResults from '@/views/search/topic-search-results/TopicSearchResults.vue';
-  import { onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router';
 
   const { t } = useI18n();
   const route = useRoute();
@@ -14,18 +14,33 @@
 
   const searchCollectionValues = ['subscriptions', 'topics'];
   const searchCollections = [
-    { title: t('search.collection.subscriptions'), value: searchCollectionValues[0] },
+    {
+      title: t('search.collection.subscriptions'),
+      value: searchCollectionValues[0],
+    },
     { title: t('search.collection.topics'), value: searchCollectionValues[1] },
   ];
-  const selectedSearchCollection = ref(searchCollectionValues.includes(route.query.collection) ? route.query.collection : searchCollectionValues[0]);
+  const selectedSearchCollection = ref(
+    searchCollectionValues.includes(route.query.collection)
+      ? route.query.collection
+      : searchCollectionValues[0],
+  );
 
-  const searchFilterValues = [SearchFilter.ENDPOINT, SearchFilter.NAME, SearchFilter.OWNER];
+  const searchFilterValues = [
+    SearchFilter.ENDPOINT,
+    SearchFilter.NAME,
+    SearchFilter.OWNER,
+  ];
   const searchFilters = [
     { title: t('search.filter.endpoint'), value: searchFilterValues[0] },
     { title: t('search.filter.name'), value: searchFilterValues[1] },
     { title: t('search.filter.owner'), value: searchFilterValues[2] },
   ];
-  const selectedSearchFilter = ref(searchFilterValues.includes(route.query.filter) ? route.query.filter : searchFilterValues[0]);
+  const selectedSearchFilter = ref(
+    searchFilterValues.includes(route.query.filter)
+      ? route.query.filter
+      : searchFilterValues[0],
+  );
 
   const searchPattern = ref(route.query.pattern || '');
 
@@ -66,8 +81,14 @@
   }
 
   onBeforeRouteUpdate((to) => {
-    selectedSearchCollection.value = searchCollectionValues.includes(to.query.collection) ? to.query.collection : searchCollectionValues[0];
-    selectedSearchFilter.value = searchFilterValues.includes(to.query.filter) ? to.query.filter : searchFilterValues[0];
+    selectedSearchCollection.value = searchCollectionValues.includes(
+      to.query.collection,
+    )
+      ? to.query.collection
+      : searchCollectionValues[0];
+    selectedSearchFilter.value = searchFilterValues.includes(to.query.filter)
+      ? to.query.filter
+      : searchFilterValues[0];
     searchPattern.value = to.query.pattern || '';
     search();
   });
