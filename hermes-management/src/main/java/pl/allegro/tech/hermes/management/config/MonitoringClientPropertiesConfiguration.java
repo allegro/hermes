@@ -12,10 +12,10 @@ avoiding circular dependencies between beans.
 @Configuration
 public class MonitoringClientPropertiesConfiguration {
 
-    @Bean
-    @ConfigurationProperties("prometheus.client")
-    @ConditionalOnProperty(value = "prometheus.client.enabled", havingValue = "true")
-    public PrometheusMonitoringClientProperties prometheusMonitoringClientProperties() {
-        return new PrometheusMonitoringClientProperties();
-    }
+  @Bean
+  @ConfigurationProperties("prometheus.client")
+  @ConditionalOnProperty(value = "prometheus.client.enabled", havingValue = "true")
+  public PrometheusMonitoringClientProperties prometheusMonitoringClientProperties() {
+    return new PrometheusMonitoringClientProperties();
+  }
 }

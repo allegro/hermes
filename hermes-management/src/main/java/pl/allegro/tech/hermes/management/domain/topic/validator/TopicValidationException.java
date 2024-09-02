@@ -5,16 +5,16 @@ import pl.allegro.tech.hermes.management.domain.ManagementException;
 
 public class TopicValidationException extends ManagementException {
 
-    public TopicValidationException(String message) {
-        super(message);
-    }
+  public TopicValidationException(String message) {
+    super(message);
+  }
 
-    public TopicValidationException(String message, Exception cause) {
-        super(message, cause);
-    }
+  public TopicValidationException(String message, Exception cause) {
+    super(message, cause);
+  }
 
-    @Override
-    public ErrorCode getCode() {
-        return ErrorCode.VALIDATION_ERROR;
-    }
+  @Override
+  public ErrorCode getCode() {
+    return ErrorCode.VALIDATION_ERROR;
+  }
 }

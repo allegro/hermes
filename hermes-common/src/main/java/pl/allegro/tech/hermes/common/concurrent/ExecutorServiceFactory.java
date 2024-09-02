@@ -4,5 +4,5 @@ import java.util.concurrent.ScheduledExecutorService;
 
 public interface ExecutorServiceFactory {
 
-    ScheduledExecutorService createSingleThreadScheduledExecutor(String nameFormat);
+  ScheduledExecutorService createSingleThreadScheduledExecutor(String nameFormat);
 }

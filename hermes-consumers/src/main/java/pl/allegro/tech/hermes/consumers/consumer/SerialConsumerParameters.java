@@ -4,7 +4,7 @@ import java.time.Duration;
 
 public interface SerialConsumerParameters {
 
-    Duration getSignalProcessingInterval();
+  Duration getSignalProcessingInterval();
 
-    int getInflightSize();
+  int getInflightSize();
 }

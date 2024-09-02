@@ -9,26 +9,27 @@ import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 
 class ExchangeMetrics implements ExchangeCompletionListener {
 
-    private static final Logger logger = LoggerFactory.getLogger(ExchangeMetrics.class);
+  private static final Logger logger = LoggerFactory.getLogger(ExchangeMetrics.class);
 
-    private final StartedTimersPair producerLatencyTimers;
-    private final CachedTopic cachedTopic;
+  private final StartedTimersPair producerLatencyTimers;
+  private final CachedTopic cachedTopic;
 
-    ExchangeMetrics(CachedTopic cachedTopic) {
-        this.cachedTopic = cachedTopic;
-        producerLatencyTimers = cachedTopic.startProducerLatencyTimers();
+  ExchangeMetrics(CachedTopic cachedTopic) {
+    this.cachedTopic = cachedTopic;
+    producerLatencyTimers = cachedTopic.startProducerLatencyTimers();
+  }
+
+  @Override
+  public void exchangeEvent(HttpServerExchange exchange, NextListener nextListener) {
+    try {
+      cachedTopic.markRequestMeter();
+      cachedTopic.markStatusCodeMeter(exchange.getStatusCode());
+      producerLatencyTimers.close();
+    } catch (RuntimeException e) {
+      logger.error(
+          "Exception while invoking metrics for topic {}", cachedTopic.getQualifiedName(), e);
+    } finally {
+      nextListener.proceed();
     }
-
-    @Override
-    public void exchangeEvent(HttpServerExchange exchange, NextListener nextListener) {
-        try {
-            cachedTopic.markRequestMeter();
-            cachedTopic.markStatusCodeMeter(exchange.getStatusCode());
-            producerLatencyTimers.close();
-        } catch (RuntimeException e) {
-            logger.error("Exception while invoking metrics for topic {}", cachedTopic.getQualifiedName(), e);
-        } finally {
-            nextListener.proceed();
-        }
-    }
+  }
 }

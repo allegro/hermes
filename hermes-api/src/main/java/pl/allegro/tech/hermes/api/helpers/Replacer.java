@@ -6,7 +6,9 @@ import java.util.stream.Collectors;
 
 public final class Replacer {
 
-    public static List<String> replaceInAll(String regex, String replacement, String... strings) {
-        return Arrays.stream(strings).map(s -> s.replaceAll(regex, replacement)).collect(Collectors.toList());
-    }
+  public static List<String> replaceInAll(String regex, String replacement, String... strings) {
+    return Arrays.stream(strings)
+        .map(s -> s.replaceAll(regex, replacement))
+        .collect(Collectors.toList());
+  }
 }

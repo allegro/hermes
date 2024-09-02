@@ -1,11 +1,10 @@
 package pl.allegro.tech.hermes.client;
 
-import reactor.core.publisher.Mono;
-
 import java.net.URI;
+import reactor.core.publisher.Mono;
 
 @FunctionalInterface
 public interface ReactiveHermesSender {
 
-    Mono<HermesResponse> sendReactively(URI uri, HermesMessage message);
+  Mono<HermesResponse> sendReactively(URI uri, HermesMessage message);
 }

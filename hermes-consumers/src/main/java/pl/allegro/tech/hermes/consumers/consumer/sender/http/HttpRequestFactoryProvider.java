@@ -6,5 +6,6 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
 
 public interface HttpRequestFactoryProvider {
-    HttpRequestFactory provideRequestFactory(Subscription subscription, HttpClient httpClient, MetadataAppender<Request> metadataAppender);
+  HttpRequestFactory provideRequestFactory(
+      Subscription subscription, HttpClient httpClient, MetadataAppender<Request> metadataAppender);
 }
