@@ -5,15 +5,16 @@ import jakarta.ws.rs.ext.Provider;
 import pl.allegro.tech.hermes.api.ErrorCode;
 
 @Provider
-public class IllegalArgumentExceptionMapper extends AbstractExceptionMapper<IllegalArgumentException> {
+public class IllegalArgumentExceptionMapper
+    extends AbstractExceptionMapper<IllegalArgumentException> {
 
-    @Override
-    Response.Status httpStatus() {
-        return Response.Status.BAD_REQUEST;
-    }
+  @Override
+  Response.Status httpStatus() {
+    return Response.Status.BAD_REQUEST;
+  }
 
-    @Override
-    ErrorCode errorCode() {
-        return ErrorCode.OTHER;
-    }
+  @Override
+  ErrorCode errorCode() {
+    return ErrorCode.OTHER;
+  }
 }

@@ -7,23 +7,21 @@ import org.assertj.core.api.Assertions;
 
 public final class HermesAssertions extends Assertions {
 
-    private HermesAssertions() {
-    }
+  private HermesAssertions() {}
 
-    public static HttpResponseAssertion assertThat(Response response) {
-        return new HttpResponseAssertion(response);
-    }
+  public static HttpResponseAssertion assertThat(Response response) {
+    return new HttpResponseAssertion(response);
+  }
 
+  public static WiremockRequestAssertion assertThat(LoggedRequest request) {
+    return new WiremockRequestAssertion(request);
+  }
 
-    public static WiremockRequestAssertion assertThat(LoggedRequest request) {
-        return new WiremockRequestAssertion(request);
-    }
+  public static PrometheusMetricsAssertion assertThatMetrics(String body) {
+    return new PrometheusMetricsAssertion(body);
+  }
 
-    public static PrometheusMetricsAssertion assertThatMetrics(String body) {
-        return new PrometheusMetricsAssertion(body);
-    }
-
-    public static GooglePubSubAssertion assertThat(PubsubMessage message) {
-        return new GooglePubSubAssertion(message);
-    }
+  public static GooglePubSubAssertion assertThat(PubsubMessage message) {
+    return new GooglePubSubAssertion(message);
+  }
 }

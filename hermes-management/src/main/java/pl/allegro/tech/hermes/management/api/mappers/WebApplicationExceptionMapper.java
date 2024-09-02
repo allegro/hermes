@@ -11,12 +11,11 @@ import pl.allegro.tech.hermes.api.ErrorDescription;
 @Provider
 public class WebApplicationExceptionMapper implements ExceptionMapper<WebApplicationException> {
 
-    @Override
-    public Response toResponse(WebApplicationException exception) {
-        return Response
-                .status(exception.getResponse().getStatus())
-                .type(MediaType.APPLICATION_JSON_TYPE)
-                .entity(new ErrorDescription(exception.getMessage(), ErrorCode.OTHER))
-                .build();
-    }
+  @Override
+  public Response toResponse(WebApplicationException exception) {
+    return Response.status(exception.getResponse().getStatus())
+        .type(MediaType.APPLICATION_JSON_TYPE)
+        .entity(new ErrorDescription(exception.getMessage(), ErrorCode.OTHER))
+        .build();
+  }
 }

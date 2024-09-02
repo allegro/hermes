@@ -4,15 +4,15 @@ import java.time.Duration;
 
 public interface HttpClientParameters {
 
-        int getThreadPoolSize();
+  int getThreadPoolSize();
 
-        boolean isThreadPoolMonitoringEnabled();
+  boolean isThreadPoolMonitoringEnabled();
 
-        boolean isFollowRedirectsEnabled();
+  boolean isFollowRedirectsEnabled();
 
-        Duration getIdleTimeout();
+  Duration getIdleTimeout();
 
-        int getMaxRequestsQueuedPerDestination();
+  int getMaxRequestsQueuedPerDestination();
 
-        Duration getConnectionTimeout();
+  Duration getConnectionTimeout();
 }

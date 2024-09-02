@@ -8,13 +8,13 @@ import pl.allegro.tech.hermes.management.api.auth.AuthException;
 @Provider
 public class AuthExceptionMapper extends AbstractExceptionMapper<AuthException> {
 
-    @Override
-    Response.Status httpStatus() {
-        return Response.Status.FORBIDDEN;
-    }
+  @Override
+  Response.Status httpStatus() {
+    return Response.Status.FORBIDDEN;
+  }
 
-    @Override
-    ErrorCode errorCode() {
-        return ErrorCode.AUTH_ERROR;
-    }
+  @Override
+  ErrorCode errorCode() {
+    return ErrorCode.AUTH_ERROR;
+  }
 }

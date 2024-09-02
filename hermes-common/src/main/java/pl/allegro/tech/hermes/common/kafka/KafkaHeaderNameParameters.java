@@ -2,10 +2,9 @@ package pl.allegro.tech.hermes.common.kafka;
 
 public interface KafkaHeaderNameParameters {
 
-    String getSchemaVersion();
+  String getSchemaVersion();
 
-    String getSchemaId();
+  String getSchemaId();
 
-    String getMessageId();
-
+  String getMessageId();
 }

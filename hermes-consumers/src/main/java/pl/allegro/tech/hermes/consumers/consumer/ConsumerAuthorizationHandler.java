@@ -6,9 +6,9 @@ import pl.allegro.tech.hermes.consumers.consumer.result.SuccessHandler;
 
 public interface ConsumerAuthorizationHandler extends SuccessHandler, ErrorHandler {
 
-    void createSubscriptionHandler(SubscriptionName subscriptionName);
+  void createSubscriptionHandler(SubscriptionName subscriptionName);
 
-    void removeSubscriptionHandler(SubscriptionName subscriptionName);
+  void removeSubscriptionHandler(SubscriptionName subscriptionName);
 
-    void updateSubscription(SubscriptionName subscriptionName);
+  void updateSubscription(SubscriptionName subscriptionName);
 }

@@ -5,12 +5,12 @@ import pl.allegro.tech.hermes.common.exception.HermesException;
 
 public class GroupNotEmptyException extends HermesException {
 
-    public GroupNotEmptyException(String groupName) {
-        super(String.format("Group %s is not empty", groupName));
-    }
+  public GroupNotEmptyException(String groupName) {
+    super(String.format("Group %s is not empty", groupName));
+  }
 
-    @Override
-    public ErrorCode getCode() {
-        return ErrorCode.GROUP_NOT_EMPTY;
-    }
+  @Override
+  public ErrorCode getCode() {
+    return ErrorCode.GROUP_NOT_EMPTY;
+  }
 }

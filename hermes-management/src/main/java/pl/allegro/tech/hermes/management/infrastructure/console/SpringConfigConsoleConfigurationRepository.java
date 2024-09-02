@@ -7,19 +7,20 @@ import pl.allegro.tech.hermes.management.domain.console.ConsoleConfigurationRepo
 
 public class SpringConfigConsoleConfigurationRepository implements ConsoleConfigurationRepository {
 
-    private final String jsonConfig;
+  private final String jsonConfig;
 
-    public SpringConfigConsoleConfigurationRepository(ObjectMapper objectMapper, ConsoleProperties consoleProperties) {
-        try {
-            jsonConfig = objectMapper.writeValueAsString(consoleProperties);
-        } catch (JsonProcessingException e) {
-            throw new IllegalArgumentException("Error during spring console config conversion to JSON", e);
-        }
+  public SpringConfigConsoleConfigurationRepository(
+      ObjectMapper objectMapper, ConsoleProperties consoleProperties) {
+    try {
+      jsonConfig = objectMapper.writeValueAsString(consoleProperties);
+    } catch (JsonProcessingException e) {
+      throw new IllegalArgumentException(
+          "Error during spring console config conversion to JSON", e);
     }
+  }
 
-    @Override
-    public String getConfiguration() {
-        return jsonConfig;
-    }
-
+  @Override
+  public String getConfiguration() {
+    return jsonConfig;
+  }
 }

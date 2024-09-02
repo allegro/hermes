@@ -7,18 +7,17 @@ import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
 
 class GooglePubSubMessageTransformerRaw implements GooglePubSubMessageTransformer {
 
-    private final MetadataAppender<PubsubMessage> metadataAppender;
+  private final MetadataAppender<PubsubMessage> metadataAppender;
 
-    GooglePubSubMessageTransformerRaw(MetadataAppender<PubsubMessage> metadataAppender) {
-        this.metadataAppender = metadataAppender;
-    }
+  GooglePubSubMessageTransformerRaw(MetadataAppender<PubsubMessage> metadataAppender) {
+    this.metadataAppender = metadataAppender;
+  }
 
-    @Override
-    public PubsubMessage fromHermesMessage(Message message) {
-        final PubsubMessage pubsubMessage = PubsubMessage.newBuilder()
-                .setData(ByteString.copyFrom(message.getData()))
-                .build();
+  @Override
+  public PubsubMessage fromHermesMessage(Message message) {
+    final PubsubMessage pubsubMessage =
+        PubsubMessage.newBuilder().setData(ByteString.copyFrom(message.getData())).build();
 
-        return metadataAppender.append(pubsubMessage, message);
-    }
+    return metadataAppender.append(pubsubMessage, message);
+  }
 }

@@ -5,5 +5,5 @@ import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 
 public interface BrokerTimeoutListener {
 
-    void onTimeout(Message message, Topic topic);
+  void onTimeout(Message message, Topic topic);
 }

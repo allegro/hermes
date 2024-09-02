@@ -10,9 +10,11 @@ import pl.allegro.tech.hermes.consumers.message.undelivered.UndeliveredMessageLo
 @EnableConfigurationProperties(CommonConsumerProperties.class)
 public class MessageConfiguration {
 
-    @Bean
-    public UndeliveredMessageLogPersister undeliveredMessageLogPersister(UndeliveredMessageLog undeliveredMessageLog,
-                                                                         CommonConsumerProperties commonConsumerProperties) {
-        return new UndeliveredMessageLogPersister(undeliveredMessageLog, commonConsumerProperties.getUndeliveredMessageLogPersistPeriod());
-    }
+  @Bean
+  public UndeliveredMessageLogPersister undeliveredMessageLogPersister(
+      UndeliveredMessageLog undeliveredMessageLog,
+      CommonConsumerProperties commonConsumerProperties) {
+    return new UndeliveredMessageLogPersister(
+        undeliveredMessageLog, commonConsumerProperties.getUndeliveredMessageLogPersistPeriod());
+  }
 }

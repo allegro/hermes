@@ -6,13 +6,15 @@ import pl.allegro.tech.hermes.management.domain.ManagementException;
 
 public class TopicRemovalDisabledException extends ManagementException {
 
-    public TopicRemovalDisabledException(Topic topic) {
-        super(String.format("Could not remove topic %s, this operation is currently disabled.", topic.getQualifiedName()));
-    }
+  public TopicRemovalDisabledException(Topic topic) {
+    super(
+        String.format(
+            "Could not remove topic %s, this operation is currently disabled.",
+            topic.getQualifiedName()));
+  }
 
-    @Override
-    public ErrorCode getCode() {
-        return ErrorCode.OPERATION_DISABLED;
-    }
-
+  @Override
+  public ErrorCode getCode() {
+    return ErrorCode.OPERATION_DISABLED;
+  }
 }

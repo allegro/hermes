@@ -4,11 +4,11 @@ import org.jctools.queues.MessagePassingQueue;
 
 public interface MpscQueue<T> {
 
-    boolean offer(T element);
+  boolean offer(T element);
 
-    void drain(MessagePassingQueue.Consumer<T> consumer);
+  void drain(MessagePassingQueue.Consumer<T> consumer);
 
-    int size();
+  int size();
 
-    int capacity();
+  int capacity();
 }

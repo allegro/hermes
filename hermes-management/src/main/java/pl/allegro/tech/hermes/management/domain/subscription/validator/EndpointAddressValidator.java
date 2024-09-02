@@ -4,5 +4,5 @@ import pl.allegro.tech.hermes.api.EndpointAddress;
 
 public interface EndpointAddressValidator {
 
-    void check(EndpointAddress address);
+  void check(EndpointAddress address);
 }

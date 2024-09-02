@@ -6,12 +6,12 @@ import pl.allegro.tech.hermes.common.exception.HermesException;
 
 public class OAuthProviderAlreadyExistsException extends HermesException {
 
-    public OAuthProviderAlreadyExistsException(OAuthProvider oAuthProvider, Throwable cause) {
-        super(String.format("OAuth Provider %s already exists", oAuthProvider.getName()), cause);
-    }
+  public OAuthProviderAlreadyExistsException(OAuthProvider oAuthProvider, Throwable cause) {
+    super(String.format("OAuth Provider %s already exists", oAuthProvider.getName()), cause);
+  }
 
-    @Override
-    public ErrorCode getCode() {
-        return ErrorCode.OAUTH_PROVIDER_ALREADY_EXISTS;
-    }
+  @Override
+  public ErrorCode getCode() {
+    return ErrorCode.OAUTH_PROVIDER_ALREADY_EXISTS;
+  }
 }

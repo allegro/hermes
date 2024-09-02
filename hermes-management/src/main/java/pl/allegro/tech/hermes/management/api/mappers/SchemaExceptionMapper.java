@@ -10,12 +10,11 @@ import pl.allegro.tech.hermes.schema.SchemaException;
 @Provider
 public class SchemaExceptionMapper implements ExceptionMapper<SchemaException> {
 
-    @Override
-    public Response toResponse(SchemaException exception) {
-        return Response
-                .status(exception.getCode().getHttpCode())
-                .type(MediaType.APPLICATION_JSON_TYPE)
-                .entity(new ErrorDescription(exception.getMessage(), exception.getCode()))
-                .build();
-    }
+  @Override
+  public Response toResponse(SchemaException exception) {
+    return Response.status(exception.getCode().getHttpCode())
+        .type(MediaType.APPLICATION_JSON_TYPE)
+        .entity(new ErrorDescription(exception.getMessage(), exception.getCode()))
+        .build();
+  }
 }

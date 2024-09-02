@@ -8,10 +8,10 @@ import java.util.stream.StreamSupport;
 
 public final class Iterators {
 
-    private Iterators() {
-    }
+  private Iterators() {}
 
-    public static <T> Stream<T> stream(Iterator<? extends T> iterator) {
-        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.NONNULL), false);
-    }
+  public static <T> Stream<T> stream(Iterator<? extends T> iterator) {
+    return StreamSupport.stream(
+        Spliterators.spliteratorUnknownSize(iterator, Spliterator.NONNULL), false);
+  }
 }

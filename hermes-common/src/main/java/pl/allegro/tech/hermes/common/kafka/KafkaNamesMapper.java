@@ -5,7 +5,7 @@ import pl.allegro.tech.hermes.api.Topic;
 
 public interface KafkaNamesMapper {
 
-    ConsumerGroupId toConsumerGroupId(SubscriptionName subscription);
+  ConsumerGroupId toConsumerGroupId(SubscriptionName subscription);
 
-    KafkaTopics toKafkaTopics(Topic topic);
+  KafkaTopics toKafkaTopics(Topic topic);
 }

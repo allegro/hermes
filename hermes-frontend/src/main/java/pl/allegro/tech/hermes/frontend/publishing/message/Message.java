@@ -1,29 +1,28 @@
 package pl.allegro.tech.hermes.frontend.publishing.message;
 
+import java.util.Map;
+import java.util.Optional;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
 
-import java.util.Map;
-import java.util.Optional;
-
 public interface Message {
-    String getId();
+  String getId();
 
-    byte[] getData();
+  byte[] getData();
 
-    long getTimestamp();
+  long getTimestamp();
 
-    ContentType getContentType();
+  ContentType getContentType();
 
-    String getPartitionKey();
+  String getPartitionKey();
 
-    default <T> Optional<CompiledSchema<T>> getCompiledSchema() {
-        return Optional.empty();
-    }
+  default <T> Optional<CompiledSchema<T>> getCompiledSchema() {
+    return Optional.empty();
+  }
 
-    default <T> T getSchema() {
-        return this.<T>getCompiledSchema().get().getSchema();
-    }
+  default <T> T getSchema() {
+    return this.<T>getCompiledSchema().get().getSchema();
+  }
 
-    Map<String, String> getHTTPHeaders();
+  Map<String, String> getHTTPHeaders();
 }

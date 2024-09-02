@@ -12,13 +12,15 @@ import pl.allegro.tech.hermes.management.config.kafka.MultipleDcKafkaNamesMapper
 
 @Configuration
 @EnableConfigurationProperties(KafkaClustersProperties.class)
-public class JsonToAvroKafkaNamesMappersConfiguration implements MultipleDcKafkaNamesMappersFactory {
+public class JsonToAvroKafkaNamesMappersConfiguration
+    implements MultipleDcKafkaNamesMappersFactory {
 
-    @Bean
-    @Primary
-    @Profile("integration")
-    KafkaNamesMappers testKafkaNameMappers(KafkaClustersProperties kafkaClustersProperties) {
-        return createKafkaNamesMapper(kafkaClustersProperties, namespace ->
-                new IntegrationTestKafkaNamesMapperFactory(namespace).create());
-    }
+  @Bean
+  @Primary
+  @Profile("integration")
+  KafkaNamesMappers testKafkaNameMappers(KafkaClustersProperties kafkaClustersProperties) {
+    return createKafkaNamesMapper(
+        kafkaClustersProperties,
+        namespace -> new IntegrationTestKafkaNamesMapperFactory(namespace).create());
+  }
 }

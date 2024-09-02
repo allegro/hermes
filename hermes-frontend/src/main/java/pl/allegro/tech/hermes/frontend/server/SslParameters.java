@@ -2,27 +2,27 @@ package pl.allegro.tech.hermes.frontend.server;
 
 public interface SslParameters {
 
-    boolean isEnabled();
+  boolean isEnabled();
 
-    int getPort();
+  int getPort();
 
-    String getClientAuthMode();
+  String getClientAuthMode();
 
-    String getProtocol();
+  String getProtocol();
 
-    String getKeystoreSource();
+  String getKeystoreSource();
 
-    String getKeystoreLocation();
+  String getKeystoreLocation();
 
-    String getKeystorePassword();
+  String getKeystorePassword();
 
-    String getKeystoreFormat();
+  String getKeystoreFormat();
 
-    String getTruststoreSource();
+  String getTruststoreSource();
 
-    String getTruststoreLocation();
+  String getTruststoreLocation();
 
-    String getTruststorePassword();
+  String getTruststorePassword();
 
-    String getTruststoreFormat();
+  String getTruststoreFormat();
 }

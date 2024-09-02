@@ -5,250 +5,250 @@ import pl.allegro.tech.hermes.common.kafka.KafkaParameters;
 
 public class KafkaProperties implements KafkaParameters {
 
-    private String datacenter = "datacenter";
+  private String datacenter = "datacenter";
 
-    private String clusterName = "primary";
+  private String clusterName = "primary";
 
-    private String brokerList = "localhost:9092";
+  private String brokerList = "localhost:9092";
 
-    private int kafkaServerRequestTimeoutMillis = 3000;
+  private int kafkaServerRequestTimeoutMillis = 3000;
 
-    private int sessionTimeoutMillis = 10000;
+  private int sessionTimeoutMillis = 10000;
 
-    private int connectionTimeoutMillis = 3000;
+  private int connectionTimeoutMillis = 3000;
 
-    private int maxInflight = 10;
+  private int maxInflight = 10;
 
-    private int retryTimes = 3;
+  private int retryTimes = 3;
 
-    private int retrySleepMillis = 1000;
+  private int retrySleepMillis = 1000;
 
-    private String offsetsStorage = "kafka";
+  private String offsetsStorage = "kafka";
 
-    private boolean dualCommitEnabled = false;
+  private boolean dualCommitEnabled = false;
 
-    private String namespace = "";
+  private String namespace = "";
 
-    private KafkaConsumer kafkaConsumer = new KafkaConsumer();
+  private KafkaConsumer kafkaConsumer = new KafkaConsumer();
 
-    private KafkaAuthenticationProperties authentication = new KafkaAuthenticationProperties();
+  private KafkaAuthenticationProperties authentication = new KafkaAuthenticationProperties();
 
-    @Override
-    public boolean isAuthenticationEnabled() {
-        return authentication.isEnabled();
+  @Override
+  public boolean isAuthenticationEnabled() {
+    return authentication.isEnabled();
+  }
+
+  @Override
+  public String getAuthenticationMechanism() {
+    return authentication.getMechanism();
+  }
+
+  @Override
+  public String getAuthenticationProtocol() {
+    return authentication.getProtocol();
+  }
+
+  @Override
+  public String getBrokerList() {
+    return brokerList;
+  }
+
+  @Override
+  public String getJaasConfig() {
+    authentication.getJaasConfig();
+    return null;
+  }
+
+  public static final class KafkaConsumer {
+
+    private int cacheExpirationSeconds = 60;
+
+    private int bufferSizeBytes = 64 * 1024;
+
+    private int timeoutMillis = 5000;
+
+    private String namePrefix = "offsetChecker";
+
+    private int pollTimeoutMillis = 50;
+
+    private final int fetchMaxWaitMillis = 30;
+
+    private final int fetchMinBytes = 1;
+
+    private String consumerGroupName = "RETRANSMISSION_GROUP";
+
+    public int getCacheExpirationSeconds() {
+      return cacheExpirationSeconds;
     }
 
-    @Override
-    public String getAuthenticationMechanism() {
-        return authentication.getMechanism();
+    public void setCacheExpirationSeconds(int cacheExpirationSeconds) {
+      this.cacheExpirationSeconds = cacheExpirationSeconds;
     }
 
-    @Override
-    public String getAuthenticationProtocol() {
-        return authentication.getProtocol();
+    public int getBufferSizeBytes() {
+      return bufferSizeBytes;
     }
 
-    @Override
-    public String getBrokerList() {
-        return brokerList;
+    public void setBufferSizeBytes(int bufferSizeBytes) {
+      this.bufferSizeBytes = bufferSizeBytes;
     }
 
-    @Override
-    public String getJaasConfig() {
-        authentication.getJaasConfig();
-        return null;
+    public int getTimeoutMillis() {
+      return timeoutMillis;
     }
 
-    public static final class KafkaConsumer {
-
-        private int cacheExpirationSeconds = 60;
-
-        private int bufferSizeBytes = 64 * 1024;
-
-        private int timeoutMillis = 5000;
-
-        private String namePrefix = "offsetChecker";
-
-        private int pollTimeoutMillis = 50;
-
-        private final int fetchMaxWaitMillis = 30;
-
-        private final int fetchMinBytes = 1;
-
-        private String consumerGroupName = "RETRANSMISSION_GROUP";
-
-        public int getCacheExpirationSeconds() {
-            return cacheExpirationSeconds;
-        }
-
-        public void setCacheExpirationSeconds(int cacheExpirationSeconds) {
-            this.cacheExpirationSeconds = cacheExpirationSeconds;
-        }
-
-        public int getBufferSizeBytes() {
-            return bufferSizeBytes;
-        }
-
-        public void setBufferSizeBytes(int bufferSizeBytes) {
-            this.bufferSizeBytes = bufferSizeBytes;
-        }
-
-        public int getTimeoutMillis() {
-            return timeoutMillis;
-        }
-
-        public void setTimeoutMillis(int timeoutMillis) {
-            this.timeoutMillis = timeoutMillis;
-        }
-
-        public String getNamePrefix() {
-            return namePrefix;
-        }
-
-        public void setNamePrefix(String namePrefix) {
-            this.namePrefix = namePrefix;
-        }
-
-        public int getPollTimeoutMillis() {
-            return pollTimeoutMillis;
-        }
-
-        public void setPollTimeoutMillis(int pollTimeoutMillis) {
-            this.pollTimeoutMillis = pollTimeoutMillis;
-        }
-
-        public String getConsumerGroupName() {
-            return consumerGroupName;
-        }
-
-        public void setConsumerGroupName(String consumerGroupName) {
-            this.consumerGroupName = consumerGroupName;
-        }
-
-        public int getFetchMaxWaitMillis() {
-            return fetchMaxWaitMillis;
-        }
-
-        public int getFetchMinBytes() {
-            return fetchMinBytes;
-        }
+    public void setTimeoutMillis(int timeoutMillis) {
+      this.timeoutMillis = timeoutMillis;
     }
 
-    public int getSessionTimeoutMillis() {
-        return sessionTimeoutMillis;
+    public String getNamePrefix() {
+      return namePrefix;
     }
 
-    public void setSessionTimeoutMillis(int sessionTimeoutMillis) {
-        this.sessionTimeoutMillis = sessionTimeoutMillis;
+    public void setNamePrefix(String namePrefix) {
+      this.namePrefix = namePrefix;
     }
 
-    public int getConnectionTimeoutMillis() {
-        return connectionTimeoutMillis;
+    public int getPollTimeoutMillis() {
+      return pollTimeoutMillis;
     }
 
-    public void setConnectionTimeoutMillis(int connectionTimeoutMillis) {
-        this.connectionTimeoutMillis = connectionTimeoutMillis;
+    public void setPollTimeoutMillis(int pollTimeoutMillis) {
+      this.pollTimeoutMillis = pollTimeoutMillis;
     }
 
-    public int getRetryTimes() {
-        return retryTimes;
+    public String getConsumerGroupName() {
+      return consumerGroupName;
     }
 
-    public void setRetryTimes(int retryTimes) {
-        this.retryTimes = retryTimes;
+    public void setConsumerGroupName(String consumerGroupName) {
+      this.consumerGroupName = consumerGroupName;
     }
 
-    public int getRetrySleepMillis() {
-        return retrySleepMillis;
+    public int getFetchMaxWaitMillis() {
+      return fetchMaxWaitMillis;
     }
 
-    public void setRetrySleepMillis(int retrySleepMillis) {
-        this.retrySleepMillis = retrySleepMillis;
+    public int getFetchMinBytes() {
+      return fetchMinBytes;
     }
+  }
 
-    public KafkaConsumer getKafkaConsumer() {
-        return kafkaConsumer;
-    }
+  public int getSessionTimeoutMillis() {
+    return sessionTimeoutMillis;
+  }
 
-    public void setKafkaConsumer(KafkaConsumer kafkaConsumer) {
-        this.kafkaConsumer = kafkaConsumer;
-    }
+  public void setSessionTimeoutMillis(int sessionTimeoutMillis) {
+    this.sessionTimeoutMillis = sessionTimeoutMillis;
+  }
 
-    public KafkaAuthenticationProperties getAuthentication() {
-        return authentication;
-    }
+  public int getConnectionTimeoutMillis() {
+    return connectionTimeoutMillis;
+  }
 
-    @Deprecated
-    public void setSasl(KafkaAuthenticationProperties sasl) {
-        this.authentication = sasl;
-    }
+  public void setConnectionTimeoutMillis(int connectionTimeoutMillis) {
+    this.connectionTimeoutMillis = connectionTimeoutMillis;
+  }
 
-    public void setAuthentication(KafkaAuthenticationProperties authentication) {
-        this.authentication = authentication;
-    }
+  public int getRetryTimes() {
+    return retryTimes;
+  }
 
-    public String getDatacenter() {
-        return datacenter;
-    }
+  public void setRetryTimes(int retryTimes) {
+    this.retryTimes = retryTimes;
+  }
 
-    public void setDatacenter(String datacenter) {
-        this.datacenter = datacenter;
-    }
+  public int getRetrySleepMillis() {
+    return retrySleepMillis;
+  }
 
-    public void setClusterName(String clusterName) {
-        this.clusterName = clusterName;
-    }
+  public void setRetrySleepMillis(int retrySleepMillis) {
+    this.retrySleepMillis = retrySleepMillis;
+  }
 
-    public String getQualifiedClusterName() {
-        return clusterName + "-" + datacenter;
-    }
+  public KafkaConsumer getKafkaConsumer() {
+    return kafkaConsumer;
+  }
 
-    public String getOffsetsStorage() {
-        return offsetsStorage;
-    }
+  public void setKafkaConsumer(KafkaConsumer kafkaConsumer) {
+    this.kafkaConsumer = kafkaConsumer;
+  }
 
-    public void setOffsetsStorage(String offsetsStorage) {
-        this.offsetsStorage = offsetsStorage;
-    }
+  public KafkaAuthenticationProperties getAuthentication() {
+    return authentication;
+  }
 
-    public boolean isDualCommitEnabled() {
-        return dualCommitEnabled;
-    }
+  @Deprecated
+  public void setSasl(KafkaAuthenticationProperties sasl) {
+    this.authentication = sasl;
+  }
 
-    public void setDualCommitEnabled(boolean dualCommitEnabled) {
-        this.dualCommitEnabled = dualCommitEnabled;
-    }
+  public void setAuthentication(KafkaAuthenticationProperties authentication) {
+    this.authentication = authentication;
+  }
 
-    public String getNamespace() {
-        return namespace;
-    }
+  public String getDatacenter() {
+    return datacenter;
+  }
 
-    public void setNamespace(String namespace) {
-        this.namespace = namespace;
-    }
+  public void setDatacenter(String datacenter) {
+    this.datacenter = datacenter;
+  }
 
-    public int getMaxInflight() {
-        return maxInflight;
-    }
+  public void setClusterName(String clusterName) {
+    this.clusterName = clusterName;
+  }
 
-    public void setMaxInflight(int maxInflight) {
-        this.maxInflight = maxInflight;
-    }
+  public String getQualifiedClusterName() {
+    return clusterName + "-" + datacenter;
+  }
 
-    @Deprecated
-    public void setBootstrapKafkaServer(String bootstrapKafkaServer) {
-        this.brokerList = bootstrapKafkaServer;
-    }
+  public String getOffsetsStorage() {
+    return offsetsStorage;
+  }
 
-    public void setBrokerList(String brokerList) {
-        this.brokerList = brokerList;
-    }
+  public void setOffsetsStorage(String offsetsStorage) {
+    this.offsetsStorage = offsetsStorage;
+  }
 
-    public int getKafkaServerRequestTimeoutMillis() {
-        return kafkaServerRequestTimeoutMillis;
-    }
+  public boolean isDualCommitEnabled() {
+    return dualCommitEnabled;
+  }
 
-    public void setKafkaServerRequestTimeoutMillis(int kafkaServerRequestTimeoutMillis) {
-        this.kafkaServerRequestTimeoutMillis = kafkaServerRequestTimeoutMillis;
-    }
+  public void setDualCommitEnabled(boolean dualCommitEnabled) {
+    this.dualCommitEnabled = dualCommitEnabled;
+  }
+
+  public String getNamespace() {
+    return namespace;
+  }
+
+  public void setNamespace(String namespace) {
+    this.namespace = namespace;
+  }
+
+  public int getMaxInflight() {
+    return maxInflight;
+  }
+
+  public void setMaxInflight(int maxInflight) {
+    this.maxInflight = maxInflight;
+  }
+
+  @Deprecated
+  public void setBootstrapKafkaServer(String bootstrapKafkaServer) {
+    this.brokerList = bootstrapKafkaServer;
+  }
+
+  public void setBrokerList(String brokerList) {
+    this.brokerList = brokerList;
+  }
+
+  public int getKafkaServerRequestTimeoutMillis() {
+    return kafkaServerRequestTimeoutMillis;
+  }
+
+  public void setKafkaServerRequestTimeoutMillis(int kafkaServerRequestTimeoutMillis) {
+    this.kafkaServerRequestTimeoutMillis = kafkaServerRequestTimeoutMillis;
+  }
 }

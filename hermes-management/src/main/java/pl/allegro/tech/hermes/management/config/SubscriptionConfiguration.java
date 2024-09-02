@@ -1,5 +1,8 @@
 package pl.allegro.tech.hermes.management.config;
 
+import static java.util.stream.Collectors.toList;
+
+import java.util.List;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,52 +17,50 @@ import pl.allegro.tech.hermes.management.domain.subscription.validator.Subscribe
 import pl.allegro.tech.hermes.management.domain.subscription.validator.SubscriptionValidator;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 
-import java.util.List;
-
-import static java.util.stream.Collectors.toList;
-
 @Configuration
 @EnableConfigurationProperties(SubscriptionProperties.class)
 public class SubscriptionConfiguration {
 
-    @Bean
-    public SubscriptionValidator subscriptionValidator(OwnerIdValidator ownerIdValidator,
-                                                       ApiPreconditions apiPreconditions,
-                                                       TopicService topicService,
-                                                       SubscriptionRepository subscriptionRepository,
-                                                       List<EndpointAddressValidator> endpointAddressValidators,
-                                                       EndpointOwnershipValidator endpointOwnershipValidator,
-                                                       SubscriptionProperties subscriptionProperties) {
-        return new SubscriptionValidator(
-                ownerIdValidator,
-                apiPreconditions,
-                topicService,
-                subscriptionRepository,
-                endpointAddressValidators,
-                endpointOwnershipValidator,
-                createListOfSubscribersWithAccessToAnyTopic(subscriptionProperties)
-        );
-    }
+  @Bean
+  public SubscriptionValidator subscriptionValidator(
+      OwnerIdValidator ownerIdValidator,
+      ApiPreconditions apiPreconditions,
+      TopicService topicService,
+      SubscriptionRepository subscriptionRepository,
+      List<EndpointAddressValidator> endpointAddressValidators,
+      EndpointOwnershipValidator endpointOwnershipValidator,
+      SubscriptionProperties subscriptionProperties) {
+    return new SubscriptionValidator(
+        ownerIdValidator,
+        apiPreconditions,
+        topicService,
+        subscriptionRepository,
+        endpointAddressValidators,
+        endpointOwnershipValidator,
+        createListOfSubscribersWithAccessToAnyTopic(subscriptionProperties));
+  }
 
-    private List<SubscriberWithAccessToAnyTopic> createListOfSubscribersWithAccessToAnyTopic(
-            SubscriptionProperties subscriptionProperties
-    ) {
-        return subscriptionProperties.getSubscribersWithAccessToAnyTopic().stream()
-                .map(subscriber -> new SubscriberWithAccessToAnyTopic(
-                        subscriber.getOwnerSource(),
-                        subscriber.getOwnerId(),
-                        subscriber.getProtocols())
-                )
-                .collect(toList());
-    }
+  private List<SubscriberWithAccessToAnyTopic> createListOfSubscribersWithAccessToAnyTopic(
+      SubscriptionProperties subscriptionProperties) {
+    return subscriptionProperties.getSubscribersWithAccessToAnyTopic().stream()
+        .map(
+            subscriber ->
+                new SubscriberWithAccessToAnyTopic(
+                    subscriber.getOwnerSource(),
+                    subscriber.getOwnerId(),
+                    subscriber.getProtocols()))
+        .collect(toList());
+  }
 
-    @Bean
-    public EndpointOwnershipValidator defaultEndpointOwnershipValidator() {
-        return new NoOpEndpointOwnershipValidator();
-    }
+  @Bean
+  public EndpointOwnershipValidator defaultEndpointOwnershipValidator() {
+    return new NoOpEndpointOwnershipValidator();
+  }
 
-    @Bean
-    public EndpointAddressValidator endpointAddressFormatValidator(SubscriptionProperties subscriptionProperties) {
-        return new EndpointAddressFormatValidator(subscriptionProperties.getAdditionalEndpointProtocols());
-    }
+  @Bean
+  public EndpointAddressValidator endpointAddressFormatValidator(
+      SubscriptionProperties subscriptionProperties) {
+    return new EndpointAddressFormatValidator(
+        subscriptionProperties.getAdditionalEndpointProtocols());
+  }
 }

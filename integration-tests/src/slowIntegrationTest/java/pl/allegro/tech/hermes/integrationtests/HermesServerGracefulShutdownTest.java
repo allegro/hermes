@@ -1,5 +1,8 @@
 package pl.allegro.tech.hermes.integrationtests;
 
+import static org.awaitility.Awaitility.waitAtMost;
+
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,52 +15,53 @@ import pl.allegro.tech.hermes.integrationtests.setup.InfrastructureExtension;
 import pl.allegro.tech.hermes.test.helper.client.integration.FrontendTestClient;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
-import java.util.concurrent.TimeUnit;
+public class HermesServerGracefulShutdownTest {
 
-import static org.awaitility.Awaitility.waitAtMost;
+  @RegisterExtension public static InfrastructureExtension infra = new InfrastructureExtension();
 
-public class HermesServerGracefulShutdownTest  {
+  private HermesFrontendTestApp frontend;
+  private HermesServer hermesServer;
+  FrontendTestClient frontendClient;
 
-    @RegisterExtension
-    public static InfrastructureExtension infra = new InfrastructureExtension();
+  @BeforeEach
+  public void beforeEach() {
+    frontend =
+        new HermesFrontendTestApp(infra.hermesZookeeper(), infra.kafka(), infra.schemaRegistry());
+    frontend.start();
+    hermesServer = frontend.getBean(HermesServer.class);
+    frontendClient = new FrontendTestClient(frontend.getPort());
+  }
 
-    private HermesFrontendTestApp frontend;
-    private HermesServer hermesServer;
-    FrontendTestClient frontendClient;
+  @AfterEach
+  public void afterEach() {
+    frontend.stop();
+  }
 
-    @BeforeEach
-    public void beforeEach() {
-        frontend = new HermesFrontendTestApp(infra.hermesZookeeper(), infra.kafka(), infra.schemaRegistry());
-        frontend.start();
-        hermesServer = frontend.getBean(HermesServer.class);
-        frontendClient = new FrontendTestClient(frontend.getPort());
-    }
+  @Test
+  public void shouldShutdownGracefully() throws Throwable {
+    // given
+    hermesServer.prepareForGracefulShutdown();
 
-    @AfterEach
-    public void afterEach() {
-        frontend.stop();
-    }
+    // when
+    WebTestClient.ResponseSpec response =
+        frontendClient.publish("topic", TestMessage.of("hello", "world").body());
 
-    @Test
-    public void shouldShutdownGracefully() throws Throwable {
-        //given
-        hermesServer.prepareForGracefulShutdown();
+    // then
+    response.expectStatus().isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
+  }
 
-        //when
-        WebTestClient.ResponseSpec response = frontendClient.publish("topic", TestMessage.of("hello", "world").body());
+  @Test
+  public void shouldReturnCorrectHealthStatus() throws InterruptedException {
+    // when
+    hermesServer.prepareForGracefulShutdown();
 
-        //then
-        response.expectStatus().isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
-    }
-
-    @Test
-    public void shouldReturnCorrectHealthStatus() throws InterruptedException {
-        // when
-        hermesServer.prepareForGracefulShutdown();
-
-        // then
-        waitAtMost(5, TimeUnit.SECONDS)
-                .untilAsserted(() -> frontendClient.getStatusPing().expectStatus().isEqualTo(HttpStatus.SERVICE_UNAVAILABLE));
-    }
-
+    // then
+    waitAtMost(5, TimeUnit.SECONDS)
+        .untilAsserted(
+            () ->
+                frontendClient
+                    .getStatusPing()
+                    .expectStatus()
+                    .isEqualTo(HttpStatus.SERVICE_UNAVAILABLE));
+  }
 }

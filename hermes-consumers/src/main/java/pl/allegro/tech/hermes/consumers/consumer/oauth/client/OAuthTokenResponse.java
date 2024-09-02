@@ -7,19 +7,19 @@ import pl.allegro.tech.hermes.consumers.consumer.oauth.OAuthAccessToken;
 
 public class OAuthTokenResponse {
 
-    @NotEmpty
-    private final String accessToken;
+  @NotEmpty private final String accessToken;
 
-    private final Integer expiresIn;
+  private final Integer expiresIn;
 
-    @JsonCreator
-    public OAuthTokenResponse(@JsonProperty("access_token") String accessToken,
-                              @JsonProperty("expires_in") Integer expiresIn) {
-        this.accessToken = accessToken;
-        this.expiresIn = expiresIn;
-    }
+  @JsonCreator
+  public OAuthTokenResponse(
+      @JsonProperty("access_token") String accessToken,
+      @JsonProperty("expires_in") Integer expiresIn) {
+    this.accessToken = accessToken;
+    this.expiresIn = expiresIn;
+  }
 
-    public OAuthAccessToken toAccessToken() {
-        return new OAuthAccessToken(accessToken, expiresIn);
-    }
+  public OAuthAccessToken toAccessToken() {
+    return new OAuthAccessToken(accessToken, expiresIn);
+  }
 }

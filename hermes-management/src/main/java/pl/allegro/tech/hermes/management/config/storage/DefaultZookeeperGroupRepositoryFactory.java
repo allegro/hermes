@@ -7,8 +7,9 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperGroupRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 
 public class DefaultZookeeperGroupRepositoryFactory implements ZookeeperGroupRepositoryFactory {
-    @Override
-    public GroupRepository create(CuratorFramework zookeeper, ObjectMapper mapper, ZookeeperPaths paths) {
-        return new ZookeeperGroupRepository(zookeeper, mapper, paths);
-    }
+  @Override
+  public GroupRepository create(
+      CuratorFramework zookeeper, ObjectMapper mapper, ZookeeperPaths paths) {
+    return new ZookeeperGroupRepository(zookeeper, mapper, paths);
+  }
 }

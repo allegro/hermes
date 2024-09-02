@@ -1,30 +1,33 @@
 package pl.allegro.tech.hermes.frontend.config;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider;
 
 @ConfigurationProperties(prefix = "frontend.zookeeper")
 public class ZookeeperClustersProperties {
 
-    private List<ZookeeperProperties> clusters = new ArrayList<>();
+  private List<ZookeeperProperties> clusters = new ArrayList<>();
 
-    public List<ZookeeperProperties> getClusters() {
-        return clusters;
-    }
+  public List<ZookeeperProperties> getClusters() {
+    return clusters;
+  }
 
-    public void setClusters(List<ZookeeperProperties> clusters) {
-        this.clusters = clusters;
-    }
+  public void setClusters(List<ZookeeperProperties> clusters) {
+    this.clusters = clusters;
+  }
 
-    public ZookeeperProperties toZookeeperProperties(DatacenterNameProvider datacenterNameProvider) {
-        return this.clusters
-                .stream()
-                .filter(cluster -> cluster.getDatacenter().equals(datacenterNameProvider.getDatacenterName()))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "No properties for datacenter: " + datacenterNameProvider.getDatacenterName() + " defined."));
-    }
+  public ZookeeperProperties toZookeeperProperties(DatacenterNameProvider datacenterNameProvider) {
+    return this.clusters.stream()
+        .filter(
+            cluster -> cluster.getDatacenter().equals(datacenterNameProvider.getDatacenterName()))
+        .findFirst()
+        .orElseThrow(
+            () ->
+                new IllegalArgumentException(
+                    "No properties for datacenter: "
+                        + datacenterNameProvider.getDatacenterName()
+                        + " defined."));
+  }
 }

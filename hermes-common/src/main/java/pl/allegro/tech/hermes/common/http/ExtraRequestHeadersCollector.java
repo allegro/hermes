@@ -9,46 +9,46 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
 
-public class ExtraRequestHeadersCollector implements Collector<Map.Entry<String, String>, StringBuilder, String> {
-    private ExtraRequestHeadersCollector() {
-    }
+public class ExtraRequestHeadersCollector
+    implements Collector<Map.Entry<String, String>, StringBuilder, String> {
+  private ExtraRequestHeadersCollector() {}
 
-    public static ExtraRequestHeadersCollector extraRequestHeadersCollector() {
-        return new ExtraRequestHeadersCollector();
-    }
+  public static ExtraRequestHeadersCollector extraRequestHeadersCollector() {
+    return new ExtraRequestHeadersCollector();
+  }
 
-    @Override
-    public Supplier<StringBuilder> supplier() {
-        return StringBuilder::new;
-    }
+  @Override
+  public Supplier<StringBuilder> supplier() {
+    return StringBuilder::new;
+  }
 
-    @Override
-    public BiConsumer<StringBuilder, Map.Entry<String, String>> accumulator() {
-        return (StringBuilder accumulator, Map.Entry<String, String> entry) -> {
-            accumulator.append(entry.getKey());
-            accumulator.append(": ");
-            accumulator.append(entry.getValue());
-            accumulator.append('\n');
-        };
-    }
+  @Override
+  public BiConsumer<StringBuilder, Map.Entry<String, String>> accumulator() {
+    return (StringBuilder accumulator, Map.Entry<String, String> entry) -> {
+      accumulator.append(entry.getKey());
+      accumulator.append(": ");
+      accumulator.append(entry.getValue());
+      accumulator.append('\n');
+    };
+  }
 
-    @Override
-    public BinaryOperator<StringBuilder> combiner() {
-        return StringBuilder::append;
-    }
+  @Override
+  public BinaryOperator<StringBuilder> combiner() {
+    return StringBuilder::append;
+  }
 
-    @Override
-    public Function<StringBuilder, String> finisher() {
-        return (StringBuilder acc) -> {
-            if (acc.length() > 0) {
-                acc.setLength(acc.length() - 1);
-            }
-            return acc.toString();
-        };
-    }
+  @Override
+  public Function<StringBuilder, String> finisher() {
+    return (StringBuilder acc) -> {
+      if (acc.length() > 0) {
+        acc.setLength(acc.length() - 1);
+      }
+      return acc.toString();
+    };
+  }
 
-    @Override
-    public Set<Characteristics> characteristics() {
-        return Collections.emptySet();
-    }
+  @Override
+  public Set<Characteristics> characteristics() {
+    return Collections.emptySet();
+  }
 }

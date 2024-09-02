@@ -4,11 +4,11 @@ import java.time.Duration;
 
 public interface WorkBalancingParameters {
 
-    Duration getRebalanceInterval();
+  Duration getRebalanceInterval();
 
-    int getConsumersPerSubscription();
+  int getConsumersPerSubscription();
 
-    int getMaxSubscriptionsPerConsumer();
+  int getMaxSubscriptionsPerConsumer();
 
-    boolean isAutoRebalance();
+  boolean isAutoRebalance();
 }

@@ -5,13 +5,13 @@ import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 
 public class IntegrationTestKafkaNamesMapperFactory {
 
-    private final String namespace;
+  private final String namespace;
 
-    public IntegrationTestKafkaNamesMapperFactory(String namespace) {
-        this.namespace = namespace;
-    }
+  public IntegrationTestKafkaNamesMapperFactory(String namespace) {
+    this.namespace = namespace;
+  }
 
-    public KafkaNamesMapper create() {
-        return new JsonToAvroMigrationKafkaNamesMapper(namespace, "_");
-    }
+  public KafkaNamesMapper create() {
+    return new JsonToAvroMigrationKafkaNamesMapper(namespace, "_");
+  }
 }

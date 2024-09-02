@@ -6,12 +6,14 @@ import pl.allegro.tech.hermes.common.exception.HermesException;
 
 public class SubscriptionNotExistsException extends HermesException {
 
-    public SubscriptionNotExistsException(TopicName topic, String subscription) {
-        super(String.format("Subscription %s for topic %s does not exist.", subscription, topic.qualifiedName()));
-    }
+  public SubscriptionNotExistsException(TopicName topic, String subscription) {
+    super(
+        String.format(
+            "Subscription %s for topic %s does not exist.", subscription, topic.qualifiedName()));
+  }
 
-    @Override
-    public ErrorCode getCode() {
-        return ErrorCode.SUBSCRIPTION_NOT_EXISTS;
-    }
+  @Override
+  public ErrorCode getCode() {
+    return ErrorCode.SUBSCRIPTION_NOT_EXISTS;
+  }
 }

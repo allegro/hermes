@@ -5,16 +5,16 @@ import pl.allegro.tech.hermes.management.domain.ManagementException;
 
 public class AuthException extends ManagementException {
 
-    public AuthException(String message) {
-        super(message);
-    }
-    
-    public AuthException(RuntimeException ex) {
-        super("Exception while authorization: " + ex.getMessage(), ex);
-    }
+  public AuthException(String message) {
+    super(message);
+  }
 
-    @Override
-    public ErrorCode getCode() {
-        return ErrorCode.AUTH_ERROR;
-    }
+  public AuthException(RuntimeException ex) {
+    super("Exception while authorization: " + ex.getMessage(), ex);
+  }
+
+  @Override
+  public ErrorCode getCode() {
+    return ErrorCode.AUTH_ERROR;
+  }
 }

@@ -4,19 +4,19 @@ import pl.allegro.tech.hermes.api.Subscription;
 
 public interface ConsumerRateLimiter {
 
-    void initialize();
+  void initialize();
 
-    void shutdown();
+  void shutdown();
 
-    void acquire();
+  void acquire();
 
-    void acquireFiltered();
+  void acquireFiltered();
 
-    void adjustConsumerRate();
+  void adjustConsumerRate();
 
-    void updateSubscription(Subscription newSubscription);
+  void updateSubscription(Subscription newSubscription);
 
-    void registerSuccessfulSending();
+  void registerSuccessfulSending();
 
-    void registerFailedSending();
+  void registerFailedSending();
 }
