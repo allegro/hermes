@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {onMounted, ref} from 'vue';
+  import {onMounted, ref} from 'vue';
   import { SearchFilter, useSearch } from '@/composables/search/useSearch';
   import { useI18n } from 'vue-i18n';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
@@ -8,7 +8,7 @@ import {onMounted, ref} from 'vue';
   import TopicSearchResults from '@/views/search/topic-search-results/TopicSearchResults.vue';
   import { onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router';
 
-const { t } = useI18n();
+  const { t } = useI18n();
   const route = useRoute();
   const router = useRouter();
 
