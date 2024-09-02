@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.frontend.publishing.preview;
 
 import com.google.common.util.concurrent.AtomicLongMap;
+
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreview;
@@ -19,7 +20,8 @@ public class MessagePreviewLog {
 
     private final AtomicLongMap<TopicName> limiter = AtomicLongMap.create();
 
-    private final ConcurrentLinkedDeque<MessagePreviewSnapshot> messages = new ConcurrentLinkedDeque<>();
+    private final ConcurrentLinkedDeque<MessagePreviewSnapshot> messages =
+            new ConcurrentLinkedDeque<>();
 
     public MessagePreviewLog(MessagePreviewFactory messagePreviewFactory, int previewSizePerTopic) {
         this.messagePreviewFactory = messagePreviewFactory;
@@ -32,7 +34,8 @@ public class MessagePreviewLog {
             messages.add(
                     new MessagePreviewSnapshot(
                             topic.getName(),
-                            messagePreviewFactory.create(message, topic.isSchemaIdAwareSerializationEnabled())));
+                            messagePreviewFactory.create(
+                                    message, topic.isSchemaIdAwareSerializationEnabled())));
         }
     }
 

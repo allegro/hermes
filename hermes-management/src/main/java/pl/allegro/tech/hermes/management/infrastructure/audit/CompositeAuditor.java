@@ -1,11 +1,11 @@
 package pl.allegro.tech.hermes.management.infrastructure.audit;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.management.domain.Auditor;
 
 import java.util.Collection;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 public class CompositeAuditor implements Auditor {
 
@@ -21,13 +21,21 @@ public class CompositeAuditor implements Auditor {
     }
 
     @Override
-    public void beforeObjectRemoval(String username, String removedObjectType, String removedObjectName) {
-        auditors.forEach(auditor -> auditor.beforeObjectRemoval(username, removedObjectType, removedObjectName));
+    public void beforeObjectRemoval(
+            String username, String removedObjectType, String removedObjectName) {
+        auditors.forEach(
+                auditor ->
+                        auditor.beforeObjectRemoval(
+                                username, removedObjectType, removedObjectName));
     }
 
     @Override
-    public void beforeObjectUpdate(String username, String objectClassName, Object objectName, PatchData patchData) {
-        auditors.forEach(auditor -> auditor.beforeObjectUpdate(username, objectClassName, objectName, patchData));
+    public void beforeObjectUpdate(
+            String username, String objectClassName, Object objectName, PatchData patchData) {
+        auditors.forEach(
+                auditor ->
+                        auditor.beforeObjectUpdate(
+                                username, objectClassName, objectName, patchData));
     }
 
     @Override

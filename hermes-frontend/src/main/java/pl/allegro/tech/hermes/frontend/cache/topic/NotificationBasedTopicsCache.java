@@ -1,8 +1,10 @@
 package pl.allegro.tech.hermes.frontend.cache.topic;
 
 import com.google.common.collect.ImmutableList;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
@@ -21,9 +23,11 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public class NotificationBasedTopicsCache implements TopicCallback, TopicsCache, TopicBlacklistCallback {
+public class NotificationBasedTopicsCache
+        implements TopicCallback, TopicsCache, TopicBlacklistCallback {
 
-    private static final Logger logger = LoggerFactory.getLogger(NotificationBasedTopicsCache.class);
+    private static final Logger logger =
+            LoggerFactory.getLogger(NotificationBasedTopicsCache.class);
 
     private final ConcurrentMap<String, CachedTopic> topicCache = new ConcurrentHashMap<>();
 
@@ -33,13 +37,14 @@ public class NotificationBasedTopicsCache implements TopicCallback, TopicsCache,
     private final KafkaNamesMapper kafkaNamesMapper;
     private final ThroughputRegistry throughputRegistry;
 
-    public NotificationBasedTopicsCache(InternalNotificationsBus notificationsBus,
-                                        BlacklistZookeeperNotifyingCache blacklistZookeeperNotifyingCache,
-                                        GroupRepository groupRepository,
-                                        TopicRepository topicRepository,
-                                        MetricsFacade metricsFacade,
-                                        ThroughputRegistry throughputRegistry,
-                                        KafkaNamesMapper kafkaNamesMapper) {
+    public NotificationBasedTopicsCache(
+            InternalNotificationsBus notificationsBus,
+            BlacklistZookeeperNotifyingCache blacklistZookeeperNotifyingCache,
+            GroupRepository groupRepository,
+            TopicRepository topicRepository,
+            MetricsFacade metricsFacade,
+            ThroughputRegistry throughputRegistry,
+            KafkaNamesMapper kafkaNamesMapper) {
         this.groupRepository = groupRepository;
         this.topicRepository = topicRepository;
         this.metricsFacade = metricsFacade;
@@ -61,8 +66,11 @@ public class NotificationBasedTopicsCache implements TopicCallback, TopicsCache,
             if (cachedTopic.equals(topic)) {
                 topicCache.remove(topic.getName().qualifiedName());
             } else {
-                logger.warn("Received event about removed topic but cache contains different topic under the same name."
-                        + "Cached topic {}, removed topic {}", cachedTopic, topic);
+                logger.warn(
+                        "Received event about removed topic but cache contains different topic under the same name."
+                                + "Cached topic {}, removed topic {}",
+                        cachedTopic,
+                        topic);
             }
         }
     }
@@ -74,20 +82,30 @@ public class NotificationBasedTopicsCache implements TopicCallback, TopicsCache,
 
     @Override
     public void onTopicBlacklisted(String qualifiedTopicName) {
-        Optional<Topic> topic = Optional.ofNullable(
+        Optional<Topic> topic =
                 Optional.ofNullable(
-                        topicCache.get(qualifiedTopicName)).map(CachedTopic::getTopic).orElseGet(() ->
-                        topicRepository.getTopicDetails(TopicName.fromQualifiedName(qualifiedTopicName))));
+                        Optional.ofNullable(topicCache.get(qualifiedTopicName))
+                                .map(CachedTopic::getTopic)
+                                .orElseGet(
+                                        () ->
+                                                topicRepository.getTopicDetails(
+                                                        TopicName.fromQualifiedName(
+                                                                qualifiedTopicName))));
 
         topic.ifPresent(t -> topicCache.put(qualifiedTopicName, bannedTopic(t)));
     }
 
     @Override
     public void onTopicUnblacklisted(String qualifiedTopicName) {
-        Optional<Topic> topic = Optional.ofNullable(
+        Optional<Topic> topic =
                 Optional.ofNullable(
-                        topicCache.get(qualifiedTopicName)).map(CachedTopic::getTopic).orElseGet(() ->
-                        topicRepository.getTopicDetails(TopicName.fromQualifiedName(qualifiedTopicName))));
+                        Optional.ofNullable(topicCache.get(qualifiedTopicName))
+                                .map(CachedTopic::getTopic)
+                                .orElseGet(
+                                        () ->
+                                                topicRepository.getTopicDetails(
+                                                        TopicName.fromQualifiedName(
+                                                                qualifiedTopicName))));
 
         topic.ifPresent(t -> topicCache.put(qualifiedTopicName, cachedTopic(t)));
     }
@@ -112,10 +130,16 @@ public class NotificationBasedTopicsCache implements TopicCallback, TopicsCache,
     }
 
     private CachedTopic cachedTopic(Topic topic) {
-        return new CachedTopic(topic, metricsFacade, throughputRegistry, kafkaNamesMapper.toKafkaTopics(topic));
+        return new CachedTopic(
+                topic, metricsFacade, throughputRegistry, kafkaNamesMapper.toKafkaTopics(topic));
     }
 
     private CachedTopic bannedTopic(Topic topic) {
-        return new CachedTopic(topic, metricsFacade, throughputRegistry, kafkaNamesMapper.toKafkaTopics(topic), true);
+        return new CachedTopic(
+                topic,
+                metricsFacade,
+                throughputRegistry,
+                kafkaNamesMapper.toKafkaTopics(topic),
+                true);
     }
 }

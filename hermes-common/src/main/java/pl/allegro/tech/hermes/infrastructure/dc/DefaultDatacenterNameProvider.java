@@ -5,7 +5,8 @@ import org.slf4j.LoggerFactory;
 
 public class DefaultDatacenterNameProvider implements DatacenterNameProvider {
 
-    private static final Logger logger = LoggerFactory.getLogger(DefaultDatacenterNameProvider.class);
+    private static final Logger logger =
+            LoggerFactory.getLogger(DefaultDatacenterNameProvider.class);
 
     public static final String DEFAULT_DC_NAME = "dc";
 

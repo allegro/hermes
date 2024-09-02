@@ -16,13 +16,18 @@ public class SubscriptionAssignmentViewBuilder {
         return SubscriptionAssignmentView.copyOf(assignmentView);
     }
 
-    public SubscriptionAssignmentViewBuilder withAssignment(SubscriptionName subscriptionName, String... consumerNodeIds) {
+    public SubscriptionAssignmentViewBuilder withAssignment(
+            SubscriptionName subscriptionName, String... consumerNodeIds) {
         for (String consumerNodeId : consumerNodeIds) {
-            assignmentView = assignmentView.transform((view, transformer) -> {
-                transformer.addSubscription(subscriptionName);
-                transformer.addConsumerNode(consumerNodeId);
-                transformer.addAssignment(new SubscriptionAssignment(consumerNodeId, subscriptionName));
-            });
+            assignmentView =
+                    assignmentView.transform(
+                            (view, transformer) -> {
+                                transformer.addSubscription(subscriptionName);
+                                transformer.addConsumerNode(consumerNodeId);
+                                transformer.addAssignment(
+                                        new SubscriptionAssignment(
+                                                consumerNodeId, subscriptionName));
+                            });
         }
         return this;
     }

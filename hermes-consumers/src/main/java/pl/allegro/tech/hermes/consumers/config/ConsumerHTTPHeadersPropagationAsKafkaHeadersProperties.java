@@ -1,10 +1,12 @@
 package pl.allegro.tech.hermes.consumers.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+
 import pl.allegro.tech.hermes.common.kafka.HTTPHeadersPropagationAsKafkaHeadersProperties;
 
 @ConfigurationProperties(prefix = "consumer.http.headers.propagation-as-kafka-headers")
-public class ConsumerHTTPHeadersPropagationAsKafkaHeadersProperties implements HTTPHeadersPropagationAsKafkaHeadersProperties {
+public class ConsumerHTTPHeadersPropagationAsKafkaHeadersProperties
+        implements HTTPHeadersPropagationAsKafkaHeadersProperties {
 
     public boolean enabled = true;
     public String prefix = "h-";

@@ -7,7 +7,8 @@ public class EndpointAddressResolutionException extends Exception {
 
     private final boolean ignoreInRateCalculation;
 
-    public EndpointAddressResolutionException(EndpointAddress endpointAddress, Throwable cause, boolean ignoreInRateCalculation) {
+    public EndpointAddressResolutionException(
+            EndpointAddress endpointAddress, Throwable cause, boolean ignoreInRateCalculation) {
         super("Failed to resolve " + endpointAddress, cause);
         this.ignoreInRateCalculation = ignoreInRateCalculation;
     }
@@ -16,7 +17,8 @@ public class EndpointAddressResolutionException extends Exception {
         this(endpointAddress, cause, false);
     }
 
-    public EndpointAddressResolutionException(String message, Throwable cause, boolean ignoreInRateCalculation) {
+    public EndpointAddressResolutionException(
+            String message, Throwable cause, boolean ignoreInRateCalculation) {
         super(message, cause);
         this.ignoreInRateCalculation = ignoreInRateCalculation;
     }

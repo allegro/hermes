@@ -2,7 +2,9 @@ package pl.allegro.tech.hermes.api;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.base.MoreObjects;
+
 import jakarta.validation.constraints.Min;
+
 import pl.allegro.tech.hermes.api.helpers.Patch;
 
 import java.util.Map;
@@ -39,13 +41,14 @@ public class BatchSubscriptionPolicy {
 
     private BatchSubscriptionPolicy() {}
 
-    public BatchSubscriptionPolicy(int messageTtl,
-                                   boolean retryClientErrors,
-                                   int messageBackoff,
-                                   int requestTimeout,
-                                   int batchSize,
-                                   int batchTime,
-                                   int batchVolume) {
+    public BatchSubscriptionPolicy(
+            int messageTtl,
+            boolean retryClientErrors,
+            int messageBackoff,
+            int requestTimeout,
+            int batchSize,
+            int batchTime,
+            int batchVolume) {
         this.messageTtl = messageTtl;
         this.retryClientErrors = retryClientErrors;
         this.messageBackoff = messageBackoff;
@@ -64,13 +67,19 @@ public class BatchSubscriptionPolicy {
                 (Integer) properties.getOrDefault("requestTimeout", DEFAULT_REQUEST_TIMEOUT),
                 (Integer) properties.getOrDefault("batchSize", DEFAULT_BATCH_SIZE),
                 (Integer) properties.getOrDefault("batchTime", DEFAULT_BATCH_TIME),
-                (Integer) properties.getOrDefault("batchVolume", DEFAULT_BATCH_VOLUME)
-        );
+                (Integer) properties.getOrDefault("batchVolume", DEFAULT_BATCH_VOLUME));
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(messageTtl, retryClientErrors, messageBackoff, requestTimeout, batchSize, batchTime, batchVolume);
+        return Objects.hash(
+                messageTtl,
+                retryClientErrors,
+                messageBackoff,
+                requestTimeout,
+                batchSize,
+                batchTime,
+                batchVolume);
     }
 
     @Override

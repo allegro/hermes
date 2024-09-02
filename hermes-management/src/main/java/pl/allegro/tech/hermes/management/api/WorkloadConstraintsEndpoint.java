@@ -1,7 +1,12 @@
 package pl.allegro.tech.hermes.management.api;
 
+import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.OK;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
@@ -15,7 +20,9 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
+
 import org.springframework.stereotype.Component;
+
 import pl.allegro.tech.hermes.api.SubscriptionConstraints;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicConstraints;
@@ -27,10 +34,6 @@ import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 import pl.allegro.tech.hermes.management.domain.workload.constraints.WorkloadConstraintsService;
 
 import java.util.List;
-
-import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
-import static jakarta.ws.rs.core.Response.Status.CREATED;
-import static jakarta.ws.rs.core.Response.Status.OK;
 
 @Component
 @Path("/workload-constraints")
@@ -46,7 +49,10 @@ public class WorkloadConstraintsEndpoint {
     @GET
     @Produces(APPLICATION_JSON)
     @RolesAllowed(Roles.ANY)
-    @ApiOperation(value = "All workload constraints", response = List.class, httpMethod = HttpMethod.GET)
+    @ApiOperation(
+            value = "All workload constraints",
+            response = List.class,
+            httpMethod = HttpMethod.GET)
     public ConsumersWorkloadConstraints getConsumersWorkloadConstraints() {
         return service.getConsumersWorkloadConstraints();
     }
@@ -56,16 +62,25 @@ public class WorkloadConstraintsEndpoint {
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     @RolesAllowed(Roles.ADMIN)
-    @ApiOperation(value = "Create or update topic constraints", response = String.class, httpMethod = HttpMethod.PUT)
+    @ApiOperation(
+            value = "Create or update topic constraints",
+            response = String.class,
+            httpMethod = HttpMethod.PUT)
     public Response createOrUpdateTopicConstraints(
             @Valid TopicConstraints topicConstraints,
             @Context ContainerRequestContext requestContext) {
         RequestUser requestUser = new HermesSecurityAwareRequestUser(requestContext);
         if (service.constraintsExist(topicConstraints.getTopicName())) {
-            service.updateConstraints(topicConstraints.getTopicName(), topicConstraints.getConstraints(), requestUser);
+            service.updateConstraints(
+                    topicConstraints.getTopicName(),
+                    topicConstraints.getConstraints(),
+                    requestUser);
             return Response.status(OK).build();
         } else {
-            service.createConstraints(topicConstraints.getTopicName(), topicConstraints.getConstraints(), requestUser);
+            service.createConstraints(
+                    topicConstraints.getTopicName(),
+                    topicConstraints.getConstraints(),
+                    requestUser);
             return Response.status(CREATED).build();
         }
     }
@@ -73,11 +88,16 @@ public class WorkloadConstraintsEndpoint {
     @DELETE
     @Path("/topic/{topicName}")
     @RolesAllowed(Roles.ADMIN)
-    @ApiOperation(value = "Remove topic constraints", response = String.class, httpMethod = HttpMethod.DELETE)
+    @ApiOperation(
+            value = "Remove topic constraints",
+            response = String.class,
+            httpMethod = HttpMethod.DELETE)
     public Response deleteTopicConstraints(
             @PathParam("topicName") String topicName,
             @Context ContainerRequestContext requestContext) {
-        service.deleteConstraints(TopicName.fromQualifiedName(topicName), new HermesSecurityAwareRequestUser(requestContext));
+        service.deleteConstraints(
+                TopicName.fromQualifiedName(topicName),
+                new HermesSecurityAwareRequestUser(requestContext));
         return Response.status(OK).build();
     }
 
@@ -86,16 +106,25 @@ public class WorkloadConstraintsEndpoint {
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     @RolesAllowed(Roles.ADMIN)
-    @ApiOperation(value = "Create or update subscription constraints", response = String.class, httpMethod = HttpMethod.PUT)
+    @ApiOperation(
+            value = "Create or update subscription constraints",
+            response = String.class,
+            httpMethod = HttpMethod.PUT)
     public Response createOrUpdateSubscriptionConstraints(
             @Valid SubscriptionConstraints subscriptionConstraints,
             @Context ContainerRequestContext requestContext) {
         RequestUser requestUser = new HermesSecurityAwareRequestUser(requestContext);
         if (service.constraintsExist(subscriptionConstraints.getSubscriptionName())) {
-            service.updateConstraints(subscriptionConstraints.getSubscriptionName(), subscriptionConstraints.getConstraints(), requestUser);
+            service.updateConstraints(
+                    subscriptionConstraints.getSubscriptionName(),
+                    subscriptionConstraints.getConstraints(),
+                    requestUser);
             return Response.status(OK).build();
         } else {
-            service.createConstraints(subscriptionConstraints.getSubscriptionName(), subscriptionConstraints.getConstraints(), requestUser);
+            service.createConstraints(
+                    subscriptionConstraints.getSubscriptionName(),
+                    subscriptionConstraints.getConstraints(),
+                    requestUser);
             return Response.status(CREATED).build();
         }
     }
@@ -103,14 +132,17 @@ public class WorkloadConstraintsEndpoint {
     @DELETE
     @Path("/subscription/{topicName}/{subscriptionName}")
     @RolesAllowed(Roles.ADMIN)
-    @ApiOperation(value = "Remove subscription constraints", response = String.class, httpMethod = HttpMethod.DELETE)
-    public Response deleteSubscriptionConstraints(@PathParam("topicName") String topicName,
-                                                  @PathParam("subscriptionName") String subscriptionName,
-                                                  @Context ContainerRequestContext requestContext) {
+    @ApiOperation(
+            value = "Remove subscription constraints",
+            response = String.class,
+            httpMethod = HttpMethod.DELETE)
+    public Response deleteSubscriptionConstraints(
+            @PathParam("topicName") String topicName,
+            @PathParam("subscriptionName") String subscriptionName,
+            @Context ContainerRequestContext requestContext) {
         service.deleteConstraints(
                 new SubscriptionName(subscriptionName, TopicName.fromQualifiedName(topicName)),
-                new HermesSecurityAwareRequestUser(requestContext)
-        );
+                new HermesSecurityAwareRequestUser(requestContext));
         return Response.status(OK).build();
     }
 }

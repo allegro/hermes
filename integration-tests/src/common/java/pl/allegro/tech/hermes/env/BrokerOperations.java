@@ -1,11 +1,23 @@
 package pl.allegro.tech.hermes.env;
 
+import static org.apache.kafka.clients.CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG;
+import static org.apache.kafka.clients.CommonClientConfigs.DEFAULT_SECURITY_PROTOCOL;
+import static org.apache.kafka.clients.CommonClientConfigs.REQUEST_TIMEOUT_MS_CONFIG;
+import static org.apache.kafka.clients.CommonClientConfigs.SECURITY_PROTOCOL_CONFIG;
+
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
+
+import static java.util.Collections.singletonList;
+import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.stream.Collectors.toMap;
+
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.ListOffsetsResult;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.admin.OffsetSpec;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
+
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId;
@@ -23,15 +35,6 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static java.util.Collections.singletonList;
-import static java.util.concurrent.TimeUnit.MINUTES;
-import static java.util.stream.Collectors.toMap;
-import static org.apache.kafka.clients.CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG;
-import static org.apache.kafka.clients.CommonClientConfigs.DEFAULT_SECURITY_PROTOCOL;
-import static org.apache.kafka.clients.CommonClientConfigs.REQUEST_TIMEOUT_MS_CONFIG;
-import static org.apache.kafka.clients.CommonClientConfigs.SECURITY_PROTOCOL_CONFIG;
-import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
-
 public class BrokerOperations {
 
     private static final int DEFAULT_PARTITIONS = 2;
@@ -44,34 +47,45 @@ public class BrokerOperations {
     public BrokerOperations(String brokerList, String namespace) {
         this.adminClient = brokerAdminClient(brokerList);
         String namespaceSeparator = "_";
-        this.kafkaNamesMapper = new JsonToAvroMigrationKafkaNamesMapper(namespace, namespaceSeparator);
+        this.kafkaNamesMapper =
+                new JsonToAvroMigrationKafkaNamesMapper(namespace, namespaceSeparator);
     }
 
     public List<ConsumerGroupOffset> getTopicPartitionsOffsets(SubscriptionName subscriptionName) {
         ConsumerGroupId consumerGroupId = kafkaNamesMapper.toConsumerGroupId(subscriptionName);
 
-        Map<TopicPartition, OffsetAndMetadata> currentOffsets = getTopicCurrentOffsets(consumerGroupId);
-        Map<TopicPartition, ListOffsetsResult.ListOffsetsResultInfo> endOffsets = getEndOffsets(new ArrayList<>(currentOffsets.keySet()));
-        return currentOffsets.keySet()
-                .stream()
-                .map(partition -> new ConsumerGroupOffset(
-                        currentOffsets.get(partition).offset(),
-                                endOffsets.get(partition).offset())
-                ).collect(Collectors.toList());
+        Map<TopicPartition, OffsetAndMetadata> currentOffsets =
+                getTopicCurrentOffsets(consumerGroupId);
+        Map<TopicPartition, ListOffsetsResult.ListOffsetsResultInfo> endOffsets =
+                getEndOffsets(new ArrayList<>(currentOffsets.keySet()));
+        return currentOffsets.keySet().stream()
+                .map(
+                        partition ->
+                                new ConsumerGroupOffset(
+                                        currentOffsets.get(partition).offset(),
+                                        endOffsets.get(partition).offset()))
+                .collect(Collectors.toList());
     }
 
-    private Map<TopicPartition, OffsetAndMetadata> getTopicCurrentOffsets(ConsumerGroupId consumerGroupId) {
+    private Map<TopicPartition, OffsetAndMetadata> getTopicCurrentOffsets(
+            ConsumerGroupId consumerGroupId) {
         try {
-            return adminClient.listConsumerGroupOffsets(consumerGroupId.asString()).partitionsToOffsetAndMetadata().get();
+            return adminClient
+                    .listConsumerGroupOffsets(consumerGroupId.asString())
+                    .partitionsToOffsetAndMetadata()
+                    .get();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    private Map<TopicPartition, ListOffsetsResult.ListOffsetsResultInfo> getEndOffsets(List<TopicPartition> partitions) {
+    private Map<TopicPartition, ListOffsetsResult.ListOffsetsResultInfo> getEndOffsets(
+            List<TopicPartition> partitions) {
         try {
-            ListOffsetsResult listOffsetsResult = adminClient.listOffsets(
-                    partitions.stream().collect(toMap(Function.identity(), p -> OffsetSpec.latest())));
+            ListOffsetsResult listOffsetsResult =
+                    adminClient.listOffsets(
+                            partitions.stream()
+                                    .collect(toMap(Function.identity(), p -> OffsetSpec.latest())));
             return listOffsetsResult.all().get();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -80,16 +94,17 @@ public class BrokerOperations {
 
     public void createTopic(String topicName) {
         Topic topic = topic(topicName).build();
-        kafkaNamesMapper.toKafkaTopics(topic)
-                .forEach(kafkaTopic -> createTopic(kafkaTopic.name()));
+        kafkaNamesMapper.toKafkaTopics(topic).forEach(kafkaTopic -> createTopic(kafkaTopic.name()));
     }
 
     private void createTopic(KafkaTopicName topicName) {
         try {
-            NewTopic topic = new NewTopic(topicName.asString(), DEFAULT_PARTITIONS, (short) DEFAULT_REPLICATION_FACTOR);
-            adminClient.createTopics(singletonList(topic))
-                    .all()
-                    .get(1, MINUTES);
+            NewTopic topic =
+                    new NewTopic(
+                            topicName.asString(),
+                            DEFAULT_PARTITIONS,
+                            (short) DEFAULT_REPLICATION_FACTOR);
+            adminClient.createTopics(singletonList(topic)).all().get(1, MINUTES);
         } catch (ExecutionException | TimeoutException | InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -97,8 +112,7 @@ public class BrokerOperations {
 
     public boolean topicExists(String topicName) {
         Topic topic = topic(topicName).build();
-        return kafkaNamesMapper.toKafkaTopics(topic)
-                .allMatch(this::topicExists);
+        return kafkaNamesMapper.toKafkaTopics(topic).allMatch(this::topicExists);
     }
 
     private boolean topicExists(KafkaTopic kafkaTopic) {

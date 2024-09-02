@@ -1,19 +1,21 @@
 package pl.allegro.tech.hermes.common.metric.counter.zookeeper;
 
+import static org.mockito.Mockito.verify;
+
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.common.util.InstanceIdResolver;
-
-import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ZookeeperCounterReporterTest {
@@ -21,19 +23,18 @@ public class ZookeeperCounterReporterTest {
     public static final String TOPIC_NAME_UNDERSCORE = "topic_1";
     public static final String SUBSCRIPTION_NAME = "subscription.name";
     public static final TopicName topic = new TopicName(GROUP_NAME, TOPIC_NAME_UNDERSCORE);
-    public static final SubscriptionName subscription = new SubscriptionName(SUBSCRIPTION_NAME, topic);
+    public static final SubscriptionName subscription =
+            new SubscriptionName(SUBSCRIPTION_NAME, topic);
 
     public static final long COUNT = 100L;
 
-    @Mock
-    private CounterStorage counterStorage;
+    @Mock private CounterStorage counterStorage;
 
     private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
 
     private final MetricsFacade metricsFacade = new MetricsFacade(meterRegistry);
 
-    @Mock
-    private InstanceIdResolver instanceIdResolver;
+    @Mock private InstanceIdResolver instanceIdResolver;
 
     private ZookeeperCounterReporter zookeeperCounterReporter;
 

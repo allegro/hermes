@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.tracker.elasticsearch.management;
 
 import org.elasticsearch.client.Client;
+
 import pl.allegro.tech.hermes.api.MessageTrace;
 import pl.allegro.tech.hermes.api.SentMessageTrace;
 import pl.allegro.tech.hermes.tracker.elasticsearch.LogSchemaAware;
@@ -15,13 +16,15 @@ public class MultiElasticsearchLogRepository implements LogRepository, LogSchema
     private final List<ElasticsearchLogRepository> elasticsearchLogRepositories;
 
     public MultiElasticsearchLogRepository(List<Client> elasticClients) {
-        elasticsearchLogRepositories = elasticClients.stream()
-                .map(ElasticsearchLogRepository::new)
-                .collect(Collectors.toList());
+        elasticsearchLogRepositories =
+                elasticClients.stream()
+                        .map(ElasticsearchLogRepository::new)
+                        .collect(Collectors.toList());
     }
 
     @Override
-    public List<SentMessageTrace> getLastUndeliveredMessages(String topicName, String subscriptionName, int limit) {
+    public List<SentMessageTrace> getLastUndeliveredMessages(
+            String topicName, String subscriptionName, int limit) {
         return elasticsearchLogRepositories.stream()
                 .map(repo -> repo.getLastUndeliveredMessages(topicName, subscriptionName, limit))
                 .flatMap(Collection::stream)
@@ -29,7 +32,8 @@ public class MultiElasticsearchLogRepository implements LogRepository, LogSchema
     }
 
     @Override
-    public List<MessageTrace> getMessageStatus(String qualifiedTopicName, String subscriptionName, String messageId) {
+    public List<MessageTrace> getMessageStatus(
+            String qualifiedTopicName, String subscriptionName, String messageId) {
         return elasticsearchLogRepositories.stream()
                 .map(repo -> repo.getMessageStatus(qualifiedTopicName, subscriptionName, messageId))
                 .flatMap(Collection::stream)

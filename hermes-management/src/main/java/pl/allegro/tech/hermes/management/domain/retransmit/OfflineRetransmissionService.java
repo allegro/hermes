@@ -15,13 +15,16 @@ public class OfflineRetransmissionService {
     private final OfflineRetransmissionRepository offlineRetransmissionRepository;
     private final TopicRepository topicRepository;
 
-    public OfflineRetransmissionService(OfflineRetransmissionRepository offlineRetransmissionRepository, TopicRepository topicRepository) {
+    public OfflineRetransmissionService(
+            OfflineRetransmissionRepository offlineRetransmissionRepository,
+            TopicRepository topicRepository) {
         this.offlineRetransmissionRepository = offlineRetransmissionRepository;
         this.topicRepository = topicRepository;
     }
 
     public void validateRequest(OfflineRetransmissionRequest request) {
-        TopicName sourceTopicName = TopicName.fromQualifiedName(request.getSourceTopic().orElse(null));
+        TopicName sourceTopicName =
+                TopicName.fromQualifiedName(request.getSourceTopic().orElse(null));
         TopicName targetTopicName = TopicName.fromQualifiedName(request.getTargetTopic());
 
         ensureTopicsExist(sourceTopicName, targetTopicName);
@@ -61,14 +64,16 @@ public class OfflineRetransmissionService {
     private void ensureTimeRangeIsProper(OfflineRetransmissionRequest request) {
         if (request.getStartTimestamp().isAfter(request.getEndTimestamp())
                 || request.getStartTimestamp().equals(request.getEndTimestamp())) {
-            throw new OfflineRetransmissionValidationException("End timestamp must be greater than start timestamp");
+            throw new OfflineRetransmissionValidationException(
+                    "End timestamp must be greater than start timestamp");
         }
     }
 
     private void ensureTopicIsNotStoredOffline(TopicName targetTopicName) {
         Topic targetTopic = topicRepository.getTopicDetails(targetTopicName);
         if (targetTopic.getOfflineStorage().isEnabled()) {
-            throw new OfflineRetransmissionValidationException("Target topic must not be stored offline");
+            throw new OfflineRetransmissionValidationException(
+                    "Target topic must not be stored offline");
         }
     }
 

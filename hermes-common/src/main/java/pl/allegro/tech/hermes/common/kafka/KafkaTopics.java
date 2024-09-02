@@ -1,11 +1,11 @@
 package pl.allegro.tech.hermes.common.kafka;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 public class KafkaTopics {
 

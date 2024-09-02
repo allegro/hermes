@@ -1,9 +1,13 @@
 package pl.allegro.tech.hermes.management.infrastructure.retransmit;
 
+import static java.lang.String.format;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.apache.curator.framework.CuratorFramework;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.api.OfflineRetransmissionTask;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperBasedRepository;
@@ -15,13 +19,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static java.lang.String.format;
+public class ZookeeperOfflineRetransmissionRepository extends ZookeeperBasedRepository
+        implements OfflineRetransmissionRepository {
 
-public class ZookeeperOfflineRetransmissionRepository extends ZookeeperBasedRepository implements OfflineRetransmissionRepository {
+    private static final Logger logger =
+            LoggerFactory.getLogger(ZookeeperOfflineRetransmissionRepository.class);
 
-    private static final Logger logger = LoggerFactory.getLogger(ZookeeperOfflineRetransmissionRepository.class);
-
-    public ZookeeperOfflineRetransmissionRepository(CuratorFramework zookeeper, ObjectMapper mapper, ZookeeperPaths paths) {
+    public ZookeeperOfflineRetransmissionRepository(
+            CuratorFramework zookeeper, ObjectMapper mapper, ZookeeperPaths paths) {
         super(zookeeper, mapper, paths);
     }
 
@@ -41,9 +46,12 @@ public class ZookeeperOfflineRetransmissionRepository extends ZookeeperBasedRepo
     public List<OfflineRetransmissionTask> getAllTasks() {
         try {
             if (pathExists(paths.offlineRetransmissionPath())) {
-                return childrenOf(paths.offlineRetransmissionPath())
-                        .stream()
-                        .map(id -> readFrom(paths.offlineRetransmissionPath(id), OfflineRetransmissionTask.class))
+                return childrenOf(paths.offlineRetransmissionPath()).stream()
+                        .map(
+                                id ->
+                                        readFrom(
+                                                paths.offlineRetransmissionPath(id),
+                                                OfflineRetransmissionTask.class))
                         .collect(Collectors.toList());
             }
             return Collections.emptyList();

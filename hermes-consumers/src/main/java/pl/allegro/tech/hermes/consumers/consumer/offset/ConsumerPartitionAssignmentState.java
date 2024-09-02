@@ -1,6 +1,11 @@
 package pl.allegro.tech.hermes.consumers.consumer.offset;
 
+import static org.slf4j.LoggerFactory.getLogger;
+
+import static java.util.stream.Collectors.toSet;
+
 import org.slf4j.Logger;
+
 import pl.allegro.tech.hermes.api.SubscriptionName;
 
 import java.util.Collection;
@@ -8,9 +13,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static java.util.stream.Collectors.toSet;
-import static org.slf4j.LoggerFactory.getLogger;
 
 public class ConsumerPartitionAssignmentState {
 
@@ -23,15 +25,17 @@ public class ConsumerPartitionAssignmentState {
     public void assign(SubscriptionName name, Collection<Integer> partitions) {
         incrementTerm(name);
         logger.info("Assigning partitions {} of {}, term={}", partitions, name, currentTerm(name));
-        assigned.compute(name, ((subscriptionName, assigned) -> {
-            HashSet<Integer> extended = new HashSet<>(partitions);
-            if (assigned == null) {
-                return extended;
-            } else {
-                extended.addAll(assigned);
-                return extended;
-            }
-        }));
+        assigned.compute(
+                name,
+                ((subscriptionName, assigned) -> {
+                    HashSet<Integer> extended = new HashSet<>(partitions);
+                    if (assigned == null) {
+                        return extended;
+                    } else {
+                        extended.addAll(assigned);
+                        return extended;
+                    }
+                }));
     }
 
     private void incrementTerm(SubscriptionName name) {
@@ -40,10 +44,13 @@ public class ConsumerPartitionAssignmentState {
 
     public void revoke(SubscriptionName name, Collection<Integer> partitions) {
         logger.info("Revoking partitions {} of {}", partitions, name);
-        assigned.computeIfPresent(name, (subscriptionName, assigned) -> {
-            Set<Integer> filtered = assigned.stream().filter(p -> !partitions.contains(p)).collect(toSet());
-            return filtered.isEmpty() ? null : filtered;
-        });
+        assigned.computeIfPresent(
+                name,
+                (subscriptionName, assigned) -> {
+                    Set<Integer> filtered =
+                            assigned.stream().filter(p -> !partitions.contains(p)).collect(toSet());
+                    return filtered.isEmpty() ? null : filtered;
+                });
     }
 
     public void revokeAll(SubscriptionName name) {
@@ -56,8 +63,11 @@ public class ConsumerPartitionAssignmentState {
     }
 
     public boolean isAssignedPartitionAtCurrentTerm(SubscriptionPartition subscriptionPartition) {
-        return currentTerm(subscriptionPartition.getSubscriptionName()) == subscriptionPartition.getPartitionAssignmentTerm()
-                && isAssigned(subscriptionPartition.getSubscriptionName(), subscriptionPartition.getPartition());
+        return currentTerm(subscriptionPartition.getSubscriptionName())
+                        == subscriptionPartition.getPartitionAssignmentTerm()
+                && isAssigned(
+                        subscriptionPartition.getSubscriptionName(),
+                        subscriptionPartition.getPartition());
     }
 
     private boolean isAssigned(SubscriptionName name, int partition) {

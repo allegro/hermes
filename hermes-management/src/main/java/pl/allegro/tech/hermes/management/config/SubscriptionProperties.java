@@ -30,8 +30,10 @@ public class SubscriptionProperties {
         return intervalBetweenCheckinIfOffsetsMovedInMillis;
     }
 
-    public void setIntervalBetweenCheckinIfOffsetsMovedInMillis(int intervalBetweenCheckinIfOffsetsMovedInMillis) {
-        this.intervalBetweenCheckinIfOffsetsMovedInMillis = intervalBetweenCheckinIfOffsetsMovedInMillis;
+    public void setIntervalBetweenCheckinIfOffsetsMovedInMillis(
+            int intervalBetweenCheckinIfOffsetsMovedInMillis) {
+        this.intervalBetweenCheckinIfOffsetsMovedInMillis =
+                intervalBetweenCheckinIfOffsetsMovedInMillis;
     }
 
     public int getOffsetsMovedTimeoutInSeconds() {
@@ -54,7 +56,8 @@ public class SubscriptionProperties {
         return subscribersWithAccessToAnyTopic;
     }
 
-    public void setSubscribersWithAccessToAnyTopic(List<SubscriberProperties> subscribersWithAccessToAnyTopic) {
+    public void setSubscribersWithAccessToAnyTopic(
+            List<SubscriberProperties> subscribersWithAccessToAnyTopic) {
         this.subscribersWithAccessToAnyTopic = subscribersWithAccessToAnyTopic;
     }
 

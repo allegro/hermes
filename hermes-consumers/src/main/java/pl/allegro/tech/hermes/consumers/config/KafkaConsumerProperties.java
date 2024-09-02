@@ -1,14 +1,15 @@
 package pl.allegro.tech.hermes.consumers.config;
 
+import static pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.PartitionAssignmentStrategy.RANGE;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
+
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.KafkaConsumerParameters;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.PartitionAssignmentStrategy;
 
 import java.time.Duration;
 import java.util.List;
-
-import static pl.allegro.tech.hermes.consumers.consumer.receiver.kafka.PartitionAssignmentStrategy.RANGE;
 
 @ConfigurationProperties(prefix = "consumer.kafka.consumer")
 public class KafkaConsumerProperties implements KafkaConsumerParameters {
@@ -229,7 +230,8 @@ public class KafkaConsumerProperties implements KafkaConsumerParameters {
         return partitionAssignmentStrategies;
     }
 
-    public void setPartitionAssignmentStrategies(List<PartitionAssignmentStrategy> partitionAssignmentStrategies) {
+    public void setPartitionAssignmentStrategies(
+            List<PartitionAssignmentStrategy> partitionAssignmentStrategies) {
         this.partitionAssignmentStrategies = partitionAssignmentStrategies;
     }
 }

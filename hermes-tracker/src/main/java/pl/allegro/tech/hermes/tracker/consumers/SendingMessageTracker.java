@@ -24,8 +24,7 @@ class SendingMessageTracker implements SendingTracker {
 
     @Override
     public void logDiscarded(MessageMetadata message, String reason) {
-        repositories.forEach(r ->
-                r.logDiscarded(message, clock.millis(), reason));
+        repositories.forEach(r -> r.logDiscarded(message, clock.millis(), reason));
     }
 
     @Override

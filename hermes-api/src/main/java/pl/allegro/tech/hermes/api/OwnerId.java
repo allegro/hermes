@@ -2,21 +2,19 @@ package pl.allegro.tech.hermes.api;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.validation.constraints.NotNull;
 
 import java.util.Objects;
 
 public final class OwnerId {
 
-    @NotNull
-    private final String source;
+    @NotNull private final String source;
 
-    @NotNull
-    private final String id;
+    @NotNull private final String id;
 
     @JsonCreator
-    public OwnerId(@JsonProperty("source") String source,
-                   @JsonProperty("id") String id) {
+    public OwnerId(@JsonProperty("source") String source, @JsonProperty("id") String id) {
         this.source = source;
         this.id = id;
     }
@@ -38,8 +36,7 @@ public final class OwnerId {
             return false;
         }
         OwnerId that = (OwnerId) o;
-        return Objects.equals(source, that.source)
-                && Objects.equals(id, that.id);
+        return Objects.equals(source, that.source) && Objects.equals(id, that.id);
     }
 
     @Override
@@ -49,9 +46,6 @@ public final class OwnerId {
 
     @Override
     public String toString() {
-        return "OwnerId{"
-                + "source='" + source + '\''
-                + ", id='" + id + '\''
-                + '}';
+        return "OwnerId{" + "source='" + source + '\'' + ", id='" + id + '\'' + '}';
     }
 }

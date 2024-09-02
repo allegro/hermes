@@ -5,6 +5,7 @@ import io.micrometer.core.instrument.config.MeterFilter;
 import io.micrometer.core.instrument.distribution.DistributionStatisticConfig;
 import io.micrometer.prometheus.PrometheusConfig;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
+
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -16,10 +17,10 @@ public class PrometheusConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public PrometheusMeterRegistry micrometerRegistry(MicrometerRegistryProperties properties,
-                                                      PrometheusConfig prometheusConfig) {
-        return new PrometheusMeterRegistryFactory(properties,
-                prometheusConfig, "hermes-management").provide();
+    public PrometheusMeterRegistry micrometerRegistry(
+            MicrometerRegistryProperties properties, PrometheusConfig prometheusConfig) {
+        return new PrometheusMeterRegistryFactory(properties, prometheusConfig, "hermes-management")
+                .provide();
     }
 
     @Bean
@@ -33,9 +34,10 @@ public class PrometheusConfiguration {
         private final PrometheusConfig prometheusConfig;
         private final String prefix;
 
-        public PrometheusMeterRegistryFactory(MicrometerRegistryProperties properties,
-                                       PrometheusConfig prometheusConfig,
-                                       String prefix) {
+        public PrometheusMeterRegistryFactory(
+                MicrometerRegistryProperties properties,
+                PrometheusConfig prometheusConfig,
+                String prefix) {
             this.parameters = properties;
             this.prometheusConfig = prometheusConfig;
             this.prefix = prefix + "_";
@@ -48,19 +50,27 @@ public class PrometheusConfiguration {
         }
 
         private void applyFilters(PrometheusMeterRegistry meterRegistry) {
-            meterRegistry.config().meterFilter(new MeterFilter() {
-                @Override
-                public Meter.Id map(Meter.Id id) {
-                    return id.withName(prefix + id.getName());
-                }
+            meterRegistry
+                    .config()
+                    .meterFilter(
+                            new MeterFilter() {
+                                @Override
+                                public Meter.Id map(Meter.Id id) {
+                                    return id.withName(prefix + id.getName());
+                                }
 
-                @Override
-                public DistributionStatisticConfig configure(Meter.Id id, DistributionStatisticConfig config) {
-                    return DistributionStatisticConfig.builder()
-                            .percentiles(parameters.getPercentiles().stream().mapToDouble(Double::doubleValue).toArray()
-                    ).build().merge(config);
-                }
-            });
+                                @Override
+                                public DistributionStatisticConfig configure(
+                                        Meter.Id id, DistributionStatisticConfig config) {
+                                    return DistributionStatisticConfig.builder()
+                                            .percentiles(
+                                                    parameters.getPercentiles().stream()
+                                                            .mapToDouble(Double::doubleValue)
+                                                            .toArray())
+                                            .build()
+                                            .merge(config);
+                                }
+                            });
         }
     }
 }

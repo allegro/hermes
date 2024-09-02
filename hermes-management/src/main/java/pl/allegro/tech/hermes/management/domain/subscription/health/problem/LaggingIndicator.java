@@ -1,12 +1,12 @@
 package pl.allegro.tech.hermes.management.domain.subscription.health.problem;
 
+import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.lagging;
+
 import pl.allegro.tech.hermes.api.SubscriptionHealthProblem;
 import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthContext;
 import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthProblemIndicator;
 
 import java.util.Optional;
-
-import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.lagging;
 
 public class LaggingIndicator implements SubscriptionHealthProblemIndicator {
     private final int maxLagInSeconds;
@@ -20,7 +20,10 @@ public class LaggingIndicator implements SubscriptionHealthProblemIndicator {
         long subscriptionLag = context.getLag();
         double topicRate = context.getTopicRate();
         if (topicRate > 0.0 && subscriptionLag > maxLagInSeconds * topicRate) {
-            return Optional.of(lagging(subscriptionLag, context.getSubscription().getQualifiedName().toString()));
+            return Optional.of(
+                    lagging(
+                            subscriptionLag,
+                            context.getSubscription().getQualifiedName().toString()));
         }
         return Optional.empty();
     }

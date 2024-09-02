@@ -37,11 +37,13 @@ public class HermesMockRule implements MethodRule, TestRule {
         hermesMock.resetReceivedRequest();
     }
 
-    public <T> void resetReceivedAvroRequests(String topicName, Schema schema, Class<T> clazz, Predicate<T> predicate) {
+    public <T> void resetReceivedAvroRequests(
+            String topicName, Schema schema, Class<T> clazz, Predicate<T> predicate) {
         hermesMock.resetReceivedAvroRequests(topicName, schema, clazz, predicate);
     }
 
-    public <T> void resetReceivedJsonRequests(String topicName, Class<T> clazz, Predicate<T> predicate) {
+    public <T> void resetReceivedJsonRequests(
+            String topicName, Class<T> clazz, Predicate<T> predicate) {
         hermesMock.resetReceivedJsonRequests(topicName, clazz, predicate);
     }
 

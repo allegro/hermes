@@ -15,10 +15,11 @@ public class ConsumerGroup {
     private final Set<ConsumerGroupMember> members;
 
     @JsonCreator
-    public ConsumerGroup(@JsonProperty("clusterName") String clusterName,
-                         @JsonProperty("groupId") String groupId,
-                         @JsonProperty("state") String state,
-                         @JsonProperty("members") Set<ConsumerGroupMember> members) {
+    public ConsumerGroup(
+            @JsonProperty("clusterName") String clusterName,
+            @JsonProperty("groupId") String groupId,
+            @JsonProperty("state") String state,
+            @JsonProperty("members") Set<ConsumerGroupMember> members) {
         this.clusterName = clusterName;
         this.groupId = groupId;
         this.state = state;

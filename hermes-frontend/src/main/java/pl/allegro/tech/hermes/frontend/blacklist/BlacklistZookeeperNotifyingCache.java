@@ -6,14 +6,17 @@ import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class BlacklistZookeeperNotifyingCache extends PathChildrenCache implements PathChildrenCacheListener {
+public class BlacklistZookeeperNotifyingCache extends PathChildrenCache
+        implements PathChildrenCacheListener {
 
-    private static final Logger logger = LoggerFactory.getLogger(BlacklistZookeeperNotifyingCache.class);
+    private static final Logger logger =
+            LoggerFactory.getLogger(BlacklistZookeeperNotifyingCache.class);
 
     private final List<TopicBlacklistCallback> topicCallbacks = new ArrayList<>();
 
@@ -37,7 +40,8 @@ public class BlacklistZookeeperNotifyingCache extends PathChildrenCache implemen
                 topicCallbacks.forEach(callback -> callback.onTopicBlacklisted(qualifiedTopicName));
                 break;
             case CHILD_REMOVED:
-                topicCallbacks.forEach(callback -> callback.onTopicUnblacklisted(qualifiedTopicName));
+                topicCallbacks.forEach(
+                        callback -> callback.onTopicUnblacklisted(qualifiedTopicName));
                 break;
             default:
                 break;

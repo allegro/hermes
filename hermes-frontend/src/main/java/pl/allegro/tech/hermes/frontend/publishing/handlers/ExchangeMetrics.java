@@ -2,8 +2,10 @@ package pl.allegro.tech.hermes.frontend.publishing.handlers;
 
 import io.undertow.server.ExchangeCompletionListener;
 import io.undertow.server.HttpServerExchange;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.common.metric.timer.StartedTimersPair;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 
@@ -26,7 +28,10 @@ class ExchangeMetrics implements ExchangeCompletionListener {
             cachedTopic.markStatusCodeMeter(exchange.getStatusCode());
             producerLatencyTimers.close();
         } catch (RuntimeException e) {
-            logger.error("Exception while invoking metrics for topic {}", cachedTopic.getQualifiedName(), e);
+            logger.error(
+                    "Exception while invoking metrics for topic {}",
+                    cachedTopic.getQualifiedName(),
+                    e);
         } finally {
             nextListener.proceed();
         }

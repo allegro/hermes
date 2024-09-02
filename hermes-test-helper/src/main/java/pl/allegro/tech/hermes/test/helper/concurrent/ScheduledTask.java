@@ -1,5 +1,7 @@
 package pl.allegro.tech.hermes.test.helper.concurrent;
 
+import jakarta.annotation.Nonnull;
+
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
@@ -8,7 +10,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import jakarta.annotation.Nonnull;
 
 class ScheduledTask<T> implements ScheduledFuture<T> {
 
@@ -63,7 +64,8 @@ class ScheduledTask<T> implements ScheduledFuture<T> {
     }
 
     @Override
-    public T get(long timeout, @Nonnull TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+    public T get(long timeout, @Nonnull TimeUnit unit)
+            throws InterruptedException, ExecutionException, TimeoutException {
         return result.get(timeout, unit);
     }
 }

@@ -16,5 +16,4 @@ public class MessageValidators {
     public void check(Topic topic, Message message) {
         messageValidators.forEach(v -> v.check(message, topic));
     }
-
 }

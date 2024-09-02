@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.frontend.publishing.metadata;
 
-
 import io.undertow.util.HeaderMap;
 
 import java.util.Map;

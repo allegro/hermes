@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.frontend.publishing.handlers;
 
 import io.undertow.util.AttachmentKey;
+
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
@@ -8,7 +9,8 @@ import pl.allegro.tech.hermes.frontend.publishing.message.MessageState;
 
 public class AttachmentContent {
 
-    public static final AttachmentKey<AttachmentContent> KEY = AttachmentKey.create(AttachmentContent.class);
+    public static final AttachmentKey<AttachmentContent> KEY =
+            AttachmentKey.create(AttachmentContent.class);
 
     private final CachedTopic cachedTopic;
     private final MessageState messageState;

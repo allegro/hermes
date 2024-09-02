@@ -1,6 +1,11 @@
 package pl.allegro.tech.hermes.management.api;
 
+import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
+
+import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
+
 import io.swagger.annotations.ApiOperation;
+
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
@@ -15,7 +20,9 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
+
 import org.springframework.beans.factory.annotation.Autowired;
+
 import pl.allegro.tech.hermes.api.RawSchema;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.management.api.auth.HermesSecurityAwareRequestUser;
@@ -27,9 +34,6 @@ import pl.allegro.tech.hermes.schema.SchemaId;
 import pl.allegro.tech.hermes.schema.SchemaVersion;
 
 import java.util.Optional;
-
-import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
-import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
 
 @Path("topics/{topicName}/schema")
 public class SchemaEndpoint {
@@ -48,7 +52,8 @@ public class SchemaEndpoint {
     @ApiOperation(value = "Get schema", httpMethod = HttpMethod.GET)
     public Response get(@PathParam("topicName") String qualifiedTopicName) {
         Optional<RawSchema> rawSchema = schemaService.getSchema(qualifiedTopicName);
-        return rawSchema.map(RawSchema::value)
+        return rawSchema
+                .map(RawSchema::value)
                 .map(v -> Response.ok(v).build())
                 .orElse(Response.noContent().build());
     }
@@ -57,9 +62,12 @@ public class SchemaEndpoint {
     @Path("versions/{version}")
     @Produces(APPLICATION_JSON)
     @ApiOperation(value = "Get schema", httpMethod = HttpMethod.GET)
-    public Response getByVersion(@PathParam("topicName") String qualifiedTopicName, @PathParam("version") int version) {
-        Optional<RawSchema> rawSchema = schemaService.getSchema(qualifiedTopicName, SchemaVersion.valueOf(version));
-        return rawSchema.map(RawSchema::value)
+    public Response getByVersion(
+            @PathParam("topicName") String qualifiedTopicName, @PathParam("version") int version) {
+        Optional<RawSchema> rawSchema =
+                schemaService.getSchema(qualifiedTopicName, SchemaVersion.valueOf(version));
+        return rawSchema
+                .map(RawSchema::value)
                 .map(v -> Response.ok(v).build())
                 .orElse(Response.noContent().build());
     }
@@ -68,9 +76,12 @@ public class SchemaEndpoint {
     @Path("ids/{id}")
     @Produces(APPLICATION_JSON)
     @ApiOperation(value = "Get schema", httpMethod = HttpMethod.GET)
-    public Response getById(@PathParam("topicName") String qualifiedTopicName, @PathParam("id") int id) {
-        Optional<RawSchema> rawSchema = schemaService.getSchema(qualifiedTopicName, SchemaId.valueOf(id));
-        return rawSchema.map(RawSchema::value)
+    public Response getById(
+            @PathParam("topicName") String qualifiedTopicName, @PathParam("id") int id) {
+        Optional<RawSchema> rawSchema =
+                schemaService.getSchema(qualifiedTopicName, SchemaId.valueOf(id));
+        return rawSchema
+                .map(RawSchema::value)
                 .map(v -> Response.ok(v).build())
                 .orElse(Response.noContent().build());
     }
@@ -79,10 +90,11 @@ public class SchemaEndpoint {
     @Consumes(APPLICATION_JSON)
     @RolesAllowed({Roles.TOPIC_OWNER, Roles.ADMIN})
     @ApiOperation(value = "Save schema", httpMethod = HttpMethod.POST)
-    public Response save(@PathParam("topicName") String qualifiedTopicName,
-                         @DefaultValue("true") @QueryParam(value = "validate") boolean validate,
-                         @Context ContainerRequestContext requestContext,
-                         String schema) {
+    public Response save(
+            @PathParam("topicName") String qualifiedTopicName,
+            @DefaultValue("true") @QueryParam(value = "validate") boolean validate,
+            @Context ContainerRequestContext requestContext,
+            String schema) {
         Topic topic = topicService.getTopicDetails(fromQualifiedName(qualifiedTopicName));
         RequestUser user = new HermesSecurityAwareRequestUser(requestContext);
         schemaService.registerSchema(topic, schema, validate);

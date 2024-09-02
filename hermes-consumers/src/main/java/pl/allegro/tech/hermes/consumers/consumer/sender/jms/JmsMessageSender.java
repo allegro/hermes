@@ -1,23 +1,25 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.jms;
 
+import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.MESSAGE_ID;
+import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.TOPIC_NAME;
+import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.failedResult;
+import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.succeededResult;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.CompletableFutureAwareMessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
 
 import java.util.concurrent.CompletableFuture;
+
 import javax.jms.BytesMessage;
 import javax.jms.CompletionListener;
 import javax.jms.JMSContext;
 import javax.jms.JMSException;
 import javax.jms.JMSRuntimeException;
-
-import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.MESSAGE_ID;
-import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.TOPIC_NAME;
-import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.failedResult;
-import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.succeededResult;
 
 public class JmsMessageSender implements CompletableFutureAwareMessageSender {
 
@@ -27,7 +29,10 @@ public class JmsMessageSender implements CompletableFutureAwareMessageSender {
     private final JMSContext jmsContext;
     private final MetadataAppender<javax.jms.Message> metadataAppender;
 
-    public JmsMessageSender(JMSContext jmsContext, String destinationTopic, MetadataAppender<javax.jms.Message> metadataAppender) {
+    public JmsMessageSender(
+            JMSContext jmsContext,
+            String destinationTopic,
+            MetadataAppender<javax.jms.Message> metadataAppender) {
         this.jmsContext = jmsContext;
         this.topicName = destinationTopic;
         this.metadataAppender = metadataAppender;
@@ -48,24 +53,29 @@ public class JmsMessageSender implements CompletableFutureAwareMessageSender {
 
             metadataAppender.append(message, msg);
 
-            CompletionListener asyncListener = new CompletionListener() {
-                @Override
-                public void onCompletion(javax.jms.Message message) {
-                    resultFuture.complete(succeededResult());
-                }
+            CompletionListener asyncListener =
+                    new CompletionListener() {
+                        @Override
+                        public void onCompletion(javax.jms.Message message) {
+                            resultFuture.complete(succeededResult());
+                        }
 
-                @Override
-                public void onException(javax.jms.Message message, Exception exception) {
-                    logger.warn(String.format("Exception while sending message to topic %s", topicName), exception);
-                    resultFuture.complete(failedResult(exception));
-                }
-            };
-            jmsContext.createProducer()
+                        @Override
+                        public void onException(javax.jms.Message message, Exception exception) {
+                            logger.warn(
+                                    String.format(
+                                            "Exception while sending message to topic %s",
+                                            topicName),
+                                    exception);
+                            resultFuture.complete(failedResult(exception));
+                        }
+                    };
+            jmsContext
+                    .createProducer()
                     .setAsync(asyncListener)
                     .send(jmsContext.createTopic(topicName), message);
         } catch (JMSException | JMSRuntimeException e) {
             resultFuture.complete(failedResult(e));
         }
     }
-
 }

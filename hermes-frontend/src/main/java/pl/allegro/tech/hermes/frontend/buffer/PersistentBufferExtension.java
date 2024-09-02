@@ -1,7 +1,10 @@
 package pl.allegro.tech.hermes.frontend.buffer;
 
+import static java.util.stream.Collectors.joining;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.frontend.buffer.chronicle.ChronicleMapMessageRepository;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
@@ -9,8 +12,6 @@ import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 import java.io.File;
 import java.time.Clock;
 import java.util.List;
-
-import static java.util.stream.Collectors.joining;
 
 public class PersistentBufferExtension {
 
@@ -28,11 +29,12 @@ public class PersistentBufferExtension {
     private int entries;
     private int avgMessageSize;
 
-    public PersistentBufferExtension(PersistentBufferExtensionParameters persistentBufferExtensionParameters,
-                                     Clock clock,
-                                     BrokerListeners listeners,
-                                     BackupMessagesLoader backupMessagesLoader,
-                                     MetricsFacade metricsFacade) {
+    public PersistentBufferExtension(
+            PersistentBufferExtensionParameters persistentBufferExtensionParameters,
+            Clock clock,
+            BrokerListeners listeners,
+            BackupMessagesLoader backupMessagesLoader,
+            MetricsFacade metricsFacade) {
         this.persistentBufferExtensionParameters = persistentBufferExtensionParameters;
         this.clock = clock;
         this.listeners = listeners;
@@ -41,9 +43,8 @@ public class PersistentBufferExtension {
     }
 
     public void extend() {
-        BackupFilesManager backupFilesManager = new BackupFilesManager(
-                persistentBufferExtensionParameters.getDirectory(),
-                clock);
+        BackupFilesManager backupFilesManager =
+                new BackupFilesManager(persistentBufferExtensionParameters.getDirectory(), clock);
 
         long backupStorageSizeInBytes = persistentBufferExtensionParameters.getBufferedSizeBytes();
         avgMessageSize = persistentBufferExtensionParameters.getAverageMessageSize();
@@ -67,23 +68,32 @@ public class PersistentBufferExtension {
 
     private void loadTemporaryBackupV2Files(BackupFilesManager backupFilesManager) {
         String temporaryDir = persistentBufferExtensionParameters.getTemporaryDirectory();
-        List<File> temporaryBackupV2Files = backupFilesManager.getTemporaryBackupV2Files(temporaryDir);
+        List<File> temporaryBackupV2Files =
+                backupFilesManager.getTemporaryBackupV2Files(temporaryDir);
         temporaryBackupV2Files.forEach(f -> loadTemporaryBackupV2Messages(backupFilesManager, f));
         backupMessagesLoader.clearTopicsAvailabilityCache();
     }
 
-    private void rollBackupFiles(BackupFilesManager backupFilesManager, List<File> rolledBackupFiles) {
-        logger.info("Backup files were found. Number of files: {}. Files: {}",
+    private void rollBackupFiles(
+            BackupFilesManager backupFilesManager, List<File> rolledBackupFiles) {
+        logger.info(
+                "Backup files were found. Number of files: {}. Files: {}",
                 rolledBackupFiles.size(),
                 rolledBackupFiles.stream().map(File::getName).collect(joining(", ")));
         rolledBackupFiles.forEach(f -> loadOldMessages(backupFilesManager, f));
-            backupMessagesLoader.clearTopicsAvailabilityCache();
+        backupMessagesLoader.clearTopicsAvailabilityCache();
     }
 
     private void enableLocalStorage(BackupFilesManager backupFilesManager) {
-        MessageRepository repository = persistentBufferExtensionParameters.isSizeReportingEnabled()
-                ? new ChronicleMapMessageRepository(backupFilesManager.getCurrentBackupFile(), entries, avgMessageSize, metricsFacade)
-                : new ChronicleMapMessageRepository(backupFilesManager.getCurrentBackupFile(), entries, avgMessageSize);
+        MessageRepository repository =
+                persistentBufferExtensionParameters.isSizeReportingEnabled()
+                        ? new ChronicleMapMessageRepository(
+                                backupFilesManager.getCurrentBackupFile(),
+                                entries,
+                                avgMessageSize,
+                                metricsFacade)
+                        : new ChronicleMapMessageRepository(
+                                backupFilesManager.getCurrentBackupFile(), entries, avgMessageSize);
 
         BrokerListener brokerListener = new BrokerListener(repository);
 
@@ -92,15 +102,18 @@ public class PersistentBufferExtension {
         listeners.addTimeoutListener(brokerListener);
     }
 
-    private void loadTemporaryBackupV2Messages(BackupFilesManager backupFilesManager, File temporaryBackup) {
-        logger.info("Loading messages from temporary backup v2 file: {}", temporaryBackup.getName());
+    private void loadTemporaryBackupV2Messages(
+            BackupFilesManager backupFilesManager, File temporaryBackup) {
+        logger.info(
+                "Loading messages from temporary backup v2 file: {}", temporaryBackup.getName());
         backupMessagesLoader.loadFromTemporaryBackupV2File(temporaryBackup);
         backupFilesManager.delete(temporaryBackup);
     }
 
     private void loadOldMessages(BackupFilesManager backupFilesManager, File oldBackup) {
         logger.info("Loading messages from backup file: {}", oldBackup.getName());
-        MessageRepository oldMessageRepository = new ChronicleMapMessageRepository(oldBackup, entries, avgMessageSize);
+        MessageRepository oldMessageRepository =
+                new ChronicleMapMessageRepository(oldBackup, entries, avgMessageSize);
         backupMessagesLoader.loadMessages(oldMessageRepository.findAll());
         oldMessageRepository.close();
         backupFilesManager.delete(oldBackup);

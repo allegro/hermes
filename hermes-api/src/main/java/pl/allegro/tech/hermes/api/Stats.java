@@ -11,8 +11,7 @@ public class Stats {
 
     @JsonCreator
     public Stats(
-            @JsonProperty("topicStats")
-            TopicStats topicStats,
+            @JsonProperty("topicStats") TopicStats topicStats,
             @JsonProperty("subscriptionStats") SubscriptionStats subscriptionStats) {
         this.topicStats = topicStats;
         this.subscriptionStats = subscriptionStats;
@@ -35,7 +34,8 @@ public class Stats {
             return false;
         }
         Stats stats = (Stats) o;
-        return Objects.equals(topicStats, stats.topicStats) && Objects.equals(subscriptionStats, stats.subscriptionStats);
+        return Objects.equals(topicStats, stats.topicStats)
+                && Objects.equals(subscriptionStats, stats.subscriptionStats);
     }
 
     @Override
@@ -46,8 +46,10 @@ public class Stats {
     @Override
     public String toString() {
         return "Stats{"
-                + "topicStats=" + topicStats
-                + ", subscriptionStats=" + subscriptionStats
+                + "topicStats="
+                + topicStats
+                + ", subscriptionStats="
+                + subscriptionStats
                 + '}';
     }
 }

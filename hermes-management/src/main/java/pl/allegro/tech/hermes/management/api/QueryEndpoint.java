@@ -1,11 +1,15 @@
 package pl.allegro.tech.hermes.management.api;
 
+import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
+
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.Query;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -18,8 +22,6 @@ import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 
 import java.util.List;
 
-import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
-
 @Path("query")
 @Component
 public class QueryEndpoint {
@@ -29,7 +31,10 @@ public class QueryEndpoint {
     private final GroupService groupService;
 
     @Autowired
-    public QueryEndpoint(SubscriptionService subscriptionService, TopicService topicService, GroupService groupService) {
+    public QueryEndpoint(
+            SubscriptionService subscriptionService,
+            TopicService topicService,
+            GroupService groupService) {
         this.subscriptionService = subscriptionService;
         this.topicService = topicService;
         this.groupService = groupService;
@@ -71,8 +76,8 @@ public class QueryEndpoint {
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     @Path("subscriptions/metrics")
-    public List<SubscriptionNameWithMetrics> querySubscriptionsMetrics(Query<SubscriptionNameWithMetrics> query) {
+    public List<SubscriptionNameWithMetrics> querySubscriptionsMetrics(
+            Query<SubscriptionNameWithMetrics> query) {
         return subscriptionService.querySubscriptionsMetrics(query);
     }
-
 }

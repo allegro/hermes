@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.management.domain.topic.validator;
 
 import org.springframework.stereotype.Component;
+
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
 
@@ -10,7 +11,8 @@ import java.util.Set;
 @Component
 public class ContentTypeValidator {
 
-    private static final String ERROR_MESSAGE = "Content type %s is not within allowed content types %s";
+    private static final String ERROR_MESSAGE =
+            "Content type %s is not within allowed content types %s";
 
     private final Set<ContentType> allowedContentTypes;
 
@@ -20,7 +22,8 @@ public class ContentTypeValidator {
 
     public void check(ContentType contentType) {
         if (!allowedContentTypes.contains(contentType)) {
-            throw new TopicValidationException(String.format(ERROR_MESSAGE, contentType, allowedContentTypes));
+            throw new TopicValidationException(
+                    String.format(ERROR_MESSAGE, contentType, allowedContentTypes));
         }
     }
 }

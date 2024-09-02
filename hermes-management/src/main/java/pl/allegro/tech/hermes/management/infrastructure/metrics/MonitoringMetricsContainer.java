@@ -12,7 +12,8 @@ public class MonitoringMetricsContainer {
     private final Map<String, MetricDecimalValue> metrics;
     private final boolean isAvailable;
 
-    private MonitoringMetricsContainer(boolean isAvailable, Map<String, MetricDecimalValue> metrics) {
+    private MonitoringMetricsContainer(
+            boolean isAvailable, Map<String, MetricDecimalValue> metrics) {
         this.metrics = metrics;
         this.isAvailable = isAvailable;
     }
@@ -45,6 +46,7 @@ public class MonitoringMetricsContainer {
     }
 
     public boolean hasUnavailableMetrics() {
-        return !isAvailable || metrics.entrySet().stream().anyMatch(e -> !e.getValue().isAvailable());
+        return !isAvailable
+                || metrics.entrySet().stream().anyMatch(e -> !e.getValue().isAvailable());
     }
 }

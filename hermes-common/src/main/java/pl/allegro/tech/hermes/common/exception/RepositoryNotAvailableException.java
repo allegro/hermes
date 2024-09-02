@@ -5,5 +5,4 @@ public class RepositoryNotAvailableException extends InternalProcessingException
     public RepositoryNotAvailableException(String message) {
         super(message);
     }
-
 }

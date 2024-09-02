@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+
 import pl.allegro.tech.hermes.common.config.SchemaCacheProperties;
 import pl.allegro.tech.hermes.common.config.SchemaRepositoryProperties;
 

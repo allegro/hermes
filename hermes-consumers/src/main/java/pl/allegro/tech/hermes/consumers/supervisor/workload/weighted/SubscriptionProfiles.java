@@ -13,7 +13,8 @@ class SubscriptionProfiles {
     private final Map<SubscriptionName, SubscriptionProfile> profiles;
     private final Instant updateTimestamp;
 
-    SubscriptionProfiles(Map<SubscriptionName, SubscriptionProfile> profiles, Instant updateTimestamp) {
+    SubscriptionProfiles(
+            Map<SubscriptionName, SubscriptionProfile> profiles, Instant updateTimestamp) {
         this.profiles = profiles;
         this.updateTimestamp = updateTimestamp;
     }

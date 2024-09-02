@@ -1,5 +1,8 @@
 package pl.allegro.tech.hermes.frontend.server;
 
+import static pl.allegro.tech.hermes.common.ssl.KeystoreSource.JRE;
+import static pl.allegro.tech.hermes.common.ssl.KeystoreSource.PROVIDED;
+
 import pl.allegro.tech.hermes.common.ssl.DefaultSslContextFactory;
 import pl.allegro.tech.hermes.common.ssl.KeyManagersProvider;
 import pl.allegro.tech.hermes.common.ssl.KeystoreConfigurationException;
@@ -14,15 +17,13 @@ import pl.allegro.tech.hermes.common.ssl.provided.ProvidedTrustManagersProvider;
 
 import java.util.Optional;
 
-import static pl.allegro.tech.hermes.common.ssl.KeystoreSource.JRE;
-import static pl.allegro.tech.hermes.common.ssl.KeystoreSource.PROVIDED;
-
 public class SslContextFactoryProvider {
 
     private final SslContextFactory sslContextFactory;
     private final SslParameters sslParameters;
 
-    public SslContextFactoryProvider(SslContextFactory sslContextFactory, SslParameters sslParameters) {
+    public SslContextFactoryProvider(
+            SslContextFactory sslContextFactory, SslParameters sslParameters) {
         this.sslContextFactory = sslContextFactory;
         this.sslParameters = sslParameters;
     }
@@ -41,11 +42,11 @@ public class SslContextFactoryProvider {
     private KeyManagersProvider createKeyManagersProvider() {
         String keystoreSource = sslParameters.getKeystoreSource();
         if (PROVIDED.getValue().equals(keystoreSource)) {
-            KeystoreProperties properties = new KeystoreProperties(
-                    sslParameters.getKeystoreLocation(),
-                    sslParameters.getKeystoreFormat(),
-                    sslParameters.getKeystorePassword()
-            );
+            KeystoreProperties properties =
+                    new KeystoreProperties(
+                            sslParameters.getKeystoreLocation(),
+                            sslParameters.getKeystoreFormat(),
+                            sslParameters.getKeystorePassword());
             return new ProvidedKeyManagersProvider(properties);
         }
         if (JRE.getValue().equals(keystoreSource)) {
@@ -57,11 +58,11 @@ public class SslContextFactoryProvider {
     public TrustManagersProvider createTrustManagersProvider() {
         String truststoreSource = sslParameters.getTruststoreSource();
         if (PROVIDED.getValue().equals(truststoreSource)) {
-            KeystoreProperties properties = new KeystoreProperties(
-                    sslParameters.getTruststoreLocation(),
-                    sslParameters.getTruststoreFormat(),
-                    sslParameters.getTruststorePassword()
-            );
+            KeystoreProperties properties =
+                    new KeystoreProperties(
+                            sslParameters.getTruststoreLocation(),
+                            sslParameters.getTruststoreFormat(),
+                            sslParameters.getTruststorePassword());
             return new ProvidedTrustManagersProvider(properties);
         }
         if (JRE.getValue().equals(truststoreSource)) {

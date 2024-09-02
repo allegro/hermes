@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.common.di.factories;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.api.ACLProvider;
@@ -9,6 +10,7 @@ import org.apache.zookeeper.ZooDefs;
 import org.apache.zookeeper.data.ACL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 
 import java.util.List;
@@ -44,40 +46,47 @@ public class CuratorClientFactory {
         return provide(connectString, Optional.empty());
     }
 
-    public CuratorFramework provide(String connectString, Optional<ZookeeperAuthorization> zookeeperAuthorization) {
-        ThreadFactory threadFactory = new ThreadFactoryBuilder()
-                .setNameFormat("hermes-curator-%d")
-                .setUncaughtExceptionHandler((t, e) ->
-                        logger.error("Exception from curator with name {}", t.getName(), e)).build();
-        CuratorFrameworkFactory.Builder builder = CuratorFrameworkFactory.builder()
-                .threadFactory(threadFactory)
-                .connectString(connectString)
-                .sessionTimeoutMs((int) zookeeperParameters.getSessionTimeout().toMillis())
-                .connectionTimeoutMs((int) zookeeperParameters.getConnectionTimeout().toMillis())
-                .retryPolicy(
-                        new ExponentialBackoffRetry(
-                                (int) zookeeperParameters.getBaseSleepTime().toMillis(),
-                                zookeeperParameters.getMaxRetries(),
-                                (int) zookeeperParameters.getMaxSleepTime().toMillis()
-                        )
-                );
+    public CuratorFramework provide(
+            String connectString, Optional<ZookeeperAuthorization> zookeeperAuthorization) {
+        ThreadFactory threadFactory =
+                new ThreadFactoryBuilder()
+                        .setNameFormat("hermes-curator-%d")
+                        .setUncaughtExceptionHandler(
+                                (t, e) ->
+                                        logger.error(
+                                                "Exception from curator with name {}",
+                                                t.getName(),
+                                                e))
+                        .build();
+        CuratorFrameworkFactory.Builder builder =
+                CuratorFrameworkFactory.builder()
+                        .threadFactory(threadFactory)
+                        .connectString(connectString)
+                        .sessionTimeoutMs((int) zookeeperParameters.getSessionTimeout().toMillis())
+                        .connectionTimeoutMs(
+                                (int) zookeeperParameters.getConnectionTimeout().toMillis())
+                        .retryPolicy(
+                                new ExponentialBackoffRetry(
+                                        (int) zookeeperParameters.getBaseSleepTime().toMillis(),
+                                        zookeeperParameters.getMaxRetries(),
+                                        (int) zookeeperParameters.getMaxSleepTime().toMillis()));
 
-        zookeeperAuthorization.ifPresent(it -> {
-            builder.authorization(it.scheme, it.getAuth());
-            builder.aclProvider(
-                    new ACLProvider() {
-                        @Override
-                        public List<ACL> getDefaultAcl() {
-                            return ZooDefs.Ids.CREATOR_ALL_ACL;
-                        }
+        zookeeperAuthorization.ifPresent(
+                it -> {
+                    builder.authorization(it.scheme, it.getAuth());
+                    builder.aclProvider(
+                            new ACLProvider() {
+                                @Override
+                                public List<ACL> getDefaultAcl() {
+                                    return ZooDefs.Ids.CREATOR_ALL_ACL;
+                                }
 
-                        @Override
-                        public List<ACL> getAclForPath(String path) {
-                            return ZooDefs.Ids.CREATOR_ALL_ACL;
-                        }
-                    }
-            );
-        });
+                                @Override
+                                public List<ACL> getAclForPath(String path) {
+                                    return ZooDefs.Ids.CREATOR_ALL_ACL;
+                                }
+                            });
+                });
 
         CuratorFramework curatorClient = builder.build();
         startAndWaitForConnection(curatorClient);
@@ -90,7 +99,9 @@ public class CuratorClientFactory {
         try {
             curator.blockUntilConnected();
         } catch (InterruptedException interruptedException) {
-            RuntimeException exception = new InternalProcessingException("Could not start Zookeeper Curator", interruptedException);
+            RuntimeException exception =
+                    new InternalProcessingException(
+                            "Could not start Zookeeper Curator", interruptedException);
             logger.error(exception.getMessage(), interruptedException);
             throw exception;
         }

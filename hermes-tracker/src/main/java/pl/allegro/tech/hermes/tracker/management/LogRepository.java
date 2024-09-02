@@ -7,7 +7,9 @@ import java.util.List;
 
 public interface LogRepository {
 
-    List<SentMessageTrace> getLastUndeliveredMessages(String topicName, String subscriptionName, int limit);
+    List<SentMessageTrace> getLastUndeliveredMessages(
+            String topicName, String subscriptionName, int limit);
 
-    List<MessageTrace> getMessageStatus(String qualifiedTopicName, String subscriptionName, String messageId);
+    List<MessageTrace> getMessageStatus(
+            String qualifiedTopicName, String subscriptionName, String messageId);
 }

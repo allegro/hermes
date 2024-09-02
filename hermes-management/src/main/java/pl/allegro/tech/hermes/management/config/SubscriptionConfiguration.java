@@ -1,8 +1,11 @@
 package pl.allegro.tech.hermes.management.config;
 
+import static java.util.stream.Collectors.toList;
+
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
 import pl.allegro.tech.hermes.management.domain.owner.validator.OwnerIdValidator;
@@ -16,20 +19,19 @@ import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 
 import java.util.List;
 
-import static java.util.stream.Collectors.toList;
-
 @Configuration
 @EnableConfigurationProperties(SubscriptionProperties.class)
 public class SubscriptionConfiguration {
 
     @Bean
-    public SubscriptionValidator subscriptionValidator(OwnerIdValidator ownerIdValidator,
-                                                       ApiPreconditions apiPreconditions,
-                                                       TopicService topicService,
-                                                       SubscriptionRepository subscriptionRepository,
-                                                       List<EndpointAddressValidator> endpointAddressValidators,
-                                                       EndpointOwnershipValidator endpointOwnershipValidator,
-                                                       SubscriptionProperties subscriptionProperties) {
+    public SubscriptionValidator subscriptionValidator(
+            OwnerIdValidator ownerIdValidator,
+            ApiPreconditions apiPreconditions,
+            TopicService topicService,
+            SubscriptionRepository subscriptionRepository,
+            List<EndpointAddressValidator> endpointAddressValidators,
+            EndpointOwnershipValidator endpointOwnershipValidator,
+            SubscriptionProperties subscriptionProperties) {
         return new SubscriptionValidator(
                 ownerIdValidator,
                 apiPreconditions,
@@ -37,19 +39,18 @@ public class SubscriptionConfiguration {
                 subscriptionRepository,
                 endpointAddressValidators,
                 endpointOwnershipValidator,
-                createListOfSubscribersWithAccessToAnyTopic(subscriptionProperties)
-        );
+                createListOfSubscribersWithAccessToAnyTopic(subscriptionProperties));
     }
 
     private List<SubscriberWithAccessToAnyTopic> createListOfSubscribersWithAccessToAnyTopic(
-            SubscriptionProperties subscriptionProperties
-    ) {
+            SubscriptionProperties subscriptionProperties) {
         return subscriptionProperties.getSubscribersWithAccessToAnyTopic().stream()
-                .map(subscriber -> new SubscriberWithAccessToAnyTopic(
-                        subscriber.getOwnerSource(),
-                        subscriber.getOwnerId(),
-                        subscriber.getProtocols())
-                )
+                .map(
+                        subscriber ->
+                                new SubscriberWithAccessToAnyTopic(
+                                        subscriber.getOwnerSource(),
+                                        subscriber.getOwnerId(),
+                                        subscriber.getProtocols()))
                 .collect(toList());
     }
 
@@ -59,7 +60,9 @@ public class SubscriptionConfiguration {
     }
 
     @Bean
-    public EndpointAddressValidator endpointAddressFormatValidator(SubscriptionProperties subscriptionProperties) {
-        return new EndpointAddressFormatValidator(subscriptionProperties.getAdditionalEndpointProtocols());
+    public EndpointAddressValidator endpointAddressFormatValidator(
+            SubscriptionProperties subscriptionProperties) {
+        return new EndpointAddressFormatValidator(
+                subscriptionProperties.getAdditionalEndpointProtocols());
     }
 }

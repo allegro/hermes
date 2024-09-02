@@ -1,14 +1,18 @@
 package pl.allegro.tech.hermes.infrastructure.zookeeper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.apache.curator.framework.CuratorFramework;
+
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.domain.CredentialsRepository;
 import pl.allegro.tech.hermes.domain.NodePassword;
 
-public class ZookeeperCredentialsRepository extends ZookeeperBasedRepository implements CredentialsRepository {
+public class ZookeeperCredentialsRepository extends ZookeeperBasedRepository
+        implements CredentialsRepository {
 
-    public ZookeeperCredentialsRepository(CuratorFramework zookeeper, ObjectMapper mapper, ZookeeperPaths paths) {
+    public ZookeeperCredentialsRepository(
+            CuratorFramework zookeeper, ObjectMapper mapper, ZookeeperPaths paths) {
         super(zookeeper, mapper, paths);
     }
 

@@ -1,11 +1,13 @@
 package pl.allegro.tech.hermes.common.broker;
 
 import com.google.common.collect.Ordering;
+
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.TopicDescription;
 import org.apache.kafka.common.KafkaFuture;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.TopicPartitionInfo;
+
 import pl.allegro.tech.hermes.common.exception.BrokerNotFoundForPartitionException;
 import pl.allegro.tech.hermes.common.exception.PartitionsNotFoundForGivenTopicException;
 
@@ -25,19 +27,25 @@ public class KafkaBrokerStorage implements BrokerStorage {
     public int readLeaderForPartition(TopicPartition topicAndPartition) {
         try {
             return describeTopic(topicAndPartition.topic())
-                    .thenApply(description -> description.partitions().get(topicAndPartition.partition()).leader().id())
+                    .thenApply(
+                            description ->
+                                    description
+                                            .partitions()
+                                            .get(topicAndPartition.partition())
+                                            .leader()
+                                            .id())
                     .get();
         } catch (Exception exception) {
-            throw new BrokerNotFoundForPartitionException(topicAndPartition.topic(), topicAndPartition.partition(), exception);
+            throw new BrokerNotFoundForPartitionException(
+                    topicAndPartition.topic(), topicAndPartition.partition(), exception);
         }
     }
 
     @Override
     public List<Integer> readPartitionsIds(String topicName) {
         try {
-            List<Integer> partitions = describeTopic(topicName)
-                    .thenApply(this::resolvePartitionIds)
-                    .get();
+            List<Integer> partitions =
+                    describeTopic(topicName).thenApply(this::resolvePartitionIds).get();
 
             return Ordering.natural().sortedCopy(partitions);
         } catch (Exception exception) {
@@ -46,7 +54,9 @@ public class KafkaBrokerStorage implements BrokerStorage {
     }
 
     private KafkaFuture<TopicDescription> describeTopic(String topic) {
-        return kafkaAdminClient.describeTopics(Collections.singletonList(topic)).all()
+        return kafkaAdminClient
+                .describeTopics(Collections.singletonList(topic))
+                .all()
                 .thenApply(topicsMap -> topicsMap.get(topic));
     }
 

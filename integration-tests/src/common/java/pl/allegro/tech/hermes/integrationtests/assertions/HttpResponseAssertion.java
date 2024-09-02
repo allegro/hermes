@@ -1,9 +1,10 @@
 package pl.allegro.tech.hermes.integrationtests.assertions;
 
-import jakarta.ws.rs.core.Response;
-import org.assertj.core.api.AbstractAssert;
-
 import static org.assertj.core.api.Assertions.assertThat;
+
+import jakarta.ws.rs.core.Response;
+
+import org.assertj.core.api.AbstractAssert;
 
 public class HttpResponseAssertion extends AbstractAssert<HttpResponseAssertion, Response> {
 

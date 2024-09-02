@@ -7,8 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public record SubscriptionMetrics(SubscriptionName name, int rate, int throughput,
-                                  Map<String, Integer> ratePerStatusCode) {
+public record SubscriptionMetrics(
+        SubscriptionName name, int rate, int throughput, Map<String, Integer> ratePerStatusCode) {
 
     private static final String TIMESTAMP = "1396860420";
 
@@ -18,42 +18,31 @@ public record SubscriptionMetrics(SubscriptionName name, int rate, int throughpu
 
     PrometheusResponse toPrometheusRateResponse() {
         List<PrometheusResponse.Result> results = new ArrayList<>();
-        results.add(
-                new PrometheusResponse.Result(
-                        List.of(TIMESTAMP, String.valueOf(rate)))
-        );
+        results.add(new PrometheusResponse.Result(List.of(TIMESTAMP, String.valueOf(rate))));
         return new PrometheusResponse("success", new PrometheusResponse.Data("vector", results));
     }
 
     PrometheusResponse toPrometheusThroughputResponse() {
         List<PrometheusResponse.Result> results = new ArrayList<>();
-        results.add(
-                new PrometheusResponse.Result(
-                        List.of(TIMESTAMP, String.valueOf(throughput))
-                )
-        );
+        results.add(new PrometheusResponse.Result(List.of(TIMESTAMP, String.valueOf(throughput))));
         return new PrometheusResponse("success", new PrometheusResponse.Data("vector", results));
     }
 
     PrometheusResponse toPrometheusStatusCodesResponse() {
         List<PrometheusResponse.Result> results = new ArrayList<>();
-        ratePerStatusCode.forEach((code, rate) -> results.add(
-                        new PrometheusResponse.Result(
-                                List.of(TIMESTAMP, String.valueOf(rate))
-                        )
-                )
-        );
+        ratePerStatusCode.forEach(
+                (code, rate) ->
+                        results.add(
+                                new PrometheusResponse.Result(
+                                        List.of(TIMESTAMP, String.valueOf(rate)))));
         return new PrometheusResponse("success", new PrometheusResponse.Data("vector", results));
     }
 
     PrometheusResponse toPrometheusDefaultResponse() {
         List<PrometheusResponse.Result> results = new ArrayList<>();
-        ratePerStatusCode.forEach((code, rate) -> results.add(
-                        new PrometheusResponse.Result(
-                                List.of(TIMESTAMP, "0.0")
-                        )
-                )
-        );
+        ratePerStatusCode.forEach(
+                (code, rate) ->
+                        results.add(new PrometheusResponse.Result(List.of(TIMESTAMP, "0.0"))));
         return new PrometheusResponse("success", new PrometheusResponse.Data("vector", results));
     }
 

@@ -1,8 +1,8 @@
 package pl.allegro.tech.hermes.schema;
 
 import org.apache.avro.Schema;
-import pl.allegro.tech.hermes.api.Topic;
 
+import pl.allegro.tech.hermes.api.Topic;
 
 public class SchemaRepository {
 
@@ -11,15 +11,18 @@ public class SchemaRepository {
     private final SchemaVersionsRepository schemaVersionsRepository;
     private final CompiledSchemaRepository<Schema> compiledAvroSchemaRepository;
 
-    public SchemaRepository(SchemaVersionsRepository schemaVersionsRepository,
-                            CompiledSchemaRepository<Schema> compiledAvroSchemaRepository) {
+    public SchemaRepository(
+            SchemaVersionsRepository schemaVersionsRepository,
+            CompiledSchemaRepository<Schema> compiledAvroSchemaRepository) {
         this.schemaVersionsRepository = schemaVersionsRepository;
         this.compiledAvroSchemaRepository = compiledAvroSchemaRepository;
     }
 
     public CompiledSchema<Schema> getLatestAvroSchema(Topic topic) {
-        SchemaVersion latestVersion = schemaVersionsRepository.latestSchemaVersion(topic)
-                .orElseThrow(() -> new SchemaNotFoundException(topic));
+        SchemaVersion latestVersion =
+                schemaVersionsRepository
+                        .latestSchemaVersion(topic)
+                        .orElseThrow(() -> new SchemaNotFoundException(topic));
         if (!schemaVersionsRepository.schemaVersionExists(topic, latestVersion)) {
             throw new SchemaNotFoundException(topic, latestVersion);
         }
@@ -48,10 +51,10 @@ public class SchemaRepository {
     }
 
     /**
-     * This method should be used only for cache-backed repository implementations
-     * where we have possibly stale versions-cache and are 100% sure the requested version exists.
-     * If it does not exist, each method call will try to load the requested version
-     * from underlying schema repository.
+     * This method should be used only for cache-backed repository implementations where we have
+     * possibly stale versions-cache and are 100% sure the requested version exists. If it does not
+     * exist, each method call will try to load the requested version from underlying schema
+     * repository.
      */
     public CompiledSchema<Schema> getKnownAvroSchemaVersion(Topic topic, SchemaVersion version) {
         return getCompiledSchemaAtVersion(topic, version);
@@ -61,7 +64,8 @@ public class SchemaRepository {
         schemaVersionsRepository.versions(topic, ONLINE);
     }
 
-    private CompiledSchema<Schema> getCompiledSchemaAtVersion(Topic topic, SchemaVersion latestVersion) {
+    private CompiledSchema<Schema> getCompiledSchemaAtVersion(
+            Topic topic, SchemaVersion latestVersion) {
         try {
             return compiledAvroSchemaRepository.getSchema(topic, latestVersion);
         } catch (CouldNotLoadSchemaException e) {

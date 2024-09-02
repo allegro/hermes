@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.api;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
+
 import jakarta.validation.constraints.NotNull;
 
 import java.util.Objects;
@@ -10,10 +11,8 @@ import java.util.Objects;
 public class SubscriptionOAuthPolicy {
 
     private static final String ANONYMIZED_PASSWORD = "******";
-    @NotNull
-    private final GrantType grantType;
-    @NotNull
-    private final String providerName;
+    @NotNull private final GrantType grantType;
+    @NotNull private final String providerName;
     private final String scope;
     private final String username;
     private final String password;
@@ -63,7 +62,8 @@ public class SubscriptionOAuthPolicy {
 
     public SubscriptionOAuthPolicy anonymize() {
         if (GrantType.USERNAME_PASSWORD.equals(grantType)) {
-            return new SubscriptionOAuthPolicy(grantType, providerName, scope, username, ANONYMIZED_PASSWORD);
+            return new SubscriptionOAuthPolicy(
+                    grantType, providerName, scope, username, ANONYMIZED_PASSWORD);
         }
         return this;
     }
@@ -90,7 +90,8 @@ public class SubscriptionOAuthPolicy {
     }
 
     public enum GrantType {
-        CLIENT_CREDENTIALS("clientCredentials"), USERNAME_PASSWORD("password");
+        CLIENT_CREDENTIALS("clientCredentials"),
+        USERNAME_PASSWORD("password");
 
         private final String name;
 

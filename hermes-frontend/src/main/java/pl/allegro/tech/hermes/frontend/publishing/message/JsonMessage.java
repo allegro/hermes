@@ -12,7 +12,12 @@ public class JsonMessage implements Message {
     private final String partitionKey;
     private final Map<String, String> propagatedHTTPHeaders;
 
-    public JsonMessage(String id, byte[] data, long timestamp, String partitionKey, Map<String, String> propagatedHTTPHeaders) {
+    public JsonMessage(
+            String id,
+            byte[] data,
+            long timestamp,
+            String partitionKey,
+            Map<String, String> propagatedHTTPHeaders) {
         this.id = id;
         this.data = data;
         this.timestamp = timestamp;
@@ -53,5 +58,4 @@ public class JsonMessage implements Message {
     public JsonMessage withDataReplaced(byte[] newData) {
         return new JsonMessage(id, newData, timestamp, partitionKey, propagatedHTTPHeaders);
     }
-
 }

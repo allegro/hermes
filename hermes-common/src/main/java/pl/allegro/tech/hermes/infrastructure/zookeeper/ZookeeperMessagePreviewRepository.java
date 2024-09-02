@@ -1,10 +1,14 @@
 package pl.allegro.tech.hermes.infrastructure.zookeeper;
 
+import static java.lang.String.format;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.apache.curator.framework.CuratorFramework;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreview;
@@ -15,13 +19,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static java.lang.String.format;
+public class ZookeeperMessagePreviewRepository extends ZookeeperBasedRepository
+        implements MessagePreviewRepository {
 
-public class ZookeeperMessagePreviewRepository extends ZookeeperBasedRepository implements MessagePreviewRepository {
+    private static final Logger logger =
+            LoggerFactory.getLogger(ZookeeperMessagePreviewRepository.class);
 
-    private static final Logger logger = LoggerFactory.getLogger(ZookeeperMessagePreviewRepository.class);
-
-    public ZookeeperMessagePreviewRepository(CuratorFramework zookeeper, ObjectMapper mapper, ZookeeperPaths paths) {
+    public ZookeeperMessagePreviewRepository(
+            CuratorFramework zookeeper, ObjectMapper mapper, ZookeeperPaths paths) {
         super(zookeeper, mapper, paths);
     }
 
@@ -34,10 +39,12 @@ public class ZookeeperMessagePreviewRepository extends ZookeeperBasedRepository 
                     .orElseGet(ArrayList::new);
         } catch (Exception e) {
             throw new InternalProcessingException(
-                    format("Could not read latest preview message for topic: %s.", topicName.qualifiedName()), e);
+                    format(
+                            "Could not read latest preview message for topic: %s.",
+                            topicName.qualifiedName()),
+                    e);
         }
     }
-
 
     @Override
     public void persist(TopicsMessagesPreview topicsMessagesPreview) {
@@ -47,7 +54,10 @@ public class ZookeeperMessagePreviewRepository extends ZookeeperBasedRepository 
     }
 
     private void persistMessage(TopicName topic, List<MessagePreview> messages) {
-        logger.debug("Persisting {} messages for preview of topic: {}", messages.size(), topic.qualifiedName());
+        logger.debug(
+                "Persisting {} messages for preview of topic: {}",
+                messages.size(),
+                topic.qualifiedName());
         try {
             if (pathExists(paths.topicPath(topic))) {
                 String previewPath = paths.topicPreviewPath(topic);
@@ -57,8 +67,7 @@ public class ZookeeperMessagePreviewRepository extends ZookeeperBasedRepository 
         } catch (Exception exception) {
             logger.warn(
                     format("Could not log preview messages for topic: %s", topic.qualifiedName()),
-                    exception
-            );
+                    exception);
         }
     }
 }

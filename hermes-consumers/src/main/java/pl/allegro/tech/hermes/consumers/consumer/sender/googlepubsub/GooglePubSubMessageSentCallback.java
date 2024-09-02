@@ -1,12 +1,13 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub;
 
+import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.failedResult;
+import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.succeededResult;
+
 import com.google.api.core.ApiFutureCallback;
+
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 
 import java.util.concurrent.CompletableFuture;
-
-import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.failedResult;
-import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.succeededResult;
 
 class GooglePubSubMessageSentCallback implements ApiFutureCallback<String> {
     private final CompletableFuture<MessageSendingResult> resultFuture;

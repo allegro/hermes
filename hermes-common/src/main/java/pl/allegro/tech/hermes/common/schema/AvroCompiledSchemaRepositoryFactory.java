@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.common.schema;
 
 import org.apache.avro.Schema;
+
 import pl.allegro.tech.hermes.schema.CachedCompiledSchemaRepository;
 import pl.allegro.tech.hermes.schema.CompiledSchemaRepository;
 import pl.allegro.tech.hermes.schema.DirectCompiledSchemaRepository;
@@ -16,10 +17,11 @@ public class AvroCompiledSchemaRepositoryFactory {
     private final Duration expireAfterAccess;
     private final boolean cacheEnabled;
 
-    public AvroCompiledSchemaRepositoryFactory(RawSchemaClient rawSchemaClient,
-                                               int maximumSize,
-                                               Duration expireAfterAccess,
-                                               boolean cacheEnabled) {
+    public AvroCompiledSchemaRepositoryFactory(
+            RawSchemaClient rawSchemaClient,
+            int maximumSize,
+            Duration expireAfterAccess,
+            boolean cacheEnabled) {
         this.rawSchemaClient = rawSchemaClient;
         this.maximumSize = maximumSize;
         this.expireAfterAccess = expireAfterAccess;
@@ -27,13 +29,12 @@ public class AvroCompiledSchemaRepositoryFactory {
     }
 
     public CompiledSchemaRepository<Schema> provide() {
-        CompiledSchemaRepository<Schema> repository = new DirectCompiledSchemaRepository<>(rawSchemaClient,
-                SchemaCompilersFactory.avroSchemaCompiler());
+        CompiledSchemaRepository<Schema> repository =
+                new DirectCompiledSchemaRepository<>(
+                        rawSchemaClient, SchemaCompilersFactory.avroSchemaCompiler());
 
         if (cacheEnabled) {
-            return new CachedCompiledSchemaRepository<>(repository,
-                    maximumSize,
-                    expireAfterAccess);
+            return new CachedCompiledSchemaRepository<>(repository, maximumSize, expireAfterAccess);
         } else {
             return repository;
         }

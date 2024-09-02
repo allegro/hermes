@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.benchmark.environment;
 
 import org.apache.avro.Schema;
+
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
@@ -19,7 +20,8 @@ public class BenchmarkMessageContentWrapper implements MessageContentWrapper {
     }
 
     @Override
-    public UnwrappedMessageContent unwrapAvro(byte[] data, Topic topic, Integer schemaId, Integer schemaVersion) {
+    public UnwrappedMessageContent unwrapAvro(
+            byte[] data, Topic topic, Integer schemaId, Integer schemaVersion) {
         throw new UnsupportedOperationException();
     }
 
@@ -29,14 +31,24 @@ public class BenchmarkMessageContentWrapper implements MessageContentWrapper {
     }
 
     @Override
-    public byte[] wrapAvro(byte[] data, String id, long timestamp, Topic topic, CompiledSchema<Schema> schema,
-        Map<String, String> externalMetadata) {
-        byte[] wrapped = avroMessageContentWrapper.wrapContent(data, id, timestamp, schema.getSchema(), externalMetadata);
-        return topic.isSchemaIdAwareSerializationEnabled() ? SchemaAwareSerDe.serialize(schema.getId(), wrapped) : wrapped;
+    public byte[] wrapAvro(
+            byte[] data,
+            String id,
+            long timestamp,
+            Topic topic,
+            CompiledSchema<Schema> schema,
+            Map<String, String> externalMetadata) {
+        byte[] wrapped =
+                avroMessageContentWrapper.wrapContent(
+                        data, id, timestamp, schema.getSchema(), externalMetadata);
+        return topic.isSchemaIdAwareSerializationEnabled()
+                ? SchemaAwareSerDe.serialize(schema.getId(), wrapped)
+                : wrapped;
     }
 
     @Override
-    public byte[] wrapJson(byte[] data, String id, long timestamp, Map<String, String> externalMetadata) {
+    public byte[] wrapJson(
+            byte[] data, String id, long timestamp, Map<String, String> externalMetadata) {
         throw new UnsupportedOperationException();
     }
 }

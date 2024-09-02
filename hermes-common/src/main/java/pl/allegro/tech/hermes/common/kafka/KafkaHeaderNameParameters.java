@@ -7,5 +7,4 @@ public interface KafkaHeaderNameParameters {
     String getSchemaId();
 
     String getMessageId();
-
 }

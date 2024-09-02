@@ -1,15 +1,16 @@
 package pl.allegro.tech.hermes.frontend.publishing.handlers;
 
+import static java.lang.String.format;
+
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HeaderMap;
 import io.undertow.util.HeaderValues;
 import io.undertow.util.Headers;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-
-import static java.lang.String.format;
 
 final class ContentLengthChecker {
     private static final Logger logger = LoggerFactory.getLogger(ContentLengthChecker.class);
@@ -31,28 +32,36 @@ final class ContentLengthChecker {
             if (forceMaxMessageSizePerTopic) {
                 throw new ContentTooLargeException(contentLength, max);
             } else {
-                logger.warn("Content-Length is larger than max on this topic [length:{}, max:{}, topic: {}]",
-                                           contentLength, max, attachment.getCachedTopic().getQualifiedName());
+                logger.warn(
+                        "Content-Length is larger than max on this topic [length:{}, max:{}, topic: {}]",
+                        contentLength,
+                        max,
+                        attachment.getCachedTopic().getQualifiedName());
             }
         }
     }
 
     private static boolean isChunked(HeaderMap headerMap, long requestContentLength) {
         HeaderValues headerValue = headerMap.get(Headers.TRANSFER_ENCODING);
-        return headerValue != null && ("chunked".equals(headerValue.getFirst()) && requestContentLength < 0);
+        return headerValue != null
+                && ("chunked".equals(headerValue.getFirst()) && requestContentLength < 0);
     }
 
     public static final class InvalidContentLengthException extends IOException {
         InvalidContentLengthException(long expected, int contentLength) {
-            super(format("Content-Length does not match the header [header:%s, actual:%s].",
-                    expected, contentLength));
+            super(
+                    format(
+                            "Content-Length does not match the header [header:%s, actual:%s].",
+                            expected, contentLength));
         }
     }
 
     public static final class ContentTooLargeException extends IOException {
         ContentTooLargeException(long contentLength, int max) {
-            super(format("Content-Length is larger than max on this topic [length:%s, max:%s].",
-                    contentLength, max));
+            super(
+                    format(
+                            "Content-Length is larger than max on this topic [length:%s, max:%s].",
+                            contentLength, max));
         }
     }
 }

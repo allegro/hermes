@@ -8,5 +8,6 @@ public interface SubscriptionMetricsRepository {
 
     SubscriptionMetrics loadMetrics(TopicName topicName, String subscriptionName);
 
-    PersistentSubscriptionMetrics loadZookeeperMetrics(TopicName topicName, String subscriptionName);
+    PersistentSubscriptionMetrics loadZookeeperMetrics(
+            TopicName topicName, String subscriptionName);
 }

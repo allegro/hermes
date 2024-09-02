@@ -1,16 +1,19 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.jms;
 
 import com.google.common.collect.ImmutableSet;
+
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
+
 import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
 import pl.allegro.tech.hermes.consumers.uri.UriUtils;
 
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Set;
+
 import javax.jms.ConnectionFactory;
 import javax.jms.Message;
 
@@ -29,8 +32,10 @@ public class JmsHornetQMessageSenderProvider extends AbstractJmsMessageSenderPro
         if (port != null) {
             props.put("port", port);
         }
-        TransportConfiguration transportConfiguration = new TransportConfiguration(NettyConnectorFactory.class.getName(), props);
-        return HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, transportConfiguration);
+        TransportConfiguration transportConfiguration =
+                new TransportConfiguration(NettyConnectorFactory.class.getName(), props);
+        return HornetQJMSClient.createConnectionFactoryWithoutHA(
+                JMSFactoryType.CF, transportConfiguration);
     }
 
     @Override

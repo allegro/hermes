@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+
 import pl.allegro.tech.hermes.infrastructure.dc.DcNameSource;
 
 @ConfigurationProperties(prefix = "consumer.datacenter.name")

@@ -1,7 +1,9 @@
 package pl.allegro.tech.hermes.infrastructure.zookeeper;
 
 import com.google.common.base.Joiner;
+
 import org.apache.commons.lang3.StringUtils;
+
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
@@ -17,7 +19,8 @@ public class ZookeeperPaths {
     public static final String CONSUMERS_WORKLOAD_PATH = "consumers-workload";
     public static final String CONSUMER_LOAD_PATH = "consumer-load";
     public static final String SUBSCRIPTION_PROFILES_PATH = "subscription-profiles";
-    public static final String CONSUMERS_WORKLOAD_CONSTRAINTS_PATH = "consumers-workload-constraints";
+    public static final String CONSUMERS_WORKLOAD_CONSTRAINTS_PATH =
+            "consumers-workload-constraints";
     public static final String CONSUMERS_RATE_PATH = "consumers-rate";
     public static final String METRICS_PATH = "metrics";
     public static final String ADMIN_PATH = "admin";
@@ -74,7 +77,8 @@ public class ZookeeperPaths {
     }
 
     public String topicPath(TopicName topicName, String... tail) {
-        return Joiner.on(URL_SEPARATOR).join(topicsPath(topicName.getGroupName()), topicName.getName(), (Object[]) tail);
+        return Joiner.on(URL_SEPARATOR)
+                .join(topicsPath(topicName.getGroupName()), topicName.getName(), (Object[]) tail);
     }
 
     public String topicPreviewPath(TopicName topicName) {
@@ -86,7 +90,8 @@ public class ZookeeperPaths {
     }
 
     public String subscriptionPath(TopicName topicName, String subscriptionName, String... tail) {
-        return Joiner.on(URL_SEPARATOR).join(subscriptionsPath(topicName), subscriptionName, (Object[]) tail);
+        return Joiner.on(URL_SEPARATOR)
+                .join(subscriptionsPath(topicName), subscriptionName, (Object[]) tail);
     }
 
     public String subscriptionPath(Subscription subscription) {
@@ -97,37 +102,48 @@ public class ZookeeperPaths {
         return subscriptionPath(topicName, subscriptionName, METRICS_PATH);
     }
 
-    public String subscriptionMetricPath(TopicName topicName, String subscriptionName, String metricName) {
+    public String subscriptionMetricPath(
+            TopicName topicName, String subscriptionName, String metricName) {
         return subscriptionPath(topicName, subscriptionName, METRICS_PATH, metricName);
     }
 
     public String subscriptionMetricPath(SubscriptionName subscriptionName, String metricName) {
-        return subscriptionPath(subscriptionName.getTopicName(), subscriptionName.getName(), METRICS_PATH, metricName);
+        return subscriptionPath(
+                subscriptionName.getTopicName(),
+                subscriptionName.getName(),
+                METRICS_PATH,
+                metricName);
     }
 
-    public String offsetPath(TopicName topicName,
-                             String subscriptionName,
-                             KafkaTopicName kafkaTopicName,
-                             String brokersClusterName,
-                             int partitionId) {
-        return Joiner.on(URL_SEPARATOR).join(
-                offsetsPath(topicName, subscriptionName, kafkaTopicName, brokersClusterName),
-                partitionId);
+    public String offsetPath(
+            TopicName topicName,
+            String subscriptionName,
+            KafkaTopicName kafkaTopicName,
+            String brokersClusterName,
+            int partitionId) {
+        return Joiner.on(URL_SEPARATOR)
+                .join(
+                        offsetsPath(
+                                topicName, subscriptionName, kafkaTopicName, brokersClusterName),
+                        partitionId);
     }
 
-    public String offsetsPath(TopicName topicName,
-                              String subscriptionName,
-                              KafkaTopicName kafkaTopicName,
-                              String brokersClusterName) {
-        return Joiner.on(URL_SEPARATOR).join(
-                subscribedKafkaTopicsPath(topicName, subscriptionName),
-                kafkaTopicName.asString(),
-                "offset",
-                brokersClusterName);
+    public String offsetsPath(
+            TopicName topicName,
+            String subscriptionName,
+            KafkaTopicName kafkaTopicName,
+            String brokersClusterName) {
+        return Joiner.on(URL_SEPARATOR)
+                .join(
+                        subscribedKafkaTopicsPath(topicName, subscriptionName),
+                        kafkaTopicName.asString(),
+                        "offset",
+                        brokersClusterName);
     }
 
     public String subscribedKafkaTopicsPath(TopicName topicName, String subscriptionName) {
-        return Joiner.on(URL_SEPARATOR).join(subscriptionPath(topicName, subscriptionName), KAFKA_TOPICS_PATH);
+        return Joiner.on(URL_SEPARATOR)
+                .join(subscriptionPath(topicName, subscriptionName), KAFKA_TOPICS_PATH);
     }
 
     public String consumersWorkloadConstraintsPath() {
@@ -155,7 +171,8 @@ public class ZookeeperPaths {
     }
 
     public String nodeHealthPathForManagementHost(String host, String port) {
-        return Joiner.on(URL_SEPARATOR).join(basePath, STORAGE_HEALTH_PATH, String.format("%s_%s", host, port));
+        return Joiner.on(URL_SEPARATOR)
+                .join(basePath, STORAGE_HEALTH_PATH, String.format("%s_%s", host, port));
     }
 
     public String datacenterReadinessPath() {
@@ -163,12 +180,17 @@ public class ZookeeperPaths {
     }
 
     public String offlineRetransmissionPath() {
-        return Joiner.on(URL_SEPARATOR).join(basePath, OFFLINE_RETRANSMISSION_PATH, OFFLINE_RETRANSMISSION_TASKS_PATH);
+        return Joiner.on(URL_SEPARATOR)
+                .join(basePath, OFFLINE_RETRANSMISSION_PATH, OFFLINE_RETRANSMISSION_TASKS_PATH);
     }
 
     public String offlineRetransmissionPath(String taskId) {
         return Joiner.on(URL_SEPARATOR)
-                .join(basePath, OFFLINE_RETRANSMISSION_PATH, OFFLINE_RETRANSMISSION_TASKS_PATH, taskId);
+                .join(
+                        basePath,
+                        OFFLINE_RETRANSMISSION_PATH,
+                        OFFLINE_RETRANSMISSION_TASKS_PATH,
+                        taskId);
     }
 
     public String join(String... parts) {

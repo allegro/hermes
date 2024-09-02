@@ -7,12 +7,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
 import io.micrometer.core.instrument.MeterRegistry;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.clock.ClockFactory;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
@@ -26,16 +29,15 @@ import java.time.Clock;
 
 @Configuration
 @EnableConfigurationProperties({
-        TopicProperties.class,
-        HttpClientProperties.class,
-        ConsistencyCheckerProperties.class,
-        PrometheusProperties.class,
-        MicrometerRegistryProperties.class
+    TopicProperties.class,
+    HttpClientProperties.class,
+    ConsistencyCheckerProperties.class,
+    PrometheusProperties.class,
+    MicrometerRegistryProperties.class
 })
 public class ManagementConfiguration {
 
-    @Autowired
-    TopicProperties topicProperties;
+    @Autowired TopicProperties topicProperties;
 
     @Bean
     public ObjectMapper objectMapper() {
@@ -43,12 +45,19 @@ public class ManagementConfiguration {
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         mapper.disable(SerializationFeature.WRITE_NULL_MAP_VALUES);
-        mapper.registerModules(new JavaTimeModule(), new Jdk8Module()); // Jdk8Module is required for Jackson to serialize & deserialize Optional type
+        mapper.registerModules(
+                new JavaTimeModule(),
+                new Jdk8Module()); // Jdk8Module is required for Jackson to serialize & deserialize
+        // Optional type
 
-        final InjectableValues defaultSchemaIdAwareSerializationEnabled = new InjectableValues.Std().addValue(
-                Topic.DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY,
-                topicProperties.isDefaultSchemaIdAwareSerializationEnabled())
-                .addValue(Topic.DEFAULT_FALLBACK_TO_REMOTE_DATACENTER_KEY, topicProperties.isDefaultFallbackToRemoteDatacenterEnabled());
+        final InjectableValues defaultSchemaIdAwareSerializationEnabled =
+                new InjectableValues.Std()
+                        .addValue(
+                                Topic.DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY,
+                                topicProperties.isDefaultSchemaIdAwareSerializationEnabled())
+                        .addValue(
+                                Topic.DEFAULT_FALLBACK_TO_REMOTE_DATACENTER_KEY,
+                                topicProperties.isDefaultFallbackToRemoteDatacenterEnabled());
 
         mapper.setInjectableValues(defaultSchemaIdAwareSerializationEnabled);
 
@@ -80,6 +89,4 @@ public class ManagementConfiguration {
     public Clock clock() {
         return new ClockFactory().provide();
     }
-
-
 }

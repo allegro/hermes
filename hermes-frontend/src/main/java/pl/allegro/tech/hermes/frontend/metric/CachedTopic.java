@@ -43,18 +43,20 @@ public class CachedTopic {
 
     private final Map<Integer, MetersPair> httpStatusCodesMeters = new ConcurrentHashMap<>();
 
-    public CachedTopic(Topic topic,
-                       MetricsFacade metricsFacade,
-                       ThroughputRegistry throughputRegistry,
-                       KafkaTopics kafkaTopics) {
+    public CachedTopic(
+            Topic topic,
+            MetricsFacade metricsFacade,
+            ThroughputRegistry throughputRegistry,
+            KafkaTopics kafkaTopics) {
         this(topic, metricsFacade, throughputRegistry, kafkaTopics, false);
     }
 
-    public CachedTopic(Topic topic,
-                       MetricsFacade metricsFacade,
-                       ThroughputRegistry throughputRegistry,
-                       KafkaTopics kafkaTopics,
-                       boolean blacklisted) {
+    public CachedTopic(
+            Topic topic,
+            MetricsFacade metricsFacade,
+            ThroughputRegistry throughputRegistry,
+            KafkaTopics kafkaTopics,
+            boolean blacklisted) {
         this.topic = topic;
         this.kafkaTopics = kafkaTopics;
         this.metricsFacade = metricsFacade;
@@ -64,10 +66,12 @@ public class CachedTopic {
         topicRequestMeter = metricsFacade.topics().topicRequestCounter(topic.getName());
 
         globalDelayedProcessingMeter = metricsFacade.topics().topicGlobalDelayedProcessingCounter();
-        topicDelayedProcessingMeter = metricsFacade.topics().topicDelayedProcessingCounter(topic.getName());
+        topicDelayedProcessingMeter =
+                metricsFacade.topics().topicDelayedProcessingCounter(topic.getName());
 
         globalMessageContentSize = metricsFacade.topics().topicGlobalMessageContentSizeHistogram();
-        topicMessageContentSize = metricsFacade.topics().topicMessageContentSizeHistogram(topic.getName());
+        topicMessageContentSize =
+                metricsFacade.topics().topicMessageContentSizeHistogram(topic.getName());
 
         throughputMeter = throughputRegistry.forTopic(topic.getName());
 
@@ -77,11 +81,13 @@ public class CachedTopic {
             topicBrokerLatencyTimer = metricsFacade.topics().ackAllBrokerLatency();
         } else {
             globalProducerLatencyTimer = metricsFacade.topics().ackLeaderGlobalLatency();
-            topicProducerLatencyTimer = metricsFacade.topics().ackLeaderTopicLatency(topic.getName());
+            topicProducerLatencyTimer =
+                    metricsFacade.topics().ackLeaderTopicLatency(topic.getName());
             topicBrokerLatencyTimer = metricsFacade.topics().ackLeaderBrokerLatency();
         }
 
-        topicDuplicatedMessageCounter = metricsFacade.topics().topicDuplicatedMessageCounter(topic.getName());
+        topicDuplicatedMessageCounter =
+                metricsFacade.topics().topicDuplicatedMessageCounter(topic.getName());
     }
 
     public Topic getTopic() {
@@ -105,16 +111,24 @@ public class CachedTopic {
     }
 
     public StartedTimersPair startProducerLatencyTimers() {
-        return new StartedTimersPair(topicProducerLatencyTimer.time(), globalProducerLatencyTimer.time());
+        return new StartedTimersPair(
+                topicProducerLatencyTimer.time(), globalProducerLatencyTimer.time());
     }
 
     public void markStatusCodeMeter(int status) {
-        httpStatusCodesMeters.computeIfAbsent(
-                status,
-                code -> new MetersPair(
-                    metricsFacade.topics().topicGlobalHttpStatusCodeCounter(status),
-                    metricsFacade.topics().topicHttpStatusCodeCounter(topic.getName(), status))
-        ).mark();
+        httpStatusCodesMeters
+                .computeIfAbsent(
+                        status,
+                        code ->
+                                new MetersPair(
+                                        metricsFacade
+                                                .topics()
+                                                .topicGlobalHttpStatusCodeCounter(status),
+                                        metricsFacade
+                                                .topics()
+                                                .topicHttpStatusCodeCounter(
+                                                        topic.getName(), status)))
+                .mark();
     }
 
     public void markRequestMeter() {
@@ -127,10 +141,11 @@ public class CachedTopic {
     }
 
     public void incrementPublished(String datacenter) {
-        published.computeIfAbsent(
-                datacenter,
-                dc ->  metricsFacade.topics().topicPublished(topic.getName(), datacenter)
-        ).increment();
+        published
+                .computeIfAbsent(
+                        datacenter,
+                        dc -> metricsFacade.topics().topicPublished(topic.getName(), datacenter))
+                .increment();
     }
 
     public void reportMessageContentSize(int size) {

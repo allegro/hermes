@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.validation.constraints.Min;
 
 import java.util.Objects;
@@ -12,7 +13,9 @@ public class OfflineRetentionTime {
 
     private final boolean infinite;
 
-    public OfflineRetentionTime(@JsonProperty("duration") Integer duration, @JsonProperty("infinite") boolean infinite) {
+    public OfflineRetentionTime(
+            @JsonProperty("duration") Integer duration,
+            @JsonProperty("infinite") boolean infinite) {
         this.infinite = infinite;
         this.duration = infinite ? null : duration;
     }
@@ -42,8 +45,7 @@ public class OfflineRetentionTime {
             return false;
         }
         OfflineRetentionTime that = (OfflineRetentionTime) o;
-        return infinite == that.infinite
-                && Objects.equals(duration, that.duration);
+        return infinite == that.infinite && Objects.equals(duration, that.duration);
     }
 
     @Override

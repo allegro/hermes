@@ -15,5 +15,4 @@ public final class HttpRequestHeaders {
     public Map<String, String> asMap() {
         return ImmutableMap.copyOf(headers);
     }
-
 }

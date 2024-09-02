@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.receiver.kafka;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
@@ -18,9 +19,11 @@ class BasicMessageContentReader implements MessageContentReader {
     private final Topic topic;
     private final SchemaExistenceEnsurer schemaExistenceEnsurer;
 
-    BasicMessageContentReader(CompositeMessageContentWrapper compositeMessageContentWrapper,
-                              KafkaHeaderExtractor kafkaHeaderExtractor,
-                              Topic topic, SchemaExistenceEnsurer schemaExistenceEnsurer) {
+    BasicMessageContentReader(
+            CompositeMessageContentWrapper compositeMessageContentWrapper,
+            KafkaHeaderExtractor kafkaHeaderExtractor,
+            Topic topic,
+            SchemaExistenceEnsurer schemaExistenceEnsurer) {
         this.compositeMessageContentWrapper = compositeMessageContentWrapper;
         this.kafkaHeaderExtractor = kafkaHeaderExtractor;
         this.topic = topic;
@@ -28,12 +31,14 @@ class BasicMessageContentReader implements MessageContentReader {
     }
 
     @Override
-    public UnwrappedMessageContent read(ConsumerRecord<byte[], byte[]> message, ContentType contentType) {
+    public UnwrappedMessageContent read(
+            ConsumerRecord<byte[], byte[]> message, ContentType contentType) {
         if (contentType == ContentType.AVRO) {
             Integer schemaVersion = kafkaHeaderExtractor.extractSchemaVersion(message.headers());
             Integer schemaId = kafkaHeaderExtractor.extractSchemaId(message.headers());
             ensureExistence(schemaVersion, schemaId);
-            return compositeMessageContentWrapper.unwrapAvro(message.value(), topic, schemaId, schemaVersion);
+            return compositeMessageContentWrapper.unwrapAvro(
+                    message.value(), topic, schemaId, schemaVersion);
         } else if (contentType == ContentType.JSON) {
             return compositeMessageContentWrapper.unwrapJson(message.value());
         }
@@ -43,7 +48,8 @@ class BasicMessageContentReader implements MessageContentReader {
     private void ensureExistence(Integer schemaVersion, Integer schemaId) {
         try {
             if (schemaVersion != null) {
-                schemaExistenceEnsurer.ensureSchemaExists(topic, SchemaVersion.valueOf(schemaVersion));
+                schemaExistenceEnsurer.ensureSchemaExists(
+                        topic, SchemaVersion.valueOf(schemaVersion));
             }
             if (schemaId != null) {
                 schemaExistenceEnsurer.ensureSchemaExists(topic, SchemaId.valueOf(schemaId));

@@ -1,13 +1,15 @@
 package pl.allegro.tech.hermes.integrationtests.assertions;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
+
 import org.assertj.core.api.AbstractAssert;
 
 import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-public class WiremockRequestAssertion extends AbstractAssert<WiremockRequestAssertion, LoggedRequest> {
+public class WiremockRequestAssertion
+        extends AbstractAssert<WiremockRequestAssertion, LoggedRequest> {
 
     protected WiremockRequestAssertion(LoggedRequest actual) {
         super(actual, WiremockRequestAssertion.class);

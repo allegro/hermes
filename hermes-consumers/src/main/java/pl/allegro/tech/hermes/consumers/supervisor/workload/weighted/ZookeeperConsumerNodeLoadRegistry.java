@@ -1,11 +1,20 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload.weighted;
 
+import static pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths.CONSUMERS_WORKLOAD_PATH;
+import static pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths.CONSUMER_LOAD_PATH;
+
+import static java.util.Collections.newSetFromMap;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.stream.Collectors.toMap;
+
 import com.sun.management.OperatingSystemMXBean;
+
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.concurrent.ExecutorServiceFactory;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
@@ -23,15 +32,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.LongAdder;
 
-import static java.util.Collections.newSetFromMap;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.stream.Collectors.toMap;
-import static pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths.CONSUMERS_WORKLOAD_PATH;
-import static pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths.CONSUMER_LOAD_PATH;
-
 public class ZookeeperConsumerNodeLoadRegistry implements ConsumerNodeLoadRegistry {
 
-    private static final Logger logger = LoggerFactory.getLogger(ZookeeperConsumerNodeLoadRegistry.class);
+    private static final Logger logger =
+            LoggerFactory.getLogger(ZookeeperConsumerNodeLoadRegistry.class);
 
     private final Duration interval;
     private final CuratorFramework curator;
@@ -42,34 +46,47 @@ public class ZookeeperConsumerNodeLoadRegistry implements ConsumerNodeLoadRegist
     private final ConsumerNodeLoadEncoder encoder;
     private final ConsumerNodeLoadDecoder decoder;
     private final ScheduledExecutorService executor;
-    private final OperatingSystemMXBean platformMXBean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
+    private final OperatingSystemMXBean platformMXBean =
+            ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
 
-    private final Set<ZookeeperSubscriptionLoadRecorder> subscriptionLoadRecorders = newSetFromMap(new ConcurrentHashMap<>());
+    private final Set<ZookeeperSubscriptionLoadRecorder> subscriptionLoadRecorders =
+            newSetFromMap(new ConcurrentHashMap<>());
     private volatile long lastReset;
     private volatile double currentOperationsPerSecond = 0d;
     private volatile double cpuUtilization = -1;
 
-    public ZookeeperConsumerNodeLoadRegistry(CuratorFramework curator,
-                                             SubscriptionIds subscriptionIds,
-                                             ZookeeperPaths zookeeperPaths,
-                                             String currentConsumerId,
-                                             String clusterName,
-                                             Duration interval,
-                                             ExecutorServiceFactory executorServiceFactory,
-                                             Clock clock,
-                                             MetricsFacade metrics,
-                                             int consumerLoadEncoderBufferSizeBytes) {
+    public ZookeeperConsumerNodeLoadRegistry(
+            CuratorFramework curator,
+            SubscriptionIds subscriptionIds,
+            ZookeeperPaths zookeeperPaths,
+            String currentConsumerId,
+            String clusterName,
+            Duration interval,
+            ExecutorServiceFactory executorServiceFactory,
+            Clock clock,
+            MetricsFacade metrics,
+            int consumerLoadEncoderBufferSizeBytes) {
         this.curator = curator;
         this.zookeeperPaths = zookeeperPaths;
         this.clock = clock;
-        this.basePath = zookeeperPaths.join(zookeeperPaths.basePath(), CONSUMERS_WORKLOAD_PATH, clusterName, CONSUMER_LOAD_PATH);
+        this.basePath =
+                zookeeperPaths.join(
+                        zookeeperPaths.basePath(),
+                        CONSUMERS_WORKLOAD_PATH,
+                        clusterName,
+                        CONSUMER_LOAD_PATH);
         this.currentConsumerPath = resolveConsumerLoadPath(currentConsumerId);
         this.interval = interval;
-        this.encoder = new ConsumerNodeLoadEncoder(subscriptionIds, consumerLoadEncoderBufferSizeBytes);
+        this.encoder =
+                new ConsumerNodeLoadEncoder(subscriptionIds, consumerLoadEncoderBufferSizeBytes);
         this.decoder = new ConsumerNodeLoadDecoder(subscriptionIds);
-        this.executor = executorServiceFactory.createSingleThreadScheduledExecutor("consumer-node-load-reporter-%d");
+        this.executor =
+                executorServiceFactory.createSingleThreadScheduledExecutor(
+                        "consumer-node-load-reporter-%d");
         this.lastReset = clock.millis();
-        metrics.workload().registerOperationsPerSecondGauge(this, registry -> registry.currentOperationsPerSecond);
+        metrics.workload()
+                .registerOperationsPerSecondGauge(
+                        this, registry -> registry.currentOperationsPerSecond);
         metrics.workload().registerCpuUtilizationGauge(this, registry -> registry.cpuUtilization);
         if (platformMXBean.getProcessCpuLoad() < 0d) {
             logger.warn("Process CPU load is not available.");
@@ -89,9 +106,10 @@ public class ZookeeperConsumerNodeLoadRegistry implements ConsumerNodeLoadRegist
     private void report() {
         try {
             ConsumerNodeLoad consumerNodeLoad = calculateConsumerNodeLoad();
-            currentOperationsPerSecond = consumerNodeLoad.getLoadPerSubscription().values().stream()
-                    .mapToDouble(SubscriptionLoad::getOperationsPerSecond)
-                    .sum();
+            currentOperationsPerSecond =
+                    consumerNodeLoad.getLoadPerSubscription().values().stream()
+                            .mapToDouble(SubscriptionLoad::getOperationsPerSecond)
+                            .sum();
             persist(consumerNodeLoad);
         } catch (Exception e) {
             logger.error("Error while reporting consumer node load", e);
@@ -104,8 +122,12 @@ public class ZookeeperConsumerNodeLoadRegistry implements ConsumerNodeLoadRegist
         long elapsedSeconds = Math.max(MILLISECONDS.toSeconds(elapsedMillis), 1);
         lastReset = now;
         cpuUtilization = platformMXBean.getProcessCpuLoad();
-        Map<SubscriptionName, SubscriptionLoad> loadPerSubscription = subscriptionLoadRecorders.stream()
-                .collect(toMap(ZookeeperSubscriptionLoadRecorder::getSubscriptionName, recorder -> recorder.calculate(elapsedSeconds)));
+        Map<SubscriptionName, SubscriptionLoad> loadPerSubscription =
+                subscriptionLoadRecorders.stream()
+                        .collect(
+                                toMap(
+                                        ZookeeperSubscriptionLoadRecorder::getSubscriptionName,
+                                        recorder -> recorder.calculate(elapsedSeconds)));
         return new ConsumerNodeLoad(cpuUtilization, loadPerSubscription);
     }
 

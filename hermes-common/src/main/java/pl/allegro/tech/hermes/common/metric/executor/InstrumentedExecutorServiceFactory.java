@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.common.metric.executor;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 
 import java.util.concurrent.ExecutorService;
@@ -15,7 +16,8 @@ import java.util.concurrent.TimeUnit;
 public class InstrumentedExecutorServiceFactory {
 
     private final MetricsFacade metricsFacade;
-    private final RejectedExecutionHandler rejectedExecutionHandler = new ThreadPoolExecutor.AbortPolicy();
+    private final RejectedExecutionHandler rejectedExecutionHandler =
+            new ThreadPoolExecutor.AbortPolicy();
 
     public InstrumentedExecutorServiceFactory(MetricsFacade metricsFacade) {
         this.metricsFacade = metricsFacade;
@@ -25,14 +27,15 @@ public class InstrumentedExecutorServiceFactory {
         return getExecutorService(name, size, monitoringEnabled, Integer.MAX_VALUE);
     }
 
-    public ExecutorService getExecutorService(String name, int size, boolean monitoringEnabled, int queueCapacity) {
-        ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat(name + "-executor-%d").build();
+    public ExecutorService getExecutorService(
+            String name, int size, boolean monitoringEnabled, int queueCapacity) {
+        ThreadFactory threadFactory =
+                new ThreadFactoryBuilder().setNameFormat(name + "-executor-%d").build();
         ThreadPoolExecutor executor = newFixedThreadPool(name, size, threadFactory, queueCapacity);
         executor.prestartAllCoreThreads();
 
         return monitoringEnabled ? monitor(name, executor) : executor;
     }
-
 
     public class ScheduledExecutorServiceBuilder {
         final String name;
@@ -56,20 +59,23 @@ public class InstrumentedExecutorServiceFactory {
         }
 
         public ScheduledExecutorService create() {
-            ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat(name + "-scheduled-executor-%d").build();
-            ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(size, threadFactory);
+            ThreadFactory threadFactory =
+                    new ThreadFactoryBuilder()
+                            .setNameFormat(name + "-scheduled-executor-%d")
+                            .build();
+            ScheduledThreadPoolExecutor executor =
+                    new ScheduledThreadPoolExecutor(size, threadFactory);
             executor.setRemoveOnCancelPolicy(removeOnCancel);
             return monitoringEnabled ? monitor(name, executor) : executor;
         }
 
-        private ScheduledExecutorService monitor(String threadPoolName, ScheduledExecutorService executor) {
+        private ScheduledExecutorService monitor(
+                String threadPoolName, ScheduledExecutorService executor) {
             return metricsFacade.executor().monitor(executor, threadPoolName);
         }
     }
 
-    public ScheduledExecutorServiceBuilder scheduledExecutorBuilder(
-            String name, int size
-    ) {
+    public ScheduledExecutorServiceBuilder scheduledExecutorBuilder(String name, int size) {
         return new ScheduledExecutorServiceBuilder(name, size);
     }
 
@@ -77,21 +83,21 @@ public class InstrumentedExecutorServiceFactory {
         return metricsFacade.executor().monitor(executor, threadPoolName);
     }
 
-
     /**
-     * Copy of {@link java.util.concurrent.Executors#newFixedThreadPool(int, java.util.concurrent.ThreadFactory)}
-     * with configurable queue capacity.
+     * Copy of {@link java.util.concurrent.Executors#newFixedThreadPool(int,
+     * java.util.concurrent.ThreadFactory)} with configurable queue capacity.
      */
-    private ThreadPoolExecutor newFixedThreadPool(String executorName, int size, ThreadFactory threadFactory, int queueCapacity) {
-        ThreadPoolExecutor executor = new ThreadPoolExecutor(
-                size,
-                size,
-                0L,
-                TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<>(queueCapacity),
-                threadFactory,
-                rejectedExecutionHandler
-        );
+    private ThreadPoolExecutor newFixedThreadPool(
+            String executorName, int size, ThreadFactory threadFactory, int queueCapacity) {
+        ThreadPoolExecutor executor =
+                new ThreadPoolExecutor(
+                        size,
+                        size,
+                        0L,
+                        TimeUnit.MILLISECONDS,
+                        new LinkedBlockingQueue<>(queueCapacity),
+                        threadFactory,
+                        rejectedExecutionHandler);
         return executor;
     }
 }

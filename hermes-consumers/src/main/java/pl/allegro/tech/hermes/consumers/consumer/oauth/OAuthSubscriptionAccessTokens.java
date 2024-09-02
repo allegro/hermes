@@ -2,26 +2,30 @@ package pl.allegro.tech.hermes.consumers.consumer.oauth;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.LoadingCache;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.api.SubscriptionName;
 
 import java.util.Optional;
 
 public class OAuthSubscriptionAccessTokens implements OAuthAccessTokens {
 
-    private static final Logger logger = LoggerFactory.getLogger(OAuthSubscriptionAccessTokens.class);
+    private static final Logger logger =
+            LoggerFactory.getLogger(OAuthSubscriptionAccessTokens.class);
 
     private final LoadingCache<SubscriptionName, OAuthAccessToken> subscriptionTokens;
 
     private final OAuthAccessTokensLoader tokenLoader;
 
-    public OAuthSubscriptionAccessTokens(OAuthAccessTokensLoader tokenLoader,
-                                         long subscriptionTokensCacheMaxSize) {
+    public OAuthSubscriptionAccessTokens(
+            OAuthAccessTokensLoader tokenLoader, long subscriptionTokensCacheMaxSize) {
         this.tokenLoader = tokenLoader;
-        this.subscriptionTokens = CacheBuilder.newBuilder()
-                .maximumSize(subscriptionTokensCacheMaxSize)
-                .build(tokenLoader);
+        this.subscriptionTokens =
+                CacheBuilder.newBuilder()
+                        .maximumSize(subscriptionTokensCacheMaxSize)
+                        .build(tokenLoader);
     }
 
     @Override
@@ -45,8 +49,10 @@ public class OAuthSubscriptionAccessTokens implements OAuthAccessTokens {
             OAuthAccessToken token = tokenLoader.load(subscriptionName);
             subscriptionTokens.put(subscriptionName, token);
         } catch (Exception e) {
-            logger.error("An error occurred while refreshing access token for subscription {}",
-                    subscriptionName, e);
+            logger.error(
+                    "An error occurred while refreshing access token for subscription {}",
+                    subscriptionName,
+                    e);
         }
     }
 

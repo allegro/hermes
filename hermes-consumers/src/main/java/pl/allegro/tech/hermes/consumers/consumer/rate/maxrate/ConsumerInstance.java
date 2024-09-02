@@ -43,8 +43,11 @@ final class ConsumerInstance {
     @Override
     public String toString() {
         return "ConsumerInstance{"
-                + "consumerId='" + consumerId + '\''
-                + ", subscription=" + subscription
+                + "consumerId='"
+                + consumerId
+                + '\''
+                + ", subscription="
+                + subscription
                 + '}';
     }
 }

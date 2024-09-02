@@ -1,16 +1,17 @@
 package pl.allegro.tech.hermes.management.infrastructure.schema.validator;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Strings.isNullOrEmpty;
+
 import org.apache.avro.Schema;
 import org.apache.avro.SchemaParseException;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
 import pl.allegro.tech.hermes.management.config.TopicProperties;
 
 import java.io.IOException;
-
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Strings.isNullOrEmpty;
 
 @Component
 public class AvroSchemaValidator implements SchemaValidator {
@@ -38,7 +39,10 @@ public class AvroSchemaValidator implements SchemaValidator {
 
     private static Schema readAndParseResourceSchema(String resourceFilePath) {
         try {
-            String schema = IOUtils.toString(AvroSchemaValidator.class.getResourceAsStream(resourceFilePath), "UTF-8");
+            String schema =
+                    IOUtils.toString(
+                            AvroSchemaValidator.class.getResourceAsStream(resourceFilePath),
+                            "UTF-8");
             return parseSchema(schema);
         } catch (IOException e) {
             throw new RuntimeException("Could not load schema with metadata");
@@ -66,7 +70,8 @@ public class AvroSchemaValidator implements SchemaValidator {
         Schema metadata = metadataFieldSchema(parsedSchema);
 
         boolean metadataTypeMatches = HERMES_METADATA_SCHEMA.getType().equals(metadata.getType());
-        boolean metadataNestedTypesMatch = HERMES_METADATA_SCHEMA.getTypes().equals(metadata.getTypes());
+        boolean metadataNestedTypesMatch =
+                HERMES_METADATA_SCHEMA.getTypes().equals(metadata.getTypes());
         boolean valid = metadataTypeMatches && metadataNestedTypesMatch;
 
         if (!valid) {

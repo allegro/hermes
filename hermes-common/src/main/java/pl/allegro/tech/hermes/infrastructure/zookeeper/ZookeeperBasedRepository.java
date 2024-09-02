@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.infrastructure.zookeeper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.api.transaction.CuratorTransactionFinal;
@@ -10,6 +11,7 @@ import org.apache.curator.utils.ZKPaths;
 import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.exception.RepositoryNotAvailableException;
 import pl.allegro.tech.hermes.infrastructure.MalformedDataException;
@@ -32,9 +34,8 @@ public abstract class ZookeeperBasedRepository {
 
     protected final ZookeeperPaths paths;
 
-    protected ZookeeperBasedRepository(CuratorFramework zookeeper,
-                                       ObjectMapper mapper,
-                                       ZookeeperPaths paths) {
+    protected ZookeeperBasedRepository(
+            CuratorFramework zookeeper, ObjectMapper mapper, ZookeeperPaths paths) {
         this.zookeeper = zookeeper;
         this.mapper = mapper;
         this.paths = paths;
@@ -42,7 +43,8 @@ public abstract class ZookeeperBasedRepository {
 
     private void ensureConnected() {
         if (!zookeeper.getZookeeperClient().isConnected()) {
-            throw new RepositoryNotAvailableException("Could not establish connection to a Zookeeper instance");
+            throw new RepositoryNotAvailableException(
+                    "Could not establish connection to a Zookeeper instance");
         }
     }
 
@@ -60,7 +62,8 @@ public abstract class ZookeeperBasedRepository {
     protected boolean pathExists(String path) {
         ensureConnected();
         try {
-            Optional<Stat> optionalStat = Optional.ofNullable(zookeeper.checkExists().forPath(path));
+            Optional<Stat> optionalStat =
+                    Optional.ofNullable(zookeeper.checkExists().forPath(path));
             return optionalStat.isPresent();
         } catch (Exception e) {
             throw new InternalProcessingException(e);
@@ -105,11 +108,16 @@ public abstract class ZookeeperBasedRepository {
         return readWithStatFrom(path, b -> (T) mapper.readValue(b, type), (t, stat) -> {}, quiet);
     }
 
-    protected <T> Optional<T> readWithStatFrom(String path, Class<T> clazz, BiConsumer<T, Stat> statDecorator, boolean quiet) {
+    protected <T> Optional<T> readWithStatFrom(
+            String path, Class<T> clazz, BiConsumer<T, Stat> statDecorator, boolean quiet) {
         return readWithStatFrom(path, b -> mapper.readValue(b, clazz), statDecorator, quiet);
     }
 
-    private <T> Optional<T> readWithStatFrom(String path, ThrowingReader<T> supplier, BiConsumer<T, Stat> statDecorator, boolean quiet) {
+    private <T> Optional<T> readWithStatFrom(
+            String path,
+            ThrowingReader<T> supplier,
+            BiConsumer<T, Stat> statDecorator,
+            boolean quiet) {
         ensureConnected();
         try {
             Stat stat = new Stat();
@@ -120,12 +128,16 @@ public abstract class ZookeeperBasedRepository {
                 return Optional.of(t);
             }
         } catch (JsonMappingException malformedException) {
-            logWarnOrThrowException("Unable to read data from path " + path,
-                    new MalformedDataException(path, malformedException), quiet);
+            logWarnOrThrowException(
+                    "Unable to read data from path " + path,
+                    new MalformedDataException(path, malformedException),
+                    quiet);
         } catch (InternalProcessingException e) {
             throw e;
         } catch (Exception exception) {
-            logWarnOrThrowException("Unable to read data from path " + path, new InternalProcessingException(exception),
+            logWarnOrThrowException(
+                    "Unable to read data from path " + path,
+                    new InternalProcessingException(exception),
                     quiet);
         }
         return Optional.empty();
@@ -151,27 +163,31 @@ public abstract class ZookeeperBasedRepository {
 
     protected void createRecursively(String path, Object value) throws Exception {
         ensureConnected();
-        zookeeper.create()
-                .creatingParentsIfNeeded()
-                .forPath(path, mapper.writeValueAsBytes(value));
+        zookeeper.create().creatingParentsIfNeeded().forPath(path, mapper.writeValueAsBytes(value));
     }
 
-    protected void createInTransaction(String path, Object value, String childPath) throws Exception {
+    protected void createInTransaction(String path, Object value, String childPath)
+            throws Exception {
         ensureConnected();
-        zookeeper.inTransaction()
-                .create().forPath(path, mapper.writeValueAsBytes(value))
+        zookeeper
+                .inTransaction()
+                .create()
+                .forPath(path, mapper.writeValueAsBytes(value))
                 .and()
-                .create().forPath(childPath)
+                .create()
+                .forPath(childPath)
                 .and()
                 .commit();
     }
 
     protected void deleteInTransaction(List<String> paths) throws Exception {
         if (paths.isEmpty()) {
-            throw new InternalProcessingException("Attempting to remove empty set of paths from ZK");
+            throw new InternalProcessingException(
+                    "Attempting to remove empty set of paths from ZK");
         }
         ensureConnected();
-        CuratorTransactionFinal transaction = zookeeper.inTransaction().delete().forPath(paths.get(0)).and();
+        CuratorTransactionFinal transaction =
+                zookeeper.inTransaction().delete().forPath(paths.get(0)).and();
 
         for (int i = 1; i < paths.size(); i++) {
             transaction = transaction.delete().forPath(paths.get(i)).and();

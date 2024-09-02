@@ -1,11 +1,18 @@
 package pl.allegro.tech.hermes.consumers.consumer.rate.maxrate;
 
+import static org.awaitility.Awaitility.await;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.consumers.config.KafkaProperties;
 import pl.allegro.tech.hermes.consumers.config.MaxRateProperties;
@@ -22,49 +29,52 @@ import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperBaseTest;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
-import static org.awaitility.Awaitility.await;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 public class MaxRateRegistryTest extends ZookeeperBaseTest {
 
-    private final SubscriptionName subscription1 = SubscriptionName.fromString("pl.allegro.tech.hermes$testSubscription");
+    private final SubscriptionName subscription1 =
+            SubscriptionName.fromString("pl.allegro.tech.hermes$testSubscription");
     private final SubscriptionId subscriptionId1 = SubscriptionId.from(subscription1, 1L);
-    private final SubscriptionName subscription2 = SubscriptionName.fromString("pl.allegro.tech.hermes$testSubscription2");
+    private final SubscriptionName subscription2 =
+            SubscriptionName.fromString("pl.allegro.tech.hermes$testSubscription2");
     private final SubscriptionId subscriptionId2 = SubscriptionId.from(subscription2, 2L);
 
     private final SubscriptionsCache subscriptionsCache = mock(SubscriptionsCache.class);
-    private final SubscriptionIds subscriptionIds = new TestSubscriptionIds(ImmutableList.of(subscriptionId1, subscriptionId2));
+    private final SubscriptionIds subscriptionIds =
+            new TestSubscriptionIds(ImmutableList.of(subscriptionId1, subscriptionId2));
 
     private final ZookeeperPaths zookeeperPaths = new ZookeeperPaths("/hermes");
     private final MaxRateProperties maxRateProperties = new MaxRateProperties();
     private final String consumerId = new WorkloadProperties().getNodeId();
     private final String cluster = new KafkaProperties().getClusterName();
 
-    private final ConsumerAssignmentCache consumerAssignmentCache = mock(ConsumerAssignmentCache.class);
-    private final ClusterAssignmentCache clusterAssignmentCache = mock(ClusterAssignmentCache.class);
+    private final ConsumerAssignmentCache consumerAssignmentCache =
+            mock(ConsumerAssignmentCache.class);
+    private final ClusterAssignmentCache clusterAssignmentCache =
+            mock(ClusterAssignmentCache.class);
 
-    private final MaxRateRegistry maxRateRegistry = new MaxRateRegistry(
-            maxRateProperties.getRegistryBinaryEncoder().getHistoryBufferSizeBytes(),
-            maxRateProperties.getRegistryBinaryEncoder().getMaxRateBufferSizeBytes(),
-            consumerId,
-            cluster,
-            clusterAssignmentCache,
-            consumerAssignmentCache,
-            zookeeperClient,
-            zookeeperPaths,
-            subscriptionIds
-    );
+    private final MaxRateRegistry maxRateRegistry =
+            new MaxRateRegistry(
+                    maxRateProperties.getRegistryBinaryEncoder().getHistoryBufferSizeBytes(),
+                    maxRateProperties.getRegistryBinaryEncoder().getMaxRateBufferSizeBytes(),
+                    consumerId,
+                    cluster,
+                    clusterAssignmentCache,
+                    consumerAssignmentCache,
+                    zookeeperClient,
+                    zookeeperPaths,
+                    subscriptionIds);
 
-    private final MaxRateRegistryPaths paths = new MaxRateRegistryPaths(zookeeperPaths, consumerId, cluster);
+    private final MaxRateRegistryPaths paths =
+            new MaxRateRegistryPaths(zookeeperPaths, consumerId, cluster);
 
     @Before
     public void setUp() {
-        when(subscriptionsCache.listActiveSubscriptionNames()).thenReturn(ImmutableList.of(subscription1, subscription2));
+        when(subscriptionsCache.listActiveSubscriptionNames())
+                .thenReturn(ImmutableList.of(subscription1, subscription2));
 
         when(clusterAssignmentCache.getAssignedConsumers()).thenReturn(ImmutableSet.of(consumerId));
-        when(consumerAssignmentCache.getConsumerSubscriptions()).thenReturn(ImmutableSet.of(subscription1, subscription2));
+        when(consumerAssignmentCache.getConsumerSubscriptions())
+                .thenReturn(ImmutableSet.of(subscription1, subscription2));
         maxRateRegistry.start();
     }
 
@@ -87,7 +97,9 @@ public class MaxRateRegistryTest extends ZookeeperBaseTest {
         maxRateRegistry.ensureCorrectAssignments(subscription1, ImmutableSet.of(consumerId));
 
         // then
-        assertEquals(RateHistory.empty(), maxRateRegistry.getRateHistory(new ConsumerInstance(consumerId, subscription1)));
+        assertEquals(
+                RateHistory.empty(),
+                maxRateRegistry.getRateHistory(new ConsumerInstance(consumerId, subscription1)));
     }
 
     @Test
@@ -132,8 +144,12 @@ public class MaxRateRegistryTest extends ZookeeperBaseTest {
         maxRateRegistry.onBeforeMaxRateCalculation(); // read
 
         // then
-        assertEquals(new MaxRate(0.5), maxRateRegistry.getMaxRate(new ConsumerInstance(consumerId, subscription1)).get());
-        assertEquals(new MaxRate(350.0), maxRateRegistry.getMaxRate(new ConsumerInstance(consumerId, subscription2)).get());
+        assertEquals(
+                new MaxRate(0.5),
+                maxRateRegistry.getMaxRate(new ConsumerInstance(consumerId, subscription1)).get());
+        assertEquals(
+                new MaxRate(350.0),
+                maxRateRegistry.getMaxRate(new ConsumerInstance(consumerId, subscription2)).get());
     }
 
     @Test
@@ -177,14 +193,25 @@ public class MaxRateRegistryTest extends ZookeeperBaseTest {
 
         // then
         await().atMost(2, TimeUnit.SECONDS)
-                .until((() -> maxRateRegistry.getMaxRate(new ConsumerInstance(consumerId, subscription1)).isPresent()
-                        && maxRateRegistry.getMaxRate(new ConsumerInstance(consumerId, subscription2)).isEmpty()));
+                .until(
+                        (() ->
+                                maxRateRegistry
+                                                .getMaxRate(
+                                                        new ConsumerInstance(
+                                                                consumerId, subscription1))
+                                                .isPresent()
+                                        && maxRateRegistry
+                                                .getMaxRate(
+                                                        new ConsumerInstance(
+                                                                consumerId, subscription2))
+                                                .isEmpty()));
     }
 
     @Test(expected = IllegalStateException.class)
     public void shouldNotAllowForSavingRateHistoryOfOtherThanCurrentConsumerNode() {
         // when
-        maxRateRegistry.writeRateHistory(new ConsumerInstance("otherConsumer", subscription1), RateHistory.create(0.5));
+        maxRateRegistry.writeRateHistory(
+                new ConsumerInstance("otherConsumer", subscription1), RateHistory.create(0.5));
     }
 
     @Test(expected = IllegalStateException.class)
@@ -194,7 +221,8 @@ public class MaxRateRegistryTest extends ZookeeperBaseTest {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void shouldNotAllowForReadingMaxRateOfOtherThanCurrentConsumerNodeConsumerRateHistoriesDecoder() {
+    public void
+            shouldNotAllowForReadingMaxRateOfOtherThanCurrentConsumerNodeConsumerRateHistoriesDecoder() {
         // when
         maxRateRegistry.getMaxRate(new ConsumerInstance("otherConsumer", subscription1));
     }

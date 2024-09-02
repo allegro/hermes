@@ -19,34 +19,39 @@ public class OutputRateCalculator {
 
     private final MaxRateProvider maxRateProvider;
 
-    public OutputRateCalculator(RateCalculatorParameters rateCalculatorParameters, MaxRateProvider maxRateProvider) {
+    public OutputRateCalculator(
+            RateCalculatorParameters rateCalculatorParameters, MaxRateProvider maxRateProvider) {
         this.maxRateProvider = maxRateProvider;
 
-        modeCalculators.put(Mode.NORMAL,
+        modeCalculators.put(
+                Mode.NORMAL,
                 new NormalModeOutputRateCalculator(
                         rateCalculatorParameters.getConvergenceFactor(),
                         1.0 / rateCalculatorParameters.getLimiterSlowModeDelay().toSeconds(),
                         rateCalculatorParameters.getFailuresSpeedUpToleranceRatio(),
-                        rateCalculatorParameters.getFailuresNoChangeToleranceRatio())
-        );
-        modeCalculators.put(Mode.SLOW,
+                        rateCalculatorParameters.getFailuresNoChangeToleranceRatio()));
+        modeCalculators.put(
+                Mode.SLOW,
                 new SlowModeOutputRateCalculator(
-                        1.0 / rateCalculatorParameters.getLimiterHeartbeatModeDelay().toSeconds())
-        );
-        modeCalculators.put(Mode.HEARTBEAT, new HeartbeatModeOutputRateCalculator(
-                1.0 / rateCalculatorParameters.getLimiterSlowModeDelay().toSeconds())
-        );
+                        1.0 / rateCalculatorParameters.getLimiterHeartbeatModeDelay().toSeconds()));
+        modeCalculators.put(
+                Mode.HEARTBEAT,
+                new HeartbeatModeOutputRateCalculator(
+                        1.0 / rateCalculatorParameters.getLimiterSlowModeDelay().toSeconds()));
     }
 
-    public OutputRateCalculationResult recalculateRate(SendCounters counters,
-                                                       Mode currentMode, double currentRateLimit) {
+    public OutputRateCalculationResult recalculateRate(
+            SendCounters counters, Mode currentMode, double currentRateLimit) {
 
         double maximumRate = maxRateProvider.get();
-        OutputRateCalculationResult recalculatedResult
-                = modeCalculators.get(currentMode).calculateOutputRate(currentRateLimit, maximumRate, counters);
+        OutputRateCalculationResult recalculatedResult =
+                modeCalculators
+                        .get(currentMode)
+                        .calculateOutputRate(currentRateLimit, maximumRate, counters);
 
         if (recalculatedResult.rate() > maximumRate) {
-            recalculatedResult = OutputRateCalculationResult.adjustRate(recalculatedResult, maximumRate);
+            recalculatedResult =
+                    OutputRateCalculationResult.adjustRate(recalculatedResult, maximumRate);
         }
 
         return recalculatedResult;

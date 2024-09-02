@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.api;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.validation.constraints.NotNull;
 
 import java.util.Objects;
@@ -9,15 +10,14 @@ import java.util.Objects;
 public final class MonitoringDetails {
     public static final MonitoringDetails EMPTY = new MonitoringDetails(Severity.NON_IMPORTANT, "");
 
-    @NotNull
-    private final Severity severity;
+    @NotNull private final Severity severity;
 
-    @NotNull
-    private final String reaction;
+    @NotNull private final String reaction;
 
     @JsonCreator
-    public MonitoringDetails(@JsonProperty("severity") Severity severity,
-                             @JsonProperty("reaction") String reaction) {
+    public MonitoringDetails(
+            @JsonProperty("severity") Severity severity,
+            @JsonProperty("reaction") String reaction) {
         this.severity = severity;
         this.reaction = reaction;
     }
@@ -39,8 +39,7 @@ public final class MonitoringDetails {
             return false;
         }
         MonitoringDetails that = (MonitoringDetails) o;
-        return severity == that.severity
-                && Objects.equals(reaction, that.reaction);
+        return severity == that.severity && Objects.equals(reaction, that.reaction);
     }
 
     @Override
@@ -51,8 +50,11 @@ public final class MonitoringDetails {
     @Override
     public String toString() {
         return "MonitoringDetails{"
-                + "severity=" + severity
-                + ", reaction='" + reaction + '\''
+                + "severity="
+                + severity
+                + ", reaction='"
+                + reaction
+                + '\''
                 + '}';
     }
 

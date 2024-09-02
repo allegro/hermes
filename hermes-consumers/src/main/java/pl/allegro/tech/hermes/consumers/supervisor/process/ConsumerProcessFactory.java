@@ -14,10 +14,11 @@ public class ConsumerProcessFactory implements ConsumerProcessSupplier {
     private final Clock clock;
     private final ConsumerFactory consumerFactory;
 
-    public ConsumerProcessFactory(Retransmitter retransmitter,
-                                  ConsumerFactory consumerFactory,
-                                  Duration unhealthyAfter,
-                                  Clock clock) {
+    public ConsumerProcessFactory(
+            Retransmitter retransmitter,
+            ConsumerFactory consumerFactory,
+            Duration unhealthyAfter,
+            Clock clock) {
         this.retransmitter = retransmitter;
         this.consumerFactory = consumerFactory;
         this.unhealthyAfter = unhealthyAfter;
@@ -25,15 +26,17 @@ public class ConsumerProcessFactory implements ConsumerProcessSupplier {
     }
 
     @Override
-    public ConsumerProcess createProcess(Subscription subscription,
-                                  Signal startSignal,
-                                  java.util.function.Consumer<SubscriptionName> onConsumerStopped) {
+    public ConsumerProcess createProcess(
+            Subscription subscription,
+            Signal startSignal,
+            java.util.function.Consumer<SubscriptionName> onConsumerStopped) {
 
-        return new ConsumerProcess(startSignal,
-                                   consumerFactory.createConsumer(subscription),
-                                   retransmitter,
-                                   clock,
-                                   unhealthyAfter,
-                                   onConsumerStopped);
+        return new ConsumerProcess(
+                startSignal,
+                consumerFactory.createConsumer(subscription),
+                retransmitter,
+                clock,
+                unhealthyAfter,
+                onConsumerStopped);
     }
 }

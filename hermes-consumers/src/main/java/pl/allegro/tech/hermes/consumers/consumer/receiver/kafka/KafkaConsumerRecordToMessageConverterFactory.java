@@ -13,16 +13,23 @@ public class KafkaConsumerRecordToMessageConverterFactory {
     private final KafkaHeaderExtractor kafkaHeaderExtractor;
     private final Clock clock;
 
-    public KafkaConsumerRecordToMessageConverterFactory(MessageContentReaderFactory messageContentReaderFactory,
-                                                        KafkaHeaderExtractor kafkaHeaderExtractor, Clock clock) {
+    public KafkaConsumerRecordToMessageConverterFactory(
+            MessageContentReaderFactory messageContentReaderFactory,
+            KafkaHeaderExtractor kafkaHeaderExtractor,
+            Clock clock) {
         this.messageContentReaderFactory = messageContentReaderFactory;
         this.kafkaHeaderExtractor = kafkaHeaderExtractor;
         this.clock = clock;
     }
 
-    public KafkaConsumerRecordToMessageConverter create(Topic topic, Subscription subscription, Map<String, KafkaTopic> topics) {
-        return new KafkaConsumerRecordToMessageConverter(topic, subscription, topics, messageContentReaderFactory.provide(topic),
-                kafkaHeaderExtractor, clock);
+    public KafkaConsumerRecordToMessageConverter create(
+            Topic topic, Subscription subscription, Map<String, KafkaTopic> topics) {
+        return new KafkaConsumerRecordToMessageConverter(
+                topic,
+                subscription,
+                topics,
+                messageContentReaderFactory.provide(topic),
+                kafkaHeaderExtractor,
+                clock);
     }
-
 }

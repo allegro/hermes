@@ -32,8 +32,7 @@ class ConsumerMaxRates {
     }
 
     public void cleanup(Set<SubscriptionName> subscriptions) {
-        this.maxRates.entrySet()
-                .removeIf(entry -> !subscriptions.contains(entry.getKey()));
+        this.maxRates.entrySet().removeIf(entry -> !subscriptions.contains(entry.getKey()));
     }
 
     int size() {
@@ -44,7 +43,11 @@ class ConsumerMaxRates {
         return maxRates.keySet().stream()
                 .map(subscriptionIdMapping::mapToSubscriptionId)
                 .filter(Optional::isPresent)
-                .collect(Collectors.toMap(Optional::get, subscriptionId -> maxRates.get(subscriptionId.get().getSubscriptionName())));
+                .collect(
+                        Collectors.toMap(
+                                Optional::get,
+                                subscriptionId ->
+                                        maxRates.get(subscriptionId.get().getSubscriptionName())));
     }
 
     @Override

@@ -1,9 +1,9 @@
 package pl.allegro.tech.hermes.frontend.utils;
 
+import static java.util.stream.Collectors.toList;
+
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-
-import static java.util.stream.Collectors.toList;
 
 public class CompletableFuturesHelper {
 

@@ -1,5 +1,7 @@
 package pl.allegro.tech.hermes.management.domain.readiness;
 
+import static pl.allegro.tech.hermes.api.DatacenterReadiness.ReadinessStatus.READY;
+
 import pl.allegro.tech.hermes.api.DatacenterReadiness;
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
 
@@ -10,17 +12,16 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static pl.allegro.tech.hermes.api.DatacenterReadiness.ReadinessStatus.READY;
-
 public class ReadinessService {
 
     private final MultiDatacenterRepositoryCommandExecutor commandExecutor;
     private final DatacenterReadinessRepository readinessRepository;
     private final List<String> datacenters;
 
-    public ReadinessService(MultiDatacenterRepositoryCommandExecutor commandExecutor,
-                            DatacenterReadinessRepository readinessRepository,
-                            List<String> datacenters) {
+    public ReadinessService(
+            MultiDatacenterRepositoryCommandExecutor commandExecutor,
+            DatacenterReadinessRepository readinessRepository,
+            List<String> datacenters) {
         this.commandExecutor = commandExecutor;
         this.readinessRepository = readinessRepository;
         this.datacenters = datacenters;
@@ -33,9 +34,8 @@ public class ReadinessService {
             toSave.put(datacenter, current.get(datacenter));
         }
         toSave.put(datacenterReadiness.getDatacenter(), datacenterReadiness);
-        List<DatacenterReadiness> readiness = toSave.values().stream()
-                .filter(Objects::nonNull)
-                .toList();
+        List<DatacenterReadiness> readiness =
+                toSave.values().stream().filter(Objects::nonNull).toList();
         commandExecutor.execute(new SetReadinessCommand(readiness));
     }
 

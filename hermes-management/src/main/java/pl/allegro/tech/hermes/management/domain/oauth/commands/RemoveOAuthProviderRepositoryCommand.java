@@ -5,7 +5,8 @@ import pl.allegro.tech.hermes.domain.oauth.OAuthProviderRepository;
 import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryCommand;
 
-public class RemoveOAuthProviderRepositoryCommand extends RepositoryCommand<OAuthProviderRepository> {
+public class RemoveOAuthProviderRepositoryCommand
+        extends RepositoryCommand<OAuthProviderRepository> {
 
     private final String providerName;
 
@@ -26,7 +27,8 @@ public class RemoveOAuthProviderRepositoryCommand extends RepositoryCommand<OAut
     }
 
     @Override
-    public void rollback(DatacenterBoundRepositoryHolder<OAuthProviderRepository> holder, Exception exception) {
+    public void rollback(
+            DatacenterBoundRepositoryHolder<OAuthProviderRepository> holder, Exception exception) {
         holder.getRepository().createOAuthProvider(backup);
     }
 

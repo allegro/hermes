@@ -15,10 +15,11 @@ public class TestSubscriptionIds implements SubscriptionIds {
     private final Map<Long, SubscriptionId> valueToIdMap = new ConcurrentHashMap<>();
 
     public TestSubscriptionIds(List<SubscriptionId> ids) {
-        ids.forEach(id -> {
-            nameToIdMap.put(id.getSubscriptionName(), id);
-            valueToIdMap.put(id.getValue(), id);
-        });
+        ids.forEach(
+                id -> {
+                    nameToIdMap.put(id.getSubscriptionName(), id);
+                    valueToIdMap.put(id.getValue(), id);
+                });
     }
 
     @Override
@@ -32,7 +33,5 @@ public class TestSubscriptionIds implements SubscriptionIds {
     }
 
     @Override
-    public void start() {
-
-    }
+    public void start() {}
 }

@@ -1,10 +1,12 @@
 package pl.allegro.tech.hermes.infrastructure.zookeeper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.KeeperException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.api.Constraints;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
@@ -16,24 +18,31 @@ import pl.allegro.tech.hermes.domain.workload.constraints.TopicConstraintsAlread
 import pl.allegro.tech.hermes.domain.workload.constraints.TopicConstraintsDoNotExistException;
 import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraintsRepository;
 
-public class ZookeeperWorkloadConstraintsRepository extends ZookeeperBasedRepository implements WorkloadConstraintsRepository {
+public class ZookeeperWorkloadConstraintsRepository extends ZookeeperBasedRepository
+        implements WorkloadConstraintsRepository {
 
-    private static final Logger logger = LoggerFactory.getLogger(ZookeeperWorkloadConstraintsRepository.class);
+    private static final Logger logger =
+            LoggerFactory.getLogger(ZookeeperWorkloadConstraintsRepository.class);
 
     private final ZookeeperWorkloadConstraintsCache pathChildrenCache;
 
-    public ZookeeperWorkloadConstraintsRepository(CuratorFramework curator, ObjectMapper mapper, ZookeeperPaths paths) {
+    public ZookeeperWorkloadConstraintsRepository(
+            CuratorFramework curator, ObjectMapper mapper, ZookeeperPaths paths) {
         this(curator, mapper, paths, new ZookeeperWorkloadConstraintsCache(curator, mapper, paths));
     }
 
-    ZookeeperWorkloadConstraintsRepository(CuratorFramework curator, ObjectMapper mapper, ZookeeperPaths paths,
-                                           ZookeeperWorkloadConstraintsCache pathChildrenCache) {
+    ZookeeperWorkloadConstraintsRepository(
+            CuratorFramework curator,
+            ObjectMapper mapper,
+            ZookeeperPaths paths,
+            ZookeeperWorkloadConstraintsCache pathChildrenCache) {
         super(curator, mapper, paths);
         this.pathChildrenCache = pathChildrenCache;
         try {
             this.pathChildrenCache.start();
         } catch (Exception e) {
-            throw new InternalProcessingException("ZookeeperWorkloadConstraintsCache cannot start.", e);
+            throw new InternalProcessingException(
+                    "ZookeeperWorkloadConstraintsCache cannot start.", e);
         }
     }
 
@@ -55,7 +64,8 @@ public class ZookeeperWorkloadConstraintsRepository extends ZookeeperBasedReposi
 
     @Override
     public void createConstraints(SubscriptionName subscriptionName, Constraints constraints) {
-        logger.info("Creating constraints for subscription {}", subscriptionName.getQualifiedName());
+        logger.info(
+                "Creating constraints for subscription {}", subscriptionName.getQualifiedName());
         String path = paths.consumersWorkloadConstraintsPath(subscriptionName.getQualifiedName());
         try {
             createConstraints(path, constraints);
@@ -64,7 +74,8 @@ public class ZookeeperWorkloadConstraintsRepository extends ZookeeperBasedReposi
         }
     }
 
-    private void createConstraints(String path, Constraints constraints) throws KeeperException.NodeExistsException {
+    private void createConstraints(String path, Constraints constraints)
+            throws KeeperException.NodeExistsException {
         try {
             createRecursively(path, constraints);
         } catch (KeeperException.NodeExistsException e) {
@@ -89,7 +100,8 @@ public class ZookeeperWorkloadConstraintsRepository extends ZookeeperBasedReposi
 
     @Override
     public void updateConstraints(SubscriptionName subscriptionName, Constraints constraints) {
-        logger.info("Updating constraints for subscription {}", subscriptionName.getQualifiedName());
+        logger.info(
+                "Updating constraints for subscription {}", subscriptionName.getQualifiedName());
         String path = paths.consumersWorkloadConstraintsPath(subscriptionName.getQualifiedName());
         try {
             overwrite(path, constraints);
@@ -109,7 +121,8 @@ public class ZookeeperWorkloadConstraintsRepository extends ZookeeperBasedReposi
 
     @Override
     public void deleteConstraints(SubscriptionName subscriptionName) {
-        logger.info("Deleting constraints for subscription {}", subscriptionName.getQualifiedName());
+        logger.info(
+                "Deleting constraints for subscription {}", subscriptionName.getQualifiedName());
         String path = paths.consumersWorkloadConstraintsPath(subscriptionName.getQualifiedName());
         deleteConstraints(path);
     }

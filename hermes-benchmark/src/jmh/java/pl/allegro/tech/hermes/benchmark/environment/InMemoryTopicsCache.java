@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.benchmark.environment;
 
 import com.codahale.metrics.MetricRegistry;
+
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
@@ -20,11 +21,14 @@ class InMemoryTopicsCache implements TopicsCache {
     private final Topic topic;
     private final ThroughputRegistry throughputRegistry;
 
-
     InMemoryTopicsCache(MetricsFacade metricsFacade, Topic topic) {
         this.metricsFacade = metricsFacade;
         this.topic = topic;
-        this.kafkaTopics = new KafkaTopics(new KafkaTopic(KafkaTopicName.valueOf(topic.getQualifiedName()), topic.getContentType()));
+        this.kafkaTopics =
+                new KafkaTopics(
+                        new KafkaTopic(
+                                KafkaTopicName.valueOf(topic.getQualifiedName()),
+                                topic.getContentType()));
         this.throughputRegistry = new ThroughputRegistry(metricsFacade, new MetricRegistry());
     }
 
@@ -32,13 +36,7 @@ class InMemoryTopicsCache implements TopicsCache {
     public Optional<CachedTopic> getTopic(String qualifiedTopicName) {
         if (qualifiedTopicName.equals(topic.getQualifiedName())) {
             return Optional.of(
-                    new CachedTopic(
-                            topic,
-                            metricsFacade,
-                            throughputRegistry,
-                            kafkaTopics
-                    )
-            );
+                    new CachedTopic(topic, metricsFacade, throughputRegistry, kafkaTopics));
         }
         return Optional.empty();
     }

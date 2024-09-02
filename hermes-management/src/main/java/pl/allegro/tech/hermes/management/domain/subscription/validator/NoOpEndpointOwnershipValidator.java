@@ -6,7 +6,5 @@ import pl.allegro.tech.hermes.api.OwnerId;
 public class NoOpEndpointOwnershipValidator implements EndpointOwnershipValidator {
 
     @Override
-    public void check(OwnerId owner, EndpointAddress endpoint) {
-
-    }
+    public void check(OwnerId owner, EndpointAddress endpoint) {}
 }

@@ -1,24 +1,26 @@
 package pl.allegro.tech.hermes.api.helpers;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
 import pl.allegro.tech.hermes.api.PatchData;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 public class Patch {
 
-    private static final ObjectMapper MAPPER = new ObjectMapper()
-            .setSerializationInclusion(JsonInclude.Include.NON_NULL)
-            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-            .disable(SerializationFeature.WRITE_NULL_MAP_VALUES)
-            .registerModule(new JavaTimeModule());
+    private static final ObjectMapper MAPPER =
+            new ObjectMapper()
+                    .setSerializationInclusion(JsonInclude.Include.NON_NULL)
+                    .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                    .disable(SerializationFeature.WRITE_NULL_MAP_VALUES)
+                    .registerModule(new JavaTimeModule());
 
     @SuppressWarnings("unchecked")
     public static <T> T apply(T object, PatchData patch) {
@@ -41,5 +43,4 @@ public class Patch {
         }
         return merged;
     }
-
 }

@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.consumers.supervisor.workload.weighted;
 
 import org.agrona.ExpandableDirectByteBuffer;
 import org.agrona.MutableDirectBuffer;
+
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionId;
 import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionIds;
@@ -24,20 +25,22 @@ class SubscriptionProfilesEncoder {
     }
 
     byte[] encode(SubscriptionProfiles profiles) {
-        Map<SubscriptionId, SubscriptionProfile> subscriptionProfiles = mapToSubscriptionIds(profiles);
+        Map<SubscriptionId, SubscriptionProfile> subscriptionProfiles =
+                mapToSubscriptionIds(profiles);
 
         MessageHeaderEncoder headerEncoder = new MessageHeaderEncoder();
-        ProfilesEncoder body = new ProfilesEncoder()
-                .wrapAndApplyHeader(buffer, 0, headerEncoder);
+        ProfilesEncoder body = new ProfilesEncoder().wrapAndApplyHeader(buffer, 0, headerEncoder);
 
-        ProfilesEncoder.SubscriptionsEncoder subscriptionsEncoder = body
-                .updateTimestamp(toMillis(profiles.getUpdateTimestamp()))
-                .subscriptionsCount(subscriptionProfiles.size());
+        ProfilesEncoder.SubscriptionsEncoder subscriptionsEncoder =
+                body.updateTimestamp(toMillis(profiles.getUpdateTimestamp()))
+                        .subscriptionsCount(subscriptionProfiles.size());
 
-        for (Map.Entry<SubscriptionId, SubscriptionProfile> entry : subscriptionProfiles.entrySet()) {
+        for (Map.Entry<SubscriptionId, SubscriptionProfile> entry :
+                subscriptionProfiles.entrySet()) {
             SubscriptionId subscriptionId = entry.getKey();
             SubscriptionProfile profile = entry.getValue();
-            subscriptionsEncoder.next()
+            subscriptionsEncoder
+                    .next()
                     .id(subscriptionId.getValue())
                     .operationsPerSecond(profile.getWeight().getOperationsPerSecond())
                     .lastRebalanceTimestamp(toMillis(profile.getLastRebalanceTimestamp()));
@@ -50,11 +53,14 @@ class SubscriptionProfilesEncoder {
         return dst;
     }
 
-    private Map<SubscriptionId, SubscriptionProfile> mapToSubscriptionIds(SubscriptionProfiles profiles) {
+    private Map<SubscriptionId, SubscriptionProfile> mapToSubscriptionIds(
+            SubscriptionProfiles profiles) {
         Map<SubscriptionId, SubscriptionProfile> subscriptionProfiles = new HashMap<>();
         for (SubscriptionName subscriptionName : profiles.getSubscriptions()) {
-            Optional<SubscriptionId> subscriptionId = subscriptionIds.getSubscriptionId(subscriptionName);
-            subscriptionId.ifPresent(id -> subscriptionProfiles.put(id, profiles.getProfile(subscriptionName)));
+            Optional<SubscriptionId> subscriptionId =
+                    subscriptionIds.getSubscriptionId(subscriptionName);
+            subscriptionId.ifPresent(
+                    id -> subscriptionProfiles.put(id, profiles.getProfile(subscriptionName)));
         }
         return subscriptionProfiles;
     }

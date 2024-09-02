@@ -26,8 +26,7 @@ public class SubscriptionNameWithMetrics {
             @JsonProperty("timeouts") MetricDecimalValue timeouts,
             @JsonProperty("lag") MetricLongValue lag,
             @JsonProperty("rate") MetricDecimalValue rate,
-            @JsonProperty("throughput") MetricDecimalValue throughput
-    ) {
+            @JsonProperty("throughput") MetricDecimalValue throughput) {
         this.topicName = topicName;
         this.name = name;
         this.delivered = delivered;
@@ -39,10 +38,18 @@ public class SubscriptionNameWithMetrics {
         this.throughput = throughput;
     }
 
-    public static SubscriptionNameWithMetrics from(SubscriptionMetrics metrics, String name, String topicQualifiedName) {
-        return new SubscriptionNameWithMetrics(topicQualifiedName, name, metrics.getDelivered(),
-                metrics.getDiscarded(), metrics.getVolume(), metrics.getTimeouts(), metrics.getLag(),
-                metrics.getRate(), metrics.getThroughput());
+    public static SubscriptionNameWithMetrics from(
+            SubscriptionMetrics metrics, String name, String topicQualifiedName) {
+        return new SubscriptionNameWithMetrics(
+                topicQualifiedName,
+                name,
+                metrics.getDelivered(),
+                metrics.getDiscarded(),
+                metrics.getVolume(),
+                metrics.getTimeouts(),
+                metrics.getLag(),
+                metrics.getRate(),
+                metrics.getThroughput());
     }
 
     public String getTopicName() {
@@ -105,7 +112,15 @@ public class SubscriptionNameWithMetrics {
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.topicName, this.name, this.delivered, this.discarded,
-                this.timeouts, this.lag, this.rate, this.throughput, this.volume);
+        return Objects.hash(
+                this.topicName,
+                this.name,
+                this.delivered,
+                this.discarded,
+                this.timeouts,
+                this.lag,
+                this.rate,
+                this.throughput,
+                this.volume);
     }
 }

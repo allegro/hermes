@@ -8,9 +8,8 @@ public class PathContext {
     private final Optional<String> topic;
     private final Optional<String> subscription;
 
-    private PathContext(Optional<String> group,
-                        Optional<String> topic,
-                        Optional<String> subscription)  {
+    private PathContext(
+            Optional<String> group, Optional<String> topic, Optional<String> subscription) {
         this.group = group;
         this.topic = topic;
         this.subscription = subscription;
@@ -27,7 +26,6 @@ public class PathContext {
     public Optional<String> getSubscription() {
         return subscription;
     }
-
 
     public static Builder pathContext() {
         return new Builder();

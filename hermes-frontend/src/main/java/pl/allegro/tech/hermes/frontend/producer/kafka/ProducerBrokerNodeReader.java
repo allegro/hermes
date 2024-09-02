@@ -1,5 +1,7 @@
 package pl.allegro.tech.hermes.frontend.producer.kafka;
 
+import static java.util.Collections.singletonList;
+
 import org.apache.kafka.clients.Metadata;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
@@ -9,8 +11,6 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.util.List;
-
-import static java.util.Collections.singletonList;
 
 public class ProducerBrokerNodeReader {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProducerBrokerNodeReader.class);

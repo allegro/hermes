@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.validation.constraints.Min;
 
 import java.util.EnumSet;
@@ -13,15 +14,16 @@ public class RetentionTime {
     private static final TimeUnit DEFAULT_UNIT = TimeUnit.DAYS;
 
     public static RetentionTime MAX = new RetentionTime(7, TimeUnit.DAYS);
-    public static Set<TimeUnit> allowedUnits = EnumSet.of(TimeUnit.SECONDS, TimeUnit.MINUTES, TimeUnit.HOURS, TimeUnit.DAYS);
-
+    public static Set<TimeUnit> allowedUnits =
+            EnumSet.of(TimeUnit.SECONDS, TimeUnit.MINUTES, TimeUnit.HOURS, TimeUnit.DAYS);
 
     @Min(0)
     private final int duration;
 
     private final TimeUnit retentionUnit;
 
-    public RetentionTime(@JsonProperty("duration") int duration, @JsonProperty("retentionUnit") TimeUnit unit) {
+    public RetentionTime(
+            @JsonProperty("duration") int duration, @JsonProperty("retentionUnit") TimeUnit unit) {
         this.duration = duration;
         this.retentionUnit = unit == null ? DEFAULT_UNIT : unit;
     }
@@ -57,6 +59,7 @@ public class RetentionTime {
             return false;
         }
         final RetentionTime other = (RetentionTime) obj;
-        return Objects.equals(this.duration, other.duration) && Objects.equals(this.retentionUnit, other.retentionUnit);
+        return Objects.equals(this.duration, other.duration)
+                && Objects.equals(this.retentionUnit, other.retentionUnit);
     }
 }

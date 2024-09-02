@@ -13,10 +13,10 @@ public class AvroUserSchemaLoader {
 
     public static Schema load(String schemaResourceName) {
         try {
-            return new Schema.Parser().parse(AvroUserSchemaLoader.class.getResourceAsStream(schemaResourceName));
+            return new Schema.Parser()
+                    .parse(AvroUserSchemaLoader.class.getResourceAsStream(schemaResourceName));
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
     }
-
 }

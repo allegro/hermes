@@ -20,7 +20,8 @@ class ExponentiallyWeightedMovingAverage {
             currentAverage = sample;
         } else {
             // This calculation is done in the same way as the Linux load average is calculated.
-            // See: https://www.helpsystems.com/resources/guides/unix-load-average-part-1-how-it-works
+            // See:
+            // https://www.helpsystems.com/resources/guides/unix-load-average-part-1-how-it-works
             Duration elapsed = Duration.between(previousUpdateTimestamp, now);
             long elapsedMillis = Math.max(TimeUnit.MILLISECONDS.convert(elapsed), 0);
             double alpha = 1.0 - Math.exp(-1.0 * ((double) elapsedMillis / windowSize.toMillis()));

@@ -17,7 +17,8 @@ public class OAuthProperties {
         return missingSubscriptionHandlersCreationDelay;
     }
 
-    public void setMissingSubscriptionHandlersCreationDelay(Duration missingSubscriptionHandlersCreationDelay) {
+    public void setMissingSubscriptionHandlersCreationDelay(
+            Duration missingSubscriptionHandlersCreationDelay) {
         this.missingSubscriptionHandlersCreationDelay = missingSubscriptionHandlersCreationDelay;
     }
 
@@ -33,7 +34,9 @@ public class OAuthProperties {
         return providersTokenRequestRateLimiterRateReductionFactor;
     }
 
-    public void setProvidersTokenRequestRateLimiterRateReductionFactor(double providersTokenRequestRateLimiterRateReductionFactor) {
-        this.providersTokenRequestRateLimiterRateReductionFactor = providersTokenRequestRateLimiterRateReductionFactor;
+    public void setProvidersTokenRequestRateLimiterRateReductionFactor(
+            double providersTokenRequestRateLimiterRateReductionFactor) {
+        this.providersTokenRequestRateLimiterRateReductionFactor =
+                providersTokenRequestRateLimiterRateReductionFactor;
     }
 }

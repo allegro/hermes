@@ -5,7 +5,6 @@ import java.util.List;
 
 public class DiscardedSendingTracker implements SendingTracker {
 
-
     private final List<LogRepository> repositories;
     private final Clock clock;
 
@@ -15,27 +14,19 @@ public class DiscardedSendingTracker implements SendingTracker {
     }
 
     @Override
-    public void logSent(MessageMetadata message, String hostname) {
-
-    }
+    public void logSent(MessageMetadata message, String hostname) {}
 
     @Override
-    public void logFailed(MessageMetadata message, String reason, String hostname) {
-    }
+    public void logFailed(MessageMetadata message, String reason, String hostname) {}
 
     @Override
     public void logDiscarded(MessageMetadata message, String reason) {
-        repositories.forEach(r ->
-                r.logDiscarded(message, clock.millis(), reason));
+        repositories.forEach(r -> r.logDiscarded(message, clock.millis(), reason));
     }
 
     @Override
-    public void logInflight(MessageMetadata message) {
-
-    }
+    public void logInflight(MessageMetadata message) {}
 
     @Override
-    public void logFiltered(MessageMetadata messageMetadata, String reason) {
-
-    }
+    public void logFiltered(MessageMetadata messageMetadata, String reason) {}
 }

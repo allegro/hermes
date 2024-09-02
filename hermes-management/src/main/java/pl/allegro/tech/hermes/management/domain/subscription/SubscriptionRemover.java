@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.management.domain.subscription;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
@@ -22,38 +23,49 @@ public class SubscriptionRemover {
     private final SubscriptionOwnerCache subscriptionOwnerCache;
     private final SubscriptionRepository subscriptionRepository;
 
-
-    public SubscriptionRemover(Auditor auditor,
-                               MultiDatacenterRepositoryCommandExecutor multiDcExecutor,
-                               SubscriptionOwnerCache subscriptionOwnerCache,
-                               SubscriptionRepository subscriptionRepository) {
+    public SubscriptionRemover(
+            Auditor auditor,
+            MultiDatacenterRepositoryCommandExecutor multiDcExecutor,
+            SubscriptionOwnerCache subscriptionOwnerCache,
+            SubscriptionRepository subscriptionRepository) {
         this.auditor = auditor;
         this.multiDcExecutor = multiDcExecutor;
         this.subscriptionOwnerCache = subscriptionOwnerCache;
         this.subscriptionRepository = subscriptionRepository;
     }
 
-    public void removeSubscription(TopicName topicName, String subscriptionName, RequestUser removedBy) {
-        auditor.beforeObjectRemoval(removedBy.getUsername(), Subscription.class.getSimpleName(), subscriptionName);
-        Subscription subscription = subscriptionRepository.getSubscriptionDetails(topicName, subscriptionName);
-        multiDcExecutor.executeByUser(new RemoveSubscriptionRepositoryCommand(topicName, subscriptionName), removedBy);
+    public void removeSubscription(
+            TopicName topicName, String subscriptionName, RequestUser removedBy) {
+        auditor.beforeObjectRemoval(
+                removedBy.getUsername(), Subscription.class.getSimpleName(), subscriptionName);
+        Subscription subscription =
+                subscriptionRepository.getSubscriptionDetails(topicName, subscriptionName);
+        multiDcExecutor.executeByUser(
+                new RemoveSubscriptionRepositoryCommand(topicName, subscriptionName), removedBy);
         auditor.objectRemoved(removedBy.getUsername(), subscription);
         subscriptionOwnerCache.onRemovedSubscription(subscriptionName, topicName);
     }
 
     public void removeSubscriptionRelatedToTopic(Topic topic, RequestUser removedBy) {
-        List<Subscription> subscriptions = subscriptionRepository.listSubscriptions(topic.getName());
+        List<Subscription> subscriptions =
+                subscriptionRepository.listSubscriptions(topic.getName());
         ensureSubscriptionsHaveAutoRemove(subscriptions, topic.getName());
-        logger.info("Removing subscriptions of topic: {}, subscriptions: {}", topic.getName(), subscriptions);
+        logger.info(
+                "Removing subscriptions of topic: {}, subscriptions: {}",
+                topic.getName(),
+                subscriptions);
         long start = System.currentTimeMillis();
         subscriptions.forEach(sub -> removeSubscription(topic.getName(), sub.getName(), removedBy));
-        logger.info("Removed subscriptions of topic: {} in {} ms", topic.getName(), System.currentTimeMillis() - start);
+        logger.info(
+                "Removed subscriptions of topic: {} in {} ms",
+                topic.getName(),
+                System.currentTimeMillis() - start);
     }
 
-
-    private void ensureSubscriptionsHaveAutoRemove(List<Subscription> subscriptions, TopicName topicName) {
-        boolean anySubscriptionWithoutAutoRemove = subscriptions.stream()
-                .anyMatch(sub -> !sub.isAutoDeleteWithTopicEnabled());
+    private void ensureSubscriptionsHaveAutoRemove(
+            List<Subscription> subscriptions, TopicName topicName) {
+        boolean anySubscriptionWithoutAutoRemove =
+                subscriptions.stream().anyMatch(sub -> !sub.isAutoDeleteWithTopicEnabled());
 
         if (anySubscriptionWithoutAutoRemove) {
             logger.info("Cannot remove topic due to connected subscriptions");

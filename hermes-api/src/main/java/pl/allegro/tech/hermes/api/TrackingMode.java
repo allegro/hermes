@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.api;
 import java.util.Optional;
 
 public enum TrackingMode {
-
     TRACK_ALL("trackingAll"),
     TRACK_DISCARDED_ONLY("discardedOnly"),
     TRACKING_OFF("trackingOff");

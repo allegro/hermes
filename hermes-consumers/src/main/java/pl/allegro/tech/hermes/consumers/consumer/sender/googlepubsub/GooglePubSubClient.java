@@ -5,8 +5,10 @@ import com.google.api.core.ApiFutures;
 import com.google.cloud.pubsub.v1.Publisher;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.pubsub.v1.PubsubMessage;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 
 import java.io.IOException;
@@ -27,7 +29,10 @@ class GooglePubSubClient {
     void publish(PubsubMessage pubsubMessage, CompletableFuture<MessageSendingResult> resultFuture)
             throws IOException, ExecutionException, InterruptedException {
         ApiFuture<String> future = publisher.publish(pubsubMessage);
-        ApiFutures.addCallback(future, new GooglePubSubMessageSentCallback(resultFuture), MoreExecutors.directExecutor());
+        ApiFutures.addCallback(
+                future,
+                new GooglePubSubMessageSentCallback(resultFuture),
+                MoreExecutors.directExecutor());
     }
 
     void shutdown() {

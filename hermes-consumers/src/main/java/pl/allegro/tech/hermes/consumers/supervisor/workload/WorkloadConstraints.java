@@ -1,13 +1,13 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload;
 
+import static java.util.Collections.emptyMap;
+
 import pl.allegro.tech.hermes.api.Constraints;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static java.util.Collections.emptyMap;
 
 public class WorkloadConstraints {
 
@@ -17,15 +17,17 @@ public class WorkloadConstraints {
     private final Map<SubscriptionName, Constraints> subscriptionConstraints;
     private final Map<TopicName, Constraints> topicConstraints;
 
-    private WorkloadConstraints(int activeConsumerCount,
-                               int consumersPerSubscription,
-                               int maxSubscriptionsPerConsumer,
-                               Map<SubscriptionName, Constraints> subscriptionConstraints,
-                               Map<TopicName, Constraints> topicConstraints) {
+    private WorkloadConstraints(
+            int activeConsumerCount,
+            int consumersPerSubscription,
+            int maxSubscriptionsPerConsumer,
+            Map<SubscriptionName, Constraints> subscriptionConstraints,
+            Map<TopicName, Constraints> topicConstraints) {
         this.activeConsumerCount = activeConsumerCount;
         this.consumersPerSubscription = consumersPerSubscription;
         this.maxSubscriptionsPerConsumer = maxSubscriptionsPerConsumer;
-        this.subscriptionConstraints = subscriptionConstraints != null ? subscriptionConstraints : emptyMap();
+        this.subscriptionConstraints =
+                subscriptionConstraints != null ? subscriptionConstraints : emptyMap();
         this.topicConstraints = topicConstraints != null ? topicConstraints : emptyMap();
     }
 
@@ -70,7 +72,8 @@ public class WorkloadConstraints {
             return this;
         }
 
-        public Builder withSubscriptionConstraints(Map<SubscriptionName, Constraints> subscriptionConstraints) {
+        public Builder withSubscriptionConstraints(
+                Map<SubscriptionName, Constraints> subscriptionConstraints) {
             this.subscriptionConstraints = subscriptionConstraints;
             return this;
         }
@@ -86,8 +89,7 @@ public class WorkloadConstraints {
                     consumersPerSubscription,
                     maxSubscriptionsPerConsumer,
                     subscriptionConstraints,
-                    topicConstraints
-            );
+                    topicConstraints);
         }
     }
 }

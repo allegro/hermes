@@ -1,12 +1,13 @@
 package pl.allegro.tech.hermes.common.metric.counter.zookeeper;
 
+import static pl.allegro.tech.hermes.common.metric.SubscriptionMetrics.SubscriptionMetricsNames;
+import static pl.allegro.tech.hermes.common.metric.TopicMetrics.TopicMetricsNames;
+
 import io.micrometer.core.instrument.Counter;
+
 import pl.allegro.tech.hermes.api.TopicName;
 
 import java.util.Optional;
-
-import static pl.allegro.tech.hermes.common.metric.SubscriptionMetrics.SubscriptionMetricsNames;
-import static pl.allegro.tech.hermes.common.metric.TopicMetrics.TopicMetricsNames;
 
 class CounterMatcher {
 
@@ -28,15 +29,19 @@ class CounterMatcher {
 
     private void parseCounter(Counter counter) {
         if (isTopicPublished() || isTopicThroughput()) {
-            topicName = new TopicName(counter.getId().getTag(GROUP_TAG_NAME), counter.getId().getTag(TOPIC_TAG_NAME));
+            topicName =
+                    new TopicName(
+                            counter.getId().getTag(GROUP_TAG_NAME),
+                            counter.getId().getTag(TOPIC_TAG_NAME));
             subscription = Optional.empty();
-        } else if (
-                isSubscriptionDelivered()
-                        || isSubscriptionThroughput()
-                        || isSubscriptionDiscarded()
-                        || isSubscriptionFiltered()
-        ) {
-            topicName = new TopicName(counter.getId().getTag(GROUP_TAG_NAME), counter.getId().getTag(TOPIC_TAG_NAME));
+        } else if (isSubscriptionDelivered()
+                || isSubscriptionThroughput()
+                || isSubscriptionDiscarded()
+                || isSubscriptionFiltered()) {
+            topicName =
+                    new TopicName(
+                            counter.getId().getTag(GROUP_TAG_NAME),
+                            counter.getId().getTag(TOPIC_TAG_NAME));
             subscription = Optional.of(counter.getId().getTag(SUBSCRIPTION_TAG_NAME));
         }
         value = (long) counter.count();
@@ -51,19 +56,23 @@ class CounterMatcher {
     }
 
     public boolean isSubscriptionThroughput() {
-        return isSubscriptionCounter() && nameEquals(SubscriptionMetricsNames.SUBSCRIPTION_THROUGHPUT);
+        return isSubscriptionCounter()
+                && nameEquals(SubscriptionMetricsNames.SUBSCRIPTION_THROUGHPUT);
     }
 
     public boolean isSubscriptionDelivered() {
-        return isSubscriptionCounter() && nameEquals(SubscriptionMetricsNames.SUBSCRIPTION_DELIVERED);
+        return isSubscriptionCounter()
+                && nameEquals(SubscriptionMetricsNames.SUBSCRIPTION_DELIVERED);
     }
 
     public boolean isSubscriptionDiscarded() {
-        return isSubscriptionCounter() && nameEquals(SubscriptionMetricsNames.SUBSCRIPTION_DISCARDED);
+        return isSubscriptionCounter()
+                && nameEquals(SubscriptionMetricsNames.SUBSCRIPTION_DISCARDED);
     }
 
     public boolean isSubscriptionFiltered() {
-        return isSubscriptionCounter() && nameEquals(SubscriptionMetricsNames.SUBSCRIPTION_FILTERED_OUT);
+        return isSubscriptionCounter()
+                && nameEquals(SubscriptionMetricsNames.SUBSCRIPTION_FILTERED_OUT);
     }
 
     public TopicName getTopicName() {

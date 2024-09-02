@@ -1,5 +1,7 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload.weighted;
 
+import static java.util.stream.Collectors.toMap;
+
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.BalancingListener;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkDistributionChanges;
@@ -14,8 +16,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
-import static java.util.stream.Collectors.toMap;
-
 public class WeightedWorkBalancingListener implements BalancingListener {
 
     private final ConsumerNodeLoadRegistry consumerNodeLoadRegistry;
@@ -25,26 +25,30 @@ public class WeightedWorkBalancingListener implements BalancingListener {
     private final SubscriptionProfilesCalculator subscriptionProfilesCalculator;
     private final Clock clock;
 
-    public WeightedWorkBalancingListener(ConsumerNodeLoadRegistry consumerNodeLoadRegistry,
-                                         SubscriptionProfileRegistry subscriptionProfileRegistry,
-                                         CurrentLoadProvider currentLoadProvider,
-                                         WeightedWorkloadMetricsReporter weightedWorkloadMetrics,
-                                         Clock clock,
-                                         Duration weightWindowSize) {
+    public WeightedWorkBalancingListener(
+            ConsumerNodeLoadRegistry consumerNodeLoadRegistry,
+            SubscriptionProfileRegistry subscriptionProfileRegistry,
+            CurrentLoadProvider currentLoadProvider,
+            WeightedWorkloadMetricsReporter weightedWorkloadMetrics,
+            Clock clock,
+            Duration weightWindowSize) {
         this.consumerNodeLoadRegistry = consumerNodeLoadRegistry;
         this.subscriptionProfileRegistry = subscriptionProfileRegistry;
         this.currentLoadProvider = currentLoadProvider;
         this.weightedWorkloadMetrics = weightedWorkloadMetrics;
-        this.subscriptionProfilesCalculator = new SubscriptionProfilesCalculator(clock, weightWindowSize);
+        this.subscriptionProfilesCalculator =
+                new SubscriptionProfilesCalculator(clock, weightWindowSize);
         this.clock = clock;
     }
 
     @Override
     public void onBeforeBalancing(List<String> activeConsumers) {
-        weightedWorkloadMetrics.unregisterMetricsForConsumersOtherThan(new HashSet<>(activeConsumers));
+        weightedWorkloadMetrics.unregisterMetricsForConsumersOtherThan(
+                new HashSet<>(activeConsumers));
         Map<String, ConsumerNodeLoad> newConsumerLoads = fetchConsumerNodeLoads(activeConsumers);
         currentLoadProvider.updateConsumerNodeLoads(newConsumerLoads);
-        SubscriptionProfiles currentProfiles = recalculateSubscriptionProfiles(newConsumerLoads.values());
+        SubscriptionProfiles currentProfiles =
+                recalculateSubscriptionProfiles(newConsumerLoads.values());
         currentLoadProvider.updateProfiles(currentProfiles);
     }
 
@@ -53,7 +57,8 @@ public class WeightedWorkBalancingListener implements BalancingListener {
                 .collect(toMap(Function.identity(), consumerNodeLoadRegistry::get));
     }
 
-    private SubscriptionProfiles recalculateSubscriptionProfiles(Collection<ConsumerNodeLoad> consumerNodeLoads) {
+    private SubscriptionProfiles recalculateSubscriptionProfiles(
+            Collection<ConsumerNodeLoad> consumerNodeLoads) {
         SubscriptionProfiles previousProfiles = subscriptionProfileRegistry.fetch();
         return subscriptionProfilesCalculator.calculate(consumerNodeLoads, previousProfiles);
     }
@@ -63,16 +68,22 @@ public class WeightedWorkBalancingListener implements BalancingListener {
         applyRebalanceTimestampToSubscriptionProfiles(changes.getRebalancedSubscriptions());
     }
 
-    private void applyRebalanceTimestampToSubscriptionProfiles(Set<SubscriptionName> rebalancedSubscriptions) {
+    private void applyRebalanceTimestampToSubscriptionProfiles(
+            Set<SubscriptionName> rebalancedSubscriptions) {
         SubscriptionProfiles currentProfiles = currentLoadProvider.getProfiles();
-        Map<SubscriptionName, SubscriptionProfile> profilePerSubscription = new HashMap<>(currentProfiles.getProfiles());
+        Map<SubscriptionName, SubscriptionProfile> profilePerSubscription =
+                new HashMap<>(currentProfiles.getProfiles());
         for (SubscriptionName subscriptionName : rebalancedSubscriptions) {
             SubscriptionProfile profile = profilePerSubscription.get(subscriptionName);
             if (profile != null) {
-                profilePerSubscription.put(subscriptionName, new SubscriptionProfile(clock.instant(), profile.getWeight()));
+                profilePerSubscription.put(
+                        subscriptionName,
+                        new SubscriptionProfile(clock.instant(), profile.getWeight()));
             }
         }
-        SubscriptionProfiles finalProfiles = new SubscriptionProfiles(profilePerSubscription, currentProfiles.getUpdateTimestamp());
+        SubscriptionProfiles finalProfiles =
+                new SubscriptionProfiles(
+                        profilePerSubscription, currentProfiles.getUpdateTimestamp());
         subscriptionProfileRegistry.persist(finalProfiles);
         currentLoadProvider.updateProfiles(finalProfiles);
     }

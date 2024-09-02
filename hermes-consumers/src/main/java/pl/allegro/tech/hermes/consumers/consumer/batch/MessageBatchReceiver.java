@@ -1,8 +1,14 @@
 package pl.allegro.tech.hermes.consumers.consumer.batch;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import static pl.allegro.tech.hermes.consumers.consumer.Message.message;
+import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
+
 import org.apache.avro.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
@@ -22,11 +28,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
-import javax.annotation.concurrent.NotThreadSafe;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static pl.allegro.tech.hermes.consumers.consumer.Message.message;
-import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
+import javax.annotation.concurrent.NotThreadSafe;
 
 @NotThreadSafe
 public class MessageBatchReceiver {
@@ -43,13 +46,14 @@ public class MessageBatchReceiver {
     private final SubscriptionLoadRecorder loadRecorder;
     private boolean receiving = true;
 
-    public MessageBatchReceiver(MessageReceiver receiver,
-                                MessageBatchFactory batchFactory,
-                                MessageConverterResolver messageConverterResolver,
-                                CompositeMessageContentWrapper compositeMessageContentWrapper,
-                                Topic topic,
-                                Trackers trackers,
-                                SubscriptionLoadRecorder loadRecorder) {
+    public MessageBatchReceiver(
+            MessageReceiver receiver,
+            MessageBatchFactory batchFactory,
+            MessageConverterResolver messageConverterResolver,
+            CompositeMessageContentWrapper compositeMessageContentWrapper,
+            Topic topic,
+            Trackers trackers,
+            SubscriptionLoadRecorder loadRecorder) {
         this.receiver = receiver;
         this.batchFactory = batchFactory;
         this.messageConverterResolver = messageConverterResolver;
@@ -62,7 +66,9 @@ public class MessageBatchReceiver {
 
     public MessageBatchingResult next(Subscription subscription, Runnable signalsInterrupt) {
         if (logger.isDebugEnabled()) {
-            logger.debug("Trying to allocate memory for new batch [subscription={}]", subscription.getQualifiedName());
+            logger.debug(
+                    "Trying to allocate memory for new batch [subscription={}]",
+                    subscription.getQualifiedName());
         }
 
         MessageBatch batch = batchFactory.createBatch(subscription);
@@ -71,34 +77,44 @@ public class MessageBatchReceiver {
         }
         List<MessageMetadata> discarded = new ArrayList<>();
 
-        while (isReceiving() && !batch.isReadyForDelivery() && !Thread.currentThread().isInterrupted()) {
+        while (isReceiving()
+                && !batch.isReadyForDelivery()
+                && !Thread.currentThread().isInterrupted()) {
             loadRecorder.recordSingleOperation();
             signalsInterrupt.run();
-            Optional<Message> maybeMessage = inflight.isEmpty()
-                    ? readAndTransform(subscription, batch.getId())
-                    : Optional.ofNullable(inflight.poll());
+            Optional<Message> maybeMessage =
+                    inflight.isEmpty()
+                            ? readAndTransform(subscription, batch.getId())
+                            : Optional.ofNullable(inflight.poll());
 
             if (maybeMessage.isPresent()) {
                 Message message = maybeMessage.get();
 
                 if (batch.canFit(message.getData())) {
-                    batch.append(message.getData(), toMessageMetadata(message, subscription, batch.getId()));
+                    batch.append(
+                            message.getData(),
+                            toMessageMetadata(message, subscription, batch.getId()));
                 } else if (batch.isBiggerThanTotalCapacity(message.getData())) {
-                    logger.error("Message size exceeds buffer total capacity [size={}, capacity={}, subscription={}]",
-                            message.getData().length, batch.getCapacity(), subscription.getQualifiedName());
+                    logger.error(
+                            "Message size exceeds buffer total capacity [size={}, capacity={}, subscription={}]",
+                            message.getData().length,
+                            batch.getCapacity(),
+                            subscription.getQualifiedName());
                     discarded.add(toMessageMetadata(message, subscription));
                 } else {
                     logger.debug(
                             "Message too large for current batch [message_size={}, subscription={}]",
-                            message.getData().length, subscription.getQualifiedName()
-                    );
+                            message.getData().length,
+                            subscription.getQualifiedName());
                     checkArgument(inflight.offer(message));
                     break;
                 }
             }
         }
         if (logger.isDebugEnabled()) {
-            logger.debug("Batch is ready for delivery [subscription={}]", subscription.getQualifiedName());
+            logger.debug(
+                    "Batch is ready for delivery [subscription={}]",
+                    subscription.getQualifiedName());
         }
         return new MessageBatchingResult(batch.close(), discarded);
     }
@@ -110,10 +126,18 @@ public class MessageBatchReceiver {
             Message message = maybeMessage.get();
 
             if (!message.isFiltered()) {
-                Message transformed = messageConverterResolver.converterFor(message, subscription).convert(message, topic);
-                transformed = message().fromMessage(transformed).withData(wrap(subscription, transformed)).build();
+                Message transformed =
+                        messageConverterResolver
+                                .converterFor(message, subscription)
+                                .convert(message, topic);
+                transformed =
+                        message()
+                                .fromMessage(transformed)
+                                .withData(wrap(subscription, transformed))
+                                .build();
 
-                trackers.get(subscription).logInflight(toMessageMetadata(transformed, subscription, batchId));
+                trackers.get(subscription)
+                        .logInflight(toMessageMetadata(transformed, subscription, batchId));
 
                 return Optional.of(transformed);
             }
@@ -124,10 +148,18 @@ public class MessageBatchReceiver {
     private byte[] wrap(Subscription subscription, Message next) {
         switch (subscription.getContentType()) {
             case AVRO:
-                return compositeMessageContentWrapper.wrapAvro(next.getData(), next.getId(), next.getPublishingTimestamp(), topic,
-                        next.<Schema>getSchema().get(), next.getExternalMetadata());
+                return compositeMessageContentWrapper.wrapAvro(
+                        next.getData(),
+                        next.getId(),
+                        next.getPublishingTimestamp(),
+                        topic,
+                        next.<Schema>getSchema().get(),
+                        next.getExternalMetadata());
             case JSON:
-                return compositeMessageContentWrapper.wrapJson(next.getData(), next.getId(), next.getPublishingTimestamp(),
+                return compositeMessageContentWrapper.wrapJson(
+                        next.getData(),
+                        next.getId(),
+                        next.getPublishingTimestamp(),
                         next.getExternalMetadata());
             default:
                 throw new UnsupportedContentTypeException(subscription);

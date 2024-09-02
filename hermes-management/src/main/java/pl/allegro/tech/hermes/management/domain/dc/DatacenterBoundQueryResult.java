@@ -16,5 +16,4 @@ public class DatacenterBoundQueryResult<T> {
     public T getResult() {
         return result;
     }
-
 }

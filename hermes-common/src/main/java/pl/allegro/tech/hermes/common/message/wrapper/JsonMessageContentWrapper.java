@@ -1,7 +1,14 @@
 package pl.allegro.tech.hermes.common.message.wrapper;
 
+import static com.google.common.base.Charsets.UTF_8;
+import static com.google.common.primitives.Bytes.indexOf;
+
+import static java.lang.String.format;
+import static java.util.Arrays.copyOfRange;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,11 +16,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
-
-import static com.google.common.base.Charsets.UTF_8;
-import static com.google.common.primitives.Bytes.indexOf;
-import static java.lang.String.format;
-import static java.util.Arrays.copyOfRange;
 
 public class JsonMessageContentWrapper {
     private static final Logger LOGGER = LoggerFactory.getLogger(JsonMessageContentWrapper.class);
@@ -27,15 +29,19 @@ public class JsonMessageContentWrapper {
     private final byte[] contentRootField;
     private final byte[] metadataRootField;
 
-    public JsonMessageContentWrapper(String contentRootName, String metadataRootName, ObjectMapper mapper) {
+    public JsonMessageContentWrapper(
+            String contentRootName, String metadataRootName, ObjectMapper mapper) {
         this.contentRootField = formatNodeKey(contentRootName);
         this.metadataRootField = formatNodeKey(metadataRootName);
         this.mapper = mapper;
     }
 
-    byte[] wrapContent(byte[] json, String id, long timestamp, Map<String, String> externalMetadata) {
+    byte[] wrapContent(
+            byte[] json, String id, long timestamp, Map<String, String> externalMetadata) {
         try {
-            return wrapContent(mapper.writeValueAsBytes(new MessageMetadata(timestamp, id, externalMetadata)), json);
+            return wrapContent(
+                    mapper.writeValueAsBytes(new MessageMetadata(timestamp, id, externalMetadata)),
+                    json);
         } catch (IOException e) {
             throw new WrappingException("Could not wrap json message", e);
         }
@@ -61,7 +67,8 @@ public class JsonMessageContentWrapper {
         } else {
             UUID id = UUID.randomUUID();
             LOGGER.warn("Unwrapped message read by consumer (size={}, id={}).", json.length, id);
-            return new UnwrappedMessageContent(new MessageMetadata(1L, id.toString(), ImmutableMap.of()), json);
+            return new UnwrappedMessageContent(
+                    new MessageMetadata(1L, id.toString(), ImmutableMap.of()), json);
         }
     }
 
@@ -73,18 +80,26 @@ public class JsonMessageContentWrapper {
         int rootIndex = indexOf(json, contentRootField);
         int metadataIndex = indexOf(json, metadataRootField);
         try {
-            return new UnwrappedMessageContent(unwrapMesssageMetadata(json, metadataIndex, rootIndex), unwrapContent(json, rootIndex));
+            return new UnwrappedMessageContent(
+                    unwrapMesssageMetadata(json, metadataIndex, rootIndex),
+                    unwrapContent(json, rootIndex));
         } catch (Exception exception) {
             throw new UnwrappingException("Could not unwrap json message", exception);
         }
     }
 
-    private MessageMetadata unwrapMesssageMetadata(byte[] json, int metadataIndexStart, int metadataIndexEnd) throws IOException {
-        return mapper.readValue(unwrapMetadataBytes(json, metadataIndexStart, metadataIndexEnd), MessageMetadata.class);
+    private MessageMetadata unwrapMesssageMetadata(
+            byte[] json, int metadataIndexStart, int metadataIndexEnd) throws IOException {
+        return mapper.readValue(
+                unwrapMetadataBytes(json, metadataIndexStart, metadataIndexEnd),
+                MessageMetadata.class);
     }
 
     private byte[] unwrapMetadataBytes(byte[] json, int metadataIndexStart, int metadataIndexEnd) {
-        return copyOfRange(json, metadataIndexStart + metadataRootField.length, metadataIndexEnd + BRACKET_LENGTH);
+        return copyOfRange(
+                json,
+                metadataIndexStart + metadataRootField.length,
+                metadataIndexEnd + BRACKET_LENGTH);
     }
 
     private byte[] formatNodeKey(String keyName) {
@@ -94,5 +109,4 @@ public class JsonMessageContentWrapper {
     private boolean isWrapped(byte[] json) {
         return indexOf(json, WRAPPED_MARKER) > 0;
     }
-
 }

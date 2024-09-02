@@ -3,12 +3,12 @@ package pl.allegro.tech.hermes.api;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
+
 import jakarta.validation.constraints.NotEmpty;
 
 public class TopicLabel {
 
-    @NotEmpty
-    private final String value;
+    @NotEmpty private final String value;
 
     @JsonCreator
     public TopicLabel(@JsonProperty("value") String value) {

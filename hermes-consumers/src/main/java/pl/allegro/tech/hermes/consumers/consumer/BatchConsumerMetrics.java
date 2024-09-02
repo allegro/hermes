@@ -7,7 +7,6 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.metrics.HermesCounter;
 import pl.allegro.tech.hermes.metrics.HermesHistogram;
 import pl.allegro.tech.hermes.metrics.HermesTimer;
-import pl.allegro.tech.hermes.tracker.consumers.MessageMetadata;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -72,10 +71,13 @@ class BatchConsumerMetrics {
     }
 
     private void markHttpStatusCode(int statusCode) {
-        httpStatusCodes.computeIfAbsent(
-                statusCode,
-                integer -> metrics.subscriptions().httpAnswerCounter(subscriptionName, statusCode)
-        ).increment();
+        httpStatusCodes
+                .computeIfAbsent(
+                        statusCode,
+                        integer ->
+                                metrics.subscriptions()
+                                        .httpAnswerCounter(subscriptionName, statusCode))
+                .increment();
     }
 
     void shutdown() {
@@ -84,7 +86,8 @@ class BatchConsumerMetrics {
 
     void initialize() {
         metrics.subscriptions()
-                .registerInflightGauge(subscriptionName, this, metrics -> metrics.inflightCount.doubleValue());
+                .registerInflightGauge(
+                        subscriptionName, this, metrics -> metrics.inflightCount.doubleValue());
     }
 
     void markDiscarded() {

@@ -12,26 +12,39 @@ public class JsonToAvroMigrationKafkaNamesMapper extends NamespaceKafkaNamesMapp
     }
 
     public KafkaTopics toKafkaTopics(Topic topic) {
-        KafkaTopic primary = mapToKafkaTopic.andThen(appendNamespace).andThen(appendContentTypeSuffix).apply(topic);
+        KafkaTopic primary =
+                mapToKafkaTopic
+                        .andThen(appendNamespace)
+                        .andThen(appendContentTypeSuffix)
+                        .apply(topic);
 
         if (topic.wasMigratedFromJsonType()) {
-            KafkaTopic secondary = mapToJsonKafkaTopic.andThen(appendNamespace).andThen(appendContentTypeSuffix).apply(topic);
+            KafkaTopic secondary =
+                    mapToJsonKafkaTopic
+                            .andThen(appendNamespace)
+                            .andThen(appendContentTypeSuffix)
+                            .apply(topic);
             return new KafkaTopics(primary, secondary);
         }
         return new KafkaTopics(primary);
     }
 
-    private final Function<Topic, KafkaTopic> mapToJsonKafkaTopic = it ->
-            new KafkaTopic(KafkaTopicName.valueOf(it.getQualifiedName()), ContentType.JSON);
+    private final Function<Topic, KafkaTopic> mapToJsonKafkaTopic =
+            it -> new KafkaTopic(KafkaTopicName.valueOf(it.getQualifiedName()), ContentType.JSON);
 
-    private final Function<KafkaTopic, KafkaTopic> appendContentTypeSuffix = kafkaTopic -> {
-        switch (kafkaTopic.contentType()) {
-            case JSON:
-                return kafkaTopic;
-            case AVRO:
-                return new KafkaTopic(KafkaTopicName.valueOf(kafkaTopic.name().asString() + "_avro"), kafkaTopic.contentType());
-            default:
-                throw new IllegalStateException(String.format("Unknown content type '%s'", kafkaTopic.contentType()));
-        }
-    };
+    private final Function<KafkaTopic, KafkaTopic> appendContentTypeSuffix =
+            kafkaTopic -> {
+                switch (kafkaTopic.contentType()) {
+                    case JSON:
+                        return kafkaTopic;
+                    case AVRO:
+                        return new KafkaTopic(
+                                KafkaTopicName.valueOf(kafkaTopic.name().asString() + "_avro"),
+                                kafkaTopic.contentType());
+                    default:
+                        throw new IllegalStateException(
+                                String.format(
+                                        "Unknown content type '%s'", kafkaTopic.contentType()));
+                }
+            };
 }

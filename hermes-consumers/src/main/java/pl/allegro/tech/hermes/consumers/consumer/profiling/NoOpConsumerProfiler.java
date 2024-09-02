@@ -3,32 +3,20 @@ package pl.allegro.tech.hermes.consumers.consumer.profiling;
 public class NoOpConsumerProfiler implements ConsumerProfiler {
 
     @Override
-    public void startMeasurements(String measurement) {
-
-    }
+    public void startMeasurements(String measurement) {}
 
     @Override
-    public void measure(String measurement) {
-
-    }
+    public void measure(String measurement) {}
 
     @Override
-    public void startPartialMeasurement(String measurement) {
-
-    }
+    public void startPartialMeasurement(String measurement) {}
 
     @Override
-    public void stopPartialMeasurement() {
-
-    }
+    public void stopPartialMeasurement() {}
 
     @Override
-    public void saveRetryDelay(long retryDelay) {
-
-    }
+    public void saveRetryDelay(long retryDelay) {}
 
     @Override
-    public void flushMeasurements(ConsumerRun consumerRun) {
-
-    }
+    public void flushMeasurements(ConsumerRun consumerRun) {}
 }

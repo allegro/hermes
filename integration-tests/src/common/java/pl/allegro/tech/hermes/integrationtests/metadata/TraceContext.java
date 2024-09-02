@@ -5,8 +5,12 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.UUID;
 
-public record TraceContext(String traceId, String spanId, String parentSpanId, String traceSampled,
-                           String traceReported) {
+public record TraceContext(
+        String traceId,
+        String spanId,
+        String parentSpanId,
+        String traceSampled,
+        String traceReported) {
 
     public Map<String, String> asMap() {
 

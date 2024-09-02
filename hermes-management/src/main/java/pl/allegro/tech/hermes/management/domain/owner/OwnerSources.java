@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.management.domain.owner;
 
 import com.google.common.collect.ImmutableList;
+
 import pl.allegro.tech.hermes.api.ErrorCode;
 import pl.allegro.tech.hermes.common.exception.HermesException;
 
@@ -22,15 +23,16 @@ public class OwnerSources implements Iterable<OwnerSource> {
             throw new IllegalArgumentException("At least one owner source must be configured");
         }
 
-        this.ownerSourcesByNames = ownerSources.stream().collect(
-                Collectors.toMap(
-                        OwnerSource::name,
-                        Function.identity(),
-                        (a, b) -> {
-                            throw new IllegalArgumentException("Duplicate owner source " + a.name());
-                        }
-                )
-        );
+        this.ownerSourcesByNames =
+                ownerSources.stream()
+                        .collect(
+                                Collectors.toMap(
+                                        OwnerSource::name,
+                                        Function.identity(),
+                                        (a, b) -> {
+                                            throw new IllegalArgumentException(
+                                                    "Duplicate owner source " + a.name());
+                                        }));
 
         this.ownerSources = ImmutableList.copyOf(ownerSources);
     }
@@ -41,7 +43,8 @@ public class OwnerSources implements Iterable<OwnerSource> {
 
     public OwnerSource.Autocompletion getAutocompletionFor(String name) {
         OwnerSource source = getByName(name).orElseThrow(() -> new OwnerSourceNotFound(name));
-        return source.autocompletion().orElseThrow(() -> new AutocompleteNotSupportedException(source));
+        return source.autocompletion()
+                .orElseThrow(() -> new AutocompleteNotSupportedException(source));
     }
 
     public Iterator<OwnerSource> iterator() {
@@ -58,6 +61,5 @@ public class OwnerSources implements Iterable<OwnerSource> {
         public ErrorCode getCode() {
             return ErrorCode.OWNER_SOURCE_DOESNT_SUPPORT_AUTOCOMPLETE;
         }
-
     }
 }

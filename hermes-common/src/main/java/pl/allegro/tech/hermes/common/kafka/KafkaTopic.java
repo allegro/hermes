@@ -1,11 +1,12 @@
 package pl.allegro.tech.hermes.common.kafka;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.google.common.base.MoreObjects;
+
 import pl.allegro.tech.hermes.api.ContentType;
 
 import java.util.Objects;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 public class KafkaTopic {
 
@@ -34,8 +35,7 @@ public class KafkaTopic {
             return false;
         }
         KafkaTopic that = (KafkaTopic) o;
-        return Objects.equals(name, that.name)
-                && Objects.equals(contentType, that.contentType);
+        return Objects.equals(name, that.name) && Objects.equals(contentType, that.contentType);
     }
 
     @Override

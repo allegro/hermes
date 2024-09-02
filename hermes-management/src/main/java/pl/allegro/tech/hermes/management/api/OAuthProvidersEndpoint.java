@@ -1,7 +1,11 @@
 package pl.allegro.tech.hermes.management.api;
 
+import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
+import static jakarta.ws.rs.core.Response.status;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
@@ -15,8 +19,10 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
 import pl.allegro.tech.hermes.api.OAuthProvider;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.management.api.auth.HermesSecurityAwareRequestUser;
@@ -24,9 +30,6 @@ import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.domain.oauth.OAuthProviderService;
 
 import java.util.List;
-
-import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
-import static jakarta.ws.rs.core.Response.status;
 
 @Component
 @Path("/oauth/providers")
@@ -60,9 +63,10 @@ public class OAuthProvidersEndpoint {
     @Produces(APPLICATION_JSON)
     @RolesAllowed(Roles.ADMIN)
     @ApiOperation(value = "Create OAuth provider", httpMethod = HttpMethod.POST)
-    public Response create(OAuthProvider oAuthProvider,
-                           @Context ContainerRequestContext requestContext) {
-        service.createOAuthProvider(oAuthProvider, new HermesSecurityAwareRequestUser(requestContext));
+    public Response create(
+            OAuthProvider oAuthProvider, @Context ContainerRequestContext requestContext) {
+        service.createOAuthProvider(
+                oAuthProvider, new HermesSecurityAwareRequestUser(requestContext));
         return status(Response.Status.CREATED).build();
     }
 
@@ -72,9 +76,12 @@ public class OAuthProvidersEndpoint {
     @RolesAllowed(Roles.ADMIN)
     @Path("/{oAuthProviderName}")
     @ApiOperation(value = "Update OAuth provider", httpMethod = HttpMethod.PUT)
-    public Response update(@PathParam("oAuthProviderName") String oAuthProviderName, PatchData patch,
-                           @Context ContainerRequestContext requestContext) {
-        service.updateOAuthProvider(oAuthProviderName, patch, new HermesSecurityAwareRequestUser(requestContext));
+    public Response update(
+            @PathParam("oAuthProviderName") String oAuthProviderName,
+            PatchData patch,
+            @Context ContainerRequestContext requestContext) {
+        service.updateOAuthProvider(
+                oAuthProviderName, patch, new HermesSecurityAwareRequestUser(requestContext));
         return status(Response.Status.OK).build();
     }
 
@@ -83,9 +90,11 @@ public class OAuthProvidersEndpoint {
     @RolesAllowed(Roles.ADMIN)
     @Path("/{oAuthProviderName}")
     @ApiOperation(value = "Remove OAuth provider", httpMethod = HttpMethod.DELETE)
-    public Response remove(@PathParam("oAuthProviderName") String oAuthProviderName,
-                           @Context ContainerRequestContext requestContext) {
-        service.removeOAuthProvider(oAuthProviderName, new HermesSecurityAwareRequestUser(requestContext));
+    public Response remove(
+            @PathParam("oAuthProviderName") String oAuthProviderName,
+            @Context ContainerRequestContext requestContext) {
+        service.removeOAuthProvider(
+                oAuthProviderName, new HermesSecurityAwareRequestUser(requestContext));
         return status(Response.Status.OK).build();
     }
 }

@@ -12,10 +12,10 @@ public class AndMatcher implements Matcher {
 
     @Override
     public boolean match(Object value) {
-        return matchers.stream().reduce(
-                true,
-                (match, matcher) -> match && matcher.match(value),
-                (first, second) -> first && second
-        );
+        return matchers.stream()
+                .reduce(
+                        true,
+                        (match, matcher) -> match && matcher.match(value),
+                        (first, second) -> first && second);
     }
 }

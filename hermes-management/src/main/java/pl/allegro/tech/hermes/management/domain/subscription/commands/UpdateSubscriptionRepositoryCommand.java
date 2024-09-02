@@ -16,7 +16,10 @@ public class UpdateSubscriptionRepositoryCommand extends RepositoryCommand<Subsc
 
     @Override
     public void backup(DatacenterBoundRepositoryHolder<SubscriptionRepository> holder) {
-        backup = holder.getRepository().getSubscriptionDetails(subscription.getTopicName(), subscription.getName());
+        backup =
+                holder.getRepository()
+                        .getSubscriptionDetails(
+                                subscription.getTopicName(), subscription.getName());
     }
 
     @Override
@@ -25,7 +28,8 @@ public class UpdateSubscriptionRepositoryCommand extends RepositoryCommand<Subsc
     }
 
     @Override
-    public void rollback(DatacenterBoundRepositoryHolder<SubscriptionRepository> holder, Exception exception) {
+    public void rollback(
+            DatacenterBoundRepositoryHolder<SubscriptionRepository> holder, Exception exception) {
         holder.getRepository().updateSubscription(backup);
     }
 

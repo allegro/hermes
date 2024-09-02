@@ -13,9 +13,17 @@ public class KafkaConsumerPoolConfig {
     private final String securityProtocol;
     private final String saslJaasConfig;
 
-    public KafkaConsumerPoolConfig(int cacheExpirationSeconds, int bufferSize, int fetchMaxWaitMillis,
-                                   int fetchMinBytes, String idPrefix, String consumerGroupName,
-                                   boolean isSaslEnabled, String securityMechanism, String securityProtocol, String saslJaasConfig) {
+    public KafkaConsumerPoolConfig(
+            int cacheExpirationSeconds,
+            int bufferSize,
+            int fetchMaxWaitMillis,
+            int fetchMinBytes,
+            String idPrefix,
+            String consumerGroupName,
+            boolean isSaslEnabled,
+            String securityMechanism,
+            String securityProtocol,
+            String saslJaasConfig) {
         this.cacheExpirationSeconds = cacheExpirationSeconds;
         this.bufferSizeBytes = bufferSize;
         this.fetchMaxWaitMillis = fetchMaxWaitMillis;

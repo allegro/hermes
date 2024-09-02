@@ -27,19 +27,24 @@ class ConsumerRateHistory {
     }
 
     void cleanup(Set<SubscriptionName> subscriptions) {
-        rateHistories.entrySet()
-                .removeIf(entry -> !subscriptions.contains(entry.getKey()));
+        rateHistories.entrySet().removeIf(entry -> !subscriptions.contains(entry.getKey()));
     }
 
     int size() {
         return rateHistories.size();
     }
 
-    Map<SubscriptionId, RateHistory> toSubscriptionIdsMap(SubscriptionIdMapper subscriptionIdMapping) {
+    Map<SubscriptionId, RateHistory> toSubscriptionIdsMap(
+            SubscriptionIdMapper subscriptionIdMapping) {
         return rateHistories.keySet().stream()
                 .map(subscriptionIdMapping::mapToSubscriptionId)
                 .filter(Optional::isPresent)
-                .collect(Collectors.toMap(Optional::get, subscriptionId -> rateHistories.get(subscriptionId.get().getSubscriptionName())));
+                .collect(
+                        Collectors.toMap(
+                                Optional::get,
+                                subscriptionId ->
+                                        rateHistories.get(
+                                                subscriptionId.get().getSubscriptionName())));
     }
 
     @Override

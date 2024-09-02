@@ -1,10 +1,17 @@
 package pl.allegro.tech.hermes.management.domain.topic;
 
+import static pl.allegro.tech.hermes.api.ContentType.AVRO;
+import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
+
+import static java.util.stream.Collectors.toList;
+
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
 import pl.allegro.tech.hermes.api.MessageTextPreview;
 import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.PatchData;
@@ -50,10 +57,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static java.util.stream.Collectors.toList;
-import static pl.allegro.tech.hermes.api.ContentType.AVRO;
-import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
-
 @Component
 public class TopicService {
 
@@ -75,25 +78,29 @@ public class TopicService {
     private final RepositoryManager repositoryManager;
     private final TopicOwnerCache topicOwnerCache;
     private final SubscriptionRemover subscriptionRemover;
-    private final ScheduledExecutorService scheduledTopicExecutor = Executors.newSingleThreadScheduledExecutor(
-            new ThreadFactoryBuilder()
-                    .setNameFormat("scheduled-topic-executor-%d")
-                    .build());
+    private final ScheduledExecutorService scheduledTopicExecutor =
+            Executors.newSingleThreadScheduledExecutor(
+                    new ThreadFactoryBuilder()
+                            .setNameFormat("scheduled-topic-executor-%d")
+                            .build());
 
     @Autowired
-    public TopicService(MultiDCAwareService multiDCAwareService,
-                        TopicRepository topicRepository,
-                        GroupService groupService,
-                        TopicProperties topicProperties,
-                        SchemaService schemaService, TopicMetricsRepository metricRepository,
-                        TopicBlacklistService topicBlacklistService, TopicValidator topicValidator,
-                        TopicContentTypeMigrationService topicContentTypeMigrationService,
-                        Clock clock,
-                        Auditor auditor,
-                        MultiDatacenterRepositoryCommandExecutor multiDcExecutor,
-                        RepositoryManager repositoryManager,
-                        TopicOwnerCache topicOwnerCache,
-                        SubscriptionRemover subscriptionRemover) {
+    public TopicService(
+            MultiDCAwareService multiDCAwareService,
+            TopicRepository topicRepository,
+            GroupService groupService,
+            TopicProperties topicProperties,
+            SchemaService schemaService,
+            TopicMetricsRepository metricRepository,
+            TopicBlacklistService topicBlacklistService,
+            TopicValidator topicValidator,
+            TopicContentTypeMigrationService topicContentTypeMigrationService,
+            Clock clock,
+            Auditor auditor,
+            MultiDatacenterRepositoryCommandExecutor multiDcExecutor,
+            RepositoryManager repositoryManager,
+            TopicOwnerCache topicOwnerCache,
+            SubscriptionRemover subscriptionRemover) {
         this.multiDCAwareService = multiDCAwareService;
         this.topicRepository = topicRepository;
         this.groupService = groupService;
@@ -111,15 +118,20 @@ public class TopicService {
         this.subscriptionRemover = subscriptionRemover;
     }
 
-    public void createTopicWithSchema(TopicWithSchema topicWithSchema, RequestUser createdBy, CreatorRights isAllowedToManage) {
+    public void createTopicWithSchema(
+            TopicWithSchema topicWithSchema,
+            RequestUser createdBy,
+            CreatorRights isAllowedToManage) {
         Topic topic = topicWithSchema.getTopic();
         auditor.beforeObjectCreation(createdBy.getUsername(), topic);
         groupService.checkGroupExists(topic.getName().getGroupName());
         topicValidator.ensureCreatedTopicIsValid(topic, createdBy, isAllowedToManage);
         ensureTopicDoesNotExist(topic);
 
-        boolean validateAndRegisterSchema = AVRO.equals(topic.getContentType()) || (topic.isJsonToAvroDryRunEnabled()
-                && topicWithSchema.getSchema() != null);
+        boolean validateAndRegisterSchema =
+                AVRO.equals(topic.getContentType())
+                        || (topic.isJsonToAvroDryRunEnabled()
+                                && topicWithSchema.getSchema() != null);
 
         validateSchema(validateAndRegisterSchema, topicWithSchema, topic);
         registerAvroSchema(validateAndRegisterSchema, topicWithSchema, createdBy);
@@ -127,7 +139,8 @@ public class TopicService {
     }
 
     public void removeTopicWithSchema(Topic topic, RequestUser removedBy) {
-        auditor.beforeObjectRemoval(removedBy.getUsername(), Topic.class.getSimpleName(), topic.getQualifiedName());
+        auditor.beforeObjectRemoval(
+                removedBy.getUsername(), Topic.class.getSimpleName(), topic.getQualifiedName());
         subscriptionRemover.removeSubscriptionRelatedToTopic(topic, removedBy);
         removeSchema(topic);
         if (!topicProperties.isAllowRemoval()) {
@@ -139,18 +152,21 @@ public class TopicService {
         removeTopic(topic, removedBy);
     }
 
-    public void updateTopicWithSchema(TopicName topicName, PatchData patch, RequestUser modifiedBy) {
+    public void updateTopicWithSchema(
+            TopicName topicName, PatchData patch, RequestUser modifiedBy) {
         Topic topic = getTopicDetails(topicName);
         extractSchema(patch)
-                .ifPresent(schema -> {
-                    schemaService.registerSchema(topic, schema);
-                    scheduleTouchTopic(topicName, modifiedBy);
-                });
+                .ifPresent(
+                        schema -> {
+                            schemaService.registerSchema(topic, schema);
+                            scheduleTouchTopic(topicName, modifiedBy);
+                        });
         updateTopic(topicName, patch, modifiedBy);
     }
 
     public void updateTopic(TopicName topicName, PatchData patch, RequestUser modifiedBy) {
-        auditor.beforeObjectUpdate(modifiedBy.getUsername(), Topic.class.getSimpleName(), topicName, patch);
+        auditor.beforeObjectUpdate(
+                modifiedBy.getUsername(), Topic.class.getSimpleName(), topicName, patch);
         groupService.checkGroupExists(topicName.getGroupName());
 
         Topic retrieved = getTopicDetails(topicName);
@@ -162,9 +178,8 @@ public class TopicService {
             Instant beforeMigrationInstant = clock.instant();
             // TODO: this does not work as intended, uses == instead of equals
             if (retrieved.getRetentionTime() != modified.getRetentionTime()) {
-                multiDCAwareService.manageTopic(brokerTopicManagement ->
-                        brokerTopicManagement.updateTopic(modified)
-                );
+                multiDCAwareService.manageTopic(
+                        brokerTopicManagement -> brokerTopicManagement.updateTopic(modified));
             }
             multiDcExecutor.executeByUser(new UpdateTopicRepositoryCommand(modified), modifiedBy);
 
@@ -172,10 +187,16 @@ public class TopicService {
                 logger.info(
                         "Waiting until all subscriptions have consumers assigned during topic {} content type migration...",
                         topicName.qualifiedName());
-                topicContentTypeMigrationService.waitUntilAllSubscriptionsHasConsumersAssigned(modified,
-                        Duration.ofSeconds(topicProperties.getSubscriptionsAssignmentsCompletedTimeoutSeconds()));
-                logger.info("Notifying subscriptions' consumers about changes in topic {} content type...", topicName.qualifiedName());
-                topicContentTypeMigrationService.notifySubscriptions(modified, beforeMigrationInstant, modifiedBy);
+                topicContentTypeMigrationService.waitUntilAllSubscriptionsHasConsumersAssigned(
+                        modified,
+                        Duration.ofSeconds(
+                                topicProperties
+                                        .getSubscriptionsAssignmentsCompletedTimeoutSeconds()));
+                logger.info(
+                        "Notifying subscriptions' consumers about changes in topic {} content type...",
+                        topicName.qualifiedName());
+                topicContentTypeMigrationService.notifySubscriptions(
+                        modified, beforeMigrationInstant, modifiedBy);
             }
             auditor.objectUpdated(modifiedBy.getUsername(), retrieved, modified);
             topicOwnerCache.onUpdatedTopic(retrieved, modified);
@@ -188,17 +209,18 @@ public class TopicService {
     }
 
     /**
-     * Topic is touched so other Hermes instances are notified to read latest topic schema from schema-registry.
-     * However, schema-registry can be distributed so when schema is written there then it can not be available on all nodes immediately.
-     * This is the reason why we delay touch of topic here, to wait until schema is distributed on schema-registry nodes.
+     * Topic is touched so other Hermes instances are notified to read latest topic schema from
+     * schema-registry. However, schema-registry can be distributed so when schema is written there
+     * then it can not be available on all nodes immediately. This is the reason why we delay touch
+     * of topic here, to wait until schema is distributed on schema-registry nodes.
      */
     public void scheduleTouchTopic(TopicName topicName, RequestUser touchedBy) {
         if (topicProperties.isTouchSchedulerEnabled()) {
             logger.info("Scheduling touch of topic {}", topicName.qualifiedName());
-            scheduledTopicExecutor.schedule(() -> touchTopic(topicName, touchedBy),
+            scheduledTopicExecutor.schedule(
+                    () -> touchTopic(topicName, touchedBy),
                     topicProperties.getTouchDelayInSeconds(),
-                    TimeUnit.SECONDS
-            );
+                    TimeUnit.SECONDS);
         } else {
             touchTopic(topicName, touchedBy);
         }
@@ -232,17 +254,20 @@ public class TopicService {
         if (AVRO.equals(topic.getContentType())) {
             schema = schemaService.getSchema(topicName.qualifiedName());
         }
-        return schema
-                .map(s -> topicWithSchema(topic, s.value()))
+        return schema.map(s -> topicWithSchema(topic, s.value()))
                 .orElseGet(() -> topicWithSchema(topic));
     }
 
     public TopicMetrics getTopicMetrics(TopicName topicName) {
-        return topicRepository.topicExists(topicName) ? metricRepository.loadMetrics(topicName) : TopicMetrics.unavailable();
+        return topicRepository.topicExists(topicName)
+                ? metricRepository.loadMetrics(topicName)
+                : TopicMetrics.unavailable();
     }
 
-    public String fetchSingleMessageFromPrimary(String brokersClusterName, TopicName topicName, Integer partition, Long offset) {
-        return multiDCAwareService.readMessageFromPrimary(brokersClusterName, getTopicDetails(topicName), partition, offset);
+    public String fetchSingleMessageFromPrimary(
+            String brokersClusterName, TopicName topicName, Integer partition, Long offset) {
+        return multiDCAwareService.readMessageFromPrimary(
+                brokersClusterName, getTopicDetails(topicName), partition, offset);
     }
 
     public List<String> listTrackedTopicNames() {
@@ -262,22 +287,15 @@ public class TopicService {
     }
 
     public List<String> listFilteredTopicNames(Query<Topic> query) {
-        return queryTopic(query)
-                .stream()
-                .map(Topic::getQualifiedName)
-                .collect(toList());
+        return queryTopic(query).stream().map(Topic::getQualifiedName).collect(toList());
     }
 
     public List<String> listFilteredTopicNames(String groupName, Query<Topic> query) {
-        return query.filter(listTopics(groupName))
-                .map(Topic::getQualifiedName)
-                .collect(toList());
+        return query.filter(listTopics(groupName)).map(Topic::getQualifiedName).collect(toList());
     }
 
     public List<Topic> queryTopic(Query<Topic> query) {
-        return query
-                .filter(getAllTopics())
-                .collect(toList());
+        return query.filter(getAllTopics()).collect(toList());
     }
 
     public List<Topic> getAllTopics() {
@@ -285,10 +303,10 @@ public class TopicService {
     }
 
     public Optional<byte[]> preview(TopicName topicName, int idx) {
-        List<byte[]> result = loadMessagePreviewsFromAllDc(topicName)
-                .stream()
-                .map(MessagePreview::getContent)
-                .collect(toList());
+        List<byte[]> result =
+                loadMessagePreviewsFromAllDc(topicName).stream()
+                        .map(MessagePreview::getContent)
+                        .collect(toList());
 
         if (idx >= 0 && idx < result.size()) {
             return Optional.of(result.get(idx));
@@ -299,15 +317,17 @@ public class TopicService {
 
     public List<MessageTextPreview> previewText(TopicName topicName) {
         return loadMessagePreviewsFromAllDc(topicName).stream()
-                .map(p -> new MessageTextPreview(new String(p.getContent(), StandardCharsets.UTF_8), p.isTruncated()))
+                .map(
+                        p ->
+                                new MessageTextPreview(
+                                        new String(p.getContent(), StandardCharsets.UTF_8),
+                                        p.isTruncated()))
                 .collect(toList());
     }
 
     public List<TopicNameWithMetrics> queryTopicsMetrics(Query<TopicNameWithMetrics> query) {
-        List<Topic> filteredNames = query.filterNames(getAllTopics())
-                .collect(toList());
-        return query.filter(getTopicsMetrics(filteredNames))
-                .collect(toList());
+        List<Topic> filteredNames = query.filterNames(getAllTopics()).collect(toList());
+        return query.filter(getTopicsMetrics(filteredNames)).collect(toList());
     }
 
     public TopicStats getStats() {
@@ -315,7 +335,8 @@ public class TopicService {
         long ackAllTopicCount = topics.stream().filter(t -> t.getAck() == Topic.Ack.ALL).count();
         long trackingEnabledTopicCount = topics.stream().filter(Topic::isTrackingEnabled).count();
         long avroTopicCount = topics.stream().filter(t -> t.getContentType() == AVRO).count();
-        return new TopicStats(topics.size(), ackAllTopicCount, trackingEnabledTopicCount, avroTopicCount);
+        return new TopicStats(
+                topics.size(), ackAllTopicCount, trackingEnabledTopicCount, avroTopicCount);
     }
 
     private void ensureTopicDoesNotExist(Topic topic) {
@@ -324,22 +345,29 @@ public class TopicService {
         }
     }
 
-    private void validateSchema(boolean shouldValidate, TopicWithSchema topicWithSchema, Topic topic) {
+    private void validateSchema(
+            boolean shouldValidate, TopicWithSchema topicWithSchema, Topic topic) {
         if (shouldValidate) {
             schemaService.validateSchema(topic, topicWithSchema.getSchema());
-            boolean schemaAlreadyRegistered = schemaService.getSchema(topic.getQualifiedName()).isPresent();
+            boolean schemaAlreadyRegistered =
+                    schemaService.getSchema(topic.getQualifiedName()).isPresent();
             if (schemaAlreadyRegistered) {
                 throw new TopicSchemaExistsException(topic.getQualifiedName());
             }
         }
     }
 
-    private void registerAvroSchema(boolean shouldRegister, TopicWithSchema topicWithSchema, RequestUser createdBy) {
+    private void registerAvroSchema(
+            boolean shouldRegister, TopicWithSchema topicWithSchema, RequestUser createdBy) {
         if (shouldRegister) {
             try {
-                schemaService.registerSchema(topicWithSchema.getTopic(), topicWithSchema.getSchema());
+                schemaService.registerSchema(
+                        topicWithSchema.getTopic(), topicWithSchema.getSchema());
             } catch (Exception e) {
-                logger.error("Rolling back topic {} creation due to schema registration error", topicWithSchema.getQualifiedName(), e);
+                logger.error(
+                        "Rolling back topic {} creation due to schema registration error",
+                        topicWithSchema.getQualifiedName(),
+                        e);
                 removeTopic(topicWithSchema.getTopic(), createdBy);
                 throw e;
             }
@@ -354,7 +382,9 @@ public class TopicService {
             auditor.objectCreated(createdBy.getUsername(), topic);
             topicOwnerCache.onCreatedTopic(topic);
         } else {
-            logger.info("Skipping creation of topic {} on brokers, topic already exists", topic.getQualifiedName());
+            logger.info(
+                    "Skipping creation of topic {} on brokers, topic already exists",
+                    topic.getQualifiedName());
         }
 
         multiDcExecutor.executeByUser(new CreateTopicRepositoryCommand(topic), createdBy);
@@ -362,22 +392,25 @@ public class TopicService {
 
     private void createTopicInBrokers(Topic topic, RequestUser createdBy) {
         try {
-            multiDCAwareService.manageTopic(brokerTopicManagement ->
-                    brokerTopicManagement.createTopic(topic)
-            );
+            multiDCAwareService.manageTopic(
+                    brokerTopicManagement -> brokerTopicManagement.createTopic(topic));
         } catch (Exception exception) {
             logger.error(
-                    String.format("Could not create topic %s, rollback topic creation.", topic.getQualifiedName()),
-                    exception
-            );
-            multiDcExecutor.executeByUser(new RemoveTopicRepositoryCommand(topic.getName()), createdBy);
+                    String.format(
+                            "Could not create topic %s, rollback topic creation.",
+                            topic.getQualifiedName()),
+                    exception);
+            multiDcExecutor.executeByUser(
+                    new RemoveTopicRepositoryCommand(topic.getName()), createdBy);
         }
     }
 
     private void removeSchema(Topic topic) {
         if (AVRO.equals(topic.getContentType()) && topicProperties.isRemoveSchema()) {
-            schemaService.getSchema(topic.getQualifiedName()).ifPresent(s ->
-                    schemaService.deleteAllSchemaVersions(topic.getQualifiedName()));
+            schemaService
+                    .getSchema(topic.getQualifiedName())
+                    .ifPresent(
+                            s -> schemaService.deleteAllSchemaVersions(topic.getQualifiedName()));
         }
     }
 
@@ -385,11 +418,18 @@ public class TopicService {
         logger.info("Removing topic: {} from ZK clusters", topic.getQualifiedName());
         long start = System.currentTimeMillis();
         multiDcExecutor.executeByUser(new RemoveTopicRepositoryCommand(topic.getName()), removedBy);
-        logger.info("Removed topic: {} from ZK clusters in: {} ms", topic.getQualifiedName(), System.currentTimeMillis() - start);
+        logger.info(
+                "Removed topic: {} from ZK clusters in: {} ms",
+                topic.getQualifiedName(),
+                System.currentTimeMillis() - start);
         logger.info("Removing topic: {} from Kafka clusters", topic.getQualifiedName());
         start = System.currentTimeMillis();
-        multiDCAwareService.manageTopic(brokerTopicManagement -> brokerTopicManagement.removeTopic(topic));
-        logger.info("Removed topic: {} from Kafka clusters in: {} ms", topic.getQualifiedName(), System.currentTimeMillis() - start);
+        multiDCAwareService.manageTopic(
+                brokerTopicManagement -> brokerTopicManagement.removeTopic(topic));
+        logger.info(
+                "Removed topic: {} from Kafka clusters in: {} ms",
+                topic.getQualifiedName(),
+                System.currentTimeMillis() - start);
         auditor.objectRemoved(removedBy.getUsername(), topic);
         topicOwnerCache.onRemovedTopic(topic);
     }
@@ -406,19 +446,20 @@ public class TopicService {
             try {
                 previews.addAll(holder.getRepository().loadPreview(topicName));
             } catch (Exception e) {
-                logger.warn("Could not load message preview for DC: {}", holder.getDatacenterName());
+                logger.warn(
+                        "Could not load message preview for DC: {}", holder.getDatacenterName());
             }
         }
         return previews;
     }
 
     private List<TopicNameWithMetrics> getTopicsMetrics(List<Topic> topics) {
-        return topics
-                .stream()
-                .map(t -> {
-                    TopicMetrics metrics = metricRepository.loadMetrics(t.getName());
-                    return TopicNameWithMetrics.from(metrics, t.getQualifiedName());
-                })
+        return topics.stream()
+                .map(
+                        t -> {
+                            TopicMetrics metrics = metricRepository.loadMetrics(t.getName());
+                            return TopicNameWithMetrics.from(metrics, t.getQualifiedName());
+                        })
                 .collect(toList());
     }
 

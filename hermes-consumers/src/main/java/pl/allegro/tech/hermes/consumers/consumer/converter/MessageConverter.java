@@ -6,5 +6,4 @@ import pl.allegro.tech.hermes.consumers.consumer.Message;
 public interface MessageConverter {
 
     Message convert(Message message, Topic topic);
-
 }

@@ -1,16 +1,18 @@
 package pl.allegro.tech.hermes.tracker.consumers;
 
-import org.junit.Test;
-import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.api.TrackingMode;
-
-import java.util.ArrayList;
-
 import static org.assertj.core.api.Assertions.assertThat;
+
 import static pl.allegro.tech.hermes.api.TrackingMode.TRACKING_OFF;
 import static pl.allegro.tech.hermes.api.TrackingMode.TRACK_ALL;
 import static pl.allegro.tech.hermes.api.TrackingMode.TRACK_DISCARDED_ONLY;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
+
+import org.junit.Test;
+
+import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.TrackingMode;
+
+import java.util.ArrayList;
 
 public class TrackersTest {
 
@@ -20,8 +22,10 @@ public class TrackersTest {
         Trackers trackers = new Trackers(new ArrayList<>());
 
         // when
-        SendingTracker trackingOffTracker = trackers.get(subscriptionWithTrackingMode(TRACKING_OFF));
-        SendingTracker trackDiscardedOnlyTracker = trackers.get(subscriptionWithTrackingMode(TRACK_DISCARDED_ONLY));
+        SendingTracker trackingOffTracker =
+                trackers.get(subscriptionWithTrackingMode(TRACKING_OFF));
+        SendingTracker trackDiscardedOnlyTracker =
+                trackers.get(subscriptionWithTrackingMode(TRACK_DISCARDED_ONLY));
         SendingTracker trackAllTracker = trackers.get(subscriptionWithTrackingMode(TRACK_ALL));
 
         // then
@@ -31,8 +35,6 @@ public class TrackersTest {
     }
 
     private static Subscription subscriptionWithTrackingMode(TrackingMode trackingMode) {
-        return subscription("group.topic", "sub")
-                .withTrackingMode(trackingMode)
-                .build();
+        return subscription("group.topic", "sub").withTrackingMode(trackingMode).build();
     }
 }

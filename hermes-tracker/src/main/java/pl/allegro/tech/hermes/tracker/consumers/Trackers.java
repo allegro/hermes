@@ -27,7 +27,6 @@ public class Trackers {
                 return discardedSendingTracker;
             default:
                 return noOperationDeliveryTracker;
-
         }
     }
 

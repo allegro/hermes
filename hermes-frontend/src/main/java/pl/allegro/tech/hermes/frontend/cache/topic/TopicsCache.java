@@ -12,5 +12,4 @@ public interface TopicsCache {
     List<CachedTopic> getTopics();
 
     void start();
-
 }

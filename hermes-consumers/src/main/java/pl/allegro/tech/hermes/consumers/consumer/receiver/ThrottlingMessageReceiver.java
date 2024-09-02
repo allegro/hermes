@@ -13,17 +13,17 @@ import pl.allegro.tech.hermes.metrics.HermesTimerContext;
 import java.util.Optional;
 import java.util.Set;
 
-
 public class ThrottlingMessageReceiver implements MessageReceiver {
 
     private final MessageReceiver receiver;
     private final IdleTimeCalculator idleTimeCalculator;
     private final HermesTimer idleTimer;
 
-    public ThrottlingMessageReceiver(MessageReceiver receiver,
-                                     IdleTimeCalculator idleTimeCalculator,
-                                     SubscriptionName subscriptionName,
-                                     MetricsFacade metrics) {
+    public ThrottlingMessageReceiver(
+            MessageReceiver receiver,
+            IdleTimeCalculator idleTimeCalculator,
+            SubscriptionName subscriptionName,
+            MetricsFacade metrics) {
         this.receiver = receiver;
         this.idleTimeCalculator = idleTimeCalculator;
         this.idleTimer = metrics.subscriptions().consumerIdleTimer(subscriptionName);

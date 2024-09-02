@@ -15,7 +15,7 @@ public interface AvroRecordToBytesConverter {
         return AvroBinaryDecoders.decodeReusingThreadLocalBinaryDecoder(data, schema);
     }
 
-    static byte [] recordToBytes(GenericRecord genericRecord, Schema schema) throws IOException {
+    static byte[] recordToBytes(GenericRecord genericRecord, Schema schema) throws IOException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         BinaryEncoder binaryEncoder = EncoderFactory.get().binaryEncoder(outputStream, null);
         new GenericDatumWriter<>(schema).write(genericRecord, binaryEncoder);

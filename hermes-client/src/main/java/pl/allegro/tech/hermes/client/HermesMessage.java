@@ -6,9 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
-/**
- * All information Hermes needs to send a message.
- */
+/** All information Hermes needs to send a message. */
 public class HermesMessage {
 
     public static final String SCHEMA_VERSION_HEADER = "Schema-Version";
@@ -27,9 +25,7 @@ public class HermesMessage {
         this.body = body;
     }
 
-    /**
-     * Use builder via: HermesMessage#hermesMessage instead.
-     */
+    /** Use builder via: HermesMessage#hermesMessage instead. */
     @Deprecated
     public HermesMessage(String topic, String contentType, int schemaVersion, byte[] body) {
         Map<String, String> headers = new HashMap<>();
@@ -41,30 +37,27 @@ public class HermesMessage {
         this.body = body;
     }
 
-    /**
-     * Use builder via: HermesMessage#hermesMessage instead.
-     */
+    /** Use builder via: HermesMessage#hermesMessage instead. */
     @Deprecated
     public HermesMessage(String topic, String contentType, byte[] body) {
         this(topic, contentType, -1, body);
     }
 
     /**
-     * <p>Message on given topic with given MIME Content Type.</p>
-     * <p>Use builder via: HermesMessage#hermesMessage instead.</p>
+     * Message on given topic with given MIME Content Type.
      *
-     * @param topic       topic name
+     * <p>Use builder via: HermesMessage#hermesMessage instead.
+     *
+     * @param topic topic name
      * @param contentType MIME content type
-     * @param body        body which will be translated to byte[] using UTF-8 charset
+     * @param body body which will be translated to byte[] using UTF-8 charset
      */
     @Deprecated
     public HermesMessage(String topic, String contentType, String body) {
         this(topic, contentType, body.getBytes(StandardCharsets.UTF_8));
     }
 
-    /**
-     * Use builder via: HermesMessage#hermesMessage instead.
-     */
+    /** Use builder via: HermesMessage#hermesMessage instead. */
     @Deprecated
     public HermesMessage(String topic, String body) {
         this(topic, null, body);
@@ -79,11 +72,10 @@ public class HermesMessage {
     }
 
     /**
-     * This method modifies the state of HermesMessage in order to avoid additional
-     * allocation when appending default values. Using same HermesMessage in multiple
-     * HermesClient objects with different defaults is very unlikely, as is sending the same
-     * message in multiple threads (which could cause issues with concurrent modification of
-     * map).
+     * This method modifies the state of HermesMessage in order to avoid additional allocation when
+     * appending default values. Using same HermesMessage in multiple HermesClient objects with
+     * different defaults is very unlikely, as is sending the same message in multiple threads
+     * (which could cause issues with concurrent modification of map).
      */
     static HermesMessage appendDefaults(HermesMessage message, Map<String, String> headers) {
         for (Map.Entry<String, String> entry : headers.entrySet()) {

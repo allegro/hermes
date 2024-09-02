@@ -58,6 +58,8 @@ public class ConsoleConfigProperties {
     }
 
     public enum ConfigurationType {
-        CLASSPATH_RESOURCE, HTTP_RESOURCE, SPRING_CONFIG
+        CLASSPATH_RESOURCE,
+        HTTP_RESOURCE,
+        SPRING_CONFIG
     }
 }

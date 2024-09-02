@@ -1,10 +1,14 @@
 package pl.allegro.tech.hermes.infrastructure.zookeeper;
 
+import static java.util.stream.Collectors.toList;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.KeeperException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.api.OAuthProvider;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.domain.oauth.OAuthProviderAlreadyExistsException;
@@ -13,13 +17,14 @@ import pl.allegro.tech.hermes.domain.oauth.OAuthProviderRepository;
 
 import java.util.List;
 
-import static java.util.stream.Collectors.toList;
+public class ZookeeperOAuthProviderRepository extends ZookeeperBasedRepository
+        implements OAuthProviderRepository {
 
-public class ZookeeperOAuthProviderRepository extends ZookeeperBasedRepository implements OAuthProviderRepository {
+    private static final Logger logger =
+            LoggerFactory.getLogger(ZookeeperOAuthProviderRepository.class);
 
-    private static final Logger logger = LoggerFactory.getLogger(ZookeeperOAuthProviderRepository.class);
-
-    public ZookeeperOAuthProviderRepository(CuratorFramework zookeeper, ObjectMapper mapper, ZookeeperPaths paths) {
+    public ZookeeperOAuthProviderRepository(
+            CuratorFramework zookeeper, ObjectMapper mapper, ZookeeperPaths paths) {
         super(zookeeper, mapper, paths);
     }
 

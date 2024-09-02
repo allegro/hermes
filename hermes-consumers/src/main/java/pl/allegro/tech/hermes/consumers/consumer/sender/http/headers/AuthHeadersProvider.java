@@ -1,7 +1,9 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.http.headers;
 
 import com.google.common.collect.ImmutableMap;
+
 import org.eclipse.jetty.http.HttpHeader;
+
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpRequestData;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.auth.HttpAuthorizationProvider;
@@ -13,7 +15,8 @@ public final class AuthHeadersProvider implements HttpHeadersProvider {
     private final HttpHeadersProvider headersProvider;
     private final HttpAuthorizationProvider authorizationProvider;
 
-    public AuthHeadersProvider(HttpHeadersProvider headersProvider, HttpAuthorizationProvider authorizationProvider) {
+    public AuthHeadersProvider(
+            HttpHeadersProvider headersProvider, HttpAuthorizationProvider authorizationProvider) {
         this.headersProvider = headersProvider;
         this.authorizationProvider = authorizationProvider;
     }
@@ -33,5 +36,4 @@ public final class AuthHeadersProvider implements HttpHeadersProvider {
 
         return new HttpRequestHeaders(builder.build());
     }
-
 }

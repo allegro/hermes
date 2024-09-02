@@ -1,5 +1,9 @@
 package pl.allegro.tech.hermes.consumers.consumer.batch;
 
+import static com.google.common.base.Preconditions.checkState;
+
+import static pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset.subscriptionPartitionOffset;
+
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Header;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -16,10 +20,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-import javax.annotation.concurrent.NotThreadSafe;
 
-import static com.google.common.base.Preconditions.checkState;
-import static pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset.subscriptionPartitionOffset;
+import javax.annotation.concurrent.NotThreadSafe;
 
 @NotThreadSafe
 public class JsonMessageBatch implements MessageBatch {
@@ -121,9 +123,15 @@ public class JsonMessageBatch implements MessageBatch {
     @Override
     public List<SubscriptionPartitionOffset> getPartitionOffsets() {
         return metadata.stream()
-                .map(m -> subscriptionPartitionOffset(this.subscription,
-                        new PartitionOffset(KafkaTopicName.valueOf(m.getKafkaTopic()), m.getOffset(), m.getPartition()),
-                        m.getPartitionAssignmentTerm()))
+                .map(
+                        m ->
+                                subscriptionPartitionOffset(
+                                        this.subscription,
+                                        new PartitionOffset(
+                                                KafkaTopicName.valueOf(m.getKafkaTopic()),
+                                                m.getOffset(),
+                                                m.getPartition()),
+                                        m.getPartitionAssignmentTerm()))
                 .collect(Collectors.toList());
     }
 

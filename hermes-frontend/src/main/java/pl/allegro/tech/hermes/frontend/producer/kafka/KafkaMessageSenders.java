@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.frontend.producer.kafka;
 import org.apache.kafka.common.PartitionInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 
@@ -10,7 +11,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-// exposes kafka producer metrics, see: https://docs.confluent.io/platform/current/kafka/monitoring.html#producer-metrics
+// exposes kafka producer metrics, see:
+// https://docs.confluent.io/platform/current/kafka/monitoring.html#producer-metrics
 public class KafkaMessageSenders {
 
     private static final Logger logger = LoggerFactory.getLogger(KafkaMessageSenders.class);
@@ -27,26 +29,30 @@ public class KafkaMessageSenders {
     private final List<TopicMetadataLoader> kafkaProducerMetadataRefreshers;
     private final List<String> datacenters;
 
-    KafkaMessageSenders(TopicMetadataLoadingExecutor topicMetadataLoadingExecutor,
-                        MinInSyncReplicasLoader localMinInSyncReplicasLoader,
-                        Tuple localSenders,
-                        List<Tuple> remoteSenders) {
+    KafkaMessageSenders(
+            TopicMetadataLoadingExecutor topicMetadataLoadingExecutor,
+            MinInSyncReplicasLoader localMinInSyncReplicasLoader,
+            Tuple localSenders,
+            List<Tuple> remoteSenders) {
         this.topicMetadataLoadingExecutor = topicMetadataLoadingExecutor;
         this.localMinInSyncReplicasLoader = localMinInSyncReplicasLoader;
         this.ackLeader = localSenders.ackLeader;
         this.ackAll = localSenders.ackAll;
-        this.remoteAckLeader = remoteSenders.stream().map(it -> it.ackLeader).collect(Collectors.toList());
-        this.remoteAckAll = remoteSenders.stream().map(it -> it.ackAll).collect(Collectors.toList());
-        this.localDatacenterTopicMetadataLoaders = List.of(
-                new LocalDatacenterTopicAvailabilityChecker()
-        );
-        this.kafkaProducerMetadataRefreshers = Stream.concat(Stream.of(localSenders), remoteSenders.stream())
-                .map(KafkaProducerMetadataRefresher::new)
-                .collect(Collectors.toList());
-        this.datacenters = Stream.concat(Stream.of(localSenders), remoteSenders.stream())
-                .map(tuple -> tuple.ackAll)
-                .map(KafkaMessageSender::getDatacenter)
-                .toList();
+        this.remoteAckLeader =
+                remoteSenders.stream().map(it -> it.ackLeader).collect(Collectors.toList());
+        this.remoteAckAll =
+                remoteSenders.stream().map(it -> it.ackAll).collect(Collectors.toList());
+        this.localDatacenterTopicMetadataLoaders =
+                List.of(new LocalDatacenterTopicAvailabilityChecker());
+        this.kafkaProducerMetadataRefreshers =
+                Stream.concat(Stream.of(localSenders), remoteSenders.stream())
+                        .map(KafkaProducerMetadataRefresher::new)
+                        .collect(Collectors.toList());
+        this.datacenters =
+                Stream.concat(Stream.of(localSenders), remoteSenders.stream())
+                        .map(tuple -> tuple.ackAll)
+                        .map(KafkaMessageSender::getDatacenter)
+                        .toList();
     }
 
     KafkaMessageSender<byte[], byte[]> get(Topic topic) {
@@ -73,7 +79,8 @@ public class KafkaMessageSenders {
         String kafkaTopicName = cachedTopic.getKafkaTopics().getPrimary().name().asString();
 
         try {
-            List<PartitionInfo> partitionInfos = get(cachedTopic.getTopic()).loadPartitionMetadataFor(kafkaTopicName);
+            List<PartitionInfo> partitionInfos =
+                    get(cachedTopic.getTopic()).loadPartitionMetadataFor(kafkaTopicName);
             if (anyPartitionWithoutLeader(partitionInfos)) {
                 logger.warn("Topic {} has partitions without a leader.", kafkaTopicName);
                 return false;
@@ -86,7 +93,10 @@ public class KafkaMessageSenders {
                 return true;
             }
         } catch (Exception e) {
-            logger.warn("Could not read information about partitions for topic {}. {}", kafkaTopicName, e.getMessage());
+            logger.warn(
+                    "Could not read information about partitions for topic {}. {}",
+                    kafkaTopicName,
+                    e.getMessage());
             return false;
         }
 
@@ -98,7 +108,8 @@ public class KafkaMessageSenders {
         return partitionInfos.stream().anyMatch(p -> p.leader() == null);
     }
 
-    private boolean anyUnderReplicatedPartition(List<PartitionInfo> partitionInfos, String kafkaTopicName) throws Exception {
+    private boolean anyUnderReplicatedPartition(
+            List<PartitionInfo> partitionInfos, String kafkaTopicName) throws Exception {
         int minInSyncReplicas = localMinInSyncReplicasLoader.get(kafkaTopicName);
         return partitionInfos.stream().anyMatch(p -> p.inSyncReplicas().length < minInSyncReplicas);
     }
@@ -114,7 +125,9 @@ public class KafkaMessageSenders {
         private final KafkaMessageSender<byte[], byte[]> ackLeader;
         private final KafkaMessageSender<byte[], byte[]> ackAll;
 
-        Tuple(KafkaMessageSender<byte[], byte[]> ackLeader, KafkaMessageSender<byte[], byte[]> ackAll) {
+        Tuple(
+                KafkaMessageSender<byte[], byte[]> ackLeader,
+                KafkaMessageSender<byte[], byte[]> ackAll) {
             this.ackLeader = ackLeader;
             this.ackAll = ackAll;
         }
@@ -142,13 +155,16 @@ public class KafkaMessageSenders {
             var partitionInfos = sender.loadPartitionMetadataFor(kafkaTopicName);
             if (anyPartitionWithoutLeader(partitionInfos)) {
                 logger.warn("Topic {} has partitions without a leader.", kafkaTopicName);
-                return MetadataLoadingResult.failure(cachedTopic.getTopicName(), sender.getDatacenter());
+                return MetadataLoadingResult.failure(
+                        cachedTopic.getTopicName(), sender.getDatacenter());
             }
             if (partitionInfos.isEmpty()) {
                 logger.warn("No information about partitions for topic {}", kafkaTopicName);
-                return MetadataLoadingResult.failure(cachedTopic.getTopicName(), sender.getDatacenter());
+                return MetadataLoadingResult.failure(
+                        cachedTopic.getTopicName(), sender.getDatacenter());
             }
-            return MetadataLoadingResult.success(cachedTopic.getTopicName(), sender.getDatacenter());
+            return MetadataLoadingResult.success(
+                    cachedTopic.getTopicName(), sender.getDatacenter());
         }
 
         private KafkaMessageSender<byte[], byte[]> getSender(Topic topic) {

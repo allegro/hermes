@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.schema;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+
 import pl.allegro.tech.hermes.api.Topic;
 
 import java.time.Duration;
@@ -17,18 +18,21 @@ public class CachedCompiledSchemaRepository<T> implements CompiledSchemaReposito
     private final LoadingCache<TopicAndSchemaId, CompiledSchema<T>> topicIdCache;
     private final CompiledSchemaRepository<T> compiledSchemaRepository;
 
-    public CachedCompiledSchemaRepository(CompiledSchemaRepository<T> delegate, long maximumCacheSize, Duration expireAfterAccess) {
-        this.topicVersionCache = CacheBuilder
-                .newBuilder()
-                .maximumSize(maximumCacheSize)
-                .expireAfterAccess(expireAfterAccess.toMinutes(), TimeUnit.MINUTES)
-                .build(new CompiledSchemaByVersionLoader<>(delegate));
+    public CachedCompiledSchemaRepository(
+            CompiledSchemaRepository<T> delegate,
+            long maximumCacheSize,
+            Duration expireAfterAccess) {
+        this.topicVersionCache =
+                CacheBuilder.newBuilder()
+                        .maximumSize(maximumCacheSize)
+                        .expireAfterAccess(expireAfterAccess.toMinutes(), TimeUnit.MINUTES)
+                        .build(new CompiledSchemaByVersionLoader<>(delegate));
 
-        this.topicIdCache = CacheBuilder
-            .newBuilder()
-            .maximumSize(maximumCacheSize)
-            .expireAfterAccess(expireAfterAccess.toMinutes(), TimeUnit.MINUTES)
-            .build(new CompiledSchemaByIdLoader<>(delegate));
+        this.topicIdCache =
+                CacheBuilder.newBuilder()
+                        .maximumSize(maximumCacheSize)
+                        .expireAfterAccess(expireAfterAccess.toMinutes(), TimeUnit.MINUTES)
+                        .build(new CompiledSchemaByIdLoader<>(delegate));
 
         this.compiledSchemaRepository = delegate;
     }
@@ -37,9 +41,11 @@ public class CachedCompiledSchemaRepository<T> implements CompiledSchemaReposito
     public CompiledSchema<T> getSchema(Topic topic, SchemaVersion version, boolean online) {
         try {
             if (online) {
-                CompiledSchema<T> compiledSchema = compiledSchemaRepository.getSchema(topic, version);
+                CompiledSchema<T> compiledSchema =
+                        compiledSchemaRepository.getSchema(topic, version);
                 topicVersionCache.put(new TopicAndSchemaVersion(topic, version), compiledSchema);
-                topicIdCache.put(new TopicAndSchemaId(topic, compiledSchema.getId()), compiledSchema);
+                topicIdCache.put(
+                        new TopicAndSchemaId(topic, compiledSchema.getId()), compiledSchema);
                 return compiledSchema;
             }
             return topicVersionCache.get(new TopicAndSchemaVersion(topic, version));
@@ -58,19 +64,22 @@ public class CachedCompiledSchemaRepository<T> implements CompiledSchemaReposito
     }
 
     public void removeFromCache(Topic topic) {
-        Set<TopicAndSchemaVersion> topicWithSchemas = topicVersionCache.asMap().keySet().stream()
-                .filter(topicWithSchema -> topicWithSchema.topic.equals(topic))
-                .collect(Collectors.toSet());
+        Set<TopicAndSchemaVersion> topicWithSchemas =
+                topicVersionCache.asMap().keySet().stream()
+                        .filter(topicWithSchema -> topicWithSchema.topic.equals(topic))
+                        .collect(Collectors.toSet());
 
-        Set<TopicAndSchemaId> topicAndSchemaIds = topicIdCache.asMap().keySet().stream()
-            .filter(topicAndSchemaId -> topicAndSchemaId.topic.equals(topic))
-            .collect(Collectors.toSet());
+        Set<TopicAndSchemaId> topicAndSchemaIds =
+                topicIdCache.asMap().keySet().stream()
+                        .filter(topicAndSchemaId -> topicAndSchemaId.topic.equals(topic))
+                        .collect(Collectors.toSet());
 
         topicVersionCache.invalidateAll(topicWithSchemas);
         topicIdCache.invalidateAll(topicAndSchemaIds);
     }
 
-    private static class CompiledSchemaByVersionLoader<T> extends CacheLoader<TopicAndSchemaVersion, CompiledSchema<T>> {
+    private static class CompiledSchemaByVersionLoader<T>
+            extends CacheLoader<TopicAndSchemaVersion, CompiledSchema<T>> {
 
         private final CompiledSchemaRepository<T> delegate;
 
@@ -84,9 +93,10 @@ public class CachedCompiledSchemaRepository<T> implements CompiledSchemaReposito
         }
     }
 
-    private static class CompiledSchemaByIdLoader<T> extends CacheLoader<TopicAndSchemaId, CompiledSchema<T>> {
+    private static class CompiledSchemaByIdLoader<T>
+            extends CacheLoader<TopicAndSchemaId, CompiledSchema<T>> {
 
-        private final CompiledSchemaRepository<T>  delegate;
+        private final CompiledSchemaRepository<T> delegate;
 
         public CompiledSchemaByIdLoader(CompiledSchemaRepository<T> delegate) {
             this.delegate = delegate;
@@ -146,8 +156,7 @@ public class CachedCompiledSchemaRepository<T> implements CompiledSchemaReposito
                 return false;
             }
             TopicAndSchemaId that = (TopicAndSchemaId) o;
-            return Objects.equals(schemaId, that.schemaId)
-                    && Objects.equals(topic, that.topic);
+            return Objects.equals(schemaId, that.schemaId) && Objects.equals(topic, that.topic);
         }
 
         @Override

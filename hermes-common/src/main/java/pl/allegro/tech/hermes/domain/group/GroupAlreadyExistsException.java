@@ -17,5 +17,4 @@ public class GroupAlreadyExistsException extends HermesException {
     public ErrorCode getCode() {
         return ErrorCode.GROUP_ALREADY_EXISTS;
     }
-
 }

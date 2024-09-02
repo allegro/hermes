@@ -4,7 +4,8 @@ import pl.allegro.tech.hermes.api.OfflineRetransmissionTask;
 import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryCommand;
 
-class CreateOfflineRetransmissionTaskCommand extends RepositoryCommand<OfflineRetransmissionRepository> {
+class CreateOfflineRetransmissionTaskCommand
+        extends RepositoryCommand<OfflineRetransmissionRepository> {
     private final OfflineRetransmissionTask task;
 
     CreateOfflineRetransmissionTaskCommand(OfflineRetransmissionTask task) {
@@ -12,8 +13,7 @@ class CreateOfflineRetransmissionTaskCommand extends RepositoryCommand<OfflineRe
     }
 
     @Override
-    public void backup(DatacenterBoundRepositoryHolder<OfflineRetransmissionRepository> holder) {
-    }
+    public void backup(DatacenterBoundRepositoryHolder<OfflineRetransmissionRepository> holder) {}
 
     @Override
     public void execute(DatacenterBoundRepositoryHolder<OfflineRetransmissionRepository> holder) {
@@ -21,7 +21,9 @@ class CreateOfflineRetransmissionTaskCommand extends RepositoryCommand<OfflineRe
     }
 
     @Override
-    public void rollback(DatacenterBoundRepositoryHolder<OfflineRetransmissionRepository> holder, Exception exception) {
+    public void rollback(
+            DatacenterBoundRepositoryHolder<OfflineRetransmissionRepository> holder,
+            Exception exception) {
         holder.getRepository().deleteTask(task.getTaskId());
     }
 

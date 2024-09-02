@@ -9,7 +9,8 @@ import java.util.Optional;
 
 public interface RawSchemaClient {
 
-    Optional<RawSchemaWithMetadata> getRawSchemaWithMetadata(TopicName topic, SchemaVersion version);
+    Optional<RawSchemaWithMetadata> getRawSchemaWithMetadata(
+            TopicName topic, SchemaVersion version);
 
     Optional<RawSchemaWithMetadata> getRawSchemaWithMetadata(TopicName topic, SchemaId schemaId);
 

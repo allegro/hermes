@@ -29,5 +29,4 @@ public interface TopicRepository {
     List<Topic> getTopicsDetails(Collection<TopicName> topicNames);
 
     List<Topic> listAllTopics();
-
 }

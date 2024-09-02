@@ -22,7 +22,8 @@ public class TouchTopicRepositoryCommand extends RepositoryCommand<TopicReposito
     }
 
     @Override
-    public void rollback(DatacenterBoundRepositoryHolder<TopicRepository> holder, Exception exception) {}
+    public void rollback(
+            DatacenterBoundRepositoryHolder<TopicRepository> holder, Exception exception) {}
 
     @Override
     public Class<TopicRepository> getRepositoryType() {

@@ -9,7 +9,8 @@ public class JvmKeyManagersProvider implements KeyManagersProvider {
 
     @Override
     public KeyManager[] getKeyManagers() throws Exception {
-        KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+        KeyManagerFactory keyManagerFactory =
+                KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
         keyManagerFactory.init(null, null);
         return keyManagerFactory.getKeyManagers();
     }

@@ -1,9 +1,13 @@
 package pl.allegro.tech.hermes.management.domain.topic.schema;
 
+import static pl.allegro.tech.hermes.api.ContentType.AVRO;
+import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
 import pl.allegro.tech.hermes.api.RawSchema;
 import pl.allegro.tech.hermes.api.RawSchemaWithMetadata;
 import pl.allegro.tech.hermes.api.Topic;
@@ -16,9 +20,6 @@ import pl.allegro.tech.hermes.schema.SchemaVersion;
 
 import java.util.Optional;
 
-import static pl.allegro.tech.hermes.api.ContentType.AVRO;
-import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
-
 @Component
 public class SchemaService {
 
@@ -29,9 +30,10 @@ public class SchemaService {
     private static final Logger logger = LoggerFactory.getLogger(SchemaService.class);
 
     @Autowired
-    public SchemaService(RawSchemaClient rawSchemaClient,
-                         SchemaValidatorProvider validatorProvider,
-                         TopicProperties topicProperties) {
+    public SchemaService(
+            RawSchemaClient rawSchemaClient,
+            SchemaValidatorProvider validatorProvider,
+            TopicProperties topicProperties) {
         this.rawSchemaClient = rawSchemaClient;
         this.validatorProvider = validatorProvider;
         this.topicProperties = topicProperties;
@@ -39,8 +41,8 @@ public class SchemaService {
 
     public Optional<RawSchema> getSchema(String qualifiedTopicName) {
         return rawSchemaClient
-            .getLatestRawSchemaWithMetadata(fromQualifiedName(qualifiedTopicName))
-            .map(RawSchemaWithMetadata::getSchema);
+                .getLatestRawSchemaWithMetadata(fromQualifiedName(qualifiedTopicName))
+                .map(RawSchemaWithMetadata::getSchema);
     }
 
     public Optional<RawSchema> getSchema(String qualifiedTopicName, SchemaVersion version) {
@@ -75,7 +77,10 @@ public class SchemaService {
         logger.info("Removing all schema versions for topic: {}", qualifiedTopicName);
         long start = System.currentTimeMillis();
         rawSchemaClient.deleteAllSchemaVersions(fromQualifiedName(qualifiedTopicName));
-        logger.info("Removed all schema versions for topic: {} in {} ms", qualifiedTopicName, System.currentTimeMillis() - start);
+        logger.info(
+                "Removed all schema versions for topic: {} in {} ms",
+                qualifiedTopicName,
+                System.currentTimeMillis() - start);
     }
 
     public void validateSchema(Topic topic, String schema) {

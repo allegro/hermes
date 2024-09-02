@@ -36,8 +36,16 @@ public class OAuthTokenRequest {
 
     private final Integer socketTimeout;
 
-    private OAuthTokenRequest(String url, String grantType, String scope, String clientId, String clientSecret,
-                              String username, String password, Integer requestTimeout, Integer socketTimeout) {
+    private OAuthTokenRequest(
+            String url,
+            String grantType,
+            String scope,
+            String clientId,
+            String clientSecret,
+            String username,
+            String password,
+            Integer requestTimeout,
+            Integer socketTimeout) {
         this.url = url;
         this.grantType = grantType;
         this.scope = scope;
@@ -155,8 +163,16 @@ public class OAuthTokenRequest {
         }
 
         public OAuthTokenRequest build() {
-            return new OAuthTokenRequest(url, grantType, scope, clientId, clientSecret, username,
-                    password, requestTimeout, socketTimeout);
+            return new OAuthTokenRequest(
+                    url,
+                    grantType,
+                    scope,
+                    clientId,
+                    clientSecret,
+                    username,
+                    password,
+                    requestTimeout,
+                    socketTimeout);
         }
     }
 }

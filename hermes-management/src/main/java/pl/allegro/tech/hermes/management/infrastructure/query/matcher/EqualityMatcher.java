@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.management.infrastructure.query.matcher;
 
 import org.apache.commons.jxpath.JXPathException;
+
 import pl.allegro.tech.hermes.management.infrastructure.query.graph.ObjectGraph;
 
 public class EqualityMatcher implements Matcher {
@@ -21,10 +22,10 @@ public class EqualityMatcher implements Matcher {
                 return false;
             }
             Object actual = ObjectGraph.from(value).navigate(attribute).value();
-            return expected.equals(actual)
-                    || asString(expected).equals(asString(actual));
+            return expected.equals(actual) || asString(expected).equals(asString(actual));
         } catch (JXPathException e) {
-            throw new MatcherException(String.format("Could not navigate to specific path: '%s'", attribute), e);
+            throw new MatcherException(
+                    String.format("Could not navigate to specific path: '%s'", attribute), e);
         }
     }
 

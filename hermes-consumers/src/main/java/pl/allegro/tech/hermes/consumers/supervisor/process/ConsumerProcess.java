@@ -1,9 +1,13 @@
 package pl.allegro.tech.hermes.consumers.supervisor.process;
 
+import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.START;
+
 import com.google.common.collect.ImmutableMap;
+
 import org.jctools.queues.SpscArrayQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
@@ -13,8 +17,6 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.START;
 
 public class ConsumerProcess implements Runnable {
 
@@ -64,15 +66,19 @@ public class ConsumerProcess implements Runnable {
                 consumer.consume(this::processSignals);
             }
         } catch (Throwable throwable) {
-            logger.error("Consumer process of subscription {} failed", getSubscriptionName(), throwable);
+            logger.error(
+                    "Consumer process of subscription {} failed", getSubscriptionName(), throwable);
         } finally {
-            logger.info("Releasing consumer process thread of subscription {}", getSubscriptionName());
+            logger.info(
+                    "Releasing consumer process thread of subscription {}", getSubscriptionName());
             refreshHealthcheck();
             try {
                 stop();
             } catch (Exception exceptionWhileStopping) {
-                logger.error("An error occurred while stopping consumer process of subscription {}",
-                        getSubscriptionName(), exceptionWhileStopping);
+                logger.error(
+                        "An error occurred while stopping consumer process of subscription {}",
+                        getSubscriptionName(),
+                        exceptionWhileStopping);
             } finally {
                 onConsumerStopped.accept(getSubscriptionName());
                 Thread.currentThread().setName("consumer-released-thread");
@@ -114,7 +120,10 @@ public class ConsumerProcess implements Runnable {
                     start(signal);
                     break;
                 case STOP:
-                    logger.info("Stopping main loop for consumer {}. {}", signal.getTarget(), signal.getLogWithIdAndType());
+                    logger.info(
+                            "Stopping main loop for consumer {}. {}",
+                            signal.getTarget(),
+                            signal.getLogWithIdAndType());
                     this.running = false;
                     break;
                 case RETRANSMIT:
@@ -138,14 +147,19 @@ public class ConsumerProcess implements Runnable {
 
     private void start(Signal signal) {
         long startTime = clock.millis();
-        logger.info("Starting consumer for subscription {}. {}",
-                getSubscriptionName(), signal.getLogWithIdAndType());
+        logger.info(
+                "Starting consumer for subscription {}. {}",
+                getSubscriptionName(),
+                signal.getLogWithIdAndType());
 
         consumer.initialize();
 
         long initializationTime = clock.millis();
-        logger.info("Started consumer for subscription {} in {}ms. {}",
-                getSubscriptionName(), initializationTime - startTime, signal.getLogWithIdAndType());
+        logger.info(
+                "Started consumer for subscription {} in {}ms. {}",
+                getSubscriptionName(),
+                initializationTime - startTime,
+                signal.getLogWithIdAndType());
         signalTimesheet.put(START, initializationTime);
     }
 
@@ -155,28 +169,36 @@ public class ConsumerProcess implements Runnable {
 
         consumer.tearDown();
 
-        logger.info("Stopped consumer for subscription {} in {}ms", getSubscriptionName(), clock.millis() - startTime);
+        logger.info(
+                "Stopped consumer for subscription {} in {}ms",
+                getSubscriptionName(),
+                clock.millis() - startTime);
     }
 
     private void retransmit(Signal signal) {
         long startTime = clock.millis();
-        logger.info("Starting retransmission for consumer of subscription {}. {}",
-                getSubscriptionName(), signal.getLogWithIdAndType());
+        logger.info(
+                "Starting retransmission for consumer of subscription {}. {}",
+                getSubscriptionName(),
+                signal.getLogWithIdAndType());
         try {
             retransmitter.reloadOffsets(getSubscriptionName(), consumer);
-            logger.info("Done retransmission for consumer of subscription {} in {}ms",
-                    getSubscriptionName(), clock.millis() - startTime);
+            logger.info(
+                    "Done retransmission for consumer of subscription {} in {}ms",
+                    getSubscriptionName(),
+                    clock.millis() - startTime);
         } catch (Exception ex) {
-            logger.error("Failed retransmission for consumer of subscription {} in {}ms",
-                    getSubscriptionName(), clock.millis() - startTime, ex);
+            logger.error(
+                    "Failed retransmission for consumer of subscription {} in {}ms",
+                    getSubscriptionName(),
+                    clock.millis() - startTime,
+                    ex);
         }
     }
 
     @Override
     public String toString() {
-        return "ConsumerProcess{"
-                + "subscriptionName=" + getSubscriptionName()
-                + '}';
+        return "ConsumerProcess{" + "subscriptionName=" + getSubscriptionName() + '}';
     }
 
     @Override
@@ -210,7 +232,9 @@ public class ConsumerProcess implements Runnable {
 
     private void addSignal(Signal signal) {
         if (!this.signals.add(signal)) {
-            logger.error("[Queue: consumerProcessSignals] Unable to add item: queue is full. Offered item: {}", signal);
+            logger.error(
+                    "[Queue: consumerProcessSignals] Unable to add item: queue is full. Offered item: {}",
+                    signal);
         }
     }
 }

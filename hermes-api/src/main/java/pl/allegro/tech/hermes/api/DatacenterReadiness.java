@@ -10,8 +10,9 @@ public class DatacenterReadiness {
     private final ReadinessStatus status;
 
     @JsonCreator
-    public DatacenterReadiness(@JsonProperty("datacenter") String datacenter,
-                               @JsonProperty("status") ReadinessStatus status) {
+    public DatacenterReadiness(
+            @JsonProperty("datacenter") String datacenter,
+            @JsonProperty("status") ReadinessStatus status) {
         this.datacenter = datacenter;
         this.status = status;
     }
@@ -27,8 +28,11 @@ public class DatacenterReadiness {
     @Override
     public String toString() {
         return "DatacenterReadiness{"
-                + "datacenter='" + datacenter + '\''
-                + ", status=" + status
+                + "datacenter='"
+                + datacenter
+                + '\''
+                + ", status="
+                + status
                 + '}';
     }
 
@@ -41,8 +45,7 @@ public class DatacenterReadiness {
             return false;
         }
         DatacenterReadiness that = (DatacenterReadiness) o;
-        return status == that.status
-                && Objects.equals(datacenter, that.datacenter);
+        return status == that.status && Objects.equals(datacenter, that.datacenter);
     }
 
     @Override

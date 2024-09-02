@@ -1,6 +1,9 @@
 package pl.allegro.tech.hermes.consumers.test;
 
+import static com.google.common.collect.ImmutableMap.of;
+
 import org.apache.avro.Schema;
+
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Header;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
@@ -14,8 +17,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
-import static com.google.common.collect.ImmutableMap.of;
 
 public final class MessageBuilder {
 
@@ -35,8 +36,7 @@ public final class MessageBuilder {
     private String subscription;
     private boolean hasSubscriptionIdentityHeaders;
 
-    private MessageBuilder() {
-    }
+    private MessageBuilder() {}
 
     public static MessageBuilder newBuilder() {
         return new MessageBuilder();
@@ -54,7 +54,8 @@ public final class MessageBuilder {
                 .withContentType(ContentType.JSON)
                 .withPublishingTimestamp(123L)
                 .withReadingTimestamp(123L)
-                .withPartitionOffset(new PartitionOffset(KafkaTopicName.valueOf("kafka_topic"), 123, 1))
+                .withPartitionOffset(
+                        new PartitionOffset(KafkaTopicName.valueOf("kafka_topic"), 123, 1))
                 .withExternalMetadata(of("Trace-Id", "traceId"))
                 .withAdditionalHeaders(Collections.emptyList())
                 .withSubscription("subscriptionId")
@@ -62,9 +63,20 @@ public final class MessageBuilder {
     }
 
     public Message build() {
-        return new Message(id, topic, content, contentType, schema, publishingTimestamp,
-                readingTimestamp, partitionOffset, partitionAssignmentTerm, externalMetadata, additionalHeaders,
-                subscription, hasSubscriptionIdentityHeaders);
+        return new Message(
+                id,
+                topic,
+                content,
+                contentType,
+                schema,
+                publishingTimestamp,
+                readingTimestamp,
+                partitionOffset,
+                partitionAssignmentTerm,
+                externalMetadata,
+                additionalHeaders,
+                subscription,
+                hasSubscriptionIdentityHeaders);
     }
 
     public MessageBuilder withId(String id) {
@@ -113,7 +125,8 @@ public final class MessageBuilder {
     }
 
     public MessageBuilder withPartitionOffset(String kafkaTopic, int partition, long offset) {
-        this.partitionOffset = new PartitionOffset(KafkaTopicName.valueOf(kafkaTopic), offset, partition);
+        this.partitionOffset =
+                new PartitionOffset(KafkaTopicName.valueOf(kafkaTopic), offset, partition);
         return this;
     }
 
@@ -137,7 +150,8 @@ public final class MessageBuilder {
         return this;
     }
 
-    public MessageBuilder withHasSubscriptionIdentityHeaders(boolean hasSubscriptionIdentityHeaders) {
+    public MessageBuilder withHasSubscriptionIdentityHeaders(
+            boolean hasSubscriptionIdentityHeaders) {
         this.hasSubscriptionIdentityHeaders = hasSubscriptionIdentityHeaders;
         return this;
     }

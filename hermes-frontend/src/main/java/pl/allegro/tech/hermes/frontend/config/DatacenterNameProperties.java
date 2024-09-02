@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.frontend.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+
 import pl.allegro.tech.hermes.infrastructure.dc.DcNameSource;
 
 @ConfigurationProperties(prefix = "frontend.datacenter.name")

@@ -1,10 +1,12 @@
 package pl.allegro.tech.hermes.frontend.config;
 
 import jakarta.inject.Named;
+
 import org.apache.curator.framework.CuratorFramework;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
@@ -38,25 +40,33 @@ public class FrontendConfiguration {
     }
 
     @Bean(initMethod = "start")
-    public TopicsCache notificationBasedTopicsCache(InternalNotificationsBus internalNotificationsBus,
-                                                    GroupRepository groupRepository,
-                                                    TopicRepository topicRepository,
-                                                    MetricsFacade metricsFacade,
-                                                    ThroughputRegistry throughputRegistry,
-                                                    KafkaNamesMapper kafkaNamesMapper,
-                                                    BlacklistZookeeperNotifyingCache blacklistZookeeperNotifyingCache) {
+    public TopicsCache notificationBasedTopicsCache(
+            InternalNotificationsBus internalNotificationsBus,
+            GroupRepository groupRepository,
+            TopicRepository topicRepository,
+            MetricsFacade metricsFacade,
+            ThroughputRegistry throughputRegistry,
+            KafkaNamesMapper kafkaNamesMapper,
+            BlacklistZookeeperNotifyingCache blacklistZookeeperNotifyingCache) {
 
-        return new NotificationBasedTopicsCache(internalNotificationsBus, blacklistZookeeperNotifyingCache,
-                groupRepository, topicRepository, metricsFacade, throughputRegistry, kafkaNamesMapper);
+        return new NotificationBasedTopicsCache(
+                internalNotificationsBus,
+                blacklistZookeeperNotifyingCache,
+                groupRepository,
+                topicRepository,
+                metricsFacade,
+                throughputRegistry,
+                kafkaNamesMapper);
     }
 
     @Bean
-    public BackupMessagesLoader backupMessagesLoader(@Named("localDatacenterBrokerProducer") BrokerMessageProducer brokerMessageProducer,
-                                                     BrokerListeners brokerListeners,
-                                                     TopicsCache topicsCache,
-                                                     SchemaRepository schemaRepository,
-                                                     Trackers trackers,
-                                                     LocalMessageStorageProperties localMessageStorageProperties) {
+    public BackupMessagesLoader backupMessagesLoader(
+            @Named("localDatacenterBrokerProducer") BrokerMessageProducer brokerMessageProducer,
+            BrokerListeners brokerListeners,
+            TopicsCache topicsCache,
+            SchemaRepository schemaRepository,
+            Trackers trackers,
+            LocalMessageStorageProperties localMessageStorageProperties) {
         return new BackupMessagesLoader(
                 brokerMessageProducer,
                 brokerMessageProducer,
@@ -65,23 +75,27 @@ public class FrontendConfiguration {
                 schemaRepository,
                 new SchemaExistenceEnsurer(schemaRepository),
                 trackers,
-                localMessageStorageProperties
-        );
+                localMessageStorageProperties);
     }
 
     @Bean(initMethod = "extend")
-    public PersistentBufferExtension persistentBufferExtension(LocalMessageStorageProperties localMessageStorageProperties,
-                                                               Clock clock,
-                                                               BrokerListeners listeners,
-                                                               BackupMessagesLoader backupMessagesLoader,
-                                                               MetricsFacade metricsFacade) {
-        return new PersistentBufferExtension(localMessageStorageProperties, clock, listeners, backupMessagesLoader,
+    public PersistentBufferExtension persistentBufferExtension(
+            LocalMessageStorageProperties localMessageStorageProperties,
+            Clock clock,
+            BrokerListeners listeners,
+            BackupMessagesLoader backupMessagesLoader,
+            MetricsFacade metricsFacade) {
+        return new PersistentBufferExtension(
+                localMessageStorageProperties,
+                clock,
+                listeners,
+                backupMessagesLoader,
                 metricsFacade);
     }
 
     @Bean(initMethod = "startup")
-    public BlacklistZookeeperNotifyingCache blacklistZookeeperNotifyingCache(CuratorFramework curator,
-                                                                             ZookeeperPaths zookeeperPaths) {
+    public BlacklistZookeeperNotifyingCache blacklistZookeeperNotifyingCache(
+            CuratorFramework curator, ZookeeperPaths zookeeperPaths) {
         return new BlacklistZookeeperNotifyingCache(curator, zookeeperPaths);
     }
 

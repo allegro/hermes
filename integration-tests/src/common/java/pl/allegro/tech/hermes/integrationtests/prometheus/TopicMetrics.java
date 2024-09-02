@@ -19,11 +19,7 @@ public record TopicMetrics(TopicName name, int rate, int deliveryRate, int throu
                         "vector",
                         List.of(
                                 new PrometheusResponse.Result(
-                                        List.of(TIMESTAMP, String.valueOf(rate))
-                                )
-                        )
-                )
-        );
+                                        List.of(TIMESTAMP, String.valueOf(rate))))));
     }
 
     PrometheusResponse toDeliveredResponse() {
@@ -33,11 +29,7 @@ public record TopicMetrics(TopicName name, int rate, int deliveryRate, int throu
                         "vector",
                         List.of(
                                 new PrometheusResponse.Result(
-                                        List.of(TIMESTAMP, String.valueOf(deliveryRate))
-                                )
-                        )
-                )
-        );
+                                        List.of(TIMESTAMP, String.valueOf(deliveryRate))))));
     }
 
     PrometheusResponse toPrometheusThroughputResponse() {
@@ -47,11 +39,7 @@ public record TopicMetrics(TopicName name, int rate, int deliveryRate, int throu
                         "vector",
                         List.of(
                                 new PrometheusResponse.Result(
-                                        List.of(TIMESTAMP, String.valueOf(throughput))
-                                )
-                        )
-                )
-        );
+                                        List.of(TIMESTAMP, String.valueOf(throughput))))));
     }
 
     public static class TopicMetricsBuilder {

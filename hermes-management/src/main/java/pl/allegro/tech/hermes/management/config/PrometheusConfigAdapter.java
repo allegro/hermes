@@ -22,11 +22,9 @@ public class PrometheusConfigAdapter implements PrometheusConfig {
         return prometheusReporterProperties.getStep();
     }
 
-    /**
-     * Returning null is fine since we override all the methods from PrometheusConfig.
-     */
+    /** Returning null is fine since we override all the methods from PrometheusConfig. */
     @Override
     public String get(String key) {
-        return null;  // Nothing to see here, move along.
+        return null; // Nothing to see here, move along.
     }
 }

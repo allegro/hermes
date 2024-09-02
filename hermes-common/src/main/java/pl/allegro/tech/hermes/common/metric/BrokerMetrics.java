@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.common.metric;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
+
 import pl.allegro.tech.hermes.api.Topic;
 
 import java.time.Duration;

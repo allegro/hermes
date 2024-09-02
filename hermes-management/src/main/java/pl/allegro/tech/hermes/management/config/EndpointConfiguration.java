@@ -5,6 +5,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
 import pl.allegro.tech.hermes.management.api.auth.AllowAllSecurityProvider;
 import pl.allegro.tech.hermes.management.api.auth.SecurityProvider;
 
@@ -12,8 +13,7 @@ import pl.allegro.tech.hermes.management.api.auth.SecurityProvider;
 @EnableConfigurationProperties(JerseyProperties.class)
 public class EndpointConfiguration {
 
-    @Autowired
-    private JerseyProperties jerseyProperties;
+    @Autowired private JerseyProperties jerseyProperties;
 
     @Bean
     JerseyResourceConfig resourceConfig() {

@@ -1,9 +1,15 @@
 package pl.allegro.tech.hermes.frontend.producer.kafka;
 
+import static org.apache.kafka.common.config.ConfigResource.Type.TOPIC;
+import static org.apache.kafka.common.config.TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG;
+
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
+
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.Config;
 import org.apache.kafka.clients.admin.ConfigEntry;
@@ -14,10 +20,6 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static org.apache.kafka.common.config.ConfigResource.Type.TOPIC;
-import static org.apache.kafka.common.config.TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG;
-
 class MinInSyncReplicasLoader {
 
     private final AdminClient adminClient;
@@ -25,9 +27,10 @@ class MinInSyncReplicasLoader {
 
     MinInSyncReplicasLoader(AdminClient adminClient, Duration metadataMaxAge) {
         this.adminClient = adminClient;
-        this.minInSyncReplicasCache = CacheBuilder.newBuilder()
-                .expireAfterWrite(metadataMaxAge.toMillis(), MILLISECONDS)
-                .build(new MinInSyncReplicasCacheLoader());
+        this.minInSyncReplicasCache =
+                CacheBuilder.newBuilder()
+                        .expireAfterWrite(metadataMaxAge.toMillis(), MILLISECONDS)
+                        .build(new MinInSyncReplicasCacheLoader());
     }
 
     int get(String kafkaTopicName) throws ExecutionException {
@@ -43,7 +46,8 @@ class MinInSyncReplicasLoader {
         @Override
         public Integer load(String kafkaTopicName) throws Exception {
             ConfigResource resource = new ConfigResource(TOPIC, kafkaTopicName);
-            DescribeConfigsResult describeTopicsResult = adminClient.describeConfigs(ImmutableList.of(resource));
+            DescribeConfigsResult describeTopicsResult =
+                    adminClient.describeConfigs(ImmutableList.of(resource));
             Map<ConfigResource, Config> configMap = describeTopicsResult.all().get();
             Config config = configMap.get(resource);
             ConfigEntry configEntry = config.get(MIN_IN_SYNC_REPLICAS_CONFIG);

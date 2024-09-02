@@ -9,7 +9,9 @@ import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.common.collect.ImmutableSet;
+
 import jakarta.inject.Named;
+
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.Request;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -18,6 +20,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
+
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
 import pl.allegro.tech.hermes.common.ssl.SslContextFactory;
@@ -57,14 +60,15 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ScheduledExecutorService;
+
 import javax.jms.Message;
 
 @Configuration
 @EnableConfigurationProperties({
-        SslContextProperties.class,
-        HttpClientsMonitoringProperties.class,
-        SenderAsyncTimeoutProperties.class,
-        BatchProperties.class
+    SslContextProperties.class,
+    HttpClientsMonitoringProperties.class,
+    SenderAsyncTimeoutProperties.class,
+    BatchProperties.class
 })
 public class ConsumerSenderConfiguration {
 
@@ -78,7 +82,8 @@ public class ConsumerSenderConfiguration {
     public HttpClient http1SerialClient(
             HttpClientsFactory httpClientsFactory,
             @Named("http1-serial-client-parameters") Http1ClientParameters http1ClientParameters) {
-        return httpClientsFactory.createClientForHttp1("jetty-http1-serial-client", http1ClientParameters);
+        return httpClientsFactory.createClientForHttp1(
+                "jetty-http1-serial-client", http1ClientParameters);
     }
 
     @Bean(name = "http2-serial-client-parameters")
@@ -94,7 +99,9 @@ public class ConsumerSenderConfiguration {
         if (!http2ClientProperties.isEnabled()) {
             return new Http2ClientHolder(null);
         } else {
-            return new Http2ClientHolder(httpClientsFactory.createClientForHttp2("jetty-http2-serial-client", http2ClientProperties));
+            return new Http2ClientHolder(
+                    httpClientsFactory.createClientForHttp2(
+                            "jetty-http2-serial-client", http2ClientProperties));
         }
     }
 
@@ -108,36 +115,37 @@ public class ConsumerSenderConfiguration {
     public HttpClient http1BatchClient(
             HttpClientsFactory httpClientsFactory,
             @Named("http1-batch-client-parameters") Http1ClientParameters http1ClientParameters) {
-        return httpClientsFactory.createClientForHttp1("jetty-http1-batch-client", http1ClientParameters);
+        return httpClientsFactory.createClientForHttp1(
+                "jetty-http1-batch-client", http1ClientParameters);
     }
 
     @Bean(name = "oauth-http-client")
-    public HttpClient oauthHttpClient(HttpClientsFactory httpClientsFactory,
-                                      @Named("http1-serial-client-parameters") Http1ClientParameters http1ClientParameters) {
-        return httpClientsFactory.createClientForHttp1("jetty-http-oauthclient", http1ClientParameters);
+    public HttpClient oauthHttpClient(
+            HttpClientsFactory httpClientsFactory,
+            @Named("http1-serial-client-parameters") Http1ClientParameters http1ClientParameters) {
+        return httpClientsFactory.createClientForHttp1(
+                "jetty-http-oauthclient", http1ClientParameters);
     }
 
-
     @Bean(destroyMethod = "stop")
-    public BatchHttpRequestFactory batchHttpRequestFactory(@Named("http1-batch-client") HttpClient httpClient) {
+    public BatchHttpRequestFactory batchHttpRequestFactory(
+            @Named("http1-batch-client") HttpClient httpClient) {
         return new DefaultBatchHttpRequestFactory(httpClient);
     }
 
     @Bean
-    public MessageBatchSenderFactory httpMessageBatchSenderFactory(SendingResultHandlers resultHandlers,
-                                                                   BatchHttpRequestFactory batchHttpRequestFactory
-    ) {
-        return new HttpMessageBatchSenderFactory(
-                resultHandlers,
-                batchHttpRequestFactory);
+    public MessageBatchSenderFactory httpMessageBatchSenderFactory(
+            SendingResultHandlers resultHandlers, BatchHttpRequestFactory batchHttpRequestFactory) {
+        return new HttpMessageBatchSenderFactory(resultHandlers, batchHttpRequestFactory);
     }
 
     @Bean(initMethod = "start")
-    public HttpClientsWorkloadReporter httpClientsWorkloadReporter(MetricsFacade metrics,
-                                                                   @Named("http1-serial-client") HttpClient http1SerialClient,
-                                                                   @Named("http1-batch-client") HttpClient http1BatchClient,
-                                                                   Http2ClientHolder http2ClientHolder,
-                                                                   HttpClientsMonitoringProperties monitoringProperties) {
+    public HttpClientsWorkloadReporter httpClientsWorkloadReporter(
+            MetricsFacade metrics,
+            @Named("http1-serial-client") HttpClient http1SerialClient,
+            @Named("http1-batch-client") HttpClient http1BatchClient,
+            Http2ClientHolder http2ClientHolder,
+            HttpClientsMonitoringProperties monitoringProperties) {
         return new HttpClientsWorkloadReporter(
                 metrics,
                 http1SerialClient,
@@ -148,19 +156,21 @@ public class ConsumerSenderConfiguration {
     }
 
     @Bean(destroyMethod = "closeProviders")
-    public MessageSenderFactory messageSenderFactory(List<ProtocolMessageSenderProvider> providers) {
+    public MessageSenderFactory messageSenderFactory(
+            List<ProtocolMessageSenderProvider> providers) {
         return new MessageSenderFactory(providers);
     }
 
     @Bean(name = "defaultHttpMessageSenderProvider")
-    public ProtocolMessageSenderProvider jettyHttpMessageSenderProvider(@Named("http1-serial-client") HttpClient httpClient,
-                                                                        Http2ClientHolder http2ClientHolder,
-                                                                        EndpointAddressResolver endpointAddressResolver,
-                                                                        MetadataAppender<Request> metadataAppender,
-                                                                        HttpAuthorizationProviderFactory authorizationProviderFactory,
-                                                                        HttpHeadersProvidersFactory httpHeadersProviderFactory,
-                                                                        SendingResultHandlers sendingResultHandlers,
-                                                                        HttpRequestFactoryProvider requestFactoryProvider) {
+    public ProtocolMessageSenderProvider jettyHttpMessageSenderProvider(
+            @Named("http1-serial-client") HttpClient httpClient,
+            Http2ClientHolder http2ClientHolder,
+            EndpointAddressResolver endpointAddressResolver,
+            MetadataAppender<Request> metadataAppender,
+            HttpAuthorizationProviderFactory authorizationProviderFactory,
+            HttpHeadersProvidersFactory httpHeadersProviderFactory,
+            SendingResultHandlers sendingResultHandlers,
+            HttpRequestFactoryProvider requestFactoryProvider) {
         return new JettyHttpMessageSenderProvider(
                 httpClient,
                 http2ClientHolder,
@@ -170,8 +180,7 @@ public class ConsumerSenderConfiguration {
                 httpHeadersProviderFactory,
                 sendingResultHandlers,
                 requestFactoryProvider,
-                ImmutableSet.of("http", "https")
-        );
+                ImmutableSet.of("http", "https"));
     }
 
     @Bean
@@ -194,26 +203,29 @@ public class ConsumerSenderConfiguration {
         return new EmptyHttpHeadersProvidersFactory();
     }
 
-
     @Bean
-    public HttpClientsFactory httpClientsFactory(InstrumentedExecutorServiceFactory executorFactory,
-                                                 SslContextFactoryProvider sslContextFactoryProvider) {
+    public HttpClientsFactory httpClientsFactory(
+            InstrumentedExecutorServiceFactory executorFactory,
+            SslContextFactoryProvider sslContextFactoryProvider) {
         return new HttpClientsFactory(executorFactory, sslContextFactoryProvider);
     }
 
     @Bean
-    public SslContextFactoryProvider sslContextFactoryProvider(Optional<SslContextFactory> sslContextFactory,
-                                                               SslContextProperties sslContextProperties) {
+    public SslContextFactoryProvider sslContextFactoryProvider(
+            Optional<SslContextFactory> sslContextFactory,
+            SslContextProperties sslContextProperties) {
         return new SslContextFactoryProvider(sslContextFactory.orElse(null), sslContextProperties);
     }
 
     @Bean
-    public HttpAuthorizationProviderFactory httpAuthorizationProviderFactory(OAuthAccessTokens accessTokens) {
+    public HttpAuthorizationProviderFactory httpAuthorizationProviderFactory(
+            OAuthAccessTokens accessTokens) {
         return new HttpAuthorizationProviderFactory(accessTokens);
     }
 
     @Bean(name = "defaultJmsMessageSenderProvider")
-    public ProtocolMessageSenderProvider jmsHornetQMessageSenderProvider(MetadataAppender<Message> metadataAppender) {
+    public ProtocolMessageSenderProvider jmsHornetQMessageSenderProvider(
+            MetadataAppender<Message> metadataAppender) {
         return new JmsHornetQMessageSenderProvider(metadataAppender);
     }
 
@@ -238,8 +250,7 @@ public class ConsumerSenderConfiguration {
                 retrySettings,
                 batchingSettings,
                 transportChannelProvider,
-                googlePubSubMessageTransformerCreator
-        );
+                googlePubSubMessageTransformerCreator);
     }
 
     @Bean
@@ -255,18 +266,22 @@ public class ConsumerSenderConfiguration {
     }
 
     @Bean
-    public EndpointAddressResolver interpolatingEndpointAddressResolver(UriInterpolator interpolator) {
+    public EndpointAddressResolver interpolatingEndpointAddressResolver(
+            UriInterpolator interpolator) {
         return new InterpolatingEndpointAddressResolver(interpolator);
     }
 
     @Bean
-    public FutureAsyncTimeout futureAsyncTimeoutFactory(InstrumentedExecutorServiceFactory executorFactory,
-                                                        SenderAsyncTimeoutProperties senderAsyncTimeoutProperties) {
-        ScheduledExecutorService timeoutExecutorService = executorFactory.scheduledExecutorBuilder(
-                        "async-timeout",
-                        senderAsyncTimeoutProperties.getThreadPoolSize()
-                ).withMonitoringEnabled(senderAsyncTimeoutProperties.isThreadPoolMonitoringEnabled())
-                .create();
+    public FutureAsyncTimeout futureAsyncTimeoutFactory(
+            InstrumentedExecutorServiceFactory executorFactory,
+            SenderAsyncTimeoutProperties senderAsyncTimeoutProperties) {
+        ScheduledExecutorService timeoutExecutorService =
+                executorFactory
+                        .scheduledExecutorBuilder(
+                                "async-timeout", senderAsyncTimeoutProperties.getThreadPoolSize())
+                        .withMonitoringEnabled(
+                                senderAsyncTimeoutProperties.isThreadPoolMonitoringEnabled())
+                        .create();
         return new FutureAsyncTimeout(timeoutExecutorService);
     }
 }

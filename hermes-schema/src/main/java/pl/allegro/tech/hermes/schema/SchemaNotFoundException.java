@@ -6,7 +6,11 @@ import pl.allegro.tech.hermes.api.Topic;
 public class SchemaNotFoundException extends SchemaException {
 
     SchemaNotFoundException(Topic topic, SchemaVersion schemaVersion) {
-        super("No schema source for topic " + topic.getQualifiedName() + " at version " + schemaVersion.value());
+        super(
+                "No schema source for topic "
+                        + topic.getQualifiedName()
+                        + " at version "
+                        + schemaVersion.value());
     }
 
     SchemaNotFoundException(Topic topic) {

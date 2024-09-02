@@ -1,7 +1,18 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
+
 import org.junit.Before;
 import org.junit.Test;
+
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
@@ -14,18 +25,10 @@ import pl.allegro.tech.hermes.test.helper.zookeeper.ZookeeperBaseTest;
 import java.time.Duration;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
-
 public class WorkloadSupervisorIntegrationTest extends ZookeeperBaseTest {
 
-    private static final ConsumerTestRuntimeEnvironment runtime = new ConsumerTestRuntimeEnvironment(ZookeeperBaseTest::newClient);
+    private static final ConsumerTestRuntimeEnvironment runtime =
+            new ConsumerTestRuntimeEnvironment(ZookeeperBaseTest::newClient);
 
     @Before
     public void setup() throws Exception {
@@ -66,7 +69,8 @@ public class WorkloadSupervisorIntegrationTest extends ZookeeperBaseTest {
         runtime.kill(leader);
 
         // then
-        await().atMost(adjust(Duration.ofSeconds(5))).until(() -> runtime.findLeader(supervisors) != leader);
+        await().atMost(adjust(Duration.ofSeconds(5)))
+                .until(() -> runtime.findLeader(supervisors) != leader);
         await().atMost(adjust(Duration.ofSeconds(5))).until(() -> !leader.isLeader());
     }
 
@@ -107,7 +111,8 @@ public class WorkloadSupervisorIntegrationTest extends ZookeeperBaseTest {
         List<SubscriptionName> subscriptions = runtime.createSubscription(2);
 
         // then
-        subscriptions.forEach(subscription -> runtime.awaitUntilAssignmentExists(subscription, node));
+        subscriptions.forEach(
+                subscription -> runtime.awaitUntilAssignmentExists(subscription, node));
 
         shutdown(node);
     }
@@ -118,13 +123,10 @@ public class WorkloadSupervisorIntegrationTest extends ZookeeperBaseTest {
         ConsumerFactory consumerFactory = mock(ConsumerFactory.class);
 
         when(consumerFactory.createConsumer(any(Subscription.class)))
-                .thenThrow(
-                        new InternalProcessingException("failed to create consumer"))
-                .thenReturn(
-                        mock(SerialConsumer.class));
+                .thenThrow(new InternalProcessingException("failed to create consumer"))
+                .thenReturn(mock(SerialConsumer.class));
 
         String consumerId = "consumer";
-
 
         ConsumersSupervisor supervisor = runtime.consumersSupervisor(consumerFactory);
         WorkloadSupervisor node = runtime.spawnConsumer(consumerId, supervisor);
@@ -132,12 +134,13 @@ public class WorkloadSupervisorIntegrationTest extends ZookeeperBaseTest {
         runtime.awaitUntilAssignmentExists(runtime.createSubscription(), node);
 
         // when
-        ConsumersRuntimeMonitor monitor = runtime.monitor(consumerId, supervisor, node, Duration.ofSeconds(1));
+        ConsumersRuntimeMonitor monitor =
+                runtime.monitor(consumerId, supervisor, node, Duration.ofSeconds(1));
         monitor.start();
 
         // then
-        await().atMost(Duration.ofSeconds(5)).untilAsserted(
-                () -> verify(consumerFactory, times(2)).createConsumer(any()));
+        await().atMost(Duration.ofSeconds(5))
+                .untilAsserted(() -> verify(consumerFactory, times(2)).createConsumer(any()));
 
         shutdown(supervisor);
         shutdown(node);

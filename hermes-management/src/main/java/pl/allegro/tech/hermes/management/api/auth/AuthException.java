@@ -8,7 +8,7 @@ public class AuthException extends ManagementException {
     public AuthException(String message) {
         super(message);
     }
-    
+
     public AuthException(RuntimeException ex) {
         super("Exception while authorization: " + ex.getMessage(), ex);
     }

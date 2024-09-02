@@ -6,7 +6,8 @@ import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraintsRep
 import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryCommand;
 
-public class CreateTopicConstraintsRepositoryCommand extends RepositoryCommand<WorkloadConstraintsRepository> {
+public class CreateTopicConstraintsRepositoryCommand
+        extends RepositoryCommand<WorkloadConstraintsRepository> {
 
     private final TopicName topicName;
     private final Constraints constraints;
@@ -28,7 +29,9 @@ public class CreateTopicConstraintsRepositoryCommand extends RepositoryCommand<W
     }
 
     @Override
-    public void rollback(DatacenterBoundRepositoryHolder<WorkloadConstraintsRepository> holder, Exception exception) {
+    public void rollback(
+            DatacenterBoundRepositoryHolder<WorkloadConstraintsRepository> holder,
+            Exception exception) {
         if (!exist) {
             holder.getRepository().deleteConstraints(topicName);
         }

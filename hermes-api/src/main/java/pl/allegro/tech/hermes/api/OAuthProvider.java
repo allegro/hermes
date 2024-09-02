@@ -1,7 +1,10 @@
 package pl.allegro.tech.hermes.api;
 
+import static pl.allegro.tech.hermes.api.constraints.Names.ALLOWED_NAME_REGEX;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
@@ -9,8 +12,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
 import java.util.Objects;
-
-import static pl.allegro.tech.hermes.api.constraints.Names.ALLOWED_NAME_REGEX;
 
 public class OAuthProvider implements Anonymizable {
 
@@ -21,14 +22,11 @@ public class OAuthProvider implements Anonymizable {
     @Pattern(regexp = ALLOWED_NAME_REGEX)
     private final String name;
 
-    @NotEmpty
-    private final String tokenEndpoint;
+    @NotEmpty private final String tokenEndpoint;
 
-    @NotEmpty
-    private final String clientId;
+    @NotEmpty private final String clientId;
 
-    @NotEmpty
-    private final String clientSecret;
+    @NotEmpty private final String clientSecret;
 
     @Min(0)
     @Max(3600_000)
@@ -51,14 +49,15 @@ public class OAuthProvider implements Anonymizable {
     private Integer socketTimeout;
 
     @JsonCreator
-    public OAuthProvider(@JsonProperty("name") String name,
-                         @JsonProperty("tokenEndpoint") String tokenEndpoint,
-                         @JsonProperty("clientId") String clientId,
-                         @JsonProperty("clientSecret") String clientSecret,
-                         @JsonProperty("tokenRequestInitialDelay") Integer tokenRequestInitialDelay,
-                         @JsonProperty("tokenRequestMaxDelay") Integer tokenRequestMaxDelay,
-                         @JsonProperty("requestTimeout") Integer requestTimeout,
-                         @JsonProperty("socketTimeout") Integer socketTimeout) {
+    public OAuthProvider(
+            @JsonProperty("name") String name,
+            @JsonProperty("tokenEndpoint") String tokenEndpoint,
+            @JsonProperty("clientId") String clientId,
+            @JsonProperty("clientSecret") String clientSecret,
+            @JsonProperty("tokenRequestInitialDelay") Integer tokenRequestInitialDelay,
+            @JsonProperty("tokenRequestMaxDelay") Integer tokenRequestMaxDelay,
+            @JsonProperty("requestTimeout") Integer requestTimeout,
+            @JsonProperty("socketTimeout") Integer socketTimeout) {
         this.name = name;
         this.tokenEndpoint = tokenEndpoint;
         this.clientId = clientId;
@@ -102,8 +101,15 @@ public class OAuthProvider implements Anonymizable {
     }
 
     public OAuthProvider anonymize() {
-        return new OAuthProvider(name, tokenEndpoint, clientId, ANONYMIZED_CLIENT_SECRET,
-                tokenRequestInitialDelay, tokenRequestMaxDelay, requestTimeout, socketTimeout);
+        return new OAuthProvider(
+                name,
+                tokenEndpoint,
+                clientId,
+                ANONYMIZED_CLIENT_SECRET,
+                tokenRequestInitialDelay,
+                tokenRequestMaxDelay,
+                requestTimeout,
+                socketTimeout);
     }
 
     @Override

@@ -45,9 +45,6 @@ class RateInfo {
 
     @Override
     public String toString() {
-        return "RateInfo{"
-                + "maxRate=" + maxRate
-                + ", rateHistory=" + rateHistory
-                + '}';
+        return "RateInfo{" + "maxRate=" + maxRate + ", rateHistory=" + rateHistory + '}';
     }
 }

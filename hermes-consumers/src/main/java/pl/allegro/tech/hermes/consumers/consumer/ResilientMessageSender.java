@@ -20,11 +20,12 @@ public class ResilientMessageSender {
     private final int requestTimeoutMs;
     private final int asyncTimeoutMs;
 
-    public ResilientMessageSender(ConsumerRateLimiter rateLimiter,
-                                  Subscription subscription,
-                                  FutureAsyncTimeout async,
-                                  int requestTimeoutMs,
-                                  int asyncTimeoutMs) {
+    public ResilientMessageSender(
+            ConsumerRateLimiter rateLimiter,
+            Subscription subscription,
+            FutureAsyncTimeout async,
+            int requestTimeoutMs,
+            int asyncTimeoutMs) {
         this.rateLimiter = rateLimiter;
         this.ignore = ignorableErrors(subscription);
         this.async = async;
@@ -32,26 +33,27 @@ public class ResilientMessageSender {
         this.asyncTimeoutMs = asyncTimeoutMs;
     }
 
-    private static List<Predicate<MessageSendingResult>> ignorableErrors(Subscription subscription) {
+    private static List<Predicate<MessageSendingResult>> ignorableErrors(
+            Subscription subscription) {
         Predicate<MessageSendingResult> ignore =
-                result -> result.ignoreInRateCalculation(
-                        subscription.getSerialSubscriptionPolicy().isRetryClientErrors(),
-                        subscription.hasOAuthPolicy()
-                );
+                result ->
+                        result.ignoreInRateCalculation(
+                                subscription.getSerialSubscriptionPolicy().isRetryClientErrors(),
+                                subscription.hasOAuthPolicy());
         return Collections.singletonList(ignore);
     }
 
     public <T extends MessageSendingResult> CompletableFuture<T> send(
             Consumer<CompletableFuture<T>> resultFutureConsumer,
-            Function<Throwable, T> exceptionMapper
-    ) {
+            Function<Throwable, T> exceptionMapper) {
         try {
             CompletableFuture<T> resultFuture = new CompletableFuture<>();
             resultFutureConsumer.accept(resultFuture);
-            CompletableFuture<T> timeoutGuardedResultFuture = async.within(
-                    resultFuture,
-                    Duration.ofMillis(asyncTimeoutMs + requestTimeoutMs),
-                    exceptionMapper);
+            CompletableFuture<T> timeoutGuardedResultFuture =
+                    async.within(
+                            resultFuture,
+                            Duration.ofMillis(asyncTimeoutMs + requestTimeoutMs),
+                            exceptionMapper);
             return withCompletionHandle(timeoutGuardedResultFuture, exceptionMapper);
         } catch (Exception e) {
             rateLimiter.registerFailedSending();
@@ -60,22 +62,21 @@ public class ResilientMessageSender {
     }
 
     private <T extends MessageSendingResult> CompletableFuture<T> withCompletionHandle(
-            CompletableFuture<T> future,
-            Function<Throwable, T> exceptionMapper
-    ) {
-        return future.handle((result, throwable) -> {
-            if (throwable != null) {
-                rateLimiter.registerFailedSending();
-                return exceptionMapper.apply(throwable);
-            } else {
-                if (result.succeeded()) {
-                    rateLimiter.registerSuccessfulSending();
-                } else {
-                    registerResultInRateLimiter(result);
-                }
-                return result;
-            }
-        });
+            CompletableFuture<T> future, Function<Throwable, T> exceptionMapper) {
+        return future.handle(
+                (result, throwable) -> {
+                    if (throwable != null) {
+                        rateLimiter.registerFailedSending();
+                        return exceptionMapper.apply(throwable);
+                    } else {
+                        if (result.succeeded()) {
+                            rateLimiter.registerSuccessfulSending();
+                        } else {
+                            registerResultInRateLimiter(result);
+                        }
+                        return result;
+                    }
+                });
     }
 
     private void registerResultInRateLimiter(MessageSendingResult result) {
@@ -85,5 +86,4 @@ public class ResilientMessageSender {
             rateLimiter.registerFailedSending();
         }
     }
-
 }

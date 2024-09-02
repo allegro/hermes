@@ -1,9 +1,11 @@
 package pl.allegro.tech.hermes.consumers.consumer.oauth;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
@@ -27,14 +29,19 @@ public class OAuthSubscriptionHandler {
 
     private final ScheduledExecutorService executorService;
 
-    public OAuthSubscriptionHandler(SubscriptionName subscriptionName, String providerName, OAuthAccessTokens accessTokens,
-                                    OAuthTokenRequestRateLimiter rateLimiter) {
+    public OAuthSubscriptionHandler(
+            SubscriptionName subscriptionName,
+            String providerName,
+            OAuthAccessTokens accessTokens,
+            OAuthTokenRequestRateLimiter rateLimiter) {
         this.subscriptionName = subscriptionName;
         this.providerName = providerName;
         this.accessTokens = accessTokens;
         this.rateLimiter = rateLimiter;
         ThreadFactory threadFactory =
-                new ThreadFactoryBuilder().setNameFormat(subscriptionName.getQualifiedName() + "-oauth-handler-%d").build();
+                new ThreadFactoryBuilder()
+                        .setNameFormat(subscriptionName.getQualifiedName() + "-oauth-handler-%d")
+                        .build();
         this.executorService = Executors.newScheduledThreadPool(1, threadFactory);
     }
 
@@ -57,12 +64,17 @@ public class OAuthSubscriptionHandler {
             if (rateLimiter.tryAcquire()) {
                 logger.info("Refreshing token for subscription {}", subscriptionName);
                 rateLimiter.reduceRate();
-                executorService.schedule(() -> accessTokens.refreshToken(subscriptionName), 0, TimeUnit.MILLISECONDS);
+                executorService.schedule(
+                        () -> accessTokens.refreshToken(subscriptionName),
+                        0,
+                        TimeUnit.MILLISECONDS);
             }
         }
     }
 
-    private boolean shouldTryRefreshingToken(SubscriptionName subscriptionName, MessageSendingResult result) {
-        return result.getStatusCode() == HttpStatus.UNAUTHORIZED_401 || !accessTokens.tokenExists(subscriptionName);
+    private boolean shouldTryRefreshingToken(
+            SubscriptionName subscriptionName, MessageSendingResult result) {
+        return result.getStatusCode() == HttpStatus.UNAUTHORIZED_401
+                || !accessTokens.tokenExists(subscriptionName);
     }
 }

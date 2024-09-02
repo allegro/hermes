@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.frontend.readiness;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import pl.allegro.tech.hermes.frontend.producer.BrokerTopicAvailabilityChecker;
 
 import java.time.Duration;
@@ -20,18 +21,19 @@ public class DefaultReadinessChecker implements ReadinessChecker {
 
     private volatile boolean ready = false;
 
-    public DefaultReadinessChecker(BrokerTopicAvailabilityChecker brokerTopicAvailabilityChecker,
-                                   AdminReadinessService adminReadinessService,
-                                   boolean enabled,
-                                   boolean topicsCheckEnabled,
-                                   Duration interval) {
+    public DefaultReadinessChecker(
+            BrokerTopicAvailabilityChecker brokerTopicAvailabilityChecker,
+            AdminReadinessService adminReadinessService,
+            boolean enabled,
+            boolean topicsCheckEnabled,
+            Duration interval) {
         this.enabled = enabled;
         this.topicsCheckEnabled = topicsCheckEnabled;
         this.interval = interval;
         this.brokerTopicAvailabilityChecker = brokerTopicAvailabilityChecker;
         this.adminReadinessService = adminReadinessService;
-        ThreadFactory threadFactory = new ThreadFactoryBuilder()
-                .setNameFormat("ReadinessChecker-%d").build();
+        ThreadFactory threadFactory =
+                new ThreadFactoryBuilder().setNameFormat("ReadinessChecker-%d").build();
         this.scheduler = Executors.newSingleThreadScheduledExecutor(threadFactory);
     }
 
@@ -48,7 +50,8 @@ public class DefaultReadinessChecker implements ReadinessChecker {
         if (enabled) {
             ReadinessCheckerJob job = new ReadinessCheckerJob();
             job.run();
-            scheduler.scheduleAtFixedRate(job, interval.toSeconds(), interval.toSeconds(), TimeUnit.SECONDS);
+            scheduler.scheduleAtFixedRate(
+                    job, interval.toSeconds(), interval.toSeconds(), TimeUnit.SECONDS);
         }
     }
 

@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.management.infrastructure.kafka;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.google.common.collect.ImmutableMap;
+
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 
 import java.util.HashMap;
@@ -13,11 +14,11 @@ public class MultiDCOffsetChangeSummary {
 
     private Map<String, List<PartitionOffset>> partitionOffsetListPerBrokerName = new HashMap<>();
 
-    public MultiDCOffsetChangeSummary() {
-    }
+    public MultiDCOffsetChangeSummary() {}
 
     @JsonAnySetter
-    public void addPartitionOffsetList(String clusterName, List<PartitionOffset> partitionOffsetChange) {
+    public void addPartitionOffsetList(
+            String clusterName, List<PartitionOffset> partitionOffsetChange) {
         partitionOffsetListPerBrokerName.put(clusterName, partitionOffsetChange);
     }
 
@@ -25,5 +26,4 @@ public class MultiDCOffsetChangeSummary {
     public Map<String, List<PartitionOffset>> getPartitionOffsetListPerBrokerName() {
         return ImmutableMap.copyOf(partitionOffsetListPerBrokerName);
     }
-
 }

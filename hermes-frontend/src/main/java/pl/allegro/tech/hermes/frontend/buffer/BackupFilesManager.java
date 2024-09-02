@@ -1,6 +1,12 @@
 package pl.allegro.tech.hermes.frontend.buffer;
 
+import static com.google.common.collect.Lists.newArrayList;
+
+import static java.lang.String.format;
+import static java.util.stream.Collectors.toList;
+
 import com.google.common.io.PatternFilenameFilter;
+
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,10 +20,6 @@ import java.time.Clock;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-
-import static com.google.common.collect.Lists.newArrayList;
-import static java.lang.String.format;
-import static java.util.stream.Collectors.toList;
 
 public class BackupFilesManager {
 
@@ -49,12 +51,14 @@ public class BackupFilesManager {
             return Optional.empty();
         }
 
-        File timestampedBackupFile = new File(format("%s/%s-%s.dat", baseDir, FILE_NAME, clock.millis()));
+        File timestampedBackupFile =
+                new File(format("%s/%s-%s.dat", baseDir, FILE_NAME, clock.millis()));
 
         try {
             FileUtils.moveFile(backupFile, timestampedBackupFile);
         } catch (IOException e) {
-            logger.error("Error while moving backup file from path {} to path {}.",
+            logger.error(
+                    "Error while moving backup file from path {} to path {}.",
                     backupFile.getAbsolutePath(),
                     timestampedBackupFile.getAbsolutePath(),
                     e);
@@ -73,7 +77,8 @@ public class BackupFilesManager {
                     .map(Path::toFile)
                     .collect(toList());
         } catch (IOException e) {
-            logger.error("Error while scanning temporary backup v2 files from absolute path: {}",
+            logger.error(
+                    "Error while scanning temporary backup v2 files from absolute path: {}",
                     backupFile.getAbsolutePath(),
                     e);
             return Collections.emptyList();
@@ -90,6 +95,8 @@ public class BackupFilesManager {
     }
 
     public List<File> getRolledBackupFiles() {
-        return newArrayList(new File(baseDir).listFiles(new PatternFilenameFilter(TIMESTAMPED_BACKUP_FILE_PATTERN)));
+        return newArrayList(
+                new File(baseDir)
+                        .listFiles(new PatternFilenameFilter(TIMESTAMPED_BACKUP_FILE_PATTERN)));
     }
 }

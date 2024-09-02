@@ -1,7 +1,10 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload;
 
+import static org.slf4j.LoggerFactory.getLogger;
+
 import org.apache.curator.framework.CuratorFramework;
 import org.slf4j.Logger;
+
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistry;
 import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionIds;
@@ -16,8 +19,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.slf4j.LoggerFactory.getLogger;
-
 public class ClusterAssignmentCache {
 
     private static final Logger logger = getLogger(ClusterAssignmentCache.class);
@@ -28,14 +29,17 @@ public class ClusterAssignmentCache {
     private final String consumersPath;
     private final ZookeeperOperations zookeeper;
 
-    private final Map<String, Set<SubscriptionName>> consumerSubscriptions = new ConcurrentHashMap<>();
-    private final Set<SubscriptionAssignment> assignments = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    private final Map<String, Set<SubscriptionName>> consumerSubscriptions =
+            new ConcurrentHashMap<>();
+    private final Set<SubscriptionAssignment> assignments =
+            Collections.newSetFromMap(new ConcurrentHashMap<>());
 
-    public ClusterAssignmentCache(CuratorFramework curator,
-                                  String clusterName,
-                                  ZookeeperPaths zookeeperPaths,
-                                  SubscriptionIds subscriptionIds,
-                                  ConsumerNodesRegistry consumerNodesRegistry) {
+    public ClusterAssignmentCache(
+            CuratorFramework curator,
+            String clusterName,
+            ZookeeperPaths zookeeperPaths,
+            SubscriptionIds subscriptionIds,
+            ConsumerNodesRegistry consumerNodesRegistry) {
         this.zookeeper = new ZookeeperOperations(curator);
         this.consumerNodesRegistry = consumerNodesRegistry;
         this.paths = new WorkloadRegistryPaths(zookeeperPaths, clusterName);
@@ -55,9 +59,10 @@ public class ClusterAssignmentCache {
             if (activeConsumers.contains(consumer)) {
                 Set<SubscriptionName> subscriptions = readConsumerWorkload(consumer);
                 consumerSubscriptions.put(consumer, subscriptions);
-                subscriptions.forEach(subscription -> {
-                    assignments.add(new SubscriptionAssignment(consumer, subscription));
-                });
+                subscriptions.forEach(
+                        subscription -> {
+                            assignments.add(new SubscriptionAssignment(consumer, subscription));
+                        });
             } else {
                 logger.info("Deleting consumer {} from workload", consumer);
                 deleteConsumerWorkloadNode(consumer);
@@ -101,23 +106,26 @@ public class ClusterAssignmentCache {
     }
 
     public boolean isAssignedTo(String consumerId, SubscriptionName subscription) {
-        Set<SubscriptionName> subscriptions = consumerSubscriptions.getOrDefault(consumerId, Collections.emptySet());
+        Set<SubscriptionName> subscriptions =
+                consumerSubscriptions.getOrDefault(consumerId, Collections.emptySet());
         return subscriptions.contains(subscription);
     }
 
     public Map<SubscriptionName, Set<String>> getSubscriptionConsumers() {
         Map<SubscriptionName, Set<String>> result = new HashMap<>();
-        consumerSubscriptions.forEach((consumer, subscriptions) -> {
-            subscriptions.forEach(subscription -> {
-                if (result.containsKey(subscription)) {
-                    result.get(subscription).add(consumer);
-                } else {
-                    HashSet<String> consumers = new HashSet<>();
-                    consumers.add(consumer);
-                    result.put(subscription, consumers);
-                }
-            });
-        });
+        consumerSubscriptions.forEach(
+                (consumer, subscriptions) -> {
+                    subscriptions.forEach(
+                            subscription -> {
+                                if (result.containsKey(subscription)) {
+                                    result.get(subscription).add(consumer);
+                                } else {
+                                    HashSet<String> consumers = new HashSet<>();
+                                    consumers.add(consumer);
+                                    result.put(subscription, consumers);
+                                }
+                            });
+                });
         return result;
     }
 

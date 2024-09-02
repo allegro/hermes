@@ -7,7 +7,8 @@ import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.api.extension.ParameterResolver;
 
-public class HermesMockExtension implements ParameterResolver, BeforeEachCallback, AfterEachCallback {
+public class HermesMockExtension
+        implements ParameterResolver, BeforeEachCallback, AfterEachCallback {
 
     private final HermesMock hermesMock;
 
@@ -47,13 +48,15 @@ public class HermesMockExtension implements ParameterResolver, BeforeEachCallbac
     }
 
     @Override
-    public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext)
+    public boolean supportsParameter(
+            ParameterContext parameterContext, ExtensionContext extensionContext)
             throws ParameterResolutionException {
         return parameterContext.getParameter().getType().isAssignableFrom(HermesMock.class);
     }
 
     @Override
-    public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext)
+    public Object resolveParameter(
+            ParameterContext parameterContext, ExtensionContext extensionContext)
             throws ParameterResolutionException {
         return hermesMock;
     }

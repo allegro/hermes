@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.consumers.consumer.rate.maxrate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
@@ -24,18 +25,21 @@ class MaxRateCalculator {
 
     private volatile long lastUpdateDurationMillis = 0;
 
-    MaxRateCalculator(ClusterAssignmentCache clusterAssignmentCache,
-                      SubscriptionsCache subscriptionsCache,
-                      MaxRateBalancer balancer,
-                      MaxRateRegistry maxRateRegistry,
-                      MetricsFacade metrics,
-                      Clock clock) {
+    MaxRateCalculator(
+            ClusterAssignmentCache clusterAssignmentCache,
+            SubscriptionsCache subscriptionsCache,
+            MaxRateBalancer balancer,
+            MaxRateRegistry maxRateRegistry,
+            MetricsFacade metrics,
+            Clock clock) {
         this.clusterAssignmentCache = clusterAssignmentCache;
         this.subscriptionsCache = subscriptionsCache;
         this.balancer = balancer;
         this.maxRateRegistry = maxRateRegistry;
         this.clock = clock;
-        metrics.maxRate().registerCalculationDurationInMillisGauge(this, calculator -> calculator.lastUpdateDurationMillis);
+        metrics.maxRate()
+                .registerCalculationDurationInMillisGauge(
+                        this, calculator -> calculator.lastUpdateDurationMillis);
     }
 
     void calculate() {
@@ -45,27 +49,45 @@ class MaxRateCalculator {
             final long start = clock.millis();
             maxRateRegistry.onBeforeMaxRateCalculation();
 
-            clusterAssignmentCache.getSubscriptionConsumers().forEach((subscriptionName, consumerIds) -> {
-                try {
-                    Subscription subscription = subscriptionsCache.getSubscription(subscriptionName);
-                    if (!subscription.isBatchSubscription()) {
+            clusterAssignmentCache
+                    .getSubscriptionConsumers()
+                    .forEach(
+                            (subscriptionName, consumerIds) -> {
+                                try {
+                                    Subscription subscription =
+                                            subscriptionsCache.getSubscription(subscriptionName);
+                                    if (!subscription.isBatchSubscription()) {
 
-                        Set<ConsumerRateInfo> rateInfos = maxRateRegistry.ensureCorrectAssignments(
-                                subscription.getQualifiedName(), consumerIds);
+                                        Set<ConsumerRateInfo> rateInfos =
+                                                maxRateRegistry.ensureCorrectAssignments(
+                                                        subscription.getQualifiedName(),
+                                                        consumerIds);
 
-                        Optional<Map<String, MaxRate>> newRates
-                                = balancer.balance(subscription.getSerialSubscriptionPolicy().getRate(), rateInfos);
+                                        Optional<Map<String, MaxRate>> newRates =
+                                                balancer.balance(
+                                                        subscription
+                                                                .getSerialSubscriptionPolicy()
+                                                                .getRate(),
+                                                        rateInfos);
 
-                        newRates.ifPresent(rates -> {
-                            logger.debug("Calculated new max rates for {}: {}", subscription.getQualifiedName(), rates);
+                                        newRates.ifPresent(
+                                                rates -> {
+                                                    logger.debug(
+                                                            "Calculated new max rates for {}: {}",
+                                                            subscription.getQualifiedName(),
+                                                            rates);
 
-                            maxRateRegistry.update(subscription.getQualifiedName(), rates);
-                        });
-                    }
-                } catch (Exception e) {
-                    logger.error("Problem calculating max rates for subscription {}", subscriptionName, e);
-                }
-            });
+                                                    maxRateRegistry.update(
+                                                            subscription.getQualifiedName(), rates);
+                                                });
+                                    }
+                                } catch (Exception e) {
+                                    logger.error(
+                                            "Problem calculating max rates for subscription {}",
+                                            subscriptionName,
+                                            e);
+                                }
+                            });
 
             maxRateRegistry.onAfterMaxRateCalculation();
 

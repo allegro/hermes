@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.management.domain.owner;
 
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+
 import pl.allegro.tech.hermes.api.Owner;
 
 @Component
@@ -25,5 +26,4 @@ public class PlaintextOwnerSource implements OwnerSource {
     public Owner get(String id) throws OwnerNotFound {
         return new Owner(id, id);
     }
-
 }

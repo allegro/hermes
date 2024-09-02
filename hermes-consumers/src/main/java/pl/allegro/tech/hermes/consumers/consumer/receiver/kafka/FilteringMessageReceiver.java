@@ -22,10 +22,11 @@ public class FilteringMessageReceiver implements MessageReceiver {
     private volatile FilterChain filterChain;
     private Subscription subscription;
 
-    public FilteringMessageReceiver(MessageReceiver receiver,
-                                    FilteredMessageHandler filteredMessageHandler,
-                                    FilterChainFactory filterChainFactory,
-                                    Subscription subscription) {
+    public FilteringMessageReceiver(
+            MessageReceiver receiver,
+            FilteredMessageHandler filteredMessageHandler,
+            FilterChainFactory filterChainFactory,
+            Subscription subscription) {
         this.receiver = receiver;
         this.filteredMessageHandler = filteredMessageHandler;
         this.filterChainFactory = filterChainFactory;

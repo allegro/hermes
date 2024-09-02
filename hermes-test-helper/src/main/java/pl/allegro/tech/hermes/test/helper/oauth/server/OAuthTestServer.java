@@ -1,17 +1,18 @@
 package pl.allegro.tech.hermes.test.helper.oauth.server;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+
+import static org.apache.hc.core5.http.HttpStatus.SC_OK;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
 
 import java.util.Map;
 import java.util.UUID;
-
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.post;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
-import static org.apache.hc.core5.http.HttpStatus.SC_OK;
 
 public class OAuthTestServer {
 
@@ -28,12 +29,10 @@ public class OAuthTestServer {
         return String.format("http://localhost:%s%s", wireMockServer.port(), OAUTH2_TOKEN_ENDPOINT);
     }
 
-    public String stubAccessTokenForPasswordGrant(OAuthClient client, OAuthResourceOwner resourceOwner) {
+    public String stubAccessTokenForPasswordGrant(
+            OAuthClient client, OAuthResourceOwner resourceOwner) {
         String token = UUID.randomUUID().toString();
-        Map<String, String> params = Map.of(
-                "access_token", token,
-                "token_type", "Bearer"
-        );
+        Map<String, String> params = Map.of("access_token", token, "token_type", "Bearer");
         try {
             String body = objectMapper.writeValueAsString(params);
             wireMockServer.addStubMapping(
@@ -43,11 +42,7 @@ public class OAuthTestServer {
                             .withQueryParam("client_secret", equalTo(client.secret()))
                             .withQueryParam("username", equalTo(resourceOwner.username()))
                             .withQueryParam("password", equalTo(resourceOwner.password()))
-                            .willReturn(
-                                    aResponse()
-                                            .withBody(body)
-                                            .withStatus(SC_OK)
-                            )
+                            .willReturn(aResponse().withBody(body).withStatus(SC_OK))
                             .build());
             return token;
         } catch (JsonProcessingException e) {
@@ -57,10 +52,7 @@ public class OAuthTestServer {
 
     public String stubAccessTokenForClientCredentials(OAuthClient client) {
         String token = UUID.randomUUID().toString();
-        Map<String, String> params = Map.of(
-                "access_token", token,
-                "token_type", "Bearer"
-        );
+        Map<String, String> params = Map.of("access_token", token, "token_type", "Bearer");
         try {
             String body = objectMapper.writeValueAsString(params);
             wireMockServer.addStubMapping(
@@ -68,11 +60,7 @@ public class OAuthTestServer {
                             .withQueryParam("grant_type", equalTo("client_credentials"))
                             .withQueryParam("client_id", equalTo(client.clientId()))
                             .withQueryParam("client_secret", equalTo(client.secret()))
-                            .willReturn(
-                                    aResponse()
-                                            .withBody(body)
-                                            .withStatus(SC_OK)
-                            )
+                            .willReturn(aResponse().withBody(body).withStatus(SC_OK))
                             .build());
             return token;
         } catch (JsonProcessingException e) {

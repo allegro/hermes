@@ -13,7 +13,8 @@ public class TopicsMessagesPreview {
     private final Map<TopicName, List<MessagePreview>> messages = new HashMap<>();
 
     public void add(TopicName topicName, MessagePreview message) {
-        List<MessagePreview> messageList = messages.computeIfAbsent(topicName, k -> new ArrayList<>());
+        List<MessagePreview> messageList =
+                messages.computeIfAbsent(topicName, k -> new ArrayList<>());
         messageList.add(message);
     }
 

@@ -6,16 +6,16 @@ import pl.allegro.tech.hermes.api.SubscriptionName;
 public interface MonitoringSubscriptionMetricsProvider {
     MonitoringSubscriptionMetrics subscriptionMetrics(SubscriptionName subscriptionName);
 
-    record MonitoringSubscriptionMetrics(MetricDecimalValue rate,
-                                                MetricDecimalValue timeouts,
-                                                MetricDecimalValue throughput,
-                                                MetricDecimalValue otherErrors,
-                                                MetricDecimalValue codes2xx,
-                                                MetricDecimalValue code4xx,
-                                                MetricDecimalValue code5xx,
-                                                MetricDecimalValue retries,
-                                                MetricDecimalValue metricPathBatchRate) {
-    }
+    record MonitoringSubscriptionMetrics(
+            MetricDecimalValue rate,
+            MetricDecimalValue timeouts,
+            MetricDecimalValue throughput,
+            MetricDecimalValue otherErrors,
+            MetricDecimalValue codes2xx,
+            MetricDecimalValue code4xx,
+            MetricDecimalValue code5xx,
+            MetricDecimalValue retries,
+            MetricDecimalValue metricPathBatchRate) {}
 
     static MetricsBuilder metricsBuilder() {
         return new MetricsBuilder();
@@ -78,8 +78,16 @@ public interface MonitoringSubscriptionMetricsProvider {
         }
 
         public MonitoringSubscriptionMetrics build() {
-            return new MonitoringSubscriptionMetrics(rate, timeouts, throughput, otherErrors, codes2xx,
-                    code4xx, code5xx, retries, metricPathBatchRate);
+            return new MonitoringSubscriptionMetrics(
+                    rate,
+                    timeouts,
+                    throughput,
+                    otherErrors,
+                    codes2xx,
+                    code4xx,
+                    code5xx,
+                    retries,
+                    metricPathBatchRate);
         }
     }
 }

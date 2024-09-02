@@ -2,30 +2,29 @@ package pl.allegro.tech.hermes.schema.confluent;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.validation.constraints.NotNull;
+
 import pl.allegro.tech.hermes.api.RawSchemaWithMetadata;
 
 import java.util.Objects;
 
 class SchemaRegistryResponse {
 
-    @NotNull
-    private final String subject;
+    @NotNull private final String subject;
 
-    @NotNull
-    private final Integer id;
+    @NotNull private final Integer id;
 
-    @NotNull
-    private final Integer version;
+    @NotNull private final Integer version;
 
-    @NotNull
-    private final String schema;
+    @NotNull private final String schema;
 
     @JsonCreator
-    SchemaRegistryResponse(@JsonProperty("subject") String subject,
-                           @JsonProperty("id") Integer id,
-                           @JsonProperty("version") Integer version,
-                           @JsonProperty("schema") String schema) {
+    SchemaRegistryResponse(
+            @JsonProperty("subject") String subject,
+            @JsonProperty("id") Integer id,
+            @JsonProperty("version") Integer version,
+            @JsonProperty("schema") String schema) {
         this.subject = subject;
         this.version = version;
         this.id = id;

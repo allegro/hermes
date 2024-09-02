@@ -1,16 +1,17 @@
 package pl.allegro.tech.hermes.consumers.config;
 
+import static java.lang.Math.abs;
+import static java.util.UUID.randomUUID;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
+
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.util.InetAddressInstanceIdResolver;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.WorkBalancingParameters;
 
 import java.time.Duration;
 import java.util.Arrays;
-
-import static java.lang.Math.abs;
-import static java.util.UUID.randomUUID;
 
 @ConfigurationProperties(prefix = "consumer.workload")
 public class WorkloadProperties implements WorkBalancingParameters {
@@ -26,7 +27,9 @@ public class WorkloadProperties implements WorkBalancingParameters {
     private int assignmentProcessingThreadPoolSize = 5;
 
     private String nodeId =
-            new InetAddressInstanceIdResolver().resolve().replaceAll("\\.", "_") + "$" + abs(randomUUID().getMostSignificantBits());
+            new InetAddressInstanceIdResolver().resolve().replaceAll("\\.", "_")
+                    + "$"
+                    + abs(randomUUID().getMostSignificantBits());
 
     private Duration monitorScanInterval = Duration.ofSeconds(120);
 
@@ -37,14 +40,17 @@ public class WorkloadProperties implements WorkBalancingParameters {
     private WorkBalancingStrategy workBalancingStrategy = WorkBalancingStrategy.SELECTIVE;
 
     @NestedConfigurationProperty
-    private WeightedWorkBalancingProperties weightedWorkBalancing = new WeightedWorkBalancingProperties();
+    private WeightedWorkBalancingProperties weightedWorkBalancing =
+            new WeightedWorkBalancingProperties();
 
     public int getRegistryBinaryEncoderAssignmentsBufferSizeBytes() {
         return registryBinaryEncoderAssignmentsBufferSizeBytes;
     }
 
-    public void setRegistryBinaryEncoderAssignmentsBufferSizeBytes(int registryBinaryEncoderAssignmentsBufferSizeBytes) {
-        this.registryBinaryEncoderAssignmentsBufferSizeBytes = registryBinaryEncoderAssignmentsBufferSizeBytes;
+    public void setRegistryBinaryEncoderAssignmentsBufferSizeBytes(
+            int registryBinaryEncoderAssignmentsBufferSizeBytes) {
+        this.registryBinaryEncoderAssignmentsBufferSizeBytes =
+                registryBinaryEncoderAssignmentsBufferSizeBytes;
     }
 
     @Override
@@ -145,7 +151,8 @@ public class WorkloadProperties implements WorkBalancingParameters {
 
         private Duration weightWindowSize = Duration.ofMinutes(15);
 
-        private TargetWeightCalculationStrategy targetWeightCalculationStrategy = TargetWeightCalculationStrategy.AVG;
+        private TargetWeightCalculationStrategy targetWeightCalculationStrategy =
+                TargetWeightCalculationStrategy.AVG;
 
         private double scoringGain = 1.0d;
 
@@ -161,8 +168,10 @@ public class WorkloadProperties implements WorkBalancingParameters {
             return subscriptionProfilesEncoderBufferSizeBytes;
         }
 
-        public void setSubscriptionProfilesEncoderBufferSizeBytes(int subscriptionProfilesEncoderBufferSizeBytes) {
-            this.subscriptionProfilesEncoderBufferSizeBytes = subscriptionProfilesEncoderBufferSizeBytes;
+        public void setSubscriptionProfilesEncoderBufferSizeBytes(
+                int subscriptionProfilesEncoderBufferSizeBytes) {
+            this.subscriptionProfilesEncoderBufferSizeBytes =
+                    subscriptionProfilesEncoderBufferSizeBytes;
         }
 
         public Duration getLoadReportingInterval() {
@@ -201,7 +210,8 @@ public class WorkloadProperties implements WorkBalancingParameters {
             return targetWeightCalculationStrategy;
         }
 
-        public void setTargetWeightCalculationStrategy(TargetWeightCalculationStrategy targetWeightCalculationStrategy) {
+        public void setTargetWeightCalculationStrategy(
+                TargetWeightCalculationStrategy targetWeightCalculationStrategy) {
             this.targetWeightCalculationStrategy = targetWeightCalculationStrategy;
         }
 
@@ -218,7 +228,8 @@ public class WorkloadProperties implements WorkBalancingParameters {
         SELECTIVE,
         WEIGHTED;
 
-        public static class UnknownWorkBalancingStrategyException extends InternalProcessingException {
+        public static class UnknownWorkBalancingStrategyException
+                extends InternalProcessingException {
 
             public UnknownWorkBalancingStrategyException() {
                 super("Unknown work balancing strategy. Use one of: " + Arrays.toString(values()));
@@ -230,10 +241,13 @@ public class WorkloadProperties implements WorkBalancingParameters {
         AVG,
         SCORING;
 
-        public static class UnknownTargetWeightCalculationStrategyException extends InternalProcessingException {
+        public static class UnknownTargetWeightCalculationStrategyException
+                extends InternalProcessingException {
 
             public UnknownTargetWeightCalculationStrategyException() {
-                super("Unknown target weight calculation strategy. Use one of: " + Arrays.toString(values()));
+                super(
+                        "Unknown target weight calculation strategy. Use one of: "
+                                + Arrays.toString(values()));
             }
         }
     }

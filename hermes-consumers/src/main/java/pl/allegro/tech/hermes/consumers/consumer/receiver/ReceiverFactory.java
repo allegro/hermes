@@ -9,11 +9,11 @@ import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 
 public interface ReceiverFactory {
 
-    MessageReceiver createMessageReceiver(Topic receivingTopic,
-                                          Subscription subscription,
-                                          ConsumerRateLimiter consumerRateLimiter,
-                                          SubscriptionLoadRecorder subscriptionLoadRecorder,
-                                          MetricsFacade metrics,
-                                          PendingOffsetsAppender pendingOffsetsAppender);
-
+    MessageReceiver createMessageReceiver(
+            Topic receivingTopic,
+            Subscription subscription,
+            ConsumerRateLimiter consumerRateLimiter,
+            SubscriptionLoadRecorder subscriptionLoadRecorder,
+            MetricsFacade metrics,
+            PendingOffsetsAppender pendingOffsetsAppender);
 }

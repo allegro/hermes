@@ -19,19 +19,20 @@ public class ReadMetricsTrackingRawSchemaClient implements RawSchemaClient {
     private final MetricsFacade metricsFacade;
 
     public ReadMetricsTrackingRawSchemaClient(
-            RawSchemaClient rawSchemaClient,
-            MetricsFacade metricsFacade) {
+            RawSchemaClient rawSchemaClient, MetricsFacade metricsFacade) {
         this.rawSchemaClient = rawSchemaClient;
         this.metricsFacade = metricsFacade;
     }
 
     @Override
-    public Optional<RawSchemaWithMetadata> getRawSchemaWithMetadata(TopicName topic, SchemaVersion version) {
+    public Optional<RawSchemaWithMetadata> getRawSchemaWithMetadata(
+            TopicName topic, SchemaVersion version) {
         return timedSchema(() -> rawSchemaClient.getRawSchemaWithMetadata(topic, version));
     }
 
     @Override
-    public Optional<RawSchemaWithMetadata> getRawSchemaWithMetadata(TopicName topic, SchemaId schemaId) {
+    public Optional<RawSchemaWithMetadata> getRawSchemaWithMetadata(
+            TopicName topic, SchemaId schemaId) {
         return timedSchema(() -> rawSchemaClient.getRawSchemaWithMetadata(topic, schemaId));
     }
 

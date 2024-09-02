@@ -11,8 +11,10 @@ public class BasicMessageContentReaderFactory implements MessageContentReaderFac
     private final KafkaHeaderExtractor kafkaHeaderExtractor;
     private final SchemaRepository schemaRepository;
 
-    public BasicMessageContentReaderFactory(CompositeMessageContentWrapper compositeMessageContentWrapper,
-                                            KafkaHeaderExtractor kafkaHeaderExtractor, SchemaRepository schemaRepository) {
+    public BasicMessageContentReaderFactory(
+            CompositeMessageContentWrapper compositeMessageContentWrapper,
+            KafkaHeaderExtractor kafkaHeaderExtractor,
+            SchemaRepository schemaRepository) {
         this.compositeMessageContentWrapper = compositeMessageContentWrapper;
         this.kafkaHeaderExtractor = kafkaHeaderExtractor;
         this.schemaRepository = schemaRepository;
@@ -20,7 +22,12 @@ public class BasicMessageContentReaderFactory implements MessageContentReaderFac
 
     @Override
     public MessageContentReader provide(Topic topic) {
-        SchemaExistenceEnsurer schemaExistenceEnsurer = new SchemaExistenceEnsurer(schemaRepository);
-        return new BasicMessageContentReader(compositeMessageContentWrapper, kafkaHeaderExtractor, topic, schemaExistenceEnsurer);
+        SchemaExistenceEnsurer schemaExistenceEnsurer =
+                new SchemaExistenceEnsurer(schemaRepository);
+        return new BasicMessageContentReader(
+                compositeMessageContentWrapper,
+                kafkaHeaderExtractor,
+                topic,
+                schemaExistenceEnsurer);
     }
 }

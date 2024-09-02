@@ -47,7 +47,9 @@ public final class RawSchemaWithMetadata {
 
         RawSchemaWithMetadata that = (RawSchemaWithMetadata) o;
 
-        return schema.equals(that.schema) && Objects.equals(id, that.id) && Objects.equals(version, that.version);
+        return schema.equals(that.schema)
+                && Objects.equals(id, that.id)
+                && Objects.equals(version, that.version);
     }
 
     @Override

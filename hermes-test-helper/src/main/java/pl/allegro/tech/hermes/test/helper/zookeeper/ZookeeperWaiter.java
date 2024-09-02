@@ -1,12 +1,11 @@
 package pl.allegro.tech.hermes.test.helper.zookeeper;
 
+import static org.awaitility.Awaitility.await;
+
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.imps.CuratorFrameworkState;
 
 import java.util.concurrent.TimeUnit;
-
-import static org.awaitility.Awaitility.await;
-
 
 public class ZookeeperWaiter {
 
@@ -21,7 +20,8 @@ public class ZookeeperWaiter {
     }
 
     public void untilZookeeperClientStarted(CuratorFramework client) {
-        await().atMost(2, TimeUnit.SECONDS).until(() -> client.getState() == CuratorFrameworkState.STARTED);
+        await().atMost(2, TimeUnit.SECONDS)
+                .until(() -> client.getState() == CuratorFrameworkState.STARTED);
     }
 
     public void untilZookeeperPathIsCreated(final String path) {
@@ -29,6 +29,7 @@ public class ZookeeperWaiter {
     }
 
     public void untilZookeeperPathNotExists(final String path) {
-        await().atMost(2, TimeUnit.SECONDS).until(() -> zookeeper.checkExists().forPath(path) == null);
+        await().atMost(2, TimeUnit.SECONDS)
+                .until(() -> zookeeper.checkExists().forPath(path) == null);
     }
 }

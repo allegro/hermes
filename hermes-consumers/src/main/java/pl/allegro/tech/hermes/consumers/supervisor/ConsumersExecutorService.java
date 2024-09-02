@@ -1,8 +1,10 @@
 package pl.allegro.tech.hermes.consumers.supervisor;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.supervisor.process.ConsumerProcess;
 
@@ -18,13 +20,22 @@ public class ConsumersExecutorService {
     private final ThreadPoolExecutor executor;
 
     public ConsumersExecutorService(int poolSize, MetricsFacade metrics) {
-        ThreadFactory threadFactory = new ThreadFactoryBuilder()
-            .setNameFormat("Consumer-%d")
-            .setUncaughtExceptionHandler((t, e) -> logger.error("Exception from consumer with name {}", t.getName(), e)).build();
+        ThreadFactory threadFactory =
+                new ThreadFactoryBuilder()
+                        .setNameFormat("Consumer-%d")
+                        .setUncaughtExceptionHandler(
+                                (t, e) ->
+                                        logger.error(
+                                                "Exception from consumer with name {}",
+                                                t.getName(),
+                                                e))
+                        .build();
 
         executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(poolSize, threadFactory);
 
-        metrics.consumer().registerConsumerProcessesThreadsGauge(executor, ThreadPoolExecutor::getActiveCount);
+        metrics.consumer()
+                .registerConsumerProcessesThreadsGauge(
+                        executor, ThreadPoolExecutor::getActiveCount);
     }
 
     public Future<?> execute(ConsumerProcess consumer) {
@@ -39,5 +50,4 @@ public class ConsumersExecutorService {
             logger.error("Termination of consumers executor service interrupted.", e);
         }
     }
-
 }

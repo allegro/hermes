@@ -25,13 +25,14 @@ public class SubscriptionValidator {
     private final EndpointOwnershipValidator endpointOwnershipValidator;
     private final List<SubscriberWithAccessToAnyTopic> subscribersWithAccessToAnyTopic;
 
-    public SubscriptionValidator(OwnerIdValidator ownerIdValidator,
-                                 ApiPreconditions apiPreconditions,
-                                 TopicService topicService,
-                                 SubscriptionRepository subscriptionRepository,
-                                 List<EndpointAddressValidator> endpointAddressValidators,
-                                 EndpointOwnershipValidator endpointOwnershipValidator,
-                                 List<SubscriberWithAccessToAnyTopic> subscribersWithAccessToAnyTopic) {
+    public SubscriptionValidator(
+            OwnerIdValidator ownerIdValidator,
+            ApiPreconditions apiPreconditions,
+            TopicService topicService,
+            SubscriptionRepository subscriptionRepository,
+            List<EndpointAddressValidator> endpointAddressValidators,
+            EndpointOwnershipValidator endpointOwnershipValidator,
+            List<SubscriberWithAccessToAnyTopic> subscribersWithAccessToAnyTopic) {
         this.ownerIdValidator = ownerIdValidator;
         this.apiPreconditions = apiPreconditions;
         this.messageFilterTypeValidator = new MessageFilterTypeValidator();
@@ -56,7 +57,8 @@ public class SubscriptionValidator {
         }
     }
 
-    public void checkModification(Subscription toCheck, RequestUser modifiedBy, Subscription previous) {
+    public void checkModification(
+            Subscription toCheck, RequestUser modifiedBy, Subscription previous) {
         apiPreconditions.checkConstraints(toCheck, modifiedBy.isAdmin());
         checkOwner(toCheck);
         checkEndpoint(toCheck);
@@ -83,27 +85,31 @@ public class SubscriptionValidator {
         messageFilterTypeValidator.check(toCheck, topic);
     }
 
-    private void checkIfSubscribingToTopicIsAllowed(Subscription toCheck, Topic topic, RequestUser requester) {
+    private void checkIfSubscribingToTopicIsAllowed(
+            Subscription toCheck, Topic topic, RequestUser requester) {
         if (isSubscribingForbidden(toCheck, topic, requester)) {
             throw new PermissionDeniedException(
-                    "Subscribing to this topic has been restricted. Contact the topic owner to create a new subscription."
-            );
+                    "Subscribing to this topic has been restricted. Contact the topic owner to create a new subscription.");
         }
     }
 
-    private void checkIfModifyingEndpointIsAllowed(Subscription toCheck, Topic topic, RequestUser requester) {
+    private void checkIfModifyingEndpointIsAllowed(
+            Subscription toCheck, Topic topic, RequestUser requester) {
         if (isSubscribingForbidden(toCheck, topic, requester)) {
             throw new PermissionDeniedException(
-                    "Subscribing to this topic has been restricted. Contact the topic owner to modify the endpoint of this subscription."
-            );
+                    "Subscribing to this topic has been restricted. Contact the topic owner to modify the endpoint of this subscription.");
         }
     }
 
-    private boolean isSubscribingForbidden(Subscription toCheck, Topic topic, RequestUser requester) {
+    private boolean isSubscribingForbidden(
+            Subscription toCheck, Topic topic, RequestUser requester) {
         if (topic.isSubscribingRestricted()) {
-            boolean privilegedSubscriber = subscribersWithAccessToAnyTopic.stream()
-                    .anyMatch(subscriber -> subscriber.matches(toCheck));
-            return !requester.isAdmin() && !requester.isOwner(topic.getOwner()) && !privilegedSubscriber;
+            boolean privilegedSubscriber =
+                    subscribersWithAccessToAnyTopic.stream()
+                            .anyMatch(subscriber -> subscriber.matches(toCheck));
+            return !requester.isAdmin()
+                    && !requester.isOwner(topic.getOwner())
+                    && !privilegedSubscriber;
         }
         return false;
     }
@@ -111,12 +117,12 @@ public class SubscriptionValidator {
     private void checkPermissionsToManageSubscription(Subscription toCheck, RequestUser requester) {
         if (!requester.isAdmin() && !requester.isOwner(toCheck.getOwner())) {
             throw new SubscriptionValidationException(
-                    "Provide an owner that includes you, you would not be able to manage this subscription later"
-            );
+                    "Provide an owner that includes you, you would not be able to manage this subscription later");
         }
     }
 
-    private void ensureCreatedSubscriptionInflightIsValid(Subscription subscription, RequestUser requester) {
+    private void ensureCreatedSubscriptionInflightIsValid(
+            Subscription subscription, RequestUser requester) {
         if (requester.isAdmin()) {
             return;
         }
@@ -126,12 +132,12 @@ public class SubscriptionValidator {
         }
         if (subscriptionPolicy.getInflightSize() != null) {
             throw new SubscriptionValidationException(
-                    "Inflight size can't be set by non admin users"
-            );
+                    "Inflight size can't be set by non admin users");
         }
     }
 
-    private void ensureUpdatedSubscriptionInflightIsValid(Subscription previous, Subscription updated, RequestUser requester) {
+    private void ensureUpdatedSubscriptionInflightIsValid(
+            Subscription previous, Subscription updated, RequestUser requester) {
         if (requester.isAdmin()) {
             return;
         }
@@ -143,10 +149,16 @@ public class SubscriptionValidator {
         Integer updatedInflight = updatedSubscriptionPolicy.getInflightSize();
 
         SubscriptionPolicy previousSubscriptionPolicy = previous.getSerialSubscriptionPolicy();
-        Integer previousInflight = previousSubscriptionPolicy == null ? null : previousSubscriptionPolicy.getInflightSize();
+        Integer previousInflight =
+                previousSubscriptionPolicy == null
+                        ? null
+                        : previousSubscriptionPolicy.getInflightSize();
 
         if (!Objects.equals(previousInflight, updatedInflight)) {
-            throw new SubscriptionValidationException(String.format("Inflight size can't be changed by non admin users. Changed from: %s, to: %s", previousInflight, updatedInflight));
+            throw new SubscriptionValidationException(
+                    String.format(
+                            "Inflight size can't be changed by non admin users. Changed from: %s, to: %s",
+                            previousInflight, updatedInflight));
         }
     }
 }

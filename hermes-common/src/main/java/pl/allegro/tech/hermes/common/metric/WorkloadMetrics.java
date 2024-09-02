@@ -4,6 +4,7 @@ import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.search.Search;
+
 import pl.allegro.tech.hermes.metrics.HermesTimer;
 
 import java.util.Collection;
@@ -25,44 +26,31 @@ public class WorkloadMetrics {
 
     public <T> void registerAllAssignmentsGauge(T obj, String kafkaCluster, ToDoubleFunction<T> f) {
         gaugeRegistrar.registerGauge(
-                "workload.all-assignments",
-                obj,
-                f,
-                Tags.of(KAFKA_CLUSTER_TAG, kafkaCluster)
-        );
+                "workload.all-assignments", obj, f, Tags.of(KAFKA_CLUSTER_TAG, kafkaCluster));
     }
 
-    public <T> void registerMissingResourcesGauge(T obj, String kafkaCluster, ToDoubleFunction<T> f) {
+    public <T> void registerMissingResourcesGauge(
+            T obj, String kafkaCluster, ToDoubleFunction<T> f) {
         gaugeRegistrar.registerGauge(
-                "workload.missing-resources",
-                obj,
-                f,
-                Tags.of(KAFKA_CLUSTER_TAG, kafkaCluster)
-        );
+                "workload.missing-resources", obj, f, Tags.of(KAFKA_CLUSTER_TAG, kafkaCluster));
     }
 
-    public <T> void registerDeletedAssignmentsGauge(T obj, String kafkaCluster, ToDoubleFunction<T> f) {
+    public <T> void registerDeletedAssignmentsGauge(
+            T obj, String kafkaCluster, ToDoubleFunction<T> f) {
         gaugeRegistrar.registerGauge(
-                "workload.deleted-assignments",
-                obj,
-                f,
-                Tags.of(KAFKA_CLUSTER_TAG, kafkaCluster)
-        );
+                "workload.deleted-assignments", obj, f, Tags.of(KAFKA_CLUSTER_TAG, kafkaCluster));
     }
 
-    public <T> void registerCreatedAssignmentsGauge(T obj, String kafkaCluster, ToDoubleFunction<T> f) {
+    public <T> void registerCreatedAssignmentsGauge(
+            T obj, String kafkaCluster, ToDoubleFunction<T> f) {
         gaugeRegistrar.registerGauge(
-                "workload.created-assignments",
-                obj,
-                f,
-                Tags.of(KAFKA_CLUSTER_TAG, kafkaCluster)
-        );
+                "workload.created-assignments", obj, f, Tags.of(KAFKA_CLUSTER_TAG, kafkaCluster));
     }
 
     public HermesTimer rebalanceDurationTimer(String kafkaCluster) {
         return HermesTimer.from(
-                meterRegistry.timer("workload.rebalance-duration", Tags.of(KAFKA_CLUSTER_TAG, kafkaCluster))
-        );
+                meterRegistry.timer(
+                        "workload.rebalance-duration", Tags.of(KAFKA_CLUSTER_TAG, kafkaCluster)));
     }
 
     public <T> void registerRunningSubscriptionsGauge(T obj, ToDoubleFunction<T> f) {
@@ -91,29 +79,17 @@ public class WorkloadMetrics {
 
     public <T> void registerCurrentScoreGauge(String consumerId, T obj, ToDoubleFunction<T> f) {
         gaugeRegistrar.registerGauge(
-                "workload.weighted.current-score",
-                obj,
-                f,
-                Tags.of(CONSUMER_ID_TAG, consumerId)
-        );
+                "workload.weighted.current-score", obj, f, Tags.of(CONSUMER_ID_TAG, consumerId));
     }
 
     public <T> void registerProposedErrorGauge(String consumerId, T obj, ToDoubleFunction<T> f) {
         gaugeRegistrar.registerGauge(
-                "workload.weighted.proposed-error",
-                obj,
-                f,
-                Tags.of(CONSUMER_ID_TAG, consumerId)
-        );
+                "workload.weighted.proposed-error", obj, f, Tags.of(CONSUMER_ID_TAG, consumerId));
     }
 
     public <T> void registerScoringErrorGauge(String consumerId, T obj, ToDoubleFunction<T> f) {
         gaugeRegistrar.registerGauge(
-                "workload.weighted.scoring-error",
-                obj,
-                f,
-                Tags.of(CONSUMER_ID_TAG, consumerId)
-        );
+                "workload.weighted.scoring-error", obj, f, Tags.of(CONSUMER_ID_TAG, consumerId));
     }
 
     public <T> void registerCurrentWeightGauge(String consumerId, T obj, ToDoubleFunction<T> f) {
@@ -121,8 +97,7 @@ public class WorkloadMetrics {
                 "workload.weighted.current-weight.ops",
                 obj,
                 f,
-                Tags.of(CONSUMER_ID_TAG, consumerId)
-        );
+                Tags.of(CONSUMER_ID_TAG, consumerId));
     }
 
     public <T> void registerProposedWeightGauge(String consumerId, T obj, ToDoubleFunction<T> f) {
@@ -130,15 +105,15 @@ public class WorkloadMetrics {
                 "workload.weighted.proposed-weight.ops",
                 obj,
                 f,
-                Tags.of(CONSUMER_ID_TAG, consumerId)
-        );
+                Tags.of(CONSUMER_ID_TAG, consumerId));
     }
 
     public void unregisterAllWorkloadWeightedGaugesForConsumerIds(Set<String> consumerIds) {
-        Collection<Gauge> gauges = Search.in(meterRegistry)
-                .tag(CONSUMER_ID_TAG, consumerIds::contains)
-                .name(s -> s.startsWith("workload.weighted"))
-                .gauges();
+        Collection<Gauge> gauges =
+                Search.in(meterRegistry)
+                        .tag(CONSUMER_ID_TAG, consumerIds::contains)
+                        .name(s -> s.startsWith("workload.weighted"))
+                        .gauges();
         for (Gauge gauge : gauges) {
             meterRegistry.remove(gauge);
         }

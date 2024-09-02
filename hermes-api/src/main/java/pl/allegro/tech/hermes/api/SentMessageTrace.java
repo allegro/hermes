@@ -23,17 +23,18 @@ public class SentMessageTrace implements MessageTrace {
     private final String cluster;
 
     @JsonCreator
-    public SentMessageTrace(@JsonProperty("messageId") String messageId,
-                            @JsonProperty("batchId") String batchId,
-                            @JsonProperty("timestamp") Long timestamp,
-                            @JsonProperty("subscription") String subscription,
-                            @JsonProperty("topicName") String topicName,
-                            @JsonProperty("status") SentMessageTraceStatus status,
-                            @JsonProperty("reason") String reason,
-                            @JsonProperty("message") String message,
-                            @JsonProperty("partition") Integer partition,
-                            @JsonProperty("offset") Long offset,
-                            @JsonProperty("cluster") String cluster) {
+    public SentMessageTrace(
+            @JsonProperty("messageId") String messageId,
+            @JsonProperty("batchId") String batchId,
+            @JsonProperty("timestamp") Long timestamp,
+            @JsonProperty("subscription") String subscription,
+            @JsonProperty("topicName") String topicName,
+            @JsonProperty("status") SentMessageTraceStatus status,
+            @JsonProperty("reason") String reason,
+            @JsonProperty("message") String message,
+            @JsonProperty("partition") Integer partition,
+            @JsonProperty("offset") Long offset,
+            @JsonProperty("cluster") String cluster) {
         this.messageId = messageId;
         this.batchId = batchId;
         this.timestamp = timestamp;
@@ -178,7 +179,8 @@ public class SentMessageTrace implements MessageTrace {
             return this;
         }
 
-        public static Builder sentMessageTrace(String messageId, String batchId, SentMessageTraceStatus status) {
+        public static Builder sentMessageTrace(
+                String messageId, String batchId, SentMessageTraceStatus status) {
             return new Builder(messageId, batchId, status);
         }
 
@@ -187,8 +189,18 @@ public class SentMessageTrace implements MessageTrace {
         }
 
         public SentMessageTrace build() {
-            return new SentMessageTrace(messageId, batchId, timestamp, subscription, topicName, status,
-                reason, message, partition, offset, cluster);
+            return new SentMessageTrace(
+                    messageId,
+                    batchId,
+                    timestamp,
+                    subscription,
+                    topicName,
+                    status,
+                    reason,
+                    message,
+                    partition,
+                    offset,
+                    cluster);
         }
     }
 }

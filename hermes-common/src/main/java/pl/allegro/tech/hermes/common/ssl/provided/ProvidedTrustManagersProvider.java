@@ -5,6 +5,7 @@ import pl.allegro.tech.hermes.common.ssl.TrustManagersProvider;
 
 import java.io.InputStream;
 import java.security.KeyStore;
+
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
@@ -18,7 +19,8 @@ public class ProvidedTrustManagersProvider implements TrustManagersProvider, Res
 
     @Override
     public TrustManager[] getTrustManagers() throws Exception {
-        TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        TrustManagerFactory trustManagerFactory =
+                TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         KeyStore keyStore = KeyStore.getInstance(keystoreProperties.getFormat());
         try (InputStream stream = getResourceAsInputStream(keystoreProperties.getLocationAsURI())) {
             keyStore.load(stream, keystoreProperties.getPassword().toCharArray());

@@ -1,9 +1,9 @@
 package pl.allegro.tech.hermes.management.domain.blacklist;
 
+import static pl.allegro.tech.hermes.api.ErrorCode.TOPIC_NOT_UNBLACKLISTED;
+
 import pl.allegro.tech.hermes.api.ErrorCode;
 import pl.allegro.tech.hermes.common.exception.HermesException;
-
-import static pl.allegro.tech.hermes.api.ErrorCode.TOPIC_NOT_UNBLACKLISTED;
 
 public class NotUnblacklistedException extends HermesException {
 

@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.config;
 
 import com.google.auth.oauth2.GoogleCredentials;
+
 import org.springframework.context.annotation.Condition;
 import org.springframework.context.annotation.ConditionContext;
 import org.springframework.core.type.AnnotatedTypeMetadata;

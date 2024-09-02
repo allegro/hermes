@@ -1,14 +1,17 @@
 package pl.allegro.tech.hermes.management.api.auth;
 
 import jakarta.ws.rs.container.ContainerRequestContext;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.management.config.GroupProperties;
 
 /**
- * Make sure these implementations conform to what is configured via RolesAllowed annotations in endpoints.
+ * Make sure these implementations conform to what is configured via RolesAllowed annotations in
+ * endpoints.
  */
 @Component
 public class ManagementRights {
@@ -37,8 +40,10 @@ public class ManagementRights {
         return requestContext.getSecurityContext().isUserInRole(Roles.ADMIN);
     }
 
-    private SecurityProvider.OwnershipResolver getOwnershipResolver(ContainerRequestContext requestContext) {
-        return (SecurityProvider.OwnershipResolver) requestContext.getProperty(AuthorizationFilter.OWNERSHIP_RESOLVER);
+    private SecurityProvider.OwnershipResolver getOwnershipResolver(
+            ContainerRequestContext requestContext) {
+        return (SecurityProvider.OwnershipResolver)
+                requestContext.getProperty(AuthorizationFilter.OWNERSHIP_RESOLVER);
     }
 
     public CreatorRights<Group> getGroupCreatorRights(ContainerRequestContext requestContext) {

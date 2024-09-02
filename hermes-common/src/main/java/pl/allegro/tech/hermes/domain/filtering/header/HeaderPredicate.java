@@ -17,8 +17,7 @@ class HeaderPredicate implements Predicate<FilterableMessage> {
 
     @Override
     public boolean test(FilterableMessage message) {
-        return message.getExternalMetadata()
-                .entrySet().stream()
+        return message.getExternalMetadata().entrySet().stream()
                 .filter(h -> h.getKey().equals(name))
                 .findFirst()
                 .filter(h -> valuePattern.matcher(h.getValue()).matches())

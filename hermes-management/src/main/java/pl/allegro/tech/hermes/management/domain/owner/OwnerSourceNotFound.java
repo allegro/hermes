@@ -13,5 +13,4 @@ public class OwnerSourceNotFound extends ManagementException {
     public ErrorCode getCode() {
         return ErrorCode.OWNER_SOURCE_NOT_FOUND;
     }
-
 }

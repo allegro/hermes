@@ -17,7 +17,8 @@ public class InterpolatingEndpointAddressResolver implements EndpointAddressReso
     }
 
     @Override
-    public URI resolve(EndpointAddress address, Message message, EndpointAddressResolverMetadata metadata)
+    public URI resolve(
+            EndpointAddress address, Message message, EndpointAddressResolverMetadata metadata)
             throws EndpointAddressResolutionException {
         try {
             return interpolator.interpolate(address, message);
@@ -25,5 +26,4 @@ public class InterpolatingEndpointAddressResolver implements EndpointAddressReso
             throw new EndpointAddressResolutionException(address, ex);
         }
     }
-
 }

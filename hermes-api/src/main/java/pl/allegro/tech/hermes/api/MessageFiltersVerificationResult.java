@@ -14,8 +14,9 @@ public class MessageFiltersVerificationResult {
     }
 
     @JsonCreator
-    public MessageFiltersVerificationResult(@JsonProperty("status") VerificationStatus status,
-                                            @JsonProperty("errorMessage") String errorMessage) {
+    public MessageFiltersVerificationResult(
+            @JsonProperty("status") VerificationStatus status,
+            @JsonProperty("errorMessage") String errorMessage) {
         this.status = status;
         this.errorMessage = errorMessage;
     }

@@ -1,7 +1,14 @@
 package pl.allegro.tech.hermes.integrationtests.setup;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.waitAtMost;
+
+import static pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProvider.DEFAULT_DC_NAME;
+import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
+
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.core.env.Environment;
+
 import pl.allegro.tech.hermes.integrationtests.prometheus.PrometheusExtension;
 import pl.allegro.tech.hermes.management.HermesManagement;
 import pl.allegro.tech.hermes.management.domain.group.GroupService;
@@ -23,11 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.waitAtMost;
-import static pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProvider.DEFAULT_DC_NAME;
-import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
-
 public class HermesManagementTestApp implements HermesTestApp {
 
     private int port = -1;
@@ -43,15 +45,20 @@ public class HermesManagementTestApp implements HermesTestApp {
     private List<String> currentArgs = List.of();
     private PrometheusExtension prometheus = null;
 
-    public HermesManagementTestApp(ZookeeperContainer hermesZookeeper,
-                                   KafkaContainerCluster kafka,
-                                   ConfluentSchemaRegistryContainer schemaRegistry) {
-        this(Map.of(DEFAULT_DC_NAME, hermesZookeeper), Map.of(DEFAULT_DC_NAME, kafka), schemaRegistry);
+    public HermesManagementTestApp(
+            ZookeeperContainer hermesZookeeper,
+            KafkaContainerCluster kafka,
+            ConfluentSchemaRegistryContainer schemaRegistry) {
+        this(
+                Map.of(DEFAULT_DC_NAME, hermesZookeeper),
+                Map.of(DEFAULT_DC_NAME, kafka),
+                schemaRegistry);
     }
 
-    public HermesManagementTestApp(Map<String, ZookeeperContainer> hermesZookeepers,
-                                   Map<String, KafkaContainerCluster> kafkaClusters,
-                                   ConfluentSchemaRegistryContainer schemaRegistry) {
+    public HermesManagementTestApp(
+            Map<String, ZookeeperContainer> hermesZookeepers,
+            Map<String, KafkaContainerCluster> kafkaClusters,
+            ConfluentSchemaRegistryContainer schemaRegistry) {
         this.hermesZookeepers = hermesZookeepers;
         this.kafkaClusters = kafkaClusters;
         this.schemaRegistry = schemaRegistry;
@@ -62,7 +69,8 @@ public class HermesManagementTestApp implements HermesTestApp {
         currentArgs = createArgs();
         app = new SpringApplicationBuilder(HermesManagement.class);
         app.run(currentArgs.toArray(new String[0]));
-        String localServerPort = app.context().getBean(Environment.class).getProperty("local.server.port");
+        String localServerPort =
+                app.context().getBean(Environment.class).getProperty("local.server.port");
         if (localServerPort == null) {
             throw new IllegalStateException("Cannot get hermes-management port");
         }
@@ -73,20 +81,25 @@ public class HermesManagementTestApp implements HermesTestApp {
 
     private void waitUntilReady() {
         try {
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(new URI("http://localhost:" + getPort() + "/mode"))
-                    .GET()
-                    .build();
+            HttpRequest request =
+                    HttpRequest.newBuilder()
+                            .uri(new URI("http://localhost:" + getPort() + "/mode"))
+                            .GET()
+                            .build();
             HttpClient httpClient = HttpClient.newHttpClient();
 
-            waitAtMost(adjust(240), TimeUnit.SECONDS).untilAsserted(() -> {
-                try {
-                    HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-                    assertThat(response.body()).isEqualTo("readWrite");
-                } catch (IOException | InterruptedException e) {
-                    throw new AssertionError("Reading management mode failed", e);
-                }
-            });
+            waitAtMost(adjust(240), TimeUnit.SECONDS)
+                    .untilAsserted(
+                            () -> {
+                                try {
+                                    HttpResponse<String> response =
+                                            httpClient.send(
+                                                    request, HttpResponse.BodyHandlers.ofString());
+                                    assertThat(response.body()).isEqualTo("readWrite");
+                                } catch (IOException | InterruptedException e) {
+                                    throw new AssertionError("Reading management mode failed", e);
+                                }
+                            });
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
@@ -139,23 +152,32 @@ public class HermesManagementTestApp implements HermesTestApp {
         }
         args.add("--topic.partitions=2");
         args.add("--topic.uncleanLeaderElectionEnabled=false");
-        int smallestClusterSize =  kafkaClusters.values().stream()
-                .map(cluster -> cluster.getAllBrokers().size())
-                .min(Integer::compareTo)
-                .orElse(1);
+        int smallestClusterSize =
+                kafkaClusters.values().stream()
+                        .map(cluster -> cluster.getAllBrokers().size())
+                        .min(Integer::compareTo)
+                        .orElse(1);
         args.add("--topic.replicationFactor=" + smallestClusterSize);
         int idx = 0;
         for (Map.Entry<String, ZookeeperContainer> zk : hermesZookeepers.entrySet()) {
             args.add("--storage.clusters[" + idx + "].datacenter=" + zk.getKey());
             args.add("--storage.clusters[" + idx + "].clusterName=zk");
-            args.add("--storage.clusters[" + idx + "].connectionString=" + zk.getValue().getConnectionString());
+            args.add(
+                    "--storage.clusters["
+                            + idx
+                            + "].connectionString="
+                            + zk.getValue().getConnectionString());
             idx++;
         }
         idx = 0;
         for (Map.Entry<String, KafkaContainerCluster> kafka : kafkaClusters.entrySet()) {
             args.add("--kafka.clusters[" + idx + "].datacenter=" + kafka.getKey());
             args.add("--kafka.clusters[" + idx + "].clusterName=primary");
-            args.add("--kafka.clusters[" + idx + "].bootstrapKafkaServer=" + kafka.getValue().getBootstrapServersForExternalClients());
+            args.add(
+                    "--kafka.clusters["
+                            + idx
+                            + "].bootstrapKafkaServer="
+                            + kafka.getValue().getBootstrapServersForExternalClients());
             args.add("--kafka.clusters[" + idx + "].namespace=itTest");
             idx++;
         }
@@ -172,7 +194,9 @@ public class HermesManagementTestApp implements HermesTestApp {
         args.add("--topic.removeSchema=" + true);
         args.add("--storage.pathPrefix=" + "/hermes");
         args.add("--subscription.subscribersWithAccessToAnyTopic[0].ownerSource=" + "Plaintext");
-        args.add("--subscription.subscribersWithAccessToAnyTopic[0].ownerId=" + "subscriberAllowedToAccessAnyTopic");
+        args.add(
+                "--subscription.subscribersWithAccessToAnyTopic[0].ownerId="
+                        + "subscriberAllowedToAccessAnyTopic");
         args.add("--subscription.subscribersWithAccessToAnyTopic[0].protocols=" + "http, https");
         args.add("--group.allowedGroupNameRegex=" + "[a-zA-Z0-9_.-]+");
         args.add("--group.nonAdminCreationEnabled=" + true);

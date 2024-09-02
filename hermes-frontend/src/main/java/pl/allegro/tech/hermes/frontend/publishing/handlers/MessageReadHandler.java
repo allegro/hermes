@@ -1,11 +1,22 @@
 package pl.allegro.tech.hermes.frontend.publishing.handlers;
 
+import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCauseMessage;
+
+import static pl.allegro.tech.hermes.api.ErrorCode.INTERNAL_ERROR;
+import static pl.allegro.tech.hermes.api.ErrorCode.THROUGHPUT_QUOTA_VIOLATION;
+import static pl.allegro.tech.hermes.api.ErrorCode.VALIDATION_ERROR;
+import static pl.allegro.tech.hermes.api.ErrorDescription.error;
+
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+
 import io.undertow.io.Receiver;
 import io.undertow.server.DefaultResponseListener;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageErrorProcessor;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageState;
@@ -13,13 +24,6 @@ import pl.allegro.tech.hermes.frontend.publishing.message.MessageState;
 import java.io.ByteArrayOutputStream;
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCauseMessage;
-import static pl.allegro.tech.hermes.api.ErrorCode.INTERNAL_ERROR;
-import static pl.allegro.tech.hermes.api.ErrorCode.THROUGHPUT_QUOTA_VIOLATION;
-import static pl.allegro.tech.hermes.api.ErrorCode.VALIDATION_ERROR;
-import static pl.allegro.tech.hermes.api.ErrorDescription.error;
 
 class MessageReadHandler implements HttpHandler {
     private static final Logger logger = LoggerFactory.getLogger(MessageReadHandler.class);
@@ -33,9 +37,15 @@ class MessageReadHandler implements HttpHandler {
     private final Duration maxPublishRequestDuration;
     private final ThroughputLimiter throughputLimiter;
 
-    MessageReadHandler(HttpHandler next, HttpHandler timeoutHandler,
-                       MessageErrorProcessor messageErrorProcessor, ThroughputLimiter throughputLimiter,
-                       boolean forceMaxMessageSizePerTopic, Duration idleTime, Duration longIdleTime, Duration maxPublishRequestDuration) {
+    MessageReadHandler(
+            HttpHandler next,
+            HttpHandler timeoutHandler,
+            MessageErrorProcessor messageErrorProcessor,
+            ThroughputLimiter throughputLimiter,
+            boolean forceMaxMessageSizePerTopic,
+            Duration idleTime,
+            Duration longIdleTime,
+            Duration maxPublishRequestDuration) {
         this.next = next;
         this.timeoutHandler = timeoutHandler;
         this.messageErrorProcessor = messageErrorProcessor;
@@ -52,16 +62,19 @@ class MessageReadHandler implements HttpHandler {
 
         Duration timeout = calculateTimeout(attachment.getTopic());
 
-        attachment.setTimeoutHolder(new TimeoutHolder(
-                (int) timeout.toMillis(),
-                exchange.getIoThread().executeAfter(
-                        () -> runTimeoutHandler(exchange, attachment),
-                        timeout.toMillis(),
-                        MILLISECONDS)));
+        attachment.setTimeoutHolder(
+                new TimeoutHolder(
+                        (int) timeout.toMillis(),
+                        exchange.getIoThread()
+                                .executeAfter(
+                                        () -> runTimeoutHandler(exchange, attachment),
+                                        timeout.toMillis(),
+                                        MILLISECONDS)));
 
-        ThroughputLimiter.QuotaInsight quotaInsight = throughputLimiter.checkQuota(
-                attachment.getCachedTopic().getTopicName(),
-                attachment.getCachedTopic().getThroughput());
+        ThroughputLimiter.QuotaInsight quotaInsight =
+                throughputLimiter.checkQuota(
+                        attachment.getCachedTopic().getTopicName(),
+                        attachment.getCachedTopic().getThroughput());
         if (quotaInsight.hasQuota()) {
             readMessage(exchange, attachment);
         } else {
@@ -80,8 +93,12 @@ class MessageReadHandler implements HttpHandler {
         try {
             timeoutHandler.handleRequest(exchange);
         } catch (Exception e) {
-            messageErrorProcessor.sendAndLog(exchange, attachment.getTopic(), attachment.getMessageId(),
-                    error("Error while handling timeout task", INTERNAL_ERROR), e);
+            messageErrorProcessor.sendAndLog(
+                    exchange,
+                    attachment.getTopic(),
+                    attachment.getMessageId(),
+                    error("Error while handling timeout task", INTERNAL_ERROR),
+                    e);
         }
     }
 
@@ -102,13 +119,16 @@ class MessageReadHandler implements HttpHandler {
                     exchange,
                     attachment.getTopic(),
                     attachment.getMessageId(),
-                    error("Probably context switching problem as timeout elapsed before message reading was started", INTERNAL_ERROR));
+                    error(
+                            "Probably context switching problem as timeout elapsed before message reading was started",
+                            INTERNAL_ERROR));
         }
     }
 
-    private Receiver.PartialBytesCallback partialMessageRead(MessageState state,
-                                                             ByteArrayOutputStream messageContent,
-                                                             AttachmentContent attachment) {
+    private Receiver.PartialBytesCallback partialMessageRead(
+            MessageState state,
+            ByteArrayOutputStream messageContent,
+            AttachmentContent attachment) {
         return (exchange, message, last) -> {
             if (state.isReadingTimeout()) {
                 endWithoutDefaultResponse(exchange);
@@ -130,42 +150,56 @@ class MessageReadHandler implements HttpHandler {
         return (exchange, exception) -> {
             if (state.setReadingError()) {
                 attachment.removeTimeout();
-                messageErrorProcessor.sendAndLog(exchange, attachment.getTopic(), attachment.getMessageId(),
-                        error("Error while reading message. " + getRootCauseMessage(exception), INTERNAL_ERROR), exception);
+                messageErrorProcessor.sendAndLog(
+                        exchange,
+                        attachment.getTopic(),
+                        attachment.getMessageId(),
+                        error(
+                                "Error while reading message. " + getRootCauseMessage(exception),
+                                INTERNAL_ERROR),
+                        exception);
             } else {
                 messageErrorProcessor.log(
                         exchange,
-                        "Error while reading message after timeout execution. " + getRootCauseMessage(exception),
+                        "Error while reading message after timeout execution. "
+                                + getRootCauseMessage(exception),
                         exception);
             }
         };
     }
 
-    private void messageRead(HttpServerExchange exchange, byte[] messageContent, AttachmentContent attachment) {
+    private void messageRead(
+            HttpServerExchange exchange, byte[] messageContent, AttachmentContent attachment) {
         try {
             contentLengthChecker.check(exchange, messageContent.length, attachment);
             attachment.getCachedTopic().reportMessageContentSize(messageContent.length);
-            ThroughputLimiter.QuotaInsight quotaCheck = throughputLimiter.checkQuota(
-                    attachment.getCachedTopic().getTopicName(),
-                    attachment.getCachedTopic().getThroughput());
+            ThroughputLimiter.QuotaInsight quotaCheck =
+                    throughputLimiter.checkQuota(
+                            attachment.getCachedTopic().getTopicName(),
+                            attachment.getCachedTopic().getThroughput());
             if (quotaCheck.hasQuota()) {
                 finalizeMessageRead(exchange, messageContent, attachment);
             } else {
                 respondWithQuotaViolation(exchange, attachment, quotaCheck.getReason());
             }
-        } catch (ContentLengthChecker.InvalidContentLengthException | ContentLengthChecker.ContentTooLargeException e) {
+        } catch (ContentLengthChecker.InvalidContentLengthException
+                | ContentLengthChecker.ContentTooLargeException e) {
             attachment.removeTimeout();
-            messageErrorProcessor.sendAndLog(exchange, attachment.getTopic(),
-                    attachment.getMessageId(), error(e.getMessage(), VALIDATION_ERROR));
+            messageErrorProcessor.sendAndLog(
+                    exchange,
+                    attachment.getTopic(),
+                    attachment.getMessageId(),
+                    error(e.getMessage(), VALIDATION_ERROR));
         } catch (Exception e) {
             attachment.removeTimeout();
-            messageErrorProcessor.sendAndLog(exchange, attachment.getTopic(), attachment.getMessageId(), e);
+            messageErrorProcessor.sendAndLog(
+                    exchange, attachment.getTopic(), attachment.getMessageId(), e);
         }
     }
 
-    private void finalizeMessageRead(HttpServerExchange exchange,
-                                     byte[] messageContent,
-                                     AttachmentContent attachment) throws Exception {
+    private void finalizeMessageRead(
+            HttpServerExchange exchange, byte[] messageContent, AttachmentContent attachment)
+            throws Exception {
         attachment.setMessageContent(messageContent);
         endWithoutDefaultResponse(exchange);
         if (exchange.isInIoThread()) {
@@ -175,9 +209,8 @@ class MessageReadHandler implements HttpHandler {
         }
     }
 
-    private void respondWithQuotaViolation(HttpServerExchange exchange,
-                                           AttachmentContent attachment,
-                                           String reason) {
+    private void respondWithQuotaViolation(
+            HttpServerExchange exchange, AttachmentContent attachment, String reason) {
         attachment.removeTimeout();
         messageErrorProcessor.sendAndLog(
                 exchange,
@@ -187,22 +220,33 @@ class MessageReadHandler implements HttpHandler {
     }
 
     private void dispatchToWorker(HttpServerExchange exchange, AttachmentContent attachment) {
-        // exchange.dispatch(next) is not called here because async io read flag can be still set to true which combined with
+        // exchange.dispatch(next) is not called here because async io read flag can be still set to
+        // true which combined with
         // dispatch() leads to an exception
-        exchange.getConnection().getWorker().execute(() -> {
-            try {
-                next.handleRequest(exchange);
-            } catch (Exception e) {
-                attachment.removeTimeout();
-                messageErrorProcessor.sendAndLog(exchange, attachment.getTopic(), attachment.getMessageId(),
-                        error("Error while executing next handler after read handler", INTERNAL_ERROR), e);
-            }
-        });
+        exchange.getConnection()
+                .getWorker()
+                .execute(
+                        () -> {
+                            try {
+                                next.handleRequest(exchange);
+                            } catch (Exception e) {
+                                attachment.removeTimeout();
+                                messageErrorProcessor.sendAndLog(
+                                        exchange,
+                                        attachment.getTopic(),
+                                        attachment.getMessageId(),
+                                        error(
+                                                "Error while executing next handler after read handler",
+                                                INTERNAL_ERROR),
+                                        e);
+                            }
+                        });
     }
 
     private void endWithoutDefaultResponse(HttpServerExchange exchange) {
         // when a handler doesn't return a response (for example when is interrupted by timeout)
-        // then without this listener default response can be returned with 200 status code when the handler finishes
+        // then without this listener default response can be returned with 200 status code when the
+        // handler finishes
         // execution before the other one
         exchange.addDefaultResponseListener(new DefaultResponseSimulator());
     }
@@ -219,7 +263,9 @@ class MessageReadHandler implements HttpHandler {
                     try {
                         exchange.setStatusCode(500);
                     } catch (RuntimeException e) {
-                        logger.error("Exception has been thrown during an exchange status modification", e);
+                        logger.error(
+                                "Exception has been thrown during an exchange status modification",
+                                e);
                     }
                 }
                 return !responseNotSimulatedOnlyOnce.compareAndSet(false, true);

@@ -19,23 +19,23 @@ public class SubscriptionMetrics {
     private MetricDecimalValue throughput;
     private MetricDecimalValue batchRate;
 
-    private SubscriptionMetrics() {
-    }
+    private SubscriptionMetrics() {}
 
     @JsonCreator
-    public SubscriptionMetrics(@JsonProperty("delivered") long delivered,
-                               @JsonProperty("discarded") long discarded,
-                               @JsonProperty("volume") long volume,
-                               @JsonProperty("timeouts") MetricDecimalValue timeouts,
-                               @JsonProperty("otherErrors") MetricDecimalValue otherErrors,
-                               @JsonProperty("codes2xx") MetricDecimalValue codes2xx,
-                               @JsonProperty("codes4xx") MetricDecimalValue codes4xx,
-                               @JsonProperty("codes5xx") MetricDecimalValue codes5xx,
-                               @JsonProperty("retries") MetricDecimalValue retries,
-                               @JsonProperty("Subscription") Subscription.State state,
-                               @JsonProperty("rate") MetricDecimalValue rate,
-                               @JsonProperty("throughput") MetricDecimalValue throughput,
-                               @JsonProperty("batchRate") MetricDecimalValue batchRate) {
+    public SubscriptionMetrics(
+            @JsonProperty("delivered") long delivered,
+            @JsonProperty("discarded") long discarded,
+            @JsonProperty("volume") long volume,
+            @JsonProperty("timeouts") MetricDecimalValue timeouts,
+            @JsonProperty("otherErrors") MetricDecimalValue otherErrors,
+            @JsonProperty("codes2xx") MetricDecimalValue codes2xx,
+            @JsonProperty("codes4xx") MetricDecimalValue codes4xx,
+            @JsonProperty("codes5xx") MetricDecimalValue codes5xx,
+            @JsonProperty("retries") MetricDecimalValue retries,
+            @JsonProperty("Subscription") Subscription.State state,
+            @JsonProperty("rate") MetricDecimalValue rate,
+            @JsonProperty("throughput") MetricDecimalValue throughput,
+            @JsonProperty("batchRate") MetricDecimalValue batchRate) {
         this.delivered = delivered;
         this.discarded = discarded;
         this.volume = volume;
@@ -70,7 +70,7 @@ public class SubscriptionMetrics {
     public MetricDecimalValue getRate() {
         return rate;
     }
-    
+
     public MetricDecimalValue getOtherErrors() {
         return otherErrors;
     }

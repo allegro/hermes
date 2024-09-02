@@ -20,7 +20,6 @@ public class ConsistencyCheckerProperties {
         this.threadPoolSize = threadPoolSize;
     }
 
-
     public boolean isPeriodicCheckEnabled() {
         return periodicCheckEnabled;
     }
@@ -28,7 +27,6 @@ public class ConsistencyCheckerProperties {
     public void setPeriodicCheckEnabled(boolean periodicCheckEnabled) {
         this.periodicCheckEnabled = periodicCheckEnabled;
     }
-
 
     public Duration getRefreshInterval() {
         return refreshInterval;

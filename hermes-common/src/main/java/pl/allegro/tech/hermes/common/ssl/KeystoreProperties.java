@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.common.ssl;
 
-
 import java.net.URI;
 
 public class KeystoreProperties {

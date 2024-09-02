@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.frontend.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+
 import pl.allegro.tech.hermes.common.kafka.HTTPHeadersPropagationAsKafkaHeadersProperties;
 
 import java.util.HashSet;
@@ -12,9 +13,11 @@ public class HTTPHeadersProperties {
     public boolean propagationEnabled = false;
     public Set<String> allowedSet = new HashSet<>();
     public Set<String> additionalAllowedSetToLog = new HashSet<>();
-    public PropagationAsKafkaHeadersProperties propagationAsKafkaHeaders = new PropagationAsKafkaHeadersProperties();
+    public PropagationAsKafkaHeadersProperties propagationAsKafkaHeaders =
+            new PropagationAsKafkaHeadersProperties();
 
-    public static class PropagationAsKafkaHeadersProperties implements HTTPHeadersPropagationAsKafkaHeadersProperties {
+    public static class PropagationAsKafkaHeadersProperties
+            implements HTTPHeadersPropagationAsKafkaHeadersProperties {
 
         public boolean enabled = true;
 
@@ -52,7 +55,7 @@ public class HTTPHeadersProperties {
     }
 
     public void setPropagationAsKafkaHeaders(
-        PropagationAsKafkaHeadersProperties propagationAsKafkaHeaders) {
+            PropagationAsKafkaHeadersProperties propagationAsKafkaHeaders) {
         this.propagationAsKafkaHeaders = propagationAsKafkaHeaders;
     }
 

@@ -6,20 +6,26 @@ import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraintsRep
 import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryCommand;
 
-public class UpdateSubscriptionConstraintsRepositoryCommand extends RepositoryCommand<WorkloadConstraintsRepository> {
+public class UpdateSubscriptionConstraintsRepositoryCommand
+        extends RepositoryCommand<WorkloadConstraintsRepository> {
 
     private final SubscriptionName subscriptionName;
     private final Constraints constraints;
     private Constraints backup;
 
-    public UpdateSubscriptionConstraintsRepositoryCommand(SubscriptionName subscriptionName, Constraints constraints) {
+    public UpdateSubscriptionConstraintsRepositoryCommand(
+            SubscriptionName subscriptionName, Constraints constraints) {
         this.subscriptionName = subscriptionName;
         this.constraints = constraints;
     }
 
     @Override
     public void backup(DatacenterBoundRepositoryHolder<WorkloadConstraintsRepository> holder) {
-        backup = holder.getRepository().getConsumersWorkloadConstraints().getSubscriptionConstraints().get(subscriptionName);
+        backup =
+                holder.getRepository()
+                        .getConsumersWorkloadConstraints()
+                        .getSubscriptionConstraints()
+                        .get(subscriptionName);
     }
 
     @Override
@@ -28,7 +34,9 @@ public class UpdateSubscriptionConstraintsRepositoryCommand extends RepositoryCo
     }
 
     @Override
-    public void rollback(DatacenterBoundRepositoryHolder<WorkloadConstraintsRepository> holder, Exception exception) {
+    public void rollback(
+            DatacenterBoundRepositoryHolder<WorkloadConstraintsRepository> holder,
+            Exception exception) {
         if (backup != null) {
             holder.getRepository().updateConstraints(subscriptionName, backup);
         }
@@ -41,6 +49,7 @@ public class UpdateSubscriptionConstraintsRepositoryCommand extends RepositoryCo
 
     @Override
     public String toString() {
-        return String.format("UpdateSubscriptionConstraints(%s)", subscriptionName.getQualifiedName());
+        return String.format(
+                "UpdateSubscriptionConstraints(%s)", subscriptionName.getQualifiedName());
     }
 }

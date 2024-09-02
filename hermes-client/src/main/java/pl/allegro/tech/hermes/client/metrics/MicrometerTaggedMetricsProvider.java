@@ -25,19 +25,25 @@ public class MicrometerTaggedMetricsProvider implements MetricsProvider {
     @Override
     public void counterIncrement(String topic, String key, Map<String, String> tags) {
         tags.put("topic", topic);
-        metrics.counter(buildCounterName(key), Tags.of(tags.entrySet().stream()
-               .map(e -> Tag.of(e.getKey(), e.getValue()))
-               .collect(Collectors.toSet())))
-               .increment();
+        metrics.counter(
+                        buildCounterName(key),
+                        Tags.of(
+                                tags.entrySet().stream()
+                                        .map(e -> Tag.of(e.getKey(), e.getValue()))
+                                        .collect(Collectors.toSet())))
+                .increment();
     }
 
     @Override
     public void timerRecord(String topic, String key, long duration, TimeUnit unit) {
         Map<String, String> tags = new HashMap<>();
         tags.put("topic", topic);
-        metrics.timer(buildCounterName(key), Tags.of(tags.entrySet().stream()
-                .map(e -> Tag.of(e.getKey(), e.getValue()))
-                .collect(Collectors.toSet())))
+        metrics.timer(
+                        buildCounterName(key),
+                        Tags.of(
+                                tags.entrySet().stream()
+                                        .map(e -> Tag.of(e.getKey(), e.getValue()))
+                                        .collect(Collectors.toSet())))
                 .record(duration, unit);
     }
 
@@ -45,9 +51,12 @@ public class MicrometerTaggedMetricsProvider implements MetricsProvider {
     public void histogramUpdate(String topic, String key, int value) {
         Map<String, String> tags = new HashMap<>();
         tags.put("topic", topic);
-        metrics.summary(buildCounterName(key), Tags.of(tags.entrySet().stream()
-                .map(e -> Tag.of(e.getKey(), e.getValue()))
-                .collect(Collectors.toSet())))
+        metrics.summary(
+                        buildCounterName(key),
+                        Tags.of(
+                                tags.entrySet().stream()
+                                        .map(e -> Tag.of(e.getKey(), e.getValue()))
+                                        .collect(Collectors.toSet())))
                 .record(value);
     }
 

@@ -13,5 +13,4 @@ public class KafkaConsumerPoolException extends HermesException {
     public ErrorCode getCode() {
         return ErrorCode.SIMPLE_CONSUMER_POOL_EXCEPTION;
     }
-
 }

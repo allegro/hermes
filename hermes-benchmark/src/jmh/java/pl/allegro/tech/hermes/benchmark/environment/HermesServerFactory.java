@@ -1,8 +1,15 @@
 package pl.allegro.tech.hermes.benchmark.environment;
 
+import static pl.allegro.tech.hermes.api.ContentType.AVRO;
+import static pl.allegro.tech.hermes.benchmark.environment.HermesServerEnvironment.loadMessageResource;
+import static pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter.QuotaInsight.quotaConfirmed;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.undertow.server.HttpHandler;
+
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
@@ -37,26 +44,29 @@ import java.io.IOException;
 import java.time.Clock;
 import java.util.Collections;
 
-import static pl.allegro.tech.hermes.api.ContentType.AVRO;
-import static pl.allegro.tech.hermes.benchmark.environment.HermesServerEnvironment.loadMessageResource;
-import static pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter.QuotaInsight.quotaConfirmed;
-import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
-
 class HermesServerFactory {
 
-    private static final Topic topic = topic(HermesServerEnvironment.BENCHMARK_TOPIC).withContentType(AVRO).build();
-
+    private static final Topic topic =
+            topic(HermesServerEnvironment.BENCHMARK_TOPIC).withContentType(AVRO).build();
 
     static HermesServer provideHermesServer() throws IOException {
         ThroughputLimiter throughputLimiter = (exampleTopic, throughput) -> quotaConfirmed();
         MetricsFacade metricsFacade = new MetricsFacade(new SimpleMeterRegistry());
         TopicsCache topicsCache = new InMemoryTopicsCache(metricsFacade, topic);
         BrokerMessageProducer brokerMessageProducer = new InMemoryBrokerMessageProducer();
-        RawSchemaClient rawSchemaClient = new InMemorySchemaClient(topic.getName(), loadMessageResource("schema"), 1, 1);
+        RawSchemaClient rawSchemaClient =
+                new InMemorySchemaClient(topic.getName(), loadMessageResource("schema"), 1, 1);
         Trackers trackers = new Trackers(Collections.emptyList());
-        AvroMessageContentWrapper avroMessageContentWrapper = new AvroMessageContentWrapper(Clock.systemDefaultZone());
-        HttpHandler httpHandler = provideHttpHandler(throughputLimiter, topicsCache,
-            brokerMessageProducer, rawSchemaClient, trackers, avroMessageContentWrapper);
+        AvroMessageContentWrapper avroMessageContentWrapper =
+                new AvroMessageContentWrapper(Clock.systemDefaultZone());
+        HttpHandler httpHandler =
+                provideHttpHandler(
+                        throughputLimiter,
+                        topicsCache,
+                        brokerMessageProducer,
+                        rawSchemaClient,
+                        trackers,
+                        avroMessageContentWrapper);
         SslProperties sslProperties = new SslProperties();
         HermesServerProperties hermesServerProperties = new HermesServerProperties();
         hermesServerProperties.setGracefulShutdownEnabled(false);
@@ -74,36 +84,42 @@ class HermesServerFactory {
                 null);
     }
 
-    private static HttpHandler provideHttpHandler(ThroughputLimiter throughputLimiter,
-        TopicsCache topicsCache, BrokerMessageProducer brokerMessageProducer,
-        RawSchemaClient rawSchemaClient, Trackers trackers, AvroMessageContentWrapper avroMessageContentWrapper) {
+    private static HttpHandler provideHttpHandler(
+            ThroughputLimiter throughputLimiter,
+            TopicsCache topicsCache,
+            BrokerMessageProducer brokerMessageProducer,
+            RawSchemaClient rawSchemaClient,
+            Trackers trackers,
+            AvroMessageContentWrapper avroMessageContentWrapper) {
         HTTPHeadersProperties httpHeadersProperties = new HTTPHeadersProperties();
         HandlersChainProperties handlersChainProperties = new HandlersChainProperties();
         TrackingHeadersExtractor trackingHeadersExtractor = new DefaultTrackingHeaderExtractor();
         SchemaProperties schemaProperties = new SchemaProperties();
 
         return new HandlersChainFactory(
-                topicsCache,
-                new MessageErrorProcessor(new ObjectMapper(), trackers, trackingHeadersExtractor),
-                new MessageEndProcessor(trackers, new BrokerListeners(), trackingHeadersExtractor),
-                new MessageFactory(
-                        new MessageValidators(Collections.emptyList()),
-                        new MessageContentTypeEnforcer(),
-                        new SchemaRepository(
-                                new DirectSchemaVersionsRepository(rawSchemaClient),
-                                new DirectCompiledSchemaRepository<>(rawSchemaClient, SchemaCompilersFactory.avroSchemaCompiler())
-                        ),
-                        new DefaultHeadersPropagator(httpHeadersProperties),
-                        new BenchmarkMessageContentWrapper(avroMessageContentWrapper),
-                        Clock.systemDefaultZone(),
-                        schemaProperties.isIdHeaderEnabled()
-                ),
-                brokerMessageProducer,
-                null,
-                throughputLimiter,
-                null,
-                false,
-                handlersChainProperties
-        ).provide();
+                        topicsCache,
+                        new MessageErrorProcessor(
+                                new ObjectMapper(), trackers, trackingHeadersExtractor),
+                        new MessageEndProcessor(
+                                trackers, new BrokerListeners(), trackingHeadersExtractor),
+                        new MessageFactory(
+                                new MessageValidators(Collections.emptyList()),
+                                new MessageContentTypeEnforcer(),
+                                new SchemaRepository(
+                                        new DirectSchemaVersionsRepository(rawSchemaClient),
+                                        new DirectCompiledSchemaRepository<>(
+                                                rawSchemaClient,
+                                                SchemaCompilersFactory.avroSchemaCompiler())),
+                                new DefaultHeadersPropagator(httpHeadersProperties),
+                                new BenchmarkMessageContentWrapper(avroMessageContentWrapper),
+                                Clock.systemDefaultZone(),
+                                schemaProperties.isIdHeaderEnabled()),
+                        brokerMessageProducer,
+                        null,
+                        throughputLimiter,
+                        null,
+                        false,
+                        handlersChainProperties)
+                .provide();
     }
 }

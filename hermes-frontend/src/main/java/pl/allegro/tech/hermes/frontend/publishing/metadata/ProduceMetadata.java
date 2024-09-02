@@ -5,8 +5,7 @@ import jakarta.annotation.Nullable;
 import java.util.Optional;
 
 public class ProduceMetadata {
-    @Nullable
-    private final String broker;
+    @Nullable private final String broker;
 
     public ProduceMetadata(@Nullable String broker) {
         this.broker = broker;

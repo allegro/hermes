@@ -1,6 +1,9 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub;
 
+import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.failedResult;
+
 import com.google.pubsub.v1.PubsubMessage;
+
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.CompletableFutureAwareMessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
@@ -9,8 +12,6 @@ import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-import static pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult.failedResult;
-
 class GooglePubSubMessageSender implements CompletableFutureAwareMessageSender {
 
     private final GooglePubSubClient googlePubSubClient;
@@ -18,9 +19,11 @@ class GooglePubSubMessageSender implements CompletableFutureAwareMessageSender {
     private final GooglePubSubClientsPool clientsPool;
     private final GooglePubSubMessageTransformer messageTransformer;
 
-    GooglePubSubMessageSender(GooglePubSubSenderTarget resolvedTarget,
-                              GooglePubSubClientsPool clientsPool,
-                              GooglePubSubMessageTransformer messageTransformer) throws IOException {
+    GooglePubSubMessageSender(
+            GooglePubSubSenderTarget resolvedTarget,
+            GooglePubSubClientsPool clientsPool,
+            GooglePubSubMessageTransformer messageTransformer)
+            throws IOException {
         this.googlePubSubClient = clientsPool.acquire(resolvedTarget);
         this.resolvedTarget = resolvedTarget;
         this.clientsPool = clientsPool;

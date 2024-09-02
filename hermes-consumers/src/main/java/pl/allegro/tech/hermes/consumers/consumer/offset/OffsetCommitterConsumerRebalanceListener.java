@@ -1,20 +1,22 @@
 package pl.allegro.tech.hermes.consumers.consumer.offset;
 
+import static java.util.stream.Collectors.toSet;
+
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
 import org.apache.kafka.common.TopicPartition;
+
 import pl.allegro.tech.hermes.api.SubscriptionName;
 
 import java.util.Collection;
 import java.util.Set;
-
-import static java.util.stream.Collectors.toSet;
 
 public class OffsetCommitterConsumerRebalanceListener implements ConsumerRebalanceListener {
 
     private final SubscriptionName name;
     private final ConsumerPartitionAssignmentState state;
 
-    public OffsetCommitterConsumerRebalanceListener(SubscriptionName name, ConsumerPartitionAssignmentState state) {
+    public OffsetCommitterConsumerRebalanceListener(
+            SubscriptionName name, ConsumerPartitionAssignmentState state) {
         this.name = name;
         this.state = state;
     }

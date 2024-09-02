@@ -2,9 +2,11 @@ package pl.allegro.tech.hermes.api;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.base.MoreObjects;
+
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+
 import pl.allegro.tech.hermes.api.helpers.Patch;
 
 import java.util.Map;
@@ -56,19 +58,19 @@ public class SubscriptionPolicy {
 
     private boolean retryClientErrors = false;
 
-    private SubscriptionPolicy() {
-    }
+    private SubscriptionPolicy() {}
 
-    public SubscriptionPolicy(int rate,
-                              int messageTtl,
-                              int requestTimeout,
-                              int socketTimeout,
-                              boolean retryClientErrors,
-                              int messageBackoff,
-                              Integer inflightSize,
-                              int sendingDelay,
-                              double backoffMultiplier,
-                              int backoffMaxIntervalInSec) {
+    public SubscriptionPolicy(
+            int rate,
+            int messageTtl,
+            int requestTimeout,
+            int socketTimeout,
+            boolean retryClientErrors,
+            int messageBackoff,
+            Integer inflightSize,
+            int sendingDelay,
+            double backoffMultiplier,
+            int backoffMaxIntervalInSec) {
         this.rate = rate;
         this.messageTtl = messageTtl;
         this.requestTimeout = requestTimeout;
@@ -92,15 +94,25 @@ public class SubscriptionPolicy {
                 (Integer) properties.getOrDefault("messageBackoff", DEFAULT_MESSAGE_BACKOFF),
                 (Integer) properties.getOrDefault("inflightSize", null),
                 (Integer) properties.getOrDefault("sendingDelay", DEFAULT_SENDING_DELAY),
-                ((Number) properties.getOrDefault("backoffMultiplier", DEFAULT_BACKOFF_MULTIPLIER)).doubleValue(),
-                (Integer) properties.getOrDefault("backoffMaxIntervalInSec", DEFAULT_BACKOFF_MAX_INTERVAL)
-        );
+                ((Number) properties.getOrDefault("backoffMultiplier", DEFAULT_BACKOFF_MULTIPLIER))
+                        .doubleValue(),
+                (Integer)
+                        properties.getOrDefault(
+                                "backoffMaxIntervalInSec", DEFAULT_BACKOFF_MAX_INTERVAL));
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(rate, messageTtl, messageBackoff, retryClientErrors,
-                requestTimeout, socketTimeout, inflightSize, sendingDelay, backoffMultiplier,
+        return Objects.hash(
+                rate,
+                messageTtl,
+                messageBackoff,
+                retryClientErrors,
+                requestTimeout,
+                socketTimeout,
+                inflightSize,
+                sendingDelay,
+                backoffMultiplier,
                 backoffMaxIntervalInSec);
     }
 

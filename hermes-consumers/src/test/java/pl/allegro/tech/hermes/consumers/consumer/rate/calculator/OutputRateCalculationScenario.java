@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.consumers.consumer.rate.calculator;
 
 import org.assertj.core.api.Assertions;
 import org.assertj.core.data.Offset;
+
 import pl.allegro.tech.hermes.consumers.consumer.rate.SendCounters;
 import pl.allegro.tech.hermes.consumers.consumer.rate.calculator.OutputRateCalculator.Mode;
 
@@ -24,7 +25,8 @@ public class OutputRateCalculationScenario {
     }
 
     public OutputRateCalculationScenario start(double initialRate) {
-        previous = calculator.recalculateRate(counters, OutputRateCalculator.Mode.NORMAL, initialRate);
+        previous =
+                calculator.recalculateRate(counters, OutputRateCalculator.Mode.NORMAL, initialRate);
         results.add(previous);
         return this;
     }
@@ -84,7 +86,8 @@ public class OutputRateCalculationScenario {
         }
     }
 
-    public OutputRateCalculationScenario verifyIntermediateResult(int iteration, double rate, Mode mode) {
+    public OutputRateCalculationScenario verifyIntermediateResult(
+            int iteration, double rate, Mode mode) {
         Assertions.assertThat(results.get(iteration).rate()).isEqualTo(rate, Offset.offset(0.1));
         Assertions.assertThat(results.get(iteration).mode()).isEqualTo(mode);
         return this;

@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.integrationtests.setup;
 
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+
 import pl.allegro.tech.hermes.consumers.HermesConsumers;
 import pl.allegro.tech.hermes.consumers.server.ConsumerHttpServer;
 import pl.allegro.tech.hermes.test.helper.containers.ConfluentSchemaRegistryContainer;
@@ -23,9 +24,10 @@ public class HermesConsumersTestApp implements HermesTestApp {
     private List<String> currentArgs = List.of();
     private GooglePubSubExtension googlePubSub = null;
 
-    public HermesConsumersTestApp(ZookeeperContainer hermesZookeeper,
-                                  KafkaContainerCluster kafka,
-                                  ConfluentSchemaRegistryContainer schemaRegistry) {
+    public HermesConsumersTestApp(
+            ZookeeperContainer hermesZookeeper,
+            KafkaContainerCluster kafka,
+            ConfluentSchemaRegistryContainer schemaRegistry) {
         this.hermesZookeeper = hermesZookeeper;
         this.kafka = kafka;
         this.schemaRegistry = schemaRegistry;
@@ -33,8 +35,7 @@ public class HermesConsumersTestApp implements HermesTestApp {
 
     @Override
     public HermesTestApp start() {
-        app = new SpringApplicationBuilder(HermesConsumers.class)
-                .web(WebApplicationType.NONE);
+        app = new SpringApplicationBuilder(HermesConsumers.class).web(WebApplicationType.NONE);
         currentArgs = createArgs();
         app.run(currentArgs.toArray(new String[0]));
         port = app.context().getBean(ConsumerHttpServer.class).getPort();
@@ -68,17 +69,19 @@ public class HermesConsumersTestApp implements HermesTestApp {
                 "--spring.profiles.active=integration",
                 "--consumer.healthCheckPort=0",
                 "--consumer.kafka.namespace=itTest",
-                "--consumer.kafka.clusters.[0].brokerList=" + kafka.getBootstrapServersForExternalClients(),
+                "--consumer.kafka.clusters.[0].brokerList="
+                        + kafka.getBootstrapServersForExternalClients(),
                 "--consumer.kafka.clusters.[0].clusterName=" + "primary-dc",
-                "--consumer.zookeeper.clusters.[0].connectionString=" + hermesZookeeper.getConnectionString(),
+                "--consumer.zookeeper.clusters.[0].connectionString="
+                        + hermesZookeeper.getConnectionString(),
                 "--consumer.schema.repository.serverUrl=" + schemaRegistry.getUrl(),
                 "--consumer.backgroundSupervisor.interval=" + Duration.ofMillis(100),
                 "--consumer.workload.rebalanceInterval=" + Duration.ofSeconds(1),
                 "--consumer.commit.offset.period=" + Duration.ofSeconds(1),
                 "--consumer.metrics.micrometer.reportPeriod=" + Duration.ofSeconds(5),
                 "--consumer.schema.cache.enabled=true",
-                "--consumer.google.pubsub.sender.transportChannelProviderAddress=" + getGooglePubSubEndpoint()
-        );
+                "--consumer.google.pubsub.sender.transportChannelProviderAddress="
+                        + getGooglePubSubEndpoint());
     }
 
     private String getGooglePubSubEndpoint() {

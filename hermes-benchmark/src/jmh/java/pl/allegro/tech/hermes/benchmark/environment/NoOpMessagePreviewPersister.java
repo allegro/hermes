@@ -5,10 +5,8 @@ import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewPersiste
 class NoOpMessagePreviewPersister implements MessagePreviewPersister {
 
     @Override
-    public void start() {
-    }
+    public void start() {}
 
     @Override
-    public void shutdown() {
-    }
+    public void shutdown() {}
 }

@@ -12,10 +12,11 @@ public class TopicStats {
     private final long avroTopicCount;
 
     @JsonCreator
-    public TopicStats(@JsonProperty("topicCount") long topicCount,
-                      @JsonProperty("ackAllTopicCount") long ackAllTopicCount,
-                      @JsonProperty("trackingEnabledTopicCount") long trackingEnabledTopicCount,
-                      @JsonProperty("avroTopicCount") long avroTopicCount) {
+    public TopicStats(
+            @JsonProperty("topicCount") long topicCount,
+            @JsonProperty("ackAllTopicCount") long ackAllTopicCount,
+            @JsonProperty("trackingEnabledTopicCount") long trackingEnabledTopicCount,
+            @JsonProperty("avroTopicCount") long avroTopicCount) {
         this.topicCount = topicCount;
         this.ackAllTopicCount = ackAllTopicCount;
         this.trackingEnabledTopicCount = trackingEnabledTopicCount;
@@ -39,16 +40,21 @@ public class TopicStats {
 
     @Override
     public int hashCode() {
-        return Objects.hash(topicCount, ackAllTopicCount, trackingEnabledTopicCount, avroTopicCount);
+        return Objects.hash(
+                topicCount, ackAllTopicCount, trackingEnabledTopicCount, avroTopicCount);
     }
 
     @Override
     public String toString() {
         return "TopicStats{"
-                + "topicCount=" + topicCount
-                + ", ackAllTopicCount=" + ackAllTopicCount
-                + ", trackingEnabledTopicCount=" + trackingEnabledTopicCount
-                + ", avroTopicCount=" + avroTopicCount
+                + "topicCount="
+                + topicCount
+                + ", ackAllTopicCount="
+                + ackAllTopicCount
+                + ", trackingEnabledTopicCount="
+                + trackingEnabledTopicCount
+                + ", avroTopicCount="
+                + avroTopicCount
                 + '}';
     }
 

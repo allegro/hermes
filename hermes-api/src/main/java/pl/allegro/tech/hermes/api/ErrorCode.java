@@ -1,7 +1,5 @@
 package pl.allegro.tech.hermes.api;
 
-import jakarta.ws.rs.core.Response;
-
 import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
 import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 import static jakarta.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
@@ -9,6 +7,8 @@ import static jakarta.ws.rs.core.Response.Status.NOT_ACCEPTABLE;
 import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
 import static jakarta.ws.rs.core.Response.Status.REQUEST_TIMEOUT;
 import static jakarta.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
+
+import jakarta.ws.rs.core.Response;
 
 public enum ErrorCode {
     TIMEOUT(REQUEST_TIMEOUT),

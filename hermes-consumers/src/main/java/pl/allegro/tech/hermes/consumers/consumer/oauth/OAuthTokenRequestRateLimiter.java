@@ -17,8 +17,8 @@ public class OAuthTokenRequestRateLimiter {
 
     private final AtomicInteger rateReductionsCount = new AtomicInteger();
 
-    public OAuthTokenRequestRateLimiter(double initialRate, double minimalRate, double rateReductionFactor,
-                                        long warmUpPeriod) {
+    public OAuthTokenRequestRateLimiter(
+            double initialRate, double minimalRate, double rateReductionFactor, long warmUpPeriod) {
         this.initialRate = initialRate;
         this.rateLimiter = RateLimiter.create(initialRate, warmUpPeriod, TimeUnit.MILLISECONDS);
         this.minimalRate = minimalRate;

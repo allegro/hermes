@@ -5,6 +5,7 @@ import pl.allegro.tech.hermes.common.ssl.KeystoreProperties;
 
 import java.io.InputStream;
 import java.security.KeyStore;
+
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 
@@ -18,7 +19,8 @@ public class ProvidedKeyManagersProvider implements KeyManagersProvider, Resourc
 
     @Override
     public KeyManager[] getKeyManagers() throws Exception {
-        KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+        KeyManagerFactory keyManagerFactory =
+                KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
         KeyStore keyStore = KeyStore.getInstance(keystoreProperties.getFormat());
         try (InputStream stream = getResourceAsInputStream(keystoreProperties.getLocationAsURI())) {
             keyStore.load(stream, keystoreProperties.getPassword().toCharArray());

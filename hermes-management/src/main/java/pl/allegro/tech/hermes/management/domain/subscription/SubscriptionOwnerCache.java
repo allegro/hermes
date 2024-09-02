@@ -4,11 +4,14 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import jakarta.annotation.PreDestroy;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
 import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
@@ -28,16 +31,20 @@ public class SubscriptionOwnerCache {
     private final SubscriptionRepository subscriptionRepository;
     private final ScheduledExecutorService scheduledExecutorService;
 
-    private Multimap<OwnerId, SubscriptionName> cache = Multimaps.synchronizedMultimap(ArrayListMultimap.create());
+    private Multimap<OwnerId, SubscriptionName> cache =
+            Multimaps.synchronizedMultimap(ArrayListMultimap.create());
 
-    public SubscriptionOwnerCache(SubscriptionRepository subscriptionRepository,
-                                  @Value("${subscriptionOwnerCache.refreshRateInSeconds}") int refreshRateInSeconds) {
+    public SubscriptionOwnerCache(
+            SubscriptionRepository subscriptionRepository,
+            @Value("${subscriptionOwnerCache.refreshRateInSeconds}") int refreshRateInSeconds) {
         this.subscriptionRepository = subscriptionRepository;
-        scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(
-                new ThreadFactoryBuilder()
-                        .setNameFormat("subscription-owner-cache-%d")
-                        .build());
-        scheduledExecutorService.scheduleAtFixedRate(this::refillCache, 0, refreshRateInSeconds, TimeUnit.SECONDS);
+        scheduledExecutorService =
+                Executors.newSingleThreadScheduledExecutor(
+                        new ThreadFactoryBuilder()
+                                .setNameFormat("subscription-owner-cache-%d")
+                                .build());
+        scheduledExecutorService.scheduleAtFixedRate(
+                this::refillCache, 0, refreshRateInSeconds, TimeUnit.SECONDS);
     }
 
     @PreDestroy
@@ -54,7 +61,11 @@ public class SubscriptionOwnerCache {
     }
 
     void onRemovedSubscription(String subscriptionName, TopicName topicName) {
-        cache.entries().removeIf(entry -> entry.getValue().equals(new SubscriptionName(subscriptionName, topicName)));
+        cache.entries()
+                .removeIf(
+                        entry ->
+                                entry.getValue()
+                                        .equals(new SubscriptionName(subscriptionName, topicName)));
     }
 
     void onCreatedSubscription(Subscription subscription) {
@@ -71,8 +82,13 @@ public class SubscriptionOwnerCache {
             logger.info("Starting filling SubscriptionOwnerCache");
             long start = System.currentTimeMillis();
             Multimap<OwnerId, SubscriptionName> cache = ArrayListMultimap.create();
-            subscriptionRepository.listAllSubscriptions()
-                    .forEach(subscription -> cache.put(subscription.getOwner(), subscription.getQualifiedName()));
+            subscriptionRepository
+                    .listAllSubscriptions()
+                    .forEach(
+                            subscription ->
+                                    cache.put(
+                                            subscription.getOwner(),
+                                            subscription.getQualifiedName()));
             this.cache = Multimaps.synchronizedMultimap(cache);
             long end = System.currentTimeMillis();
             logger.info("SubscriptionOwnerCache filled. Took {}ms", end - start);

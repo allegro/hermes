@@ -57,7 +57,8 @@ public class TopicBuilder {
 
     private boolean subscribingRestricted = false;
 
-    private TopicDataOfflineStorage offlineStorage = TopicDataOfflineStorage.defaultOfflineStorage();
+    private TopicDataOfflineStorage offlineStorage =
+            TopicDataOfflineStorage.defaultOfflineStorage();
 
     private Set<TopicLabel> labels = Collections.emptySet();
 
@@ -72,15 +73,13 @@ public class TopicBuilder {
     public static TopicBuilder topicWithRandomNameContaining(String string) {
         return topic(
                 TopicBuilder.class.getSimpleName() + "Group" + sequence.incrementAndGet(),
-                TopicBuilder.class.getSimpleName() + "Topic" + string + sequence.incrementAndGet()
-        );
+                TopicBuilder.class.getSimpleName() + "Topic" + string + sequence.incrementAndGet());
     }
 
     public static TopicBuilder topicWithRandomNameEndedWith(String suffix) {
         return topic(
                 TopicBuilder.class.getSimpleName() + "Group" + sequence.incrementAndGet(),
-                TopicBuilder.class.getSimpleName() + "Topic" + sequence.incrementAndGet() + suffix
-        );
+                TopicBuilder.class.getSimpleName() + "Topic" + sequence.incrementAndGet() + suffix);
     }
 
     public static TopicBuilder randomTopic(String group, String topicNamePrefix) {
@@ -101,11 +100,25 @@ public class TopicBuilder {
 
     public Topic build() {
         return new Topic(
-                name, description, owner, retentionTime, migratedFromJsonType, ack, fallbackToRemoteDatacenterEnabled,
-                chaos, trackingEnabled, contentType, jsonToAvroDryRunEnabled, schemaIdAwareSerialization, maxMessageSize,
-                new PublishingAuth(publishers, authEnabled, unauthenticatedAccessEnabled), subscribingRestricted,
-                offlineStorage, labels, null, null
-        );
+                name,
+                description,
+                owner,
+                retentionTime,
+                migratedFromJsonType,
+                ack,
+                fallbackToRemoteDatacenterEnabled,
+                chaos,
+                trackingEnabled,
+                contentType,
+                jsonToAvroDryRunEnabled,
+                schemaIdAwareSerialization,
+                maxMessageSize,
+                new PublishingAuth(publishers, authEnabled, unauthenticatedAccessEnabled),
+                subscribingRestricted,
+                offlineStorage,
+                labels,
+                null,
+                null);
     }
 
     public TopicBuilder withDescription(String description) {

@@ -4,7 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class EnvironmentVariableDatacenterNameProvider implements DatacenterNameProvider {
-    private static final Logger logger = LoggerFactory.getLogger(EnvironmentVariableDatacenterNameProvider.class);
+    private static final Logger logger =
+            LoggerFactory.getLogger(EnvironmentVariableDatacenterNameProvider.class);
 
     private final String variableName;
 

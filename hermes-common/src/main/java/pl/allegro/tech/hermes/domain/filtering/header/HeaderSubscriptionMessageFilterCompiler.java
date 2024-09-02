@@ -16,7 +16,7 @@ public class HeaderSubscriptionMessageFilterCompiler implements SubscriptionMess
 
     @Override
     public Predicate<FilterableMessage> compile(MessageFilterSpecification specification) {
-        return new HeaderPredicate(specification.getHeader(), Pattern.compile(specification.getMatcher()));
-
+        return new HeaderPredicate(
+                specification.getHeader(), Pattern.compile(specification.getMatcher()));
     }
 }

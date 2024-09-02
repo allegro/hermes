@@ -1,5 +1,9 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload.weighted;
 
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toSet;
+
 import java.time.Clock;
 import java.time.Duration;
 import java.util.Collection;
@@ -7,10 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
-import static java.util.stream.Collectors.toSet;
 
 public class ScoringTargetWeightCalculator implements TargetWeightCalculator {
 
@@ -23,10 +23,11 @@ public class ScoringTargetWeightCalculator implements TargetWeightCalculator {
     private final double scoringGain;
     private final Map<String, ExponentiallyWeightedMovingAverage> scores = new HashMap<>();
 
-    public ScoringTargetWeightCalculator(WeightedWorkloadMetricsReporter metrics,
-                                         Clock clock,
-                                         Duration scoringWindowSize,
-                                         double scoringGain) {
+    public ScoringTargetWeightCalculator(
+            WeightedWorkloadMetricsReporter metrics,
+            Clock clock,
+            Duration scoringWindowSize,
+            double scoringGain) {
         this.metrics = metrics;
         this.clock = clock;
         this.scoringWindowSize = scoringWindowSize;
@@ -61,7 +62,8 @@ public class ScoringTargetWeightCalculator implements TargetWeightCalculator {
     }
 
     private void removeScoresForInactiveConsumers(Collection<ConsumerNode> consumers) {
-        Set<String> consumerIds = consumers.stream().map(ConsumerNode::getConsumerId).collect(toSet());
+        Set<String> consumerIds =
+                consumers.stream().map(ConsumerNode::getConsumerId).collect(toSet());
         scores.entrySet().removeIf(e -> !consumerIds.contains(e.getKey()));
     }
 
@@ -78,15 +80,19 @@ public class ScoringTargetWeightCalculator implements TargetWeightCalculator {
                 .orElse(0d);
     }
 
-    private Map<String, Double> calculateCurrentScores(Map<String, ConsumerNodeLoad> loadPerConsumer) {
-        Map<String, Double> opsPerConsumer = loadPerConsumer.entrySet().stream()
-                .filter(e -> e.getValue().isDefined())
-                .collect(toMap(Map.Entry::getKey, e -> e.getValue().sumOperationsPerSecond()));
-        double opsSum = opsPerConsumer.values().stream()
-                .mapToDouble(ops -> ops)
-                .sum();
+    private Map<String, Double> calculateCurrentScores(
+            Map<String, ConsumerNodeLoad> loadPerConsumer) {
+        Map<String, Double> opsPerConsumer =
+                loadPerConsumer.entrySet().stream()
+                        .filter(e -> e.getValue().isDefined())
+                        .collect(
+                                toMap(
+                                        Map.Entry::getKey,
+                                        e -> e.getValue().sumOperationsPerSecond()));
+        double opsSum = opsPerConsumer.values().stream().mapToDouble(ops -> ops).sum();
         return opsPerConsumer.entrySet().stream()
-                .collect(toMap(Map.Entry::getKey, e -> calculateCurrentScore(e.getValue(), opsSum)));
+                .collect(
+                        toMap(Map.Entry::getKey, e -> calculateCurrentScore(e.getValue(), opsSum)));
     }
 
     private double calculateCurrentScore(double ops, double opsSum) {
@@ -98,10 +104,10 @@ public class ScoringTargetWeightCalculator implements TargetWeightCalculator {
 
     private double calculateNewScore(String consumerId, double currentScore, double error) {
         double rawScore = currentScore + scoringGain * error;
-        ExponentiallyWeightedMovingAverage average = scores.computeIfAbsent(
-                consumerId,
-                ignore -> new ExponentiallyWeightedMovingAverage(scoringWindowSize)
-        );
+        ExponentiallyWeightedMovingAverage average =
+                scores.computeIfAbsent(
+                        consumerId,
+                        ignore -> new ExponentiallyWeightedMovingAverage(scoringWindowSize));
         double avg = average.update(rawScore, clock.instant());
         return ensureScoreRanges(avg);
     }
@@ -110,22 +116,23 @@ public class ScoringTargetWeightCalculator implements TargetWeightCalculator {
         return Math.max(Math.min(score, MAX_SCORE), MIN_SCORE);
     }
 
-    private Map<String, Weight> calculateWeights(Collection<ConsumerNode> consumers, Map<String, Double> newScores) {
-        Weight sum = consumers.stream()
-                .map(ConsumerNode::getWeight)
-                .reduce(Weight.ZERO, Weight::add);
+    private Map<String, Weight> calculateWeights(
+            Collection<ConsumerNode> consumers, Map<String, Double> newScores) {
+        Weight sum =
+                consumers.stream().map(ConsumerNode::getWeight).reduce(Weight.ZERO, Weight::add);
         Weight avgWeight = calculateAvgWeight(sum, consumers.size());
-        List<ConsumerNode> consumersWithoutScore = consumers.stream()
-                .filter(consumerNode -> !newScores.containsKey(consumerNode.getConsumerId()))
-                .collect(toList());
+        List<ConsumerNode> consumersWithoutScore =
+                consumers.stream()
+                        .filter(
+                                consumerNode ->
+                                        !newScores.containsKey(consumerNode.getConsumerId()))
+                        .collect(toList());
         Map<String, Weight> newWeights = new HashMap<>();
         for (ConsumerNode consumerNode : consumersWithoutScore) {
             newWeights.put(consumerNode.getConsumerId(), avgWeight);
             sum = sum.subtract(avgWeight);
         }
-        double newScoresSum = newScores.values().stream()
-                .mapToDouble(score -> score)
-                .sum();
+        double newScoresSum = newScores.values().stream().mapToDouble(score -> score).sum();
         for (Map.Entry<String, Double> entry : newScores.entrySet()) {
             Weight weight = sum.multiply(entry.getValue() / newScoresSum);
             newWeights.put(entry.getKey(), weight);

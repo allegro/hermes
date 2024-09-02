@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+
 import pl.allegro.tech.hermes.consumers.CommonConsumerParameters;
 import pl.allegro.tech.hermes.consumers.consumer.SerialConsumerParameters;
 import pl.allegro.tech.hermes.consumers.supervisor.SupervisorParameters;
@@ -46,8 +47,10 @@ public class CommonConsumerProperties implements CommonConsumerParameters {
         return subscriptionIdsCacheRemovedExpireAfterAccess;
     }
 
-    public void setSubscriptionIdsCacheRemovedExpireAfterAccess(Duration subscriptionIdsCacheRemovedExpireAfterAccess) {
-        this.subscriptionIdsCacheRemovedExpireAfterAccess = subscriptionIdsCacheRemovedExpireAfterAccess;
+    public void setSubscriptionIdsCacheRemovedExpireAfterAccess(
+            Duration subscriptionIdsCacheRemovedExpireAfterAccess) {
+        this.subscriptionIdsCacheRemovedExpireAfterAccess =
+                subscriptionIdsCacheRemovedExpireAfterAccess;
     }
 
     @Override

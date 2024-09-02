@@ -2,8 +2,10 @@ package pl.allegro.tech.hermes.consumers.supervisor.monitor;
 
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
@@ -21,9 +23,9 @@ public class ConsumersRuntimeMonitor implements Runnable {
 
     private static final Logger logger = LoggerFactory.getLogger(ConsumersRuntimeMonitor.class);
 
-    private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(
-            new ThreadFactoryBuilder().setNameFormat("consumer-monitor-%d").build()
-    );
+    private final ScheduledExecutorService executor =
+            Executors.newSingleThreadScheduledExecutor(
+                    new ThreadFactoryBuilder().setNameFormat("consumer-monitor-%d").build());
 
     private final Duration scanInterval;
 
@@ -37,11 +39,12 @@ public class ConsumersRuntimeMonitor implements Runnable {
 
     private ScheduledFuture<?> monitoringTask;
 
-    public ConsumersRuntimeMonitor(ConsumersSupervisor consumerSupervisor,
-                                   WorkloadSupervisor workloadSupervisor,
-                                   MetricsFacade metrics,
-                                   SubscriptionsCache subscriptionsCache,
-                                   Duration scanInterval) {
+    public ConsumersRuntimeMonitor(
+            ConsumersSupervisor consumerSupervisor,
+            WorkloadSupervisor workloadSupervisor,
+            MetricsFacade metrics,
+            SubscriptionsCache subscriptionsCache,
+            Duration scanInterval) {
         this.consumerSupervisor = consumerSupervisor;
         this.workloadSupervisor = workloadSupervisor;
         this.subscriptionsCache = subscriptionsCache;
@@ -71,7 +74,9 @@ public class ConsumersRuntimeMonitor implements Runnable {
     }
 
     public void start() {
-        this.monitoringTask = executor.scheduleWithFixedDelay(this, scanInterval.toSeconds(), scanInterval.toSeconds(), TimeUnit.SECONDS);
+        this.monitoringTask =
+                executor.scheduleWithFixedDelay(
+                        this, scanInterval.toSeconds(), scanInterval.toSeconds(), TimeUnit.SECONDS);
     }
 
     public void shutdown() throws InterruptedException {
@@ -84,9 +89,13 @@ public class ConsumersRuntimeMonitor implements Runnable {
         }
     }
 
-    private void ensureCorrectness(Set<SubscriptionName> missing, Set<SubscriptionName> oversubscribed) {
+    private void ensureCorrectness(
+            Set<SubscriptionName> missing, Set<SubscriptionName> oversubscribed) {
         if (!missing.isEmpty() || !oversubscribed.isEmpty()) {
-            logger.info("Fixing runtime. Creating {} and killing {} consumers", missing.size(), oversubscribed.size());
+            logger.info(
+                    "Fixing runtime. Creating {} and killing {} consumers",
+                    missing.size(),
+                    oversubscribed.size());
         }
         missing.stream()
                 .map(subscriptionsCache::getSubscription)
@@ -94,10 +103,11 @@ public class ConsumersRuntimeMonitor implements Runnable {
         oversubscribed.forEach(consumerSupervisor::deleteConsumerForSubscriptionName);
     }
 
-    private void log(Set<SubscriptionName> assigned,
-                    Set<SubscriptionName> running,
-                    Set<SubscriptionName> missing,
-                    Set<SubscriptionName> oversubscribed) {
+    private void log(
+            Set<SubscriptionName> assigned,
+            Set<SubscriptionName> running,
+            Set<SubscriptionName> missing,
+            Set<SubscriptionName> oversubscribed) {
         for (SubscriptionName subscriptionName : missing) {
             logger.warn("Missing consumer process for subscription: {}", subscriptionName);
         }
@@ -111,27 +121,29 @@ public class ConsumersRuntimeMonitor implements Runnable {
                 assigned.size(),
                 running.size(),
                 missing.size(),
-                oversubscribed.size()
-        );
+                oversubscribed.size());
     }
 
-    private void updateMetrics(Set<SubscriptionName> assigned,
-                               Set<SubscriptionName> running,
-                               Set<SubscriptionName> missing,
-                               Set<SubscriptionName> oversubscribed) {
+    private void updateMetrics(
+            Set<SubscriptionName> assigned,
+            Set<SubscriptionName> running,
+            Set<SubscriptionName> missing,
+            Set<SubscriptionName> oversubscribed) {
         monitorMetrics.assigned = assigned.size();
         monitorMetrics.running = running.size();
         monitorMetrics.missing = missing.size();
         monitorMetrics.oversubscribed = oversubscribed.size();
     }
 
-    private Set<SubscriptionName> missing(Set<SubscriptionName> assignedSubscriptions,
-                                          Set<SubscriptionName> runningSubscriptions) {
+    private Set<SubscriptionName> missing(
+            Set<SubscriptionName> assignedSubscriptions,
+            Set<SubscriptionName> runningSubscriptions) {
         return Sets.difference(assignedSubscriptions, runningSubscriptions).immutableCopy();
     }
 
-    private Set<SubscriptionName> oversubscribed(Set<SubscriptionName> assignedSubscriptions,
-                                                 Set<SubscriptionName> runningSubscriptions) {
+    private Set<SubscriptionName> oversubscribed(
+            Set<SubscriptionName> assignedSubscriptions,
+            Set<SubscriptionName> runningSubscriptions) {
         return Sets.difference(runningSubscriptions, assignedSubscriptions).immutableCopy();
     }
 
@@ -144,6 +156,5 @@ public class ConsumersRuntimeMonitor implements Runnable {
         volatile int missing;
 
         volatile int oversubscribed;
-
     }
 }

@@ -1,19 +1,22 @@
 package pl.allegro.tech.hermes.client.webclient;
 
+import static pl.allegro.tech.hermes.client.HermesResponseBuilder.hermesResponse;
+
+import static java.util.stream.Collectors.toMap;
+
 import org.springframework.web.reactive.function.client.WebClient;
+
 import pl.allegro.tech.hermes.client.HermesMessage;
 import pl.allegro.tech.hermes.client.HermesResponse;
 import pl.allegro.tech.hermes.client.HermesSender;
 import pl.allegro.tech.hermes.client.ReactiveHermesSender;
+
 import reactor.core.publisher.Mono;
 
 import java.net.URI;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.CompletableFuture;
-
-import static java.util.stream.Collectors.toMap;
-import static pl.allegro.tech.hermes.client.HermesResponseBuilder.hermesResponse;
 
 public class WebClientHermesSender implements HermesSender, ReactiveHermesSender {
 
@@ -26,20 +29,32 @@ public class WebClientHermesSender implements HermesSender, ReactiveHermesSender
 
     @Override
     public Mono<HermesResponse> sendReactively(URI uri, HermesMessage message) {
-        return webClient.post()
+        return webClient
+                .post()
                 .uri(uri)
                 .syncBody(message.getBody())
                 .headers(httpHeaders -> httpHeaders.setAll(message.getHeaders()))
                 .exchange()
-                .flatMap(response -> response
-                        .bodyToMono(String.class)
-                        .switchIfEmpty(NO_BODY)
-                        .map(body -> hermesResponse(message)
-                                .withBody(body)
-                                .withHttpStatus(response.statusCode().value())
-                                .withHeaderSupplier(header ->
-                                        convertToCaseInsensitiveMap(response.headers().asHttpHeaders().toSingleValueMap()).get(header))
-                                .build()));
+                .flatMap(
+                        response ->
+                                response.bodyToMono(String.class)
+                                        .switchIfEmpty(NO_BODY)
+                                        .map(
+                                                body ->
+                                                        hermesResponse(message)
+                                                                .withBody(body)
+                                                                .withHttpStatus(
+                                                                        response.statusCode()
+                                                                                .value())
+                                                                .withHeaderSupplier(
+                                                                        header ->
+                                                                                convertToCaseInsensitiveMap(
+                                                                                                response.headers()
+                                                                                                        .asHttpHeaders()
+                                                                                                        .toSingleValueMap())
+                                                                                        .get(
+                                                                                                header))
+                                                                .build()));
     }
 
     @Override
@@ -49,11 +64,11 @@ public class WebClientHermesSender implements HermesSender, ReactiveHermesSender
 
     private TreeMap<String, String> convertToCaseInsensitiveMap(Map<String, String> hashMap) {
         return hashMap.entrySet().stream()
-                .collect(toMap(
-                        Map.Entry::getKey,
-                        Map.Entry::getValue,
-                        (oldVal, newVal) -> newVal,
-                        () -> new TreeMap<>(String.CASE_INSENSITIVE_ORDER)
-                ));
+                .collect(
+                        toMap(
+                                Map.Entry::getKey,
+                                Map.Entry::getValue,
+                                (oldVal, newVal) -> newVal,
+                                () -> new TreeMap<>(String.CASE_INSENSITIVE_ORDER)));
     }
 }

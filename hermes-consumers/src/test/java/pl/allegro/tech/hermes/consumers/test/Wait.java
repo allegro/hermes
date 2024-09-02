@@ -2,8 +2,7 @@ package pl.allegro.tech.hermes.consumers.test;
 
 public final class Wait {
 
-    private Wait() {
-    }
+    private Wait() {}
 
     public static void forCacheInvalidation() {
         sleep(700);

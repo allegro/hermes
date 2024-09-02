@@ -5,17 +5,14 @@ import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
 
 public class NoOpConsumerNodeLoadRegistry implements ConsumerNodeLoadRegistry {
 
-    private static final NoOpSubscriptionLoadRecorder SUBSCRIPTION_LOAD_RECORDER = new NoOpSubscriptionLoadRecorder();
+    private static final NoOpSubscriptionLoadRecorder SUBSCRIPTION_LOAD_RECORDER =
+            new NoOpSubscriptionLoadRecorder();
 
     @Override
-    public void start() {
-
-    }
+    public void start() {}
 
     @Override
-    public void stop() {
-
-    }
+    public void stop() {}
 
     @Override
     public ConsumerNodeLoad get(String consumerId) {
@@ -30,18 +27,12 @@ public class NoOpConsumerNodeLoadRegistry implements ConsumerNodeLoadRegistry {
     private static class NoOpSubscriptionLoadRecorder implements SubscriptionLoadRecorder {
 
         @Override
-        public void initialize() {
-
-        }
+        public void initialize() {}
 
         @Override
-        public void recordSingleOperation() {
-
-        }
+        public void recordSingleOperation() {}
 
         @Override
-        public void shutdown() {
-
-        }
+        public void shutdown() {}
     }
 }

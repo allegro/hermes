@@ -1,11 +1,12 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.Test;
+
 import pl.allegro.tech.hermes.api.SubscriptionName;
 
 import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class SubscriptionAssignmentViewTest {
 
@@ -70,7 +71,8 @@ public class SubscriptionAssignmentViewTest {
         // given
         SubscriptionName s1 = anySubscriptionName();
         SubscriptionAssignmentView current = assignmentView().withAssignment(s1, "c1").build();
-        SubscriptionAssignmentView target = assignmentView().withAssignment(s1, "c1").withAssignment(s1, "c2").build();
+        SubscriptionAssignmentView target =
+                assignmentView().withAssignment(s1, "c1").withAssignment(s1, "c2").build();
 
         // when
         SubscriptionAssignmentView additions = current.additions(target);
@@ -83,7 +85,8 @@ public class SubscriptionAssignmentViewTest {
     public void shouldDeleteAssignmentFromExistingSubscription() {
         // given
         SubscriptionName s1 = anySubscriptionName();
-        SubscriptionAssignmentView current = assignmentView().withAssignment(s1, "c1").withAssignment(s1, "c2").build();
+        SubscriptionAssignmentView current =
+                assignmentView().withAssignment(s1, "c1").withAssignment(s1, "c2").build();
         SubscriptionAssignmentView target = assignmentView().withAssignment(s1, "c1").build();
 
         // when
@@ -99,7 +102,8 @@ public class SubscriptionAssignmentViewTest {
         SubscriptionName s1 = anySubscriptionName();
         SubscriptionName s2 = anySubscriptionName();
         SubscriptionAssignmentView current = assignmentView().withAssignment(s1, "c1").build();
-        SubscriptionAssignmentView target = assignmentView().withAssignment(s1, "c1").withAssignment(s2, "c1").build();
+        SubscriptionAssignmentView target =
+                assignmentView().withAssignment(s1, "c1").withAssignment(s2, "c1").build();
 
         // when
         SubscriptionAssignmentView additions = current.additions(target);
@@ -121,7 +125,8 @@ public class SubscriptionAssignmentViewTest {
 
         // then
         assertThat(deletions.getSubscriptions()).isEqualTo(current.getSubscriptions());
-        assertThat(deletions.getAssignmentsForSubscription(s1)).isEqualTo(current.getAssignmentsForSubscription(s1));
+        assertThat(deletions.getAssignmentsForSubscription(s1))
+                .isEqualTo(current.getAssignmentsForSubscription(s1));
     }
 
     private SubscriptionAssignment assignment(SubscriptionName s1, String supervisorId) {
@@ -129,7 +134,8 @@ public class SubscriptionAssignmentViewTest {
     }
 
     private SubscriptionName anySubscriptionName() {
-        return SubscriptionName.fromString("com.example.topic$" + Math.abs(UUID.randomUUID().getMostSignificantBits()));
+        return SubscriptionName.fromString(
+                "com.example.topic$" + Math.abs(UUID.randomUUID().getMostSignificantBits()));
     }
 
     private static SubscriptionAssignmentView emptySubscriptionAssignmentView() {

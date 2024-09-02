@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateParameters;
 
 import java.time.Duration;
@@ -8,7 +9,8 @@ import java.time.Duration;
 @ConfigurationProperties(prefix = "consumer.maxrate")
 public class MaxRateProperties implements MaxRateParameters {
 
-    private RegistryBinaryEncoderProperties registryBinaryEncoder = new RegistryBinaryEncoderProperties();
+    private RegistryBinaryEncoderProperties registryBinaryEncoder =
+            new RegistryBinaryEncoderProperties();
 
     private Duration balanceInterval = Duration.ofSeconds(30);
 

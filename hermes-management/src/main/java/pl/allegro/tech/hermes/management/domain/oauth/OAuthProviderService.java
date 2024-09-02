@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.management.domain.oauth;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
 import pl.allegro.tech.hermes.api.OAuthProvider;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.helpers.Patch;
@@ -25,8 +26,11 @@ public class OAuthProviderService {
     private final MultiDatacenterRepositoryCommandExecutor multiDcExecutor;
 
     @Autowired
-    public OAuthProviderService(OAuthProviderRepository repository, ApiPreconditions preconditions, Auditor auditor,
-                                MultiDatacenterRepositoryCommandExecutor multiDcExecutor) {
+    public OAuthProviderService(
+            OAuthProviderRepository repository,
+            ApiPreconditions preconditions,
+            Auditor auditor,
+            MultiDatacenterRepositoryCommandExecutor multiDcExecutor) {
         this.repository = repository;
         this.preconditions = preconditions;
         this.auditor = auditor;
@@ -43,17 +47,20 @@ public class OAuthProviderService {
 
     public void createOAuthProvider(OAuthProvider oAuthProvider, RequestUser createdBy) {
         preconditions.checkConstraints(oAuthProvider, false);
-        multiDcExecutor.executeByUser(new CreateOAuthProviderRepositoryCommand(oAuthProvider), createdBy);
+        multiDcExecutor.executeByUser(
+                new CreateOAuthProviderRepositoryCommand(oAuthProvider), createdBy);
         auditor.objectCreated(createdBy.getUsername(), oAuthProvider);
     }
 
     public void removeOAuthProvider(String oAuthProviderName, RequestUser removedBy) {
         OAuthProvider oAuthProvider = repository.getOAuthProviderDetails(oAuthProviderName);
-        multiDcExecutor.executeByUser(new RemoveOAuthProviderRepositoryCommand(oAuthProviderName), removedBy);
+        multiDcExecutor.executeByUser(
+                new RemoveOAuthProviderRepositoryCommand(oAuthProviderName), removedBy);
         auditor.objectRemoved(removedBy.getUsername(), oAuthProvider);
     }
 
-    public void updateOAuthProvider(String oAuthProviderName, PatchData patch, RequestUser updatedBy) {
+    public void updateOAuthProvider(
+            String oAuthProviderName, PatchData patch, RequestUser updatedBy) {
         OAuthProvider retrieved = repository.getOAuthProviderDetails(oAuthProviderName);
         OAuthProvider updated = Patch.apply(retrieved, patch);
         preconditions.checkConstraints(updated, false);

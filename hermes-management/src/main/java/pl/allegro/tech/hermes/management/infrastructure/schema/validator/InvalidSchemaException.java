@@ -1,10 +1,11 @@
 package pl.allegro.tech.hermes.management.infrastructure.schema.validator;
 
+import static java.lang.String.format;
+
 import org.apache.avro.SchemaParseException;
+
 import pl.allegro.tech.hermes.api.ErrorCode;
 import pl.allegro.tech.hermes.common.exception.HermesException;
-
-import static java.lang.String.format;
 
 public class InvalidSchemaException extends HermesException {
 

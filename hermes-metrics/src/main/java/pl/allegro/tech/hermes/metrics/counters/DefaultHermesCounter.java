@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.metrics.counters;
 
-
 import pl.allegro.tech.hermes.metrics.HermesCounter;
 
 public class DefaultHermesCounter implements HermesCounter {

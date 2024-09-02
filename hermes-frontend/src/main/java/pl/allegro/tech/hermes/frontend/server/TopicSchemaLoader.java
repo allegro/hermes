@@ -1,11 +1,16 @@
 package pl.allegro.tech.hermes.frontend.server;
 
+import static java.util.concurrent.CompletableFuture.completedFuture;
+
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import net.jodah.failsafe.ExecutionContext;
 import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.RetryPolicy;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.schema.CouldNotLoadSchemaException;
 import pl.allegro.tech.hermes.schema.SchemaNotFoundException;
@@ -16,8 +21,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-
-import static java.util.concurrent.CompletableFuture.completedFuture;
 
 class TopicSchemaLoader implements AutoCloseable {
 
@@ -32,15 +35,18 @@ class TopicSchemaLoader implements AutoCloseable {
     TopicSchemaLoader(SchemaRepository schemaRepository, int retryCount, int threadPoolSize) {
         this.schemaRepository = schemaRepository;
 
-        ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("topic-schema-loader-%d").build();
+        ThreadFactory threadFactory =
+                new ThreadFactoryBuilder().setNameFormat("topic-schema-loader-%d").build();
         this.scheduler = Executors.newScheduledThreadPool(threadPoolSize, threadFactory);
-        this.retryPolicy = new RetryPolicy<SchemaLoadingResult>()
-                .withMaxRetries(retryCount)
-                .handleIf((resp, cause) -> resp.isFailure());
+        this.retryPolicy =
+                new RetryPolicy<SchemaLoadingResult>()
+                        .withMaxRetries(retryCount)
+                        .handleIf((resp, cause) -> resp.isFailure());
     }
 
     CompletableFuture<SchemaLoadingResult> loadTopicSchema(Topic topic) {
-        return Failsafe.with(retryPolicy).with(scheduler)
+        return Failsafe.with(retryPolicy)
+                .with(scheduler)
                 .getStageAsync((context) -> completedFuture(loadLatestSchema(topic, context)));
     }
 
@@ -48,13 +54,24 @@ class TopicSchemaLoader implements AutoCloseable {
         int attempt = context.getAttemptCount();
         try {
             schemaRepository.getLatestAvroSchema(topic);
-            logger.info("Successfully loaded schema for topic {}, attempt #{}", topic.getQualifiedName(), attempt);
+            logger.info(
+                    "Successfully loaded schema for topic {}, attempt #{}",
+                    topic.getQualifiedName(),
+                    attempt);
             return SchemaLoadingResult.success(topic);
         } catch (SchemaNotFoundException e) {
-            logger.warn("Failed to load schema for topic {}, attempt #{}. {}", topic.getQualifiedName(), attempt, e.getMessage());
+            logger.warn(
+                    "Failed to load schema for topic {}, attempt #{}. {}",
+                    topic.getQualifiedName(),
+                    attempt,
+                    e.getMessage());
             return SchemaLoadingResult.missing(topic);
         } catch (CouldNotLoadSchemaException e) {
-            logger.error("Failed to load schema for topic {}, attempt #{}", topic.getQualifiedName(), attempt, e);
+            logger.error(
+                    "Failed to load schema for topic {}, attempt #{}",
+                    topic.getQualifiedName(),
+                    attempt,
+                    e);
         }
         return SchemaLoadingResult.failure(topic);
     }

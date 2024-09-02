@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.benchmark.environment;
 
 import com.google.common.collect.ImmutableList;
+
 import pl.allegro.tech.hermes.api.RawSchema;
 import pl.allegro.tech.hermes.api.RawSchemaWithMetadata;
 import pl.allegro.tech.hermes.api.TopicName;
@@ -17,26 +18,35 @@ public class InMemorySchemaClient implements RawSchemaClient {
     private final TopicName schemaTopicName;
     private final RawSchemaWithMetadata rawSchemaWithMetadata;
 
-    public InMemorySchemaClient(TopicName schemaTopicName, String schemaSource, int id, int version) {
+    public InMemorySchemaClient(
+            TopicName schemaTopicName, String schemaSource, int id, int version) {
         this.schemaTopicName = schemaTopicName;
         rawSchemaWithMetadata = RawSchemaWithMetadata.of(schemaSource, id, version);
     }
 
     @Override
-    public Optional<RawSchemaWithMetadata> getRawSchemaWithMetadata(TopicName topic, SchemaVersion version) {
-        return schemaTopicName.equals(topic) && Objects.equals(rawSchemaWithMetadata.getVersion(), version.value())
-                   ? Optional.of(rawSchemaWithMetadata) : Optional.empty();
+    public Optional<RawSchemaWithMetadata> getRawSchemaWithMetadata(
+            TopicName topic, SchemaVersion version) {
+        return schemaTopicName.equals(topic)
+                        && Objects.equals(rawSchemaWithMetadata.getVersion(), version.value())
+                ? Optional.of(rawSchemaWithMetadata)
+                : Optional.empty();
     }
 
     @Override
-    public Optional<RawSchemaWithMetadata> getRawSchemaWithMetadata(TopicName topic, SchemaId schemaId) {
-        return schemaTopicName.equals(topic) && Objects.equals(rawSchemaWithMetadata.getId(), schemaId.value())
-                   ? Optional.of(rawSchemaWithMetadata) : Optional.empty();
+    public Optional<RawSchemaWithMetadata> getRawSchemaWithMetadata(
+            TopicName topic, SchemaId schemaId) {
+        return schemaTopicName.equals(topic)
+                        && Objects.equals(rawSchemaWithMetadata.getId(), schemaId.value())
+                ? Optional.of(rawSchemaWithMetadata)
+                : Optional.empty();
     }
 
     @Override
     public Optional<RawSchemaWithMetadata> getLatestRawSchemaWithMetadata(TopicName topic) {
-        return schemaTopicName.equals(topic) ? Optional.of(rawSchemaWithMetadata) : Optional.empty();
+        return schemaTopicName.equals(topic)
+                ? Optional.of(rawSchemaWithMetadata)
+                : Optional.empty();
     }
 
     @Override
@@ -45,17 +55,11 @@ public class InMemorySchemaClient implements RawSchemaClient {
     }
 
     @Override
-    public void registerSchema(TopicName topic, RawSchema rawSchema) {
-
-    }
+    public void registerSchema(TopicName topic, RawSchema rawSchema) {}
 
     @Override
-    public void deleteAllSchemaVersions(TopicName topic) {
-
-    }
+    public void deleteAllSchemaVersions(TopicName topic) {}
 
     @Override
-    public void validateSchema(TopicName topic, RawSchema rawSchema) {
-
-    }
+    public void validateSchema(TopicName topic, RawSchema rawSchema) {}
 }

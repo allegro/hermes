@@ -14,5 +14,4 @@ public class SchemaMissingException extends HermesException {
     public ErrorCode getCode() {
         return ErrorCode.SCHEMA_COULD_NOT_BE_LOADED;
     }
-
 }

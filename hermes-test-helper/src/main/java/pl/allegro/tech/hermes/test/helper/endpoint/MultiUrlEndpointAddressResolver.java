@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.test.helper.endpoint;
 
 import com.google.common.base.Throwables;
+
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.EndpointAddressResolverMetadata;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
@@ -17,23 +18,27 @@ import java.util.stream.Stream;
 
 public class MultiUrlEndpointAddressResolver implements EndpointAddressResolver {
 
-    private final EndpointAddressResolver delegate = new InterpolatingEndpointAddressResolver(new MessageBodyInterpolator());
+    private final EndpointAddressResolver delegate =
+            new InterpolatingEndpointAddressResolver(new MessageBodyInterpolator());
 
     @Override
-    public List<URI> resolveAll(EndpointAddress address, Message message, EndpointAddressResolverMetadata metadata) {
+    public List<URI> resolveAll(
+            EndpointAddress address, Message message, EndpointAddressResolverMetadata metadata) {
         return Stream.of(address.getEndpoint().split(";"))
                 .map(url -> safeResolve(message, url, metadata))
                 .collect(Collectors.toList());
     }
 
     @Override
-    public URI resolve(EndpointAddress address, Message message, EndpointAddressResolverMetadata metadata)
+    public URI resolve(
+            EndpointAddress address, Message message, EndpointAddressResolverMetadata metadata)
             throws EndpointAddressResolutionException {
         return delegate.resolve(address, message, metadata);
     }
 
     @Override
-    public URI resolve(EndpointAddress address, MessageBatch batch, EndpointAddressResolverMetadata metadata)
+    public URI resolve(
+            EndpointAddress address, MessageBatch batch, EndpointAddressResolverMetadata metadata)
             throws EndpointAddressResolutionException {
         return delegate.resolve(address, batch, metadata);
     }
@@ -45,5 +50,4 @@ public class MultiUrlEndpointAddressResolver implements EndpointAddressResolver 
             throw Throwables.propagate(e);
         }
     }
-
 }

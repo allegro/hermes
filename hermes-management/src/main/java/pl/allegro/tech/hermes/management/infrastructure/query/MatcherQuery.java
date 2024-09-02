@@ -1,8 +1,10 @@
 package pl.allegro.tech.hermes.management.infrastructure.query;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.api.Query;
 import pl.allegro.tech.hermes.management.infrastructure.query.matcher.Matcher;
 import pl.allegro.tech.hermes.management.infrastructure.query.matcher.MatcherException;
@@ -56,14 +58,14 @@ public class MatcherQuery<T> implements Query<T> {
                 logger.info("Failed to match {}, skipping", value, e);
                 return false;
             } catch (MatcherInputException e) {
-                //Non-existing property is normal when querying objects with non-default class
+                // Non-existing property is normal when querying objects with non-default class
                 return true;
             }
         };
     }
 
     @SuppressWarnings("unchecked")
-    //workaround for type which is not java bean
+    // workaround for type which is not java bean
     private <K> Map convertToMap(K value) {
         return objectMapper.convertValue(value, Map.class);
     }

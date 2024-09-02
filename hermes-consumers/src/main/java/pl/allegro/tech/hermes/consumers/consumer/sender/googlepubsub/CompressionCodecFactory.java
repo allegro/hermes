@@ -27,10 +27,15 @@ abstract class CompressionCodecFactory {
 
     static CompressionCodecFactory of(CompressionCodec codec, CompressionLevel level) {
         switch (codec) {
-            case DEFLATE: return new DeflateCodecFactory(codec.name(), level.getLevelId());
-            case BZIP2: return new CompressionCodecFactory.Bzip2CodecFactory(codec.name());
-            case ZSTANDARD: return new CompressionCodecFactory.ZstandardCodecFactory(codec.name(), level.getLevelId());
-            default: return null;
+            case DEFLATE:
+                return new DeflateCodecFactory(codec.name(), level.getLevelId());
+            case BZIP2:
+                return new CompressionCodecFactory.Bzip2CodecFactory(codec.name());
+            case ZSTANDARD:
+                return new CompressionCodecFactory.ZstandardCodecFactory(
+                        codec.name(), level.getLevelId());
+            default:
+                return null;
         }
     }
 
@@ -59,7 +64,6 @@ abstract class CompressionCodecFactory {
         }
     }
 
-
     static class Bzip2CodecFactory extends CompressionCodecFactory {
 
         Bzip2CodecFactory(String name) {
@@ -72,7 +76,6 @@ abstract class CompressionCodecFactory {
         }
     }
 
-
     static class ZstandardCodecFactory extends CompressionCodecFactory {
 
         private final int compressionLevel;
@@ -84,7 +87,8 @@ abstract class CompressionCodecFactory {
 
         @Override
         Codec createInstance() {
-            return new ZstandardCodec(compressionLevel, true, ZstandardCodec.DEFAULT_USE_BUFFERPOOL);
+            return new ZstandardCodec(
+                    compressionLevel, true, ZstandardCodec.DEFAULT_USE_BUFFERPOOL);
         }
     }
 }

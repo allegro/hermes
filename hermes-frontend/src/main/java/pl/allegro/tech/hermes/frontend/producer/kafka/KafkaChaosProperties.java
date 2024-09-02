@@ -36,5 +36,4 @@ public class KafkaChaosProperties {
             this.threadPoolMonitoringEnabled = threadPoolMonitoringEnabled;
         }
     }
-
 }

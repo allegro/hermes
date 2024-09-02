@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Query;
@@ -33,10 +34,11 @@ public class GroupService {
     private final GroupValidator validator;
 
     @Autowired
-    public GroupService(GroupRepository groupRepository,
-                        Auditor auditor,
-                        MultiDatacenterRepositoryCommandExecutor multiDcExecutor,
-                        GroupValidator validator) {
+    public GroupService(
+            GroupRepository groupRepository,
+            Auditor auditor,
+            MultiDatacenterRepositoryCommandExecutor multiDcExecutor,
+            GroupValidator validator) {
         this.groupRepository = groupRepository;
         this.auditor = auditor;
         this.multiDcExecutor = multiDcExecutor;
@@ -55,9 +57,8 @@ public class GroupService {
         return groupRepository.getGroupDetails(groupName);
     }
 
-    public void createGroup(Group group,
-                            RequestUser createdBy,
-                            CreatorRights<Group> creatorRights) {
+    public void createGroup(
+            Group group, RequestUser createdBy, CreatorRights<Group> creatorRights) {
         validator.checkCreation(group, creatorRights);
         multiDcExecutor.executeByUser(new CreateGroupRepositoryCommand(group), createdBy);
         auditor.objectCreated(createdBy.getUsername(), group);
@@ -88,8 +89,6 @@ public class GroupService {
     }
 
     public List<Group> queryGroup(Query<Group> query) {
-        return query
-                .filter(listGroups())
-                .collect(Collectors.toList());
+        return query.filter(listGroups()).collect(Collectors.toList());
     }
 }

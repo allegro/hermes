@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.api;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import pl.allegro.tech.hermes.api.jackson.PatchDataDeserializer;
 import pl.allegro.tech.hermes.api.jackson.PatchDataSerializer;
 

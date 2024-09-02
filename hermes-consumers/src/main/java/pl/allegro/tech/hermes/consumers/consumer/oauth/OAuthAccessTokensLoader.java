@@ -1,6 +1,10 @@
 package pl.allegro.tech.hermes.consumers.consumer.oauth;
 
+import static pl.allegro.tech.hermes.api.SubscriptionOAuthPolicy.GrantType.USERNAME_PASSWORD;
+import static pl.allegro.tech.hermes.consumers.consumer.oauth.client.OAuthTokenRequest.oAuthTokenRequest;
+
 import com.google.common.cache.CacheLoader;
+
 import pl.allegro.tech.hermes.api.OAuthProvider;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
@@ -12,9 +16,6 @@ import pl.allegro.tech.hermes.domain.oauth.OAuthProviderRepository;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.metrics.HermesTimerContext;
 
-import static pl.allegro.tech.hermes.api.SubscriptionOAuthPolicy.GrantType.USERNAME_PASSWORD;
-import static pl.allegro.tech.hermes.consumers.consumer.oauth.client.OAuthTokenRequest.oAuthTokenRequest;
-
 public class OAuthAccessTokensLoader extends CacheLoader<SubscriptionName, OAuthAccessToken> {
 
     private final SubscriptionRepository subscriptionRepository;
@@ -25,10 +26,11 @@ public class OAuthAccessTokensLoader extends CacheLoader<SubscriptionName, OAuth
 
     private final MetricsFacade metrics;
 
-    public OAuthAccessTokensLoader(SubscriptionRepository subscriptionRepository,
-                                   OAuthProviderRepository oAuthProviderRepository,
-                                   OAuthClient oAuthClient,
-                                   MetricsFacade metrics) {
+    public OAuthAccessTokensLoader(
+            SubscriptionRepository subscriptionRepository,
+            OAuthProviderRepository oAuthProviderRepository,
+            OAuthClient oAuthClient,
+            MetricsFacade metrics) {
         this.subscriptionRepository = subscriptionRepository;
         this.oAuthProviderRepository = oAuthProviderRepository;
         this.oAuthClient = oAuthClient;
@@ -48,13 +50,17 @@ public class OAuthAccessTokensLoader extends CacheLoader<SubscriptionName, OAuth
             request = getOAuthClientCredentialsGrantTokenRequest(oAuthPolicy, oAuthProvider);
         }
 
-        metrics.consumer().oAuthSubscriptionTokenRequestCounter(subscription, providerName).increment();
-        try (HermesTimerContext ignored = metrics.consumer().oAuthProviderLatencyTimer(providerName).time()) {
+        metrics.consumer()
+                .oAuthSubscriptionTokenRequestCounter(subscription, providerName)
+                .increment();
+        try (HermesTimerContext ignored =
+                metrics.consumer().oAuthProviderLatencyTimer(providerName).time()) {
             return oAuthClient.getToken(request);
         }
     }
 
-    private OAuthTokenRequest getOAuthUsernamePasswordGrantTokenRequest(SubscriptionOAuthPolicy policy, OAuthProvider provider) {
+    private OAuthTokenRequest getOAuthUsernamePasswordGrantTokenRequest(
+            SubscriptionOAuthPolicy policy, OAuthProvider provider) {
         return oAuthTokenRequest()
                 .withUrl(provider.getTokenEndpoint())
                 .withGrantType(OAuthTokenRequest.GrantTypeValue.RESOURCE_OWNER_USERNAME_PASSWORD)
@@ -68,7 +74,8 @@ public class OAuthAccessTokensLoader extends CacheLoader<SubscriptionName, OAuth
                 .build();
     }
 
-    private OAuthTokenRequest getOAuthClientCredentialsGrantTokenRequest(SubscriptionOAuthPolicy policy, OAuthProvider provider) {
+    private OAuthTokenRequest getOAuthClientCredentialsGrantTokenRequest(
+            SubscriptionOAuthPolicy policy, OAuthProvider provider) {
         return oAuthTokenRequest()
                 .withUrl(provider.getTokenEndpoint())
                 .withGrantType(OAuthTokenRequest.GrantTypeValue.CLIENT_CREDENTIALS)

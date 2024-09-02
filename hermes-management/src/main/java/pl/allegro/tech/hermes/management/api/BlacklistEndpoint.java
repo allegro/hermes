@@ -1,7 +1,14 @@
 package pl.allegro.tech.hermes.management.api;
 
+import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
+import static jakarta.ws.rs.core.Response.status;
+
+import static pl.allegro.tech.hermes.api.BlacklistStatus.BLACKLISTED;
+import static pl.allegro.tech.hermes.api.BlacklistStatus.NOT_BLACKLISTED;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
@@ -14,8 +21,10 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
 import pl.allegro.tech.hermes.api.BlacklistStatus;
 import pl.allegro.tech.hermes.management.api.auth.HermesSecurityAwareRequestUser;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
@@ -23,11 +32,6 @@ import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 import pl.allegro.tech.hermes.management.domain.blacklist.TopicBlacklistService;
 
 import java.util.List;
-
-import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
-import static jakarta.ws.rs.core.Response.status;
-import static pl.allegro.tech.hermes.api.BlacklistStatus.BLACKLISTED;
-import static pl.allegro.tech.hermes.api.BlacklistStatus.NOT_BLACKLISTED;
 
 @Component
 @Path("/blacklist")
@@ -46,7 +50,9 @@ public class BlacklistEndpoint {
     @Path("/topics/{topicName}")
     @ApiOperation(value = "Is topic blacklisted", httpMethod = HttpMethod.GET)
     public BlacklistStatus isTopicBlacklisted(@PathParam("topicName") String qualifiedTopicName) {
-        return topicBlacklistService.isBlacklisted(qualifiedTopicName) ? BLACKLISTED : NOT_BLACKLISTED;
+        return topicBlacklistService.isBlacklisted(qualifiedTopicName)
+                ? BLACKLISTED
+                : NOT_BLACKLISTED;
     }
 
     @GET
@@ -64,10 +70,10 @@ public class BlacklistEndpoint {
     @RolesAllowed(Roles.ADMIN)
     @ApiOperation(value = "Blacklist topics", httpMethod = HttpMethod.POST)
     public Response blacklistTopics(
-            List<String> qualifiedTopicNames,
-            @Context ContainerRequestContext requestContext) {
+            List<String> qualifiedTopicNames, @Context ContainerRequestContext requestContext) {
         RequestUser blacklistRequester = new HermesSecurityAwareRequestUser(requestContext);
-        qualifiedTopicNames.forEach(topicName -> topicBlacklistService.blacklist(topicName, blacklistRequester));
+        qualifiedTopicNames.forEach(
+                topicName -> topicBlacklistService.blacklist(topicName, blacklistRequester));
         return status(Response.Status.OK).build();
     }
 

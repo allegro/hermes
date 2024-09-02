@@ -45,7 +45,12 @@ public final class SchemaVersion {
     }
 
     public static String toString(List<SchemaVersion> versions) {
-        return "[" + Joiner.on(',').join(versions.stream().map(SchemaVersion::value).collect(Collectors.toList())) + "]";
+        return "["
+                + Joiner.on(',')
+                        .join(
+                                versions.stream()
+                                        .map(SchemaVersion::value)
+                                        .collect(Collectors.toList()))
+                + "]";
     }
-
 }

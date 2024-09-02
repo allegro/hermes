@@ -29,8 +29,15 @@ public class OAuthProviderBuilder {
     }
 
     public OAuthProvider build() {
-        return new OAuthProvider(name, tokenEndpoint, clientId, clientSecret, tokenRequestInitialDelay,
-                tokenRequestMaxDelay, requestTimeout, socketTimeout);
+        return new OAuthProvider(
+                name,
+                tokenEndpoint,
+                clientId,
+                clientSecret,
+                tokenRequestInitialDelay,
+                tokenRequestMaxDelay,
+                requestTimeout,
+                socketTimeout);
     }
 
     public OAuthProviderBuilder withTokenEndpoint(String tokenEndpoint) {

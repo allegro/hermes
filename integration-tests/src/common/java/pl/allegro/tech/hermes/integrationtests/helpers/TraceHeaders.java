@@ -11,7 +11,6 @@ public class TraceHeaders {
                 "Span-Id", traceContext.spanId(),
                 "Parent-Span-Id", traceContext.parentSpanId(),
                 "Trace-Sampled", traceContext.traceSampled(),
-                "Trace-Reported", traceContext.traceReported()
-        );
+                "Trace-Reported", traceContext.traceReported());
     }
 }

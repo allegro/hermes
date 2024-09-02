@@ -2,13 +2,15 @@ package pl.allegro.tech.hermes.schema;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.api.Topic;
 
 import java.util.List;
 
 public class DirectSchemaVersionsRepository implements SchemaVersionsRepository {
 
-    private static final Logger logger = LoggerFactory.getLogger(DirectSchemaVersionsRepository.class);
+    private static final Logger logger =
+            LoggerFactory.getLogger(DirectSchemaVersionsRepository.class);
 
     private final RawSchemaClient rawSchemaClient;
 
@@ -22,7 +24,10 @@ public class DirectSchemaVersionsRepository implements SchemaVersionsRepository 
             List<SchemaVersion> versions = rawSchemaClient.getVersions(topic.getName());
             return SchemaVersionsResult.succeeded(versions);
         } catch (Exception e) {
-            logger.error("Error while loading schema versions for topic {}", topic.getQualifiedName(), e);
+            logger.error(
+                    "Error while loading schema versions for topic {}",
+                    topic.getQualifiedName(),
+                    e);
             return SchemaVersionsResult.failed();
         }
     }

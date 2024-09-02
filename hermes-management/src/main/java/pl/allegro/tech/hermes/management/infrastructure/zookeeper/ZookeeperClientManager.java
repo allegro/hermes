@@ -8,6 +8,7 @@ import org.apache.zookeeper.ZooDefs;
 import org.apache.zookeeper.data.ACL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider;
 import pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProvider;
@@ -28,7 +29,8 @@ public class ZookeeperClientManager {
     private List<ZookeeperClient> clients;
     private ZookeeperClient localClient;
 
-    public ZookeeperClientManager(StorageClustersProperties properties, DatacenterNameProvider datacenterNameProvider) {
+    public ZookeeperClientManager(
+            StorageClustersProperties properties, DatacenterNameProvider datacenterNameProvider) {
         this.properties = properties;
         this.datacenterNameProvider = datacenterNameProvider;
     }
@@ -40,10 +42,12 @@ public class ZookeeperClientManager {
     }
 
     private void createClients() {
-        clients = getClusterProperties()
-                .stream()
-                .map(clusterProperties -> buildZookeeperClient(clusterProperties, properties))
-                .collect(Collectors.toList());
+        clients =
+                getClusterProperties().stream()
+                        .map(
+                                clusterProperties ->
+                                        buildZookeeperClient(clusterProperties, properties))
+                        .collect(Collectors.toList());
     }
 
     private List<StorageProperties> getClusterProperties() {
@@ -68,50 +72,53 @@ public class ZookeeperClientManager {
             localClient = clients.get(0);
         } else {
             String localDcName = datacenterNameProvider.getDatacenterName();
-            localClient = clients
-                    .stream()
-                    .filter(client -> client.getDatacenterName().equals(localDcName))
-                    .findFirst()
-                    .orElseThrow(() -> new ZookeeperClientNotFoundException(localDcName));
+            localClient =
+                    clients.stream()
+                            .filter(client -> client.getDatacenterName().equals(localDcName))
+                            .findFirst()
+                            .orElseThrow(() -> new ZookeeperClientNotFoundException(localDcName));
         }
     }
 
-    private ZookeeperClient buildZookeeperClient(StorageProperties clusterProperties,
-                                                 StorageClustersProperties commonProperties) {
+    private ZookeeperClient buildZookeeperClient(
+            StorageProperties clusterProperties, StorageClustersProperties commonProperties) {
         return new ZookeeperClient(
                 buildCuratorFramework(clusterProperties, commonProperties),
-                clusterProperties.getDatacenter()
-        );
+                clusterProperties.getDatacenter());
     }
 
-    private CuratorFramework buildCuratorFramework(StorageProperties clusterProperties,
-                                                   StorageClustersProperties commonProperties) {
-        ExponentialBackoffRetry retryPolicy = new ExponentialBackoffRetry(commonProperties.getRetrySleep(),
-                commonProperties.getRetryTimes());
+    private CuratorFramework buildCuratorFramework(
+            StorageProperties clusterProperties, StorageClustersProperties commonProperties) {
+        ExponentialBackoffRetry retryPolicy =
+                new ExponentialBackoffRetry(
+                        commonProperties.getRetrySleep(), commonProperties.getRetryTimes());
 
-        CuratorFrameworkFactory.Builder builder = CuratorFrameworkFactory.builder()
-                .connectString(clusterProperties.getConnectionString())
-                .sessionTimeoutMs(clusterProperties.getSessionTimeout())
-                .connectionTimeoutMs(clusterProperties.getConnectTimeout())
-                .retryPolicy(retryPolicy);
+        CuratorFrameworkFactory.Builder builder =
+                CuratorFrameworkFactory.builder()
+                        .connectString(clusterProperties.getConnectionString())
+                        .sessionTimeoutMs(clusterProperties.getSessionTimeout())
+                        .connectionTimeoutMs(clusterProperties.getConnectTimeout())
+                        .retryPolicy(retryPolicy);
 
-        Optional.ofNullable(commonProperties.getAuthorization()).ifPresent(it -> {
-                    builder.authorization(it.getScheme(), (it.getUser() + ":" + it.getPassword()).getBytes());
-                    builder.aclProvider(
-                            new ACLProvider() {
-                                @Override
-                                public List<ACL> getDefaultAcl() {
-                                    return ZooDefs.Ids.CREATOR_ALL_ACL;
-                                }
+        Optional.ofNullable(commonProperties.getAuthorization())
+                .ifPresent(
+                        it -> {
+                            builder.authorization(
+                                    it.getScheme(),
+                                    (it.getUser() + ":" + it.getPassword()).getBytes());
+                            builder.aclProvider(
+                                    new ACLProvider() {
+                                        @Override
+                                        public List<ACL> getDefaultAcl() {
+                                            return ZooDefs.Ids.CREATOR_ALL_ACL;
+                                        }
 
-                                @Override
-                                public List<ACL> getAclForPath(String path) {
-                                    return ZooDefs.Ids.CREATOR_ALL_ACL;
-                                }
-                            }
-                    );
-                }
-        );
+                                        @Override
+                                        public List<ACL> getAclForPath(String path) {
+                                            return ZooDefs.Ids.CREATOR_ALL_ACL;
+                                        }
+                                    });
+                        });
 
         CuratorFramework curator = builder.build();
         curator.start();
@@ -123,8 +130,9 @@ public class ZookeeperClientManager {
         try {
             curator.blockUntilConnected();
         } catch (InterruptedException interruptedException) {
-            RuntimeException exception = new InternalProcessingException("Could not start curator for storage",
-                    interruptedException);
+            RuntimeException exception =
+                    new InternalProcessingException(
+                            "Could not start curator for storage", interruptedException);
             logger.error(exception.getMessage(), interruptedException);
             throw exception;
         }
@@ -135,7 +143,8 @@ public class ZookeeperClientManager {
             try {
                 client.getCuratorFramework().close();
             } catch (Exception e) {
-                logger.warn("Failed to close Zookeeper client on DC: " + client.getDatacenterName());
+                logger.warn(
+                        "Failed to close Zookeeper client on DC: " + client.getDatacenterName());
             }
         }
     }

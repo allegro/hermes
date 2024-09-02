@@ -1,11 +1,14 @@
 package pl.allegro.tech.hermes.common.metric.counter.zookeeper;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.search.Search;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
@@ -22,15 +25,15 @@ public class ZookeeperCounterReporter {
     private final String metricsSearchPrefix;
     private final MeterRegistry meterRegistry;
 
-    private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(
-            new ThreadFactoryBuilder()
-                    .setNameFormat("zookeeper-reporter-scheduled-executor-%d")
-                    .setDaemon(true)
-                    .build());
+    private final ScheduledExecutorService scheduledExecutorService =
+            Executors.newSingleThreadScheduledExecutor(
+                    new ThreadFactoryBuilder()
+                            .setNameFormat("zookeeper-reporter-scheduled-executor-%d")
+                            .setDaemon(true)
+                            .build());
 
-    public ZookeeperCounterReporter(MeterRegistry registry,
-                                    CounterStorage counterStorage,
-                                    String metricsSearchPrefix) {
+    public ZookeeperCounterReporter(
+            MeterRegistry registry, CounterStorage counterStorage, String metricsSearchPrefix) {
         this.meterRegistry = registry;
         this.counterStorage = counterStorage;
         this.metricsSearchPrefix = metricsSearchPrefix;
@@ -43,11 +46,12 @@ public class ZookeeperCounterReporter {
     public void report() {
         try {
             Collection<Counter> counters = Search.in(meterRegistry).counters();
-            counters.forEach(counter -> {
-                CounterMatcher matcher = new CounterMatcher(counter, metricsSearchPrefix);
-                reportCounter(matcher);
-                reportVolumeCounter(matcher);
-            });
+            counters.forEach(
+                    counter -> {
+                        CounterMatcher matcher = new CounterMatcher(counter, metricsSearchPrefix);
+                        reportCounter(matcher);
+                        reportVolumeCounter(matcher);
+                    });
         } catch (RuntimeException ex) {
             logger.error("Error during reporting metrics to Zookeeper...", ex);
         }
@@ -56,15 +60,12 @@ public class ZookeeperCounterReporter {
     private void reportVolumeCounter(CounterMatcher matcher) {
         if (matcher.isTopicThroughput()) {
             counterStorage.incrementVolumeCounter(
-                    escapedTopicName(matcher.getTopicName()),
-                    matcher.getValue()
-            );
+                    escapedTopicName(matcher.getTopicName()), matcher.getValue());
         } else if (matcher.isSubscriptionThroughput()) {
             counterStorage.incrementVolumeCounter(
                     escapedTopicName(matcher.getTopicName()),
                     escapeMetricsReplacementChar(matcher.getSubscriptionName()),
-                    matcher.getValue()
-            );
+                    matcher.getValue());
         }
     }
 
@@ -75,29 +76,23 @@ public class ZookeeperCounterReporter {
 
         if (matcher.isTopicPublished()) {
             counterStorage.setTopicPublishedCounter(
-                    escapedTopicName(matcher.getTopicName()),
-                    matcher.getValue()
-            );
+                    escapedTopicName(matcher.getTopicName()), matcher.getValue());
         } else if (matcher.isSubscriptionDelivered()) {
             counterStorage.setSubscriptionDeliveredCounter(
                     escapedTopicName(matcher.getTopicName()),
                     escapeMetricsReplacementChar(matcher.getSubscriptionName()),
-                    matcher.getValue()
-            );
+                    matcher.getValue());
         } else if (matcher.isSubscriptionDiscarded()) {
             counterStorage.setSubscriptionDiscardedCounter(
                     escapedTopicName(matcher.getTopicName()),
                     escapeMetricsReplacementChar(matcher.getSubscriptionName()),
-                    matcher.getValue()
-            );
+                    matcher.getValue());
         }
     }
 
     private static TopicName escapedTopicName(TopicName topicName) {
         return new TopicName(
-                escapeMetricsReplacementChar(topicName.getGroupName()),
-                topicName.getName()
-        );
+                escapeMetricsReplacementChar(topicName.getGroupName()), topicName.getName());
     }
 
     private static String escapeMetricsReplacementChar(String value) {

@@ -30,7 +30,8 @@ public class RemoveSubscriptionRepositoryCommand extends RepositoryCommand<Subsc
     }
 
     @Override
-    public void rollback(DatacenterBoundRepositoryHolder<SubscriptionRepository> holder, Exception exception) {
+    public void rollback(
+            DatacenterBoundRepositoryHolder<SubscriptionRepository> holder, Exception exception) {
         holder.getRepository().createSubscription(backup);
     }
 
@@ -41,6 +42,8 @@ public class RemoveSubscriptionRepositoryCommand extends RepositoryCommand<Subsc
 
     @Override
     public String toString() {
-        return "RemoveSubscription(" + new SubscriptionName(subscriptionName, topicName).getQualifiedName() + ")";
+        return "RemoveSubscription("
+                + new SubscriptionName(subscriptionName, topicName).getQualifiedName()
+                + ")";
     }
 }

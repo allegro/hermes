@@ -1,8 +1,8 @@
 package pl.allegro.tech.hermes.common.kafka;
 
-import java.util.Objects;
-
 import static com.google.common.base.Preconditions.checkNotNull;
+
+import java.util.Objects;
 
 public class ConsumerGroupId {
 

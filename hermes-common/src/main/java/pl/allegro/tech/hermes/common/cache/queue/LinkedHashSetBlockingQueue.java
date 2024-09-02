@@ -1,23 +1,19 @@
 package pl.allegro.tech.hermes.common.cache.queue;
 
 /**
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements. See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership. The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * <p>http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
+ * <p>Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import java.util.AbstractQueue;
 import java.util.Collection;
 import java.util.Iterator;
@@ -32,8 +28,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * A blocking queue implementation backed by a linked hash set for predictable iteration order and
  * constant time addition, removal and contains operations.
  *
- * Author: Sebastian Schaffert
- * Project: apache.marmotta
+ * <p>Author: Sebastian Schaffert Project: apache.marmotta
  */
 public class LinkedHashSetBlockingQueue<E> extends AbstractQueue<E> implements BlockingQueue<E> {
 
@@ -69,23 +64,20 @@ public class LinkedHashSetBlockingQueue<E> extends AbstractQueue<E> implements B
     public boolean offer(E e) {
         if (e == null) throw new NullPointerException();
         final AtomicInteger count = this.count;
-        if (count.get() == capacity)
-            return false;
+        if (count.get() == capacity) return false;
         int c = -1;
         final ReentrantLock putLock = this.putLock;
         putLock.lock();
         try {
             if (count.get() < capacity) {
                 final boolean wasAdded = enqueue(e);
-                c = wasAdded?count.getAndIncrement():count.get();
-                if (c + 1 < capacity)
-                    notFull.signal();
+                c = wasAdded ? count.getAndIncrement() : count.get();
+                if (c + 1 < capacity) notFull.signal();
             }
         } finally {
             putLock.unlock();
         }
-        if (c == 0)
-            signalNotEmpty();
+        if (c == 0) signalNotEmpty();
         return c >= 0;
     }
 
@@ -102,14 +94,12 @@ public class LinkedHashSetBlockingQueue<E> extends AbstractQueue<E> implements B
                 notFull.await();
             }
             final boolean wasAdded = enqueue(e);
-            c = wasAdded?count.getAndIncrement():count.get();
-            if (c + 1 < capacity)
-                notFull.signal();
+            c = wasAdded ? count.getAndIncrement() : count.get();
+            if (c + 1 < capacity) notFull.signal();
         } finally {
             putLock.unlock();
         }
-        if (c == 0)
-            signalNotEmpty();
+        if (c == 0) signalNotEmpty();
     }
 
     @Override
@@ -123,19 +113,16 @@ public class LinkedHashSetBlockingQueue<E> extends AbstractQueue<E> implements B
         try {
             while (count.get() == capacity) {
 
-                if (nanos <= 0)
-                    return false;
+                if (nanos <= 0) return false;
                 nanos = notFull.awaitNanos(nanos);
             }
             final boolean wasAdded = enqueue(e);
-            c = wasAdded?count.getAndIncrement():count.get();
-            if (c + 1 < capacity)
-                notFull.signal();
+            c = wasAdded ? count.getAndIncrement() : count.get();
+            if (c + 1 < capacity) notFull.signal();
         } finally {
             putLock.unlock();
         }
-        if (c == 0)
-            signalNotEmpty();
+        if (c == 0) signalNotEmpty();
         return true;
     }
 
@@ -152,13 +139,11 @@ public class LinkedHashSetBlockingQueue<E> extends AbstractQueue<E> implements B
             }
             x = dequeue();
             c = count.getAndDecrement();
-            if (c > 1)
-                notEmpty.signal();
+            if (c > 1) notEmpty.signal();
         } finally {
             takeLock.unlock();
         }
-        if (c == capacity)
-            signalNotFull();
+        if (c == capacity) signalNotFull();
         return x;
     }
 
@@ -172,19 +157,16 @@ public class LinkedHashSetBlockingQueue<E> extends AbstractQueue<E> implements B
         takeLock.lockInterruptibly();
         try {
             while (count.get() == 0) {
-                if (nanos <= 0)
-                    return null;
+                if (nanos <= 0) return null;
                 nanos = notEmpty.awaitNanos(nanos);
             }
             x = dequeue();
             c = count.getAndDecrement();
-            if (c > 1)
-                notEmpty.signal();
+            if (c > 1) notEmpty.signal();
         } finally {
             takeLock.unlock();
         }
-        if (c == capacity)
-            signalNotFull();
+        if (c == capacity) signalNotFull();
         return x;
     }
 
@@ -195,22 +177,20 @@ public class LinkedHashSetBlockingQueue<E> extends AbstractQueue<E> implements B
 
     @Override
     public int drainTo(Collection<? super E> c) {
-        return drainTo(c,Integer.MAX_VALUE);
+        return drainTo(c, Integer.MAX_VALUE);
     }
 
     @Override
     public int drainTo(Collection<? super E> c, int maxElements) {
-        if (c == null)
-            throw new NullPointerException();
-        if (c == this)
-            throw new IllegalArgumentException();
+        if (c == null) throw new NullPointerException();
+        if (c == this) throw new IllegalArgumentException();
         boolean signalNotFull = false;
         final ReentrantLock takeLock = this.takeLock;
         takeLock.lock();
         try {
             int n = Math.min(maxElements, count.get());
             Iterator<E> it = delegate.iterator();
-            for(int i=0; i<n && it.hasNext(); i++) {
+            for (int i = 0; i < n && it.hasNext(); i++) {
                 E x = it.next();
                 c.add(x);
             }
@@ -218,16 +198,14 @@ public class LinkedHashSetBlockingQueue<E> extends AbstractQueue<E> implements B
             return n;
         } finally {
             takeLock.unlock();
-            if (signalNotFull)
-                signalNotFull();
+            if (signalNotFull) signalNotFull();
         }
     }
 
     @Override
     public E poll() {
         final AtomicInteger count = this.count;
-        if (count.get() == 0)
-            return null;
+        if (count.get() == 0) return null;
         E x = null;
         int c = -1;
         final ReentrantLock takeLock = this.takeLock;
@@ -236,27 +214,23 @@ public class LinkedHashSetBlockingQueue<E> extends AbstractQueue<E> implements B
             if (count.get() > 0) {
                 x = dequeue();
                 c = count.getAndDecrement();
-                if (c > 1)
-                    notEmpty.signal();
+                if (c > 1) notEmpty.signal();
             }
         } finally {
             takeLock.unlock();
         }
-        if (c == capacity)
-            signalNotFull();
+        if (c == capacity) signalNotFull();
         return x;
     }
 
-
     @Override
     public E peek() {
-        if (count.get() == 0)
-            return null;
+        if (count.get() == 0) return null;
         final ReentrantLock takeLock = this.takeLock;
         takeLock.lock();
         try {
             Iterator<E> it = delegate.iterator();
-            if(it.hasNext()) {
+            if (it.hasNext()) {
                 return it.next();
             } else {
                 return null;
@@ -266,9 +240,9 @@ public class LinkedHashSetBlockingQueue<E> extends AbstractQueue<E> implements B
         }
     }
 
-
     /**
      * Creates a node and links it at end of queue.
+     *
      * @param x the item
      * @return <code>true</code> if this set did not already contain <code>x</code>
      */
@@ -280,6 +254,7 @@ public class LinkedHashSetBlockingQueue<E> extends AbstractQueue<E> implements B
 
     /**
      * Removes a node from head of queue.
+     *
      * @return the node
      */
     private E dequeue() {
@@ -291,27 +266,21 @@ public class LinkedHashSetBlockingQueue<E> extends AbstractQueue<E> implements B
         }
     }
 
-
-
-    /**
-     * Lock to prevent both puts and takes.
-     */
+    /** Lock to prevent both puts and takes. */
     void fullyLock() {
         putLock.lock();
         takeLock.lock();
     }
 
-    /**
-     * Unlock to allow both puts and takes.
-     */
+    /** Unlock to allow both puts and takes. */
     void fullyUnlock() {
         takeLock.unlock();
         putLock.unlock();
     }
 
     /**
-     * Signals a waiting take. Called only from put/offer (which do not
-     * otherwise ordinarily lock takeLock.)
+     * Signals a waiting take. Called only from put/offer (which do not otherwise ordinarily lock
+     * takeLock.)
      */
     private void signalNotEmpty() {
         final ReentrantLock takeLock = this.takeLock;
@@ -323,9 +292,7 @@ public class LinkedHashSetBlockingQueue<E> extends AbstractQueue<E> implements B
         }
     }
 
-    /**
-     * Signals a waiting put. Called only from take/poll.
-     */
+    /** Signals a waiting put. Called only from take/poll. */
     private void signalNotFull() {
         final ReentrantLock putLock = this.putLock;
         putLock.lock();
@@ -336,12 +303,9 @@ public class LinkedHashSetBlockingQueue<E> extends AbstractQueue<E> implements B
         }
     }
 
-    /**
-     * Tells whether both locks are held by current thread.
-     */
+    /** Tells whether both locks are held by current thread. */
     boolean isFullyLocked() {
-        return (putLock.isHeldByCurrentThread() &&
-                takeLock.isHeldByCurrentThread());
+        return (putLock.isHeldByCurrentThread() && takeLock.isHeldByCurrentThread());
     }
 
     @Override
@@ -394,8 +358,8 @@ public class LinkedHashSetBlockingQueue<E> extends AbstractQueue<E> implements B
 
         fullyLock();
         try {
-            if(delegate.remove(o)) {
-                if(count.getAndDecrement() == capacity) {
+            if (delegate.remove(o)) {
+                if (count.getAndDecrement() == capacity) {
                     notFull.signal();
                 }
                 return true;
@@ -417,6 +381,4 @@ public class LinkedHashSetBlockingQueue<E> extends AbstractQueue<E> implements B
             fullyUnlock();
         }
     }
-
-
 }

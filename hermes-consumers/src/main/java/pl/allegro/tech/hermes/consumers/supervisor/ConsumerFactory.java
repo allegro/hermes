@@ -47,24 +47,25 @@ public class ConsumerFactory {
     private final Duration commitPeriod;
     private final int offsetQueueSize;
 
-    public ConsumerFactory(ReceiverFactory messageReceiverFactory,
-                           MetricsFacade metrics,
-                           CommonConsumerParameters commonConsumerParameters,
-                           ConsumerRateLimitSupervisor consumerRateLimitSupervisor,
-                           OutputRateCalculatorFactory outputRateCalculatorFactory,
-                           Trackers trackers,
-                           ConsumerMessageSenderFactory consumerMessageSenderFactory,
-                           TopicRepository topicRepository,
-                           MessageConverterResolver messageConverterResolver,
-                           MessageBatchFactory byteBufferMessageBatchFactory,
-                           CompositeMessageContentWrapper compositeMessageContentWrapper,
-                           MessageBatchSenderFactory batchSenderFactory,
-                           ConsumerAuthorizationHandler consumerAuthorizationHandler,
-                           Clock clock,
-                           SubscriptionLoadRecordersRegistry subscriptionLoadRecordersRegistry,
-                           ConsumerPartitionAssignmentState consumerPartitionAssignmentState,
-                           Duration commitPeriod,
-                           int offsetQueueSize) {
+    public ConsumerFactory(
+            ReceiverFactory messageReceiverFactory,
+            MetricsFacade metrics,
+            CommonConsumerParameters commonConsumerParameters,
+            ConsumerRateLimitSupervisor consumerRateLimitSupervisor,
+            OutputRateCalculatorFactory outputRateCalculatorFactory,
+            Trackers trackers,
+            ConsumerMessageSenderFactory consumerMessageSenderFactory,
+            TopicRepository topicRepository,
+            MessageConverterResolver messageConverterResolver,
+            MessageBatchFactory byteBufferMessageBatchFactory,
+            CompositeMessageContentWrapper compositeMessageContentWrapper,
+            MessageBatchSenderFactory batchSenderFactory,
+            ConsumerAuthorizationHandler consumerAuthorizationHandler,
+            Clock clock,
+            SubscriptionLoadRecordersRegistry subscriptionLoadRecordersRegistry,
+            ConsumerPartitionAssignmentState consumerPartitionAssignmentState,
+            Duration commitPeriod,
+            int offsetQueueSize) {
         this.messageReceiverFactory = messageReceiverFactory;
         this.metrics = metrics;
         this.commonConsumerParameters = commonConsumerParameters;
@@ -87,9 +88,11 @@ public class ConsumerFactory {
 
     public Consumer createConsumer(Subscription subscription) {
         Topic topic = topicRepository.getTopicDetails(subscription.getTopicName());
-        SubscriptionLoadRecorder loadRecorder = subscriptionLoadRecordersRegistry.register(subscription.getQualifiedName());
+        SubscriptionLoadRecorder loadRecorder =
+                subscriptionLoadRecordersRegistry.register(subscription.getQualifiedName());
         if (subscription.isBatchSubscription()) {
-            return new BatchConsumer(messageReceiverFactory,
+            return new BatchConsumer(
+                    messageReceiverFactory,
                     batchSenderFactory.create(subscription),
                     batchFactory,
                     messageConverterResolver,
@@ -100,11 +103,15 @@ public class ConsumerFactory {
                     topic,
                     commonConsumerParameters.isUseTopicMessageSizeEnabled(),
                     loadRecorder,
-                    commitPeriod
-            );
+                    commitPeriod);
         } else {
-            SerialConsumerRateLimiter consumerRateLimiter = new SerialConsumerRateLimiter(subscription,
-                    outputRateCalculatorFactory, metrics, consumerRateLimitSupervisor, clock);
+            SerialConsumerRateLimiter consumerRateLimiter =
+                    new SerialConsumerRateLimiter(
+                            subscription,
+                            outputRateCalculatorFactory,
+                            metrics,
+                            consumerRateLimitSupervisor,
+                            clock);
 
             return new SerialConsumer(
                     messageReceiverFactory,
@@ -120,8 +127,7 @@ public class ConsumerFactory {
                     loadRecorder,
                     consumerPartitionAssignmentState,
                     commitPeriod,
-                    offsetQueueSize
-            );
+                    offsetQueueSize);
         }
     }
 }

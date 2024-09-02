@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import pl.allegro.tech.hermes.api.jackson.InstantIsoSerializer;
 
 import java.time.Instant;
@@ -23,7 +24,9 @@ public class OfflineRetransmissionTask {
             @JsonProperty("startTimestamp") Instant startTimestamp,
             @JsonProperty("endTimestamp") Instant endTimestamp,
             @JsonProperty("createdAt") Instant createdAt) {
-        this(taskId, new OfflineRetransmissionRequest(
+        this(
+                taskId,
+                new OfflineRetransmissionRequest(
                         sourceViewPath,
                         sourceTopic,
                         targetTopic,
@@ -32,7 +35,8 @@ public class OfflineRetransmissionTask {
                 createdAt);
     }
 
-    public OfflineRetransmissionTask(String taskId, OfflineRetransmissionRequest request, Instant createdAt) {
+    public OfflineRetransmissionTask(
+            String taskId, OfflineRetransmissionRequest request, Instant createdAt) {
         this.taskId = taskId;
         this.request = request;
         this.createdAt = createdAt;
@@ -77,8 +81,11 @@ public class OfflineRetransmissionTask {
     @Override
     public String toString() {
         return "OfflineRetransmissionTask{"
-                + "taskId='" + taskId + '\''
-                + ", request=" + request
+                + "taskId='"
+                + taskId
+                + '\''
+                + ", request="
+                + request
                 + '}';
     }
 }

@@ -60,9 +60,15 @@ public class Owner {
     @Override
     public String toString() {
         return "Owner{"
-                + "id='" + id + '\''
-                + ", name='" + name + '\''
-                + ", url='" + url + '\''
+                + "id='"
+                + id
+                + '\''
+                + ", name='"
+                + name
+                + '\''
+                + ", url='"
+                + url
+                + '\''
                 + '}';
     }
 }

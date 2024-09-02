@@ -1,6 +1,10 @@
 package pl.allegro.tech.hermes.test.helper.containers;
 
+import static pl.allegro.tech.hermes.test.helper.containers.TestcontainersUtils.copyScriptToContainer;
+import static pl.allegro.tech.hermes.test.helper.containers.TestcontainersUtils.readFileFromClasspath;
+
 import com.github.dockerjava.api.command.InspectContainerResponse;
+
 import org.rnorth.ducttape.unreliables.Unreliables;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
@@ -9,9 +13,6 @@ import org.testcontainers.utility.DockerImageName;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
-
-import static pl.allegro.tech.hermes.test.helper.containers.TestcontainersUtils.copyScriptToContainer;
-import static pl.allegro.tech.hermes.test.helper.containers.TestcontainersUtils.readFileFromClasspath;
 
 class KafkaContainer extends GenericContainer<KafkaContainer> {
     private static final String START_STOP_SCRIPT = "/kafka_start_stop_wrapper.sh";
@@ -34,10 +35,15 @@ class KafkaContainer extends GenericContainer<KafkaContainer> {
         this.networkAlias = "broker-" + brokerNum;
         withNetworkAliases(networkAlias);
         withEnv("KAFKA_BROKER_ID", "" + brokerNum);
-        withEnv("KAFKA_LISTENERS",
-                "PLAINTEXT://0.0.0.0:" + KAFKA_PORT + ",BROKER://0.0.0.0:9092,INTERNAL_CLIENT://0.0.0.0:" + KAFKA_INTERNAL_CLIENT_PORT
-        );
-        withEnv("KAFKA_LISTENER_SECURITY_PROTOCOL_MAP", "BROKER:PLAINTEXT,PLAINTEXT:PLAINTEXT,INTERNAL_CLIENT:PLAINTEXT");
+        withEnv(
+                "KAFKA_LISTENERS",
+                "PLAINTEXT://0.0.0.0:"
+                        + KAFKA_PORT
+                        + ",BROKER://0.0.0.0:9092,INTERNAL_CLIENT://0.0.0.0:"
+                        + KAFKA_INTERNAL_CLIENT_PORT);
+        withEnv(
+                "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP",
+                "BROKER:PLAINTEXT,PLAINTEXT:PLAINTEXT,INTERNAL_CLIENT:PLAINTEXT");
         withEnv("KAFKA_INTER_BROKER_LISTENER_NAME", "BROKER");
         withEnv("KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR", "1");
         withEnv("KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS", "1");
@@ -59,7 +65,8 @@ class KafkaContainer extends GenericContainer<KafkaContainer> {
             if (execResult.getExitCode() != 0) {
                 throw new Exception(execResult.getStderr());
             }
-            Unreliables.retryUntilTrue((int) READINESS_CHECK_TIMEOUT.getSeconds(), TimeUnit.SECONDS, this::isStopped);
+            Unreliables.retryUntilTrue(
+                    (int) READINESS_CHECK_TIMEOUT.getSeconds(), TimeUnit.SECONDS, this::isStopped);
             running = false;
         } catch (Exception ex) {
             throw new RuntimeException(ex);
@@ -72,7 +79,8 @@ class KafkaContainer extends GenericContainer<KafkaContainer> {
             if (execResult.getExitCode() != 0) {
                 throw new Exception(execResult.getStderr());
             }
-            Unreliables.retryUntilTrue((int) READINESS_CHECK_TIMEOUT.getSeconds(), TimeUnit.SECONDS, this::isStarted);
+            Unreliables.retryUntilTrue(
+                    (int) READINESS_CHECK_TIMEOUT.getSeconds(), TimeUnit.SECONDS, this::isStarted);
             running = true;
         } catch (Exception ex) {
             throw new RuntimeException(ex);
@@ -86,7 +94,9 @@ class KafkaContainer extends GenericContainer<KafkaContainer> {
     }
 
     private boolean isStarted() throws IOException, InterruptedException {
-        ExecResult result = execInContainer("sh", "-c", "kafka-topics --bootstrap-server localhost:9092 --list");
+        ExecResult result =
+                execInContainer(
+                        "sh", "-c", "kafka-topics --bootstrap-server localhost:9092 --list");
         return result.getExitCode() == 0;
     }
 
@@ -110,7 +120,13 @@ class KafkaContainer extends GenericContainer<KafkaContainer> {
 
     @Override
     protected void doStart() {
-        withCommand("sh", "-c", "while [ ! -f " + START_STOP_SCRIPT + " ]; do sleep 0.1; done; " + START_STOP_SCRIPT);
+        withCommand(
+                "sh",
+                "-c",
+                "while [ ! -f "
+                        + START_STOP_SCRIPT
+                        + " ]; do sleep 0.1; done; "
+                        + START_STOP_SCRIPT);
         super.doStart();
     }
 
@@ -121,14 +137,17 @@ class KafkaContainer extends GenericContainer<KafkaContainer> {
             if (reused) {
                 return;
             }
-            String startScript = readFileFromClasspath("testcontainers/kafka_start.sh")
-                    .replaceAll("<KAFKA_MAPPED_PORT>", advertisedPort + "")
-                    .replaceAll("<KAFKA_INTERNAL_CLIENT_PORT>", KAFKA_INTERNAL_CLIENT_PORT + "")
-                    .replaceAll("<BROKER_HOSTNAME>", networkAlias)
-                    .replaceAll("<ZOOKEEPER_CONNECT>", externalZookeeperConnect);
+            String startScript =
+                    readFileFromClasspath("testcontainers/kafka_start.sh")
+                            .replaceAll("<KAFKA_MAPPED_PORT>", advertisedPort + "")
+                            .replaceAll(
+                                    "<KAFKA_INTERNAL_CLIENT_PORT>", KAFKA_INTERNAL_CLIENT_PORT + "")
+                            .replaceAll("<BROKER_HOSTNAME>", networkAlias)
+                            .replaceAll("<ZOOKEEPER_CONNECT>", externalZookeeperConnect);
             copyScriptToContainer(startScript, this, STARTER_SCRIPT);
-            String wrapperScript = readFileFromClasspath("testcontainers/kafka_start_stop_wrapper.sh")
-                    .replaceAll("<STARTER_SCRIPT>", STARTER_SCRIPT);
+            String wrapperScript =
+                    readFileFromClasspath("testcontainers/kafka_start_stop_wrapper.sh")
+                            .replaceAll("<STARTER_SCRIPT>", STARTER_SCRIPT);
             copyScriptToContainer(wrapperScript, this, START_STOP_SCRIPT);
         } catch (Exception ex) {
             throw new RuntimeException(ex);

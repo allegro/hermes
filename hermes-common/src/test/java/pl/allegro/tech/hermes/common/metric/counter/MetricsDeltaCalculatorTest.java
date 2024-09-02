@@ -1,8 +1,8 @@
 package pl.allegro.tech.hermes.common.metric.counter;
 
-import org.junit.Test;
-
 import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.Test;
 
 public class MetricsDeltaCalculatorTest {
 
@@ -31,12 +31,12 @@ public class MetricsDeltaCalculatorTest {
 
     @Test
     public void shouldRevertDelta() {
-        //given
+        // given
         String metricName = "metricToRevert";
         calculator.calculateDelta(metricName, 15L);
         long delta = calculator.calculateDelta(metricName, 20L);
 
-        //when
+        // when
         calculator.revertDelta(metricName, delta);
 
         assertThat(calculator.calculateDelta(metricName, 20L)).isEqualTo(5L);

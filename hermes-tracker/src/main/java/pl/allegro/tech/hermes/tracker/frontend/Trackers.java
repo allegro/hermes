@@ -11,10 +11,14 @@ public class Trackers {
     private final NoOperationPublishingTracker noOperationPublishingTracker;
 
     public Trackers(List<LogRepository> logRepositories) {
-        this(new PublishingMessageTracker(logRepositories, Clock.systemUTC()), new NoOperationPublishingTracker());
+        this(
+                new PublishingMessageTracker(logRepositories, Clock.systemUTC()),
+                new NoOperationPublishingTracker());
     }
 
-    Trackers(PublishingMessageTracker publishingMessageTracker, NoOperationPublishingTracker noOperationPublishingTracker) {
+    Trackers(
+            PublishingMessageTracker publishingMessageTracker,
+            NoOperationPublishingTracker noOperationPublishingTracker) {
         this.publishingMessageTracker = publishingMessageTracker;
         this.noOperationPublishingTracker = noOperationPublishingTracker;
     }

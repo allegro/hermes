@@ -5,7 +5,9 @@ import pl.allegro.tech.hermes.api.Topic;
 final class SchemaLoadingResult {
 
     enum Type {
-        SUCCESS, FAILURE, MISSING
+        SUCCESS,
+        FAILURE,
+        MISSING
     }
 
     private final Type type;

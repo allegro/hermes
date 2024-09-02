@@ -9,8 +9,9 @@ public class DcAwareOfflineRetransmissionRepository implements OfflineRetransmis
     private final MultiDatacenterRepositoryCommandExecutor commandExecutor;
     private final OfflineRetransmissionRepository offlineRetransmissionRepository;
 
-    public DcAwareOfflineRetransmissionRepository(MultiDatacenterRepositoryCommandExecutor commandExecutor,
-                                                  OfflineRetransmissionRepository offlineRetransmissionRepository) {
+    public DcAwareOfflineRetransmissionRepository(
+            MultiDatacenterRepositoryCommandExecutor commandExecutor,
+            OfflineRetransmissionRepository offlineRetransmissionRepository) {
         this.commandExecutor = commandExecutor;
         this.offlineRetransmissionRepository = offlineRetransmissionRepository;
     }

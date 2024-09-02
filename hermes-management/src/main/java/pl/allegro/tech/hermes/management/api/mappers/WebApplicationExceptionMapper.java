@@ -5,6 +5,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
+
 import pl.allegro.tech.hermes.api.ErrorCode;
 import pl.allegro.tech.hermes.api.ErrorDescription;
 
@@ -13,8 +14,7 @@ public class WebApplicationExceptionMapper implements ExceptionMapper<WebApplica
 
     @Override
     public Response toResponse(WebApplicationException exception) {
-        return Response
-                .status(exception.getResponse().getStatus())
+        return Response.status(exception.getResponse().getStatus())
                 .type(MediaType.APPLICATION_JSON_TYPE)
                 .entity(new ErrorDescription(exception.getMessage(), ErrorCode.OTHER))
                 .build();

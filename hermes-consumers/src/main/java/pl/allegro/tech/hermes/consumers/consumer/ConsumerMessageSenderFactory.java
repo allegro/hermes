@@ -32,14 +32,18 @@ public class ConsumerMessageSenderFactory {
     private final ExecutorService rateLimiterReportingExecutor;
     private final int senderAsyncTimeoutMs;
 
-    public ConsumerMessageSenderFactory(String kafkaClusterName, MessageSenderFactory messageSenderFactory,
-                                        Trackers trackers, FutureAsyncTimeout futureAsyncTimeout,
-                                        UndeliveredMessageLog undeliveredMessageLog, Clock clock,
-                                        InstrumentedExecutorServiceFactory instrumentedExecutorServiceFactory,
-                                        ConsumerAuthorizationHandler consumerAuthorizationHandler,
-                                        int senderAsyncTimeoutMs,
-                                        int rateLimiterReportingThreadPoolSize,
-                                        boolean rateLimiterReportingThreadMonitoringEnabled) {
+    public ConsumerMessageSenderFactory(
+            String kafkaClusterName,
+            MessageSenderFactory messageSenderFactory,
+            Trackers trackers,
+            FutureAsyncTimeout futureAsyncTimeout,
+            UndeliveredMessageLog undeliveredMessageLog,
+            Clock clock,
+            InstrumentedExecutorServiceFactory instrumentedExecutorServiceFactory,
+            ConsumerAuthorizationHandler consumerAuthorizationHandler,
+            int senderAsyncTimeoutMs,
+            int rateLimiterReportingThreadPoolSize,
+            boolean rateLimiterReportingThreadMonitoringEnabled) {
 
         this.kafkaClusterName = kafkaClusterName;
         this.messageSenderFactory = messageSenderFactory;
@@ -48,35 +52,40 @@ public class ConsumerMessageSenderFactory {
         this.undeliveredMessageLog = undeliveredMessageLog;
         this.clock = clock;
         this.consumerAuthorizationHandler = consumerAuthorizationHandler;
-        this.rateLimiterReportingExecutor = instrumentedExecutorServiceFactory.getExecutorService(
-                "rate-limiter-reporter", rateLimiterReportingThreadPoolSize,
-                rateLimiterReportingThreadMonitoringEnabled);
+        this.rateLimiterReportingExecutor =
+                instrumentedExecutorServiceFactory.getExecutorService(
+                        "rate-limiter-reporter",
+                        rateLimiterReportingThreadPoolSize,
+                        rateLimiterReportingThreadMonitoringEnabled);
         this.senderAsyncTimeoutMs = senderAsyncTimeoutMs;
     }
 
-    public ConsumerMessageSender create(Subscription subscription,
-                                        SerialConsumerRateLimiter consumerRateLimiter,
-                                        PendingOffsets pendingOffsets,
-                                        SubscriptionLoadRecorder subscriptionLoadRecorder,
-                                        MetricsFacade metrics) {
+    public ConsumerMessageSender create(
+            Subscription subscription,
+            SerialConsumerRateLimiter consumerRateLimiter,
+            PendingOffsets pendingOffsets,
+            SubscriptionLoadRecorder subscriptionLoadRecorder,
+            MetricsFacade metrics) {
 
-        List<SuccessHandler> successHandlers = Arrays.asList(
-                consumerAuthorizationHandler,
-                new DefaultSuccessHandler(metrics, trackers, subscription.getQualifiedName()));
+        List<SuccessHandler> successHandlers =
+                Arrays.asList(
+                        consumerAuthorizationHandler,
+                        new DefaultSuccessHandler(
+                                metrics, trackers, subscription.getQualifiedName()));
 
-        List<ErrorHandler> errorHandlers = Arrays.asList(
-                consumerAuthorizationHandler,
-                new DefaultErrorHandler(
-                        metrics,
-                        undeliveredMessageLog,
-                        clock,
-                        trackers,
-                        kafkaClusterName,
-                        subscription.getQualifiedName()
-                )
-        );
+        List<ErrorHandler> errorHandlers =
+                Arrays.asList(
+                        consumerAuthorizationHandler,
+                        new DefaultErrorHandler(
+                                metrics,
+                                undeliveredMessageLog,
+                                clock,
+                                trackers,
+                                kafkaClusterName,
+                                subscription.getQualifiedName()));
 
-        return new ConsumerMessageSender(subscription,
+        return new ConsumerMessageSender(
+                subscription,
                 messageSenderFactory,
                 successHandlers,
                 errorHandlers,
@@ -87,8 +96,6 @@ public class ConsumerMessageSenderFactory {
                 senderAsyncTimeoutMs,
                 futureAsyncTimeout,
                 clock,
-                subscriptionLoadRecorder
-        );
+                subscriptionLoadRecorder);
     }
-
 }

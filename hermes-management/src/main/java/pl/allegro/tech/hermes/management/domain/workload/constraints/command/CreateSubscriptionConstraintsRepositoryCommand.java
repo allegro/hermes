@@ -6,13 +6,15 @@ import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraintsRep
 import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryCommand;
 
-public class CreateSubscriptionConstraintsRepositoryCommand extends RepositoryCommand<WorkloadConstraintsRepository> {
+public class CreateSubscriptionConstraintsRepositoryCommand
+        extends RepositoryCommand<WorkloadConstraintsRepository> {
 
     private final SubscriptionName subscriptionName;
     private final Constraints constraints;
     private boolean exists;
 
-    public CreateSubscriptionConstraintsRepositoryCommand(SubscriptionName subscriptionName, Constraints constraints) {
+    public CreateSubscriptionConstraintsRepositoryCommand(
+            SubscriptionName subscriptionName, Constraints constraints) {
         this.subscriptionName = subscriptionName;
         this.constraints = constraints;
     }
@@ -28,7 +30,9 @@ public class CreateSubscriptionConstraintsRepositoryCommand extends RepositoryCo
     }
 
     @Override
-    public void rollback(DatacenterBoundRepositoryHolder<WorkloadConstraintsRepository> holder, Exception exception) {
+    public void rollback(
+            DatacenterBoundRepositoryHolder<WorkloadConstraintsRepository> holder,
+            Exception exception) {
         if (!exists) {
             holder.getRepository().deleteConstraints(subscriptionName);
         }
@@ -41,6 +45,7 @@ public class CreateSubscriptionConstraintsRepositoryCommand extends RepositoryCo
 
     @Override
     public String toString() {
-        return String.format("CreateSubscriptionConstraints(%s)", subscriptionName.getQualifiedName());
+        return String.format(
+                "CreateSubscriptionConstraints(%s)", subscriptionName.getQualifiedName());
     }
 }

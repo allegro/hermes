@@ -13,8 +13,9 @@ class SchemaRegistryValidationResponse {
     private final List<SchemaRegistryValidationError> errors;
 
     @JsonCreator
-    SchemaRegistryValidationResponse(@JsonProperty("is_valid") boolean valid,
-                                     @JsonProperty("errors") List<SchemaRegistryValidationError> errors) {
+    SchemaRegistryValidationResponse(
+            @JsonProperty("is_valid") boolean valid,
+            @JsonProperty("errors") List<SchemaRegistryValidationError> errors) {
         this.valid = valid;
         this.errors = errors;
     }

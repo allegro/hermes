@@ -1,10 +1,13 @@
 package pl.allegro.tech.hermes.frontend.producer.kafka;
 
+import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCauseMessage;
+
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.api.PublishingChaosPolicy;
 import pl.allegro.tech.hermes.api.PublishingChaosPolicy.ChaosPolicy;
 import pl.allegro.tech.hermes.api.Topic;
@@ -28,11 +31,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCauseMessage;
-
 public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
 
-    private static final Logger logger = LoggerFactory.getLogger(MultiDatacenterMessageProducer.class);
+    private static final Logger logger =
+            LoggerFactory.getLogger(MultiDatacenterMessageProducer.class);
 
     private final KafkaMessageSenders kafkaMessageSenders;
     private final MessageToKafkaProducerRecordConverter messageConverter;
@@ -40,11 +42,12 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
     private final AdminReadinessService adminReadinessService;
     private final ScheduledExecutorService fallbackScheduler;
 
-    public MultiDatacenterMessageProducer(KafkaMessageSenders kafkaMessageSenders,
-                                          AdminReadinessService adminReadinessService,
-                                          MessageToKafkaProducerRecordConverter messageConverter,
-                                          Duration speculativeSendDelay,
-                                          ScheduledExecutorService fallbackScheduler) {
+    public MultiDatacenterMessageProducer(
+            KafkaMessageSenders kafkaMessageSenders,
+            AdminReadinessService adminReadinessService,
+            MessageToKafkaProducerRecordConverter messageConverter,
+            Duration speculativeSendDelay,
+            ScheduledExecutorService fallbackScheduler) {
         this.messageConverter = messageConverter;
         this.kafkaMessageSenders = kafkaMessageSenders;
         this.speculativeSendDelay = speculativeSendDelay;
@@ -54,12 +57,16 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
 
     @Override
     public void send(Message message, CachedTopic cachedTopic, PublishingCallback callback) {
-        var producerRecord = messageConverter.convertToProducerRecord(message, cachedTopic.getKafkaTopics().getPrimary().name());
+        var producerRecord =
+                messageConverter.convertToProducerRecord(
+                        message, cachedTopic.getKafkaTopics().getPrimary().name());
 
-        KafkaMessageSender<byte[], byte[]> localSender = kafkaMessageSenders.get(cachedTopic.getTopic());
+        KafkaMessageSender<byte[], byte[]> localSender =
+                kafkaMessageSenders.get(cachedTopic.getTopic());
         Optional<KafkaMessageSender<byte[], byte[]>> remoteSender = getRemoteSender(cachedTopic);
 
-        Map<String, ChaosExperiment> experiments = createChaosExperimentsPerDatacenter(cachedTopic.getTopic());
+        Map<String, ChaosExperiment> experiments =
+                createChaosExperimentsPerDatacenter(cachedTopic.getTopic());
 
         if (remoteSender.isPresent()) {
             sendWithFallback(
@@ -69,16 +76,9 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
                     cachedTopic,
                     message,
                     experiments,
-                    callback
-            );
+                    callback);
         } else {
-            sendWithoutFallback(
-                    localSender,
-                    producerRecord,
-                    cachedTopic,
-                    message,
-                    callback
-            );
+            sendWithoutFallback(localSender, producerRecord, cachedTopic, message, callback);
         }
     }
 
@@ -117,31 +117,39 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
     If local DC send succeeds or fails before 'speculativeSendDelay' elapses we try to cancel the 'speculative' fallback if
     it has not been executed yet. We guarantee that only one fallback executes - either 'immediate' or 'speculative'.
      */
-    private void sendWithFallback(KafkaMessageSender<byte[], byte[]> localSender,
-                                  KafkaMessageSender<byte[], byte[]> remoteSender,
-                                  ProducerRecord<byte[], byte[]> producerRecord,
-                                  CachedTopic cachedTopic,
-                                  Message message,
-                                  Map<String, ChaosExperiment> experiments,
-                                  PublishingCallback publishingCallback) {
+    private void sendWithFallback(
+            KafkaMessageSender<byte[], byte[]> localSender,
+            KafkaMessageSender<byte[], byte[]> remoteSender,
+            ProducerRecord<byte[], byte[]> producerRecord,
+            CachedTopic cachedTopic,
+            Message message,
+            Map<String, ChaosExperiment> experiments,
+            PublishingCallback publishingCallback) {
 
         SendWithFallbackExecutionContext context = new SendWithFallbackExecutionContext();
 
-        FallbackRunnable fallback = new FallbackRunnable(
-                remoteSender,
-                producerRecord,
-                cachedTopic,
-                message,
-                experiments.getOrDefault(remoteSender.getDatacenter(), ChaosExperiment.DISABLED),
-                publishingCallback,
-                context
-        );
+        FallbackRunnable fallback =
+                new FallbackRunnable(
+                        remoteSender,
+                        producerRecord,
+                        cachedTopic,
+                        message,
+                        experiments.getOrDefault(
+                                remoteSender.getDatacenter(), ChaosExperiment.DISABLED),
+                        publishingCallback,
+                        context);
 
         Future<?> speculativeFallback;
         try {
-            speculativeFallback = fallbackScheduler.schedule(fallback, speculativeSendDelay.toMillis(), TimeUnit.MILLISECONDS);
+            speculativeFallback =
+                    fallbackScheduler.schedule(
+                            fallback, speculativeSendDelay.toMillis(), TimeUnit.MILLISECONDS);
         } catch (RejectedExecutionException rejectedExecutionException) {
-            logger.warn("Failed to run schedule fallback for message: {}, topic: {}", message, cachedTopic.getQualifiedName(), rejectedExecutionException);
+            logger.warn(
+                    "Failed to run schedule fallback for message: {}, topic: {}",
+                    message,
+                    cachedTopic.getQualifiedName(),
+                    rejectedExecutionException);
             speculativeFallback = CompletableFuture.completedFuture(null);
         }
 
@@ -150,24 +158,27 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
                 cachedTopic,
                 message,
                 new FallbackAwareLocalSendCallback(
-                        message, cachedTopic, localSender.getDatacenter(),
-                        context, publishingCallback, fallback, speculativeFallback
-                ),
-                experiments.getOrDefault(localSender.getDatacenter(), ChaosExperiment.DISABLED)
-        );
+                        message,
+                        cachedTopic,
+                        localSender.getDatacenter(),
+                        context,
+                        publishingCallback,
+                        fallback,
+                        speculativeFallback),
+                experiments.getOrDefault(localSender.getDatacenter(), ChaosExperiment.DISABLED));
     }
 
-    private void sendWithoutFallback(KafkaMessageSender<byte[], byte[]> sender,
-                                     ProducerRecord<byte[], byte[]> producerRecord,
-                                     CachedTopic cachedTopic,
-                                     Message message,
-                                     PublishingCallback callback) {
+    private void sendWithoutFallback(
+            KafkaMessageSender<byte[], byte[]> sender,
+            ProducerRecord<byte[], byte[]> producerRecord,
+            CachedTopic cachedTopic,
+            Message message,
+            PublishingCallback callback) {
         sender.send(
                 producerRecord,
                 cachedTopic,
                 message,
-                new LocalSendCallback(message, cachedTopic, sender.getDatacenter(), callback)
-        );
+                new LocalSendCallback(message, cachedTopic, sender.getDatacenter(), callback));
     }
 
     private Map<String, ChaosExperiment> createChaosExperimentsPerDatacenter(Topic topic) {
@@ -179,7 +190,8 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
                 ChaosPolicy policy = chaos.globalPolicy();
                 boolean enabled = computeIfShouldBeEnabled(policy);
                 for (String datacenter : kafkaMessageSenders.getDatacenters()) {
-                    experiments.put(datacenter, createChaosExperimentForDatacenter(policy, enabled));
+                    experiments.put(
+                            datacenter, createChaosExperimentForDatacenter(policy, enabled));
                 }
                 yield experiments;
             }
@@ -189,7 +201,8 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
                 for (String datacenter : kafkaMessageSenders.getDatacenters()) {
                     ChaosPolicy policy = policies.get(datacenter);
                     boolean enabled = computeIfShouldBeEnabled(policy);
-                    experiments.put(datacenter, createChaosExperimentForDatacenter(policy, enabled));
+                    experiments.put(
+                            datacenter, createChaosExperimentForDatacenter(policy, enabled));
                 }
                 yield experiments;
             }
@@ -203,32 +216,39 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
         return ThreadLocalRandom.current().nextInt(100) < policy.probability();
     }
 
-    private ChaosExperiment createChaosExperimentForDatacenter(ChaosPolicy policy, boolean enabled) {
+    private ChaosExperiment createChaosExperimentForDatacenter(
+            ChaosPolicy policy, boolean enabled) {
         if (!enabled) {
             return ChaosExperiment.DISABLED;
         }
         long delayMillisFrom = policy.delayFrom();
         long delayMillisTo = policy.delayTo();
-        long delayMillis = ThreadLocalRandom.current().nextLong(delayMillisTo - delayMillisFrom) + delayMillisFrom;
+        long delayMillis =
+                ThreadLocalRandom.current().nextLong(delayMillisTo - delayMillisFrom)
+                        + delayMillisFrom;
         return new ChaosExperiment(true, policy.completeWithError(), delayMillis);
     }
 
     public record ChaosExperiment(boolean enabled, boolean completeWithError, long delayInMillis) {
 
         private static final ChaosExperiment DISABLED = new ChaosExperiment(false, false, 0);
-
     }
 
     private Optional<KafkaMessageSender<byte[], byte[]>> getRemoteSender(CachedTopic cachedTopic) {
-        return kafkaMessageSenders.getRemote(cachedTopic.getTopic())
-                .stream()
-                .filter(producer -> adminReadinessService.isDatacenterReady(producer.getDatacenter()))
+        return kafkaMessageSenders.getRemote(cachedTopic.getTopic()).stream()
+                .filter(
+                        producer ->
+                                adminReadinessService.isDatacenterReady(producer.getDatacenter()))
                 .findFirst();
     }
 
-    private record RemoteSendCallback(Message message, CachedTopic cachedTopic,
-                                      String datacenter, PublishingCallback callback,
-                                      SendWithFallbackExecutionContext state) implements Callback {
+    private record RemoteSendCallback(
+            Message message,
+            CachedTopic cachedTopic,
+            String datacenter,
+            PublishingCallback callback,
+            SendWithFallbackExecutionContext state)
+            implements Callback {
 
         @Override
         public void onCompletion(RecordMetadata metadata, Exception exception) {
@@ -241,7 +261,10 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
                 }
             } else {
                 if (state.tryTransitionToUnpublished(datacenter, exception)) {
-                    callback.onUnpublished(message, cachedTopic.getTopic(), new MultiDCPublishException(state.errors));
+                    callback.onUnpublished(
+                            message,
+                            cachedTopic.getTopic(),
+                            new MultiDCPublishException(state.errors));
                 }
             }
         }
@@ -257,10 +280,14 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
         private final Future<?> speculativeFallback;
         private final SendWithFallbackExecutionContext state;
 
-        private FallbackAwareLocalSendCallback(Message message, CachedTopic cachedTopic, String datacenter,
-                                               SendWithFallbackExecutionContext state,
-                                               PublishingCallback callback,
-                                               FallbackRunnable fallback, Future<?> speculativeFallback) {
+        private FallbackAwareLocalSendCallback(
+                Message message,
+                CachedTopic cachedTopic,
+                String datacenter,
+                SendWithFallbackExecutionContext state,
+                PublishingCallback callback,
+                FallbackRunnable fallback,
+                Future<?> speculativeFallback) {
             this.message = message;
             this.cachedTopic = cachedTopic;
             this.datacenter = datacenter;
@@ -282,7 +309,10 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
                 }
             } else {
                 if (state.tryTransitionToUnpublished(datacenter, exception)) {
-                    callback.onUnpublished(message, cachedTopic.getTopic(), new MultiDCPublishException(state.errors));
+                    callback.onUnpublished(
+                            message,
+                            cachedTopic.getTopic(),
+                            new MultiDCPublishException(state.errors));
                 } else {
                     fallback();
                 }
@@ -294,7 +324,11 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
                 speculativeFallback.cancel(false);
                 fallbackScheduler.execute(fallback);
             } catch (RejectedExecutionException rejectedExecutionException) {
-                logger.warn("Failed to run immediate fallback for message: {}, topic: {}", message, cachedTopic.getQualifiedName(), rejectedExecutionException);
+                logger.warn(
+                        "Failed to run immediate fallback for message: {}, topic: {}",
+                        message,
+                        cachedTopic.getQualifiedName(),
+                        rejectedExecutionException);
             }
         }
 
@@ -303,8 +337,12 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
         }
     }
 
-    private record LocalSendCallback(Message message, CachedTopic cachedTopic, String datacenter,
-                                     PublishingCallback callback) implements Callback {
+    private record LocalSendCallback(
+            Message message,
+            CachedTopic cachedTopic,
+            String datacenter,
+            PublishingCallback callback)
+            implements Callback {
 
         @Override
         public void onCompletion(RecordMetadata metadata, Exception exception) {
@@ -326,14 +364,14 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
         private final PublishingCallback callback;
         private final SendWithFallbackExecutionContext context;
 
-        public FallbackRunnable(KafkaMessageSender<byte[], byte[]> remoteSender,
-                                ProducerRecord<byte[], byte[]> producerRecord,
-                                CachedTopic cachedTopic,
-                                Message message,
-                                ChaosExperiment experiment,
-                                PublishingCallback callback,
-                                SendWithFallbackExecutionContext context
-        ) {
+        public FallbackRunnable(
+                KafkaMessageSender<byte[], byte[]> remoteSender,
+                ProducerRecord<byte[], byte[]> producerRecord,
+                CachedTopic cachedTopic,
+                Message message,
+                ChaosExperiment experiment,
+                PublishingCallback callback,
+                SendWithFallbackExecutionContext context) {
             this.remoteSender = remoteSender;
             this.producerRecord = producerRecord;
             this.cachedTopic = cachedTopic;
@@ -349,9 +387,13 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
                         producerRecord,
                         cachedTopic,
                         message,
-                        new RemoteSendCallback(message, cachedTopic, remoteSender.getDatacenter(), callback, context),
-                        experiment
-                );
+                        new RemoteSendCallback(
+                                message,
+                                cachedTopic,
+                                remoteSender.getDatacenter(),
+                                callback,
+                                context),
+                        experiment);
             }
         }
     }
@@ -365,8 +407,10 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
         private static String errorMessage(Map<String, Exception> exceptionsPerDC) {
             StringBuilder builder = new StringBuilder();
             exceptionsPerDC.forEach(
-                    (dc, exception) -> builder.append(String.format("[%s]: %s, ", dc, getRootCauseMessage(exception)))
-            );
+                    (dc, exception) ->
+                            builder.append(
+                                    String.format(
+                                            "[%s]: %s, ", dc, getRootCauseMessage(exception))));
             return builder.toString();
         }
     }

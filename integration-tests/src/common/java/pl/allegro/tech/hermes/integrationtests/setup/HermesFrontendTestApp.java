@@ -1,20 +1,5 @@
 package pl.allegro.tech.hermes.integrationtests.setup;
 
-import org.springframework.boot.WebApplicationType;
-import org.springframework.boot.builder.SpringApplicationBuilder;
-import pl.allegro.tech.hermes.frontend.HermesFrontend;
-import pl.allegro.tech.hermes.frontend.server.HermesServer;
-import pl.allegro.tech.hermes.test.helper.containers.ConfluentSchemaRegistryContainer;
-import pl.allegro.tech.hermes.test.helper.containers.KafkaContainerCluster;
-import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
-import pl.allegro.tech.hermes.test.helper.environment.HermesTestApp;
-
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.AUTH_PASSWORD;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.AUTH_USERNAME;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_FORCE_TOPIC_MAX_MESSAGE_SIZE;
@@ -38,6 +23,22 @@ import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.SC
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.SPRING_PROFILES_ACTIVE;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.ZOOKEEPER_CONNECTION_STRING;
 
+import org.springframework.boot.WebApplicationType;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+
+import pl.allegro.tech.hermes.frontend.HermesFrontend;
+import pl.allegro.tech.hermes.frontend.server.HermesServer;
+import pl.allegro.tech.hermes.test.helper.containers.ConfluentSchemaRegistryContainer;
+import pl.allegro.tech.hermes.test.helper.containers.KafkaContainerCluster;
+import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
+import pl.allegro.tech.hermes.test.helper.environment.HermesTestApp;
+
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public class HermesFrontendTestApp implements HermesTestApp {
 
     private final ZookeeperContainer hermesZookeeper;
@@ -53,17 +54,19 @@ public class HermesFrontendTestApp implements HermesTestApp {
     private final List<String> profiles = new ArrayList<>(List.of("integration"));
     private List<String> currentArgs = List.of();
 
-    public HermesFrontendTestApp(ZookeeperContainer hermesZookeeper,
-                                 KafkaContainerCluster kafka,
-                                 ConfluentSchemaRegistryContainer schemaRegistry) {
+    public HermesFrontendTestApp(
+            ZookeeperContainer hermesZookeeper,
+            KafkaContainerCluster kafka,
+            ConfluentSchemaRegistryContainer schemaRegistry) {
         this.hermesZookeeper = hermesZookeeper;
         this.schemaRegistry = schemaRegistry;
         this.kafkaClusters = Map.of("dc", kafka);
-
     }
-    public HermesFrontendTestApp(ZookeeperContainer hermesZookeeper,
-                                 Map<String, KafkaContainerCluster> kafkaClusters,
-                                 ConfluentSchemaRegistryContainer schemaRegistry) {
+
+    public HermesFrontendTestApp(
+            ZookeeperContainer hermesZookeeper,
+            Map<String, KafkaContainerCluster> kafkaClusters,
+            ConfluentSchemaRegistryContainer schemaRegistry) {
         this.hermesZookeeper = hermesZookeeper;
         this.schemaRegistry = schemaRegistry;
         this.kafkaClusters = kafkaClusters;
@@ -93,7 +96,9 @@ public class HermesFrontendTestApp implements HermesTestApp {
         var i = 0;
         for (var entry : kafkaClusters.entrySet()) {
             args.put(kafkaClusterProperty(i, "datacenter"), entry.getKey());
-            args.put(kafkaClusterProperty(i, "brokerList"), entry.getValue().getBootstrapServersForExternalClients());
+            args.put(
+                    kafkaClusterProperty(i, "brokerList"),
+                    entry.getValue().getBootstrapServersForExternalClients());
             i++;
         }
 
@@ -107,7 +112,9 @@ public class HermesFrontendTestApp implements HermesTestApp {
         args.put(FRONTEND_READINESS_CHECK_INTERVAL_SECONDS, readinessCheckInterval);
 
         args.put(FRONTEND_HEADER_PROPAGATION_ENABLED, true);
-        args.put(FRONTEND_HEADER_PROPAGATION_ALLOWED, "trace-id, span-id, parent-span-id, trace-sampled, trace-reported");
+        args.put(
+                FRONTEND_HEADER_PROPAGATION_ALLOWED,
+                "trace-id, span-id, parent-span-id, trace-sampled, trace-reported");
 
         args.put(KAFKA_PRODUCER_METADATA_MAX_AGE, metadataMaxAge);
 
@@ -115,7 +122,7 @@ public class HermesFrontendTestApp implements HermesTestApp {
         args.put(FRONTEND_IDLE_TIMEOUT, Duration.ofSeconds(2));
 
         args.put(FRONTEND_THROUGHPUT_TYPE, "fixed");
-        args.put(FRONTEND_THROUGHPUT_FIXED_MAX,  50 * 1024L);
+        args.put(FRONTEND_THROUGHPUT_FIXED_MAX, 50 * 1024L);
 
         args.put(FRONTEND_GRACEFUL_SHUTDOWN_ENABLED, false);
 
@@ -134,8 +141,7 @@ public class HermesFrontendTestApp implements HermesTestApp {
 
     @Override
     public HermesTestApp start() {
-        app = new SpringApplicationBuilder(HermesFrontend.class)
-                .web(WebApplicationType.NONE);
+        app = new SpringApplicationBuilder(HermesFrontend.class).web(WebApplicationType.NONE);
         currentArgs = createArgs();
         app.run(currentArgs.toArray(new String[0]));
         port = app.context().getBean(HermesServer.class).getPort();

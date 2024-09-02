@@ -1,11 +1,11 @@
 package pl.allegro.tech.hermes.frontend.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+
 import pl.allegro.tech.hermes.common.di.factories.MicrometerRegistryParameters;
 
 import java.time.Duration;
 import java.util.List;
-
 
 @ConfigurationProperties(prefix = "frontend.metrics.micrometer")
 public class MicrometerRegistryProperties implements MicrometerRegistryParameters {

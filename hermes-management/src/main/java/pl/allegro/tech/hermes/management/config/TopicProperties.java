@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.management.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.TopicLabel;
 
@@ -20,7 +21,8 @@ public class TopicProperties {
 
     private boolean removeSchema = false;
 
-    private List<ContentType> allowedContentTypes = Arrays.asList(ContentType.AVRO, ContentType.JSON);
+    private List<ContentType> allowedContentTypes =
+            Arrays.asList(ContentType.AVRO, ContentType.JSON);
 
     private Set<TopicLabel> allowedTopicLabels = Collections.emptySet();
 
@@ -39,24 +41,21 @@ public class TopicProperties {
     private boolean avroContentTypeMetadataRequired = true;
 
     /**
-     * <p>Introduced in Kafka 0.11.0.0 mechanism of splitting oversized batches does not respect configuration of maximum
-     * message size which broker can accept. It can cause an infinite loop of resending the same records in one batch.
-     * To avoid the issue this parameter should be greater than or equal to maximum size of request that the producer
-     * can send (parameter kafka.producer.max.request.size). Note that if you change this setting, it is necessary to
-     * manually update max.message.bytes for existing topics on broker side.</p>
+     * Introduced in Kafka 0.11.0.0 mechanism of splitting oversized batches does not respect
+     * configuration of maximum message size which broker can accept. It can cause an infinite loop
+     * of resending the same records in one batch. To avoid the issue this parameter should be
+     * greater than or equal to maximum size of request that the producer can send (parameter
+     * kafka.producer.max.request.size). Note that if you change this setting, it is necessary to
+     * manually update max.message.bytes for existing topics on broker side.
      *
-     * <p>For more information see:</p>
+     * <p>For more information see:
+     *
      * <ul>
-     * <li>
-     *     <a href="https://cwiki.apache.org/confluence/pages/viewpage.action?pageId=68715855">
-     *         Kafka Confluence: KIP-126 – Allow KafkaProducer to split and resend oversized batches.
-     *        </a>
-     * </li>
-     * <li>
-     *     <a href="https://issues.apache.org/jira/browse/KAFKA-8202">
-     *      Kafka Jira: KAFKA-8202 – StackOverflowError on producer when splitting batches
-     *     </a>
- *     </li>
+     *   <li><a href="https://cwiki.apache.org/confluence/pages/viewpage.action?pageId=68715855">
+     *       Kafka Confluence: KIP-126 – Allow KafkaProducer to split and resend oversized batches.
+     *       </a>
+     *   <li><a href="https://issues.apache.org/jira/browse/KAFKA-8202">Kafka Jira: KAFKA-8202 –
+     *       StackOverflowError on producer when splitting batches </a>
      * </ul>
      */
     private int maxMessageSize = 1024 * 1024;
@@ -137,8 +136,10 @@ public class TopicProperties {
         return subscriptionsAssignmentsCompletedTimeoutSeconds;
     }
 
-    public void setSubscriptionsAssignmentsCompletedTimeoutSeconds(int subscriptionsAssignmentsCompletedTimeoutSeconds) {
-        this.subscriptionsAssignmentsCompletedTimeoutSeconds = subscriptionsAssignmentsCompletedTimeoutSeconds;
+    public void setSubscriptionsAssignmentsCompletedTimeoutSeconds(
+            int subscriptionsAssignmentsCompletedTimeoutSeconds) {
+        this.subscriptionsAssignmentsCompletedTimeoutSeconds =
+                subscriptionsAssignmentsCompletedTimeoutSeconds;
     }
 
     public int getMaxMessageSize() {
@@ -153,7 +154,8 @@ public class TopicProperties {
         return defaultSchemaIdAwareSerializationEnabled;
     }
 
-    public void setDefaultSchemaIdAwareSerializationEnabled(boolean defaultSchemaIdAwareSerializationEnabled) {
+    public void setDefaultSchemaIdAwareSerializationEnabled(
+            boolean defaultSchemaIdAwareSerializationEnabled) {
         this.defaultSchemaIdAwareSerializationEnabled = defaultSchemaIdAwareSerializationEnabled;
     }
 
@@ -161,7 +163,8 @@ public class TopicProperties {
         return defaultFallbackToRemoteDatacenterEnabled;
     }
 
-    public void setDefaultFallbackToRemoteDatacenterEnabled(boolean defaultFallbackToRemoteDatacenterEnabled) {
+    public void setDefaultFallbackToRemoteDatacenterEnabled(
+            boolean defaultFallbackToRemoteDatacenterEnabled) {
         this.defaultFallbackToRemoteDatacenterEnabled = defaultFallbackToRemoteDatacenterEnabled;
     }
 
@@ -172,5 +175,4 @@ public class TopicProperties {
     public void setAvroContentTypeMetadataRequired(boolean avroContentTypeMetadataRequired) {
         this.avroContentTypeMetadataRequired = avroContentTypeMetadataRequired;
     }
-
 }

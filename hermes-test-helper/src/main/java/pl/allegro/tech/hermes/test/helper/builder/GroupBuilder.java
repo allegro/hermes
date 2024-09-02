@@ -27,10 +27,12 @@ public class GroupBuilder {
     }
 
     public static GroupBuilder groupWithRandomNameEndedWith(String suffix) {
-        return group(GroupBuilder.class.getSimpleName() + "Group" + sequence.incrementAndGet() + suffix);
+        return group(
+                GroupBuilder.class.getSimpleName() + "Group" + sequence.incrementAndGet() + suffix);
     }
 
     public static GroupBuilder groupWithRandomNameContaining(String string) {
-        return group(GroupBuilder.class.getSimpleName() + "Group" + string + sequence.incrementAndGet());
+        return group(
+                GroupBuilder.class.getSimpleName() + "Group" + string + sequence.incrementAndGet());
     }
 }

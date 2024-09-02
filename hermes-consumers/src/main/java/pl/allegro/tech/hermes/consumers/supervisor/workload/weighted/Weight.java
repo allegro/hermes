@@ -1,8 +1,8 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload.weighted;
 
-import java.util.Objects;
-
 import static com.google.common.base.Preconditions.checkArgument;
+
+import java.util.Objects;
 
 class Weight implements Comparable<Weight> {
 
@@ -11,13 +11,18 @@ class Weight implements Comparable<Weight> {
     private final double operationsPerSecond;
 
     Weight(double operationsPerSecond) {
-        checkArgument(operationsPerSecond >= 0d, "operationsPerSecond should be greater than or equal to zero");
+        checkArgument(
+                operationsPerSecond >= 0d,
+                "operationsPerSecond should be greater than or equal to zero");
         this.operationsPerSecond = operationsPerSecond;
     }
 
     static double calculatePercentageChange(Weight initialWeight, Weight finalWeight) {
-        checkArgument(initialWeight.operationsPerSecond > 0d, "initialWeight.operationsPerSecond should be greater than zero");
-        double delta = Math.abs(finalWeight.operationsPerSecond - initialWeight.operationsPerSecond);
+        checkArgument(
+                initialWeight.operationsPerSecond > 0d,
+                "initialWeight.operationsPerSecond should be greater than zero");
+        double delta =
+                Math.abs(finalWeight.operationsPerSecond - initialWeight.operationsPerSecond);
         return (delta / initialWeight.operationsPerSecond) * 100;
     }
 

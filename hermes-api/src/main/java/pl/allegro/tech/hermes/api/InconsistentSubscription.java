@@ -10,8 +10,9 @@ public class InconsistentSubscription {
     private final List<InconsistentMetadata> inconsistentMetadata;
 
     @JsonCreator
-    public InconsistentSubscription(@JsonProperty("name") String name,
-                                    @JsonProperty("inconsistentMetadata") List<InconsistentMetadata> inconsistentMetadata) {
+    public InconsistentSubscription(
+            @JsonProperty("name") String name,
+            @JsonProperty("inconsistentMetadata") List<InconsistentMetadata> inconsistentMetadata) {
         this.name = name;
         this.inconsistentMetadata = inconsistentMetadata;
     }

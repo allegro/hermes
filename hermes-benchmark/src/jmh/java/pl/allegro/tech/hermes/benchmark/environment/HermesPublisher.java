@@ -34,25 +34,29 @@ public class HermesPublisher {
             throws IOReactorException, UnsupportedEncodingException {
         this.targetUrl = URI.create(targetUrl);
 
-        RequestConfig requestConfig = RequestConfig.custom()
-                .setCookieSpec(CookieSpecs.IGNORE_COOKIES)
-                .setAuthenticationEnabled(false)
-                .build();
+        RequestConfig requestConfig =
+                RequestConfig.custom()
+                        .setCookieSpec(CookieSpecs.IGNORE_COOKIES)
+                        .setAuthenticationEnabled(false)
+                        .build();
 
-        IOReactorConfig ioReactorConfig = IOReactorConfig.custom()
-                .setIoThreadCount(Runtime.getRuntime().availableProcessors())
-                .setConnectTimeout(CONNECT_TIMEOUT)
-                .setSoTimeout(SOCKET_TIMEOUT)
-                .build();
+        IOReactorConfig ioReactorConfig =
+                IOReactorConfig.custom()
+                        .setIoThreadCount(Runtime.getRuntime().availableProcessors())
+                        .setConnectTimeout(CONNECT_TIMEOUT)
+                        .setSoTimeout(SOCKET_TIMEOUT)
+                        .build();
 
-        PoolingNHttpClientConnectionManager connectionManager = new PoolingNHttpClientConnectionManager(
-                new DefaultConnectingIOReactor(ioReactorConfig));
+        PoolingNHttpClientConnectionManager connectionManager =
+                new PoolingNHttpClientConnectionManager(
+                        new DefaultConnectingIOReactor(ioReactorConfig));
         connectionManager.setDefaultMaxPerRoute(maxConnectionsPerRoute);
 
-        httpClient = HttpAsyncClients.custom()
-                .setConnectionManager(connectionManager)
-                .setDefaultRequestConfig(requestConfig)
-                .build();
+        httpClient =
+                HttpAsyncClients.custom()
+                        .setConnectionManager(connectionManager)
+                        .setDefaultRequestConfig(requestConfig)
+                        .build();
 
         httpClient.start();
 

@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.rate;
 
 import com.google.common.util.concurrent.RateLimiter;
+
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.consumer.rate.calculator.OutputRateCalculationResult;
@@ -28,26 +29,31 @@ public class SerialConsumerRateLimiter implements ConsumerRateLimiter {
 
     private OutputRateCalculator.Mode currentMode;
 
-    public SerialConsumerRateLimiter(Subscription subscription,
-                                     OutputRateCalculatorFactory outputRateCalculatorFactory,
-                                     MetricsFacade metrics,
-                                     ConsumerRateLimitSupervisor rateLimitSupervisor,
-                                     Clock clock) {
+    public SerialConsumerRateLimiter(
+            Subscription subscription,
+            OutputRateCalculatorFactory outputRateCalculatorFactory,
+            MetricsFacade metrics,
+            ConsumerRateLimitSupervisor rateLimitSupervisor,
+            Clock clock) {
         this.subscription = subscription;
         this.metrics = metrics;
         this.rateLimitSupervisor = rateLimitSupervisor;
         this.sendCounters = new SendCounters(clock);
-        this.outputRateCalculator = outputRateCalculatorFactory.createCalculator(subscription, sendCounters, metrics);
+        this.outputRateCalculator =
+                outputRateCalculatorFactory.createCalculator(subscription, sendCounters, metrics);
         this.currentMode = OutputRateCalculator.Mode.NORMAL;
         this.rateLimiter = RateLimiter.create(calculateInitialRate().rate());
-        this.filterRateLimiter = RateLimiter.create(subscription.getSerialSubscriptionPolicy().getRate());
+        this.filterRateLimiter =
+                RateLimiter.create(subscription.getSerialSubscriptionPolicy().getRate());
     }
 
     @Override
     public void initialize() {
         outputRateCalculator.start();
         adjustConsumerRate();
-        metrics.maxRate().registerOutputRateGauge(subscription.getQualifiedName(), rateLimiter, RateLimiter::getRate);
+        metrics.maxRate()
+                .registerOutputRateGauge(
+                        subscription.getQualifiedName(), rateLimiter, RateLimiter::getRate);
         rateLimitSupervisor.register(this);
     }
 
@@ -81,7 +87,8 @@ public class SerialConsumerRateLimiter implements ConsumerRateLimiter {
     }
 
     private OutputRateCalculationResult recalculate() {
-        return outputRateCalculator.recalculateRate(sendCounters, currentMode, rateLimiter.getRate());
+        return outputRateCalculator.recalculateRate(
+                sendCounters, currentMode, rateLimiter.getRate());
     }
 
     @Override
@@ -113,7 +120,8 @@ public class SerialConsumerRateLimiter implements ConsumerRateLimiter {
 
         SerialConsumerRateLimiter that = (SerialConsumerRateLimiter) o;
 
-        return Objects.equals(subscription.getQualifiedName(), that.subscription.getQualifiedName());
+        return Objects.equals(
+                subscription.getQualifiedName(), that.subscription.getQualifiedName());
     }
 
     @Override

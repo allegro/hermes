@@ -1,12 +1,12 @@
 package pl.allegro.tech.hermes.mock.exchange;
 
+import static java.util.stream.Collectors.toMap;
+
 import com.github.tomakehurst.wiremock.http.RequestMethod;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static java.util.stream.Collectors.toMap;
 
 public class Request {
     private final String url;
@@ -18,8 +18,9 @@ public class Request {
         this.url = loggedRequest.getUrl();
         this.method = getRequestMethod(loggedRequest.getMethod());
         this.body = loggedRequest.getBody();
-        this.headers = loggedRequest.getAllHeaderKeys().stream()
-                .collect(toMap(key -> key, loggedRequest::getHeader));
+        this.headers =
+                loggedRequest.getAllHeaderKeys().stream()
+                        .collect(toMap(key -> key, loggedRequest::getHeader));
     }
 
     public String getUrl() {

@@ -17,8 +17,15 @@ public class BackupMessage implements Serializable {
     private final Integer schemaId;
     private final Map<String, String> propagatedHTTPHeaders;
 
-    public BackupMessage(String messageId, byte[] data, long timestamp, String qualifiedTopicName, String partitionKey,
-                         Integer schemaVersion, Integer schemaId, Map<String, String> propagatedHTTPHeaders) {
+    public BackupMessage(
+            String messageId,
+            byte[] data,
+            long timestamp,
+            String qualifiedTopicName,
+            String partitionKey,
+            Integer schemaVersion,
+            Integer schemaId,
+            Map<String, String> propagatedHTTPHeaders) {
         this.messageId = messageId;
         this.data = data;
         this.timestamp = timestamp;
@@ -26,7 +33,8 @@ public class BackupMessage implements Serializable {
         this.partitionKey = partitionKey;
         this.schemaVersion = schemaVersion;
         this.schemaId = schemaId;
-        this.propagatedHTTPHeaders = propagatedHTTPHeaders == null ? Collections.emptyMap() : propagatedHTTPHeaders;
+        this.propagatedHTTPHeaders =
+                propagatedHTTPHeaders == null ? Collections.emptyMap() : propagatedHTTPHeaders;
     }
 
     public String getMessageId() {
@@ -81,6 +89,13 @@ public class BackupMessage implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(messageId, data, timestamp, qualifiedTopicName, partitionKey, schemaVersion, schemaId);
+        return Objects.hash(
+                messageId,
+                data,
+                timestamp,
+                qualifiedTopicName,
+                partitionKey,
+                schemaVersion,
+                schemaId);
     }
 }

@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.management.infrastructure.kafka.service;
 
 import org.apache.kafka.common.TopicPartition;
+
 import pl.allegro.tech.hermes.common.kafka.KafkaConsumerPool;
 
 import java.util.Collections;

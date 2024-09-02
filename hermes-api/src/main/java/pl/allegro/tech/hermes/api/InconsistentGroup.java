@@ -11,9 +11,10 @@ public class InconsistentGroup {
     private final List<InconsistentTopic> inconsistentTopics;
 
     @JsonCreator
-    public InconsistentGroup(@JsonProperty("name") String name,
-                             @JsonProperty("inconsistentMetadata") List<InconsistentMetadata> inconsistentMetadata,
-                             @JsonProperty("inconsistentTopics") List<InconsistentTopic> inconsistentTopics) {
+    public InconsistentGroup(
+            @JsonProperty("name") String name,
+            @JsonProperty("inconsistentMetadata") List<InconsistentMetadata> inconsistentMetadata,
+            @JsonProperty("inconsistentTopics") List<InconsistentTopic> inconsistentTopics) {
         this.name = name;
         this.inconsistentMetadata = inconsistentMetadata;
         this.inconsistentTopics = inconsistentTopics;

@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.consumers.consumer.rate.maxrate;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
+
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 
 import java.util.List;
@@ -21,7 +22,8 @@ class ZookeeperOperations {
             curator.setData().forPath(path, serializedData);
         } catch (KeeperException.NoNodeException e) {
             try {
-                curator.create().creatingParentContainersIfNeeded()
+                curator.create()
+                        .creatingParentContainersIfNeeded()
                         .withMode(CreateMode.PERSISTENT)
                         .forPath(path, serializedData);
             } catch (KeeperException.NodeExistsException ex) {
@@ -36,7 +38,8 @@ class ZookeeperOperations {
                 return Optional.of(curator.getData().forPath(path));
             }
         } catch (Exception e) {
-            throw new InternalProcessingException(String.format("Could not read node data on path %s", path), e);
+            throw new InternalProcessingException(
+                    String.format("Could not read node data on path %s", path), e);
         }
         return Optional.empty();
     }

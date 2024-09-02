@@ -1,11 +1,14 @@
 package pl.allegro.tech.hermes.infrastructure.zookeeper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import jakarta.annotation.PostConstruct;
+
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.KeeperException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
@@ -22,9 +25,8 @@ public class ZookeeperGroupRepository extends ZookeeperBasedRepository implement
 
     private static final Logger logger = LoggerFactory.getLogger(ZookeeperGroupRepository.class);
 
-    public ZookeeperGroupRepository(CuratorFramework zookeeper,
-                                    ObjectMapper mapper,
-                                    ZookeeperPaths paths) {
+    public ZookeeperGroupRepository(
+            CuratorFramework zookeeper, ObjectMapper mapper, ZookeeperPaths paths) {
         super(zookeeper, mapper, paths);
     }
 
@@ -67,9 +69,9 @@ public class ZookeeperGroupRepository extends ZookeeperBasedRepository implement
     }
 
     /**
-     * Atomic removal of <code>group</code> and <code>group/topics</code>
-     * nodes is required to prevent lengthy loop during removal, see:
-     * {@link pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperTopicRepository#removeTopic(TopicName)}.
+     * Atomic removal of <code>group</code> and <code>group/topics</code> nodes is required to
+     * prevent lengthy loop during removal, see: {@link
+     * pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperTopicRepository#removeTopic(TopicName)}.
      */
     @Override
     public void removeGroup(String groupName) {
@@ -77,10 +79,8 @@ public class ZookeeperGroupRepository extends ZookeeperBasedRepository implement
         ensureGroupIsEmpty(groupName);
 
         logger.info("Removing group: {}", groupName);
-        List<String> pathsToDelete = List.of(
-                paths.topicsPath(groupName),
-                paths.groupPath(groupName)
-        );
+        List<String> pathsToDelete =
+                List.of(paths.topicsPath(groupName), paths.groupPath(groupName));
         try {
             deleteInTransaction(pathsToDelete);
         } catch (Exception e) {
@@ -101,8 +101,7 @@ public class ZookeeperGroupRepository extends ZookeeperBasedRepository implement
 
     @Override
     public List<Group> listGroups() {
-        return listGroupNames()
-                .stream()
+        return listGroupNames().stream()
                 .map(n -> getGroupDetails(n, true))
                 .filter(Optional::isPresent)
                 .map(Optional::get)

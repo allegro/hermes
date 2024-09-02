@@ -12,8 +12,7 @@ enum CompressionCodec {
         this.header = header;
     }
 
-    CompressionCodec() {
-    }
+    CompressionCodec() {}
 
     String getHeader() {
         return header;

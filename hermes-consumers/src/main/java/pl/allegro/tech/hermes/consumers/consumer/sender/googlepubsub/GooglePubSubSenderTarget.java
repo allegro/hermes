@@ -10,7 +10,8 @@ class GooglePubSubSenderTarget {
     private final String pubSubEndpoint;
     private final CompressionCodec compressionCodec;
 
-    private GooglePubSubSenderTarget(TopicName topicName, String pubSubEndpoint, CompressionCodec compressionCodec) {
+    private GooglePubSubSenderTarget(
+            TopicName topicName, String pubSubEndpoint, CompressionCodec compressionCodec) {
         this.topicName = topicName;
         this.pubSubEndpoint = pubSubEndpoint;
         this.compressionCodec = compressionCodec;
@@ -66,8 +67,7 @@ class GooglePubSubSenderTarget {
         private String pubSubEndpoint;
         private CompressionCodec compressionCodec;
 
-        private PubSubTargetBuilder() {
-        }
+        private PubSubTargetBuilder() {}
 
         PubSubTargetBuilder withTopicName(TopicName topicName) {
             this.topicName = topicName;

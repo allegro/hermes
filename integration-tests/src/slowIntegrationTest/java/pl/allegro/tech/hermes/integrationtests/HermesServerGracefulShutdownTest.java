@@ -1,11 +1,14 @@
 package pl.allegro.tech.hermes.integrationtests;
 
+import static org.awaitility.Awaitility.waitAtMost;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.web.reactive.server.WebTestClient;
+
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesFrontendTestApp;
 import pl.allegro.tech.hermes.integrationtests.setup.InfrastructureExtension;
@@ -14,12 +17,9 @@ import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import java.util.concurrent.TimeUnit;
 
-import static org.awaitility.Awaitility.waitAtMost;
+public class HermesServerGracefulShutdownTest {
 
-public class HermesServerGracefulShutdownTest  {
-
-    @RegisterExtension
-    public static InfrastructureExtension infra = new InfrastructureExtension();
+    @RegisterExtension public static InfrastructureExtension infra = new InfrastructureExtension();
 
     private HermesFrontendTestApp frontend;
     private HermesServer hermesServer;
@@ -27,7 +27,9 @@ public class HermesServerGracefulShutdownTest  {
 
     @BeforeEach
     public void beforeEach() {
-        frontend = new HermesFrontendTestApp(infra.hermesZookeeper(), infra.kafka(), infra.schemaRegistry());
+        frontend =
+                new HermesFrontendTestApp(
+                        infra.hermesZookeeper(), infra.kafka(), infra.schemaRegistry());
         frontend.start();
         hermesServer = frontend.getBean(HermesServer.class);
         frontendClient = new FrontendTestClient(frontend.getPort());
@@ -40,13 +42,14 @@ public class HermesServerGracefulShutdownTest  {
 
     @Test
     public void shouldShutdownGracefully() throws Throwable {
-        //given
+        // given
         hermesServer.prepareForGracefulShutdown();
 
-        //when
-        WebTestClient.ResponseSpec response = frontendClient.publish("topic", TestMessage.of("hello", "world").body());
+        // when
+        WebTestClient.ResponseSpec response =
+                frontendClient.publish("topic", TestMessage.of("hello", "world").body());
 
-        //then
+        // then
         response.expectStatus().isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
@@ -57,7 +60,11 @@ public class HermesServerGracefulShutdownTest  {
 
         // then
         waitAtMost(5, TimeUnit.SECONDS)
-                .untilAsserted(() -> frontendClient.getStatusPing().expectStatus().isEqualTo(HttpStatus.SERVICE_UNAVAILABLE));
+                .untilAsserted(
+                        () ->
+                                frontendClient
+                                        .getStatusPing()
+                                        .expectStatus()
+                                        .isEqualTo(HttpStatus.SERVICE_UNAVAILABLE));
     }
-
 }

@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.api;
 
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -13,9 +12,9 @@ public class SubscriptionStats {
 
     @JsonCreator
     public SubscriptionStats(
-            @JsonProperty("subscriptionCount") long  subscriptionCount,
-            @JsonProperty("trackingEnabledSubscriptionCount") long  trackingEnabledSubscriptionCount,
-            @JsonProperty("avroSubscriptionCount") long  avroSubscriptionCount) {
+            @JsonProperty("subscriptionCount") long subscriptionCount,
+            @JsonProperty("trackingEnabledSubscriptionCount") long trackingEnabledSubscriptionCount,
+            @JsonProperty("avroSubscriptionCount") long avroSubscriptionCount) {
         this.subscriptionCount = subscriptionCount;
         this.trackingEnabledSubscriptionCount = trackingEnabledSubscriptionCount;
         this.avroSubscriptionCount = avroSubscriptionCount;
@@ -49,15 +48,19 @@ public class SubscriptionStats {
 
     @Override
     public int hashCode() {
-        return Objects.hash(subscriptionCount, trackingEnabledSubscriptionCount, avroSubscriptionCount);
+        return Objects.hash(
+                subscriptionCount, trackingEnabledSubscriptionCount, avroSubscriptionCount);
     }
 
     @Override
     public String toString() {
         return "SubscriptionStats{"
-                + "subscriptionCount=" + subscriptionCount
-                + ", trackingEnabledSubscriptionCount=" + trackingEnabledSubscriptionCount
-                + ", avroSubscriptionCount=" + avroSubscriptionCount
+                + "subscriptionCount="
+                + subscriptionCount
+                + ", trackingEnabledSubscriptionCount="
+                + trackingEnabledSubscriptionCount
+                + ", avroSubscriptionCount="
+                + avroSubscriptionCount
                 + '}';
     }
 }

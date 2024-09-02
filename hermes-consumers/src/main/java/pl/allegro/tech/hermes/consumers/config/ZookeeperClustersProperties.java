@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+
 import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider;
 
 import java.util.ArrayList;
@@ -19,12 +20,19 @@ public class ZookeeperClustersProperties {
         this.clusters = clusters;
     }
 
-    public ZookeeperProperties toZookeeperProperties(DatacenterNameProvider datacenterNameProvider) {
-        return this.clusters
-                .stream()
-                .filter(cluster -> cluster.getDatacenter().equals(datacenterNameProvider.getDatacenterName()))
+    public ZookeeperProperties toZookeeperProperties(
+            DatacenterNameProvider datacenterNameProvider) {
+        return this.clusters.stream()
+                .filter(
+                        cluster ->
+                                cluster.getDatacenter()
+                                        .equals(datacenterNameProvider.getDatacenterName()))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "No properties for datacenter: " + datacenterNameProvider.getDatacenterName() + " defined."));
+                .orElseThrow(
+                        () ->
+                                new IllegalArgumentException(
+                                        "No properties for datacenter: "
+                                                + datacenterNameProvider.getDatacenterName()
+                                                + " defined."));
     }
 }

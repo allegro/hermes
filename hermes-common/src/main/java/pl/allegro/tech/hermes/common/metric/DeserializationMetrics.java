@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.common.metric;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
+
 import pl.allegro.tech.hermes.metrics.HermesCounter;
 import pl.allegro.tech.hermes.metrics.counters.HermesCounters;
 
@@ -17,28 +18,19 @@ public class DeserializationMetrics {
     }
 
     public HermesCounter errorsForHeaderSchemaVersion() {
-        return HermesCounters.from(
-                deserializationErrorCounter("headerSchemaVersion")
-        );
-
+        return HermesCounters.from(deserializationErrorCounter("headerSchemaVersion"));
     }
 
     public HermesCounter errorsForHeaderSchemaId() {
-        return HermesCounters.from(
-                deserializationErrorCounter("headerSchemaId")
-        );
+        return HermesCounters.from(deserializationErrorCounter("headerSchemaId"));
     }
 
     public HermesCounter errorsForSchemaIdAwarePayload() {
-        return HermesCounters.from(
-                deserializationErrorCounter("payloadWithSchemaId")
-        );
+        return HermesCounters.from(deserializationErrorCounter("payloadWithSchemaId"));
     }
 
     public HermesCounter errorsForSchemaVersionTruncation() {
-        return HermesCounters.from(
-                deserializationErrorCounter("schemaVersionTruncation")
-        );
+        return HermesCounters.from(deserializationErrorCounter("schemaVersionTruncation"));
     }
 
     private io.micrometer.core.instrument.Counter deserializationErrorCounter(String schemaSource) {
@@ -46,36 +38,27 @@ public class DeserializationMetrics {
     }
 
     public HermesCounter missingSchemaIdInPayload() {
-        return HermesCounters.from(
-                meterRegistry.counter(BASE_PATH +  ".missing_schemaIdInPayload")
-        );
+        return HermesCounters.from(meterRegistry.counter(BASE_PATH + ".missing_schemaIdInPayload"));
     }
 
     public HermesCounter usingHeaderSchemaVersion() {
-        return HermesCounters.from(
-                deserializationAttemptCounter("headerSchemaVersion")
-        );
+        return HermesCounters.from(deserializationAttemptCounter("headerSchemaVersion"));
     }
 
     public HermesCounter usingHeaderSchemaId() {
-        return HermesCounters.from(
-                deserializationAttemptCounter("headerSchemaId")
-        );
+        return HermesCounters.from(deserializationAttemptCounter("headerSchemaId"));
     }
 
     public HermesCounter usingSchemaIdAware() {
-        return HermesCounters.from(
-                deserializationAttemptCounter("payloadWithSchemaId")
-        );
+        return HermesCounters.from(deserializationAttemptCounter("payloadWithSchemaId"));
     }
 
     public HermesCounter usingSchemaVersionTruncation() {
-        return HermesCounters.from(
-                deserializationAttemptCounter("schemaVersionTruncation")
-        );
+        return HermesCounters.from(deserializationAttemptCounter("schemaVersionTruncation"));
     }
 
     private Counter deserializationAttemptCounter(String deserializationType) {
-        return meterRegistry.counter(BASE_PATH, Tags.of("deserialization_type", deserializationType));
+        return meterRegistry.counter(
+                BASE_PATH, Tags.of("deserialization_type", deserializationType));
     }
 }

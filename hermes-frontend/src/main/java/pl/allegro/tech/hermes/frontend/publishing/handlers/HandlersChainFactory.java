@@ -5,8 +5,10 @@ import io.undertow.security.handlers.AuthenticationCallHandler;
 import io.undertow.security.handlers.AuthenticationMechanismsHandler;
 import io.undertow.security.handlers.SecurityInitialHandler;
 import io.undertow.server.HttpHandler;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageEndProcessor;
@@ -33,11 +35,17 @@ public class HandlersChainFactory {
     private final Optional<AuthenticationConfiguration> authenticationConfiguration;
     private final HandlersChainParameters handlersChainParameters;
 
-    public HandlersChainFactory(TopicsCache topicsCache, MessageErrorProcessor messageErrorProcessor,
-                                MessageEndProcessor messageEndProcessor, MessageFactory messageFactory,
-                                BrokerMessageProducer brokerMessageProducer, MessagePreviewLog messagePreviewLog,
-                                ThroughputLimiter throughputLimiter, Optional<AuthenticationConfiguration> authenticationConfiguration,
-                                boolean messagePreviewEnabled, HandlersChainParameters handlersChainParameters) {
+    public HandlersChainFactory(
+            TopicsCache topicsCache,
+            MessageErrorProcessor messageErrorProcessor,
+            MessageEndProcessor messageEndProcessor,
+            MessageFactory messageFactory,
+            BrokerMessageProducer brokerMessageProducer,
+            MessagePreviewLog messagePreviewLog,
+            ThroughputLimiter throughputLimiter,
+            Optional<AuthenticationConfiguration> authenticationConfiguration,
+            boolean messagePreviewEnabled,
+            HandlersChainParameters handlersChainParameters) {
         this.topicsCache = topicsCache;
         this.messageErrorProcessor = messageErrorProcessor;
         this.messageEndProcessor = messageEndProcessor;
@@ -51,35 +59,49 @@ public class HandlersChainFactory {
     }
 
     public HttpHandler provide() {
-        HttpHandler publishing = new PublishingHandler(brokerMessageProducer, messageErrorProcessor,
-                messageEndProcessor);
-        HttpHandler messageCreateHandler = new MessageCreateHandler(publishing, messageFactory, messageErrorProcessor);
+        HttpHandler publishing =
+                new PublishingHandler(
+                        brokerMessageProducer, messageErrorProcessor, messageEndProcessor);
+        HttpHandler messageCreateHandler =
+                new MessageCreateHandler(publishing, messageFactory, messageErrorProcessor);
         HttpHandler timeoutHandler = new TimeoutHandler(messageEndProcessor, messageErrorProcessor);
-        HttpHandler handlerAfterRead = previewEnabled ? new PreviewHandler(messageCreateHandler, previewLog) : messageCreateHandler;
-        HttpHandler readHandler = new MessageReadHandler(
-                handlerAfterRead,
-                timeoutHandler,
-                messageErrorProcessor,
-                throughputLimiter,
-                handlersChainParameters.isForceTopicMaxMessageSize(),
-                handlersChainParameters.getIdleTimeout(),
-                handlersChainParameters.getLongIdleTimeout(),
-                handlersChainParameters.getMaxPublishRequestDuration());
-        TopicHandler topicHandler = new TopicHandler(readHandler, topicsCache, messageErrorProcessor);
+        HttpHandler handlerAfterRead =
+                previewEnabled
+                        ? new PreviewHandler(messageCreateHandler, previewLog)
+                        : messageCreateHandler;
+        HttpHandler readHandler =
+                new MessageReadHandler(
+                        handlerAfterRead,
+                        timeoutHandler,
+                        messageErrorProcessor,
+                        throughputLimiter,
+                        handlersChainParameters.isForceTopicMaxMessageSize(),
+                        handlersChainParameters.getIdleTimeout(),
+                        handlersChainParameters.getLongIdleTimeout(),
+                        handlersChainParameters.getMaxPublishRequestDuration());
+        TopicHandler topicHandler =
+                new TopicHandler(readHandler, topicsCache, messageErrorProcessor);
         boolean keepAliveHeaderEnabled = handlersChainParameters.isKeepAliveHeaderEnabled();
-        HttpHandler rootPublishingHandler = keepAliveHeaderEnabled ? withKeepAliveHeaderHandler(topicHandler) : topicHandler;
+        HttpHandler rootPublishingHandler =
+                keepAliveHeaderEnabled ? withKeepAliveHeaderHandler(topicHandler) : topicHandler;
 
         boolean authenticationEnabled = handlersChainParameters.isAuthenticationEnabled();
-        return authenticationEnabled ? withAuthenticationHandlersChain(rootPublishingHandler) : rootPublishingHandler;
+        return authenticationEnabled
+                ? withAuthenticationHandlersChain(rootPublishingHandler)
+                : rootPublishingHandler;
     }
 
     private HttpHandler withKeepAliveHeaderHandler(HttpHandler next) {
-        return new KeepAliveHeaderHandler(next, (int) handlersChainParameters.getKeepAliveHeaderTimeout().toSeconds());
+        return new KeepAliveHeaderHandler(
+                next, (int) handlersChainParameters.getKeepAliveHeaderTimeout().toSeconds());
     }
 
     private HttpHandler withAuthenticationHandlersChain(HttpHandler next) {
-        AuthenticationConfiguration authConfig = authenticationConfiguration
-                .orElseThrow(() -> new IllegalStateException("AuthenticationConfiguration was not provided"));
+        AuthenticationConfiguration authConfig =
+                authenticationConfiguration.orElseThrow(
+                        () ->
+                                new IllegalStateException(
+                                        "AuthenticationConfiguration was not provided"));
         try {
             return createAuthenticationHandlersChain(next, authConfig);
         } catch (Exception e) {
@@ -88,17 +110,22 @@ public class HandlersChainFactory {
         }
     }
 
-    private HttpHandler createAuthenticationHandlersChain(HttpHandler next, AuthenticationConfiguration authConfig) {
+    private HttpHandler createAuthenticationHandlersChain(
+            HttpHandler next, AuthenticationConfiguration authConfig) {
         HttpHandler authenticationCallHandler = new AuthenticationCallHandler(next);
-        HttpHandler constraintHandler = new AuthenticationPredicateAwareConstraintHandler(
-                authenticationCallHandler, authConfig.getIsAuthenticationRequiredPredicate());
+        HttpHandler constraintHandler =
+                new AuthenticationPredicateAwareConstraintHandler(
+                        authenticationCallHandler,
+                        authConfig.getIsAuthenticationRequiredPredicate());
 
-        HttpHandler mechanismsHandler = new AuthenticationMechanismsHandler(constraintHandler,
-                authConfig.getAuthMechanisms());
-        AuthenticationMode authenticationMode = AuthenticationMode.valueOf(
-                handlersChainParameters.getAuthenticationMode().toUpperCase()
-        );
+        HttpHandler mechanismsHandler =
+                new AuthenticationMechanismsHandler(
+                        constraintHandler, authConfig.getAuthMechanisms());
+        AuthenticationMode authenticationMode =
+                AuthenticationMode.valueOf(
+                        handlersChainParameters.getAuthenticationMode().toUpperCase());
 
-        return new SecurityInitialHandler(authenticationMode, authConfig.getIdentityManager(), mechanismsHandler);
+        return new SecurityInitialHandler(
+                authenticationMode, authConfig.getIdentityManager(), mechanismsHandler);
     }
 }

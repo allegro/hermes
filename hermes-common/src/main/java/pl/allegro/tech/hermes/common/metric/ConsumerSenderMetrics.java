@@ -1,15 +1,15 @@
 package pl.allegro.tech.hermes.common.metric;
 
-import io.micrometer.core.instrument.MeterRegistry;
-
-import java.util.function.ToDoubleFunction;
-
 import static pl.allegro.tech.hermes.common.metric.Gauges.CONSUMER_SENDER_HTTP_1_BATCH_CLIENT_ACTIVE_CONNECTIONS;
 import static pl.allegro.tech.hermes.common.metric.Gauges.CONSUMER_SENDER_HTTP_1_BATCH_CLIENT_IDLE_CONNECTIONS;
 import static pl.allegro.tech.hermes.common.metric.Gauges.CONSUMER_SENDER_HTTP_1_SERIAL_CLIENT_ACTIVE_CONNECTIONS;
 import static pl.allegro.tech.hermes.common.metric.Gauges.CONSUMER_SENDER_HTTP_1_SERIAL_CLIENT_IDLE_CONNECTIONS;
 import static pl.allegro.tech.hermes.common.metric.Gauges.CONSUMER_SENDER_HTTP_2_SERIAL_CLIENT_CONNECTIONS;
 import static pl.allegro.tech.hermes.common.metric.Gauges.CONSUMER_SENDER_HTTP_2_SERIAL_CLIENT_PENDING_CONNECTIONS;
+
+import io.micrometer.core.instrument.MeterRegistry;
+
+import java.util.function.ToDoubleFunction;
 
 public class ConsumerSenderMetrics {
 
@@ -38,7 +38,8 @@ public class ConsumerSenderMetrics {
     }
 
     public <T> void registerHttp1SerialClientActiveConnectionsGauge(T obj, ToDoubleFunction<T> f) {
-        gaugeRegistrar.registerGauge(CONSUMER_SENDER_HTTP_1_SERIAL_CLIENT_ACTIVE_CONNECTIONS, obj, f);
+        gaugeRegistrar.registerGauge(
+                CONSUMER_SENDER_HTTP_1_SERIAL_CLIENT_ACTIVE_CONNECTIONS, obj, f);
     }
 
     public <T> void registerHttp1SerialClientIdleConnectionsGauge(T obj, ToDoubleFunction<T> f) {
@@ -46,7 +47,8 @@ public class ConsumerSenderMetrics {
     }
 
     public <T> void registerHttp1BatchClientActiveConnectionsGauge(T obj, ToDoubleFunction<T> f) {
-        gaugeRegistrar.registerGauge(CONSUMER_SENDER_HTTP_1_BATCH_CLIENT_ACTIVE_CONNECTIONS, obj, f);
+        gaugeRegistrar.registerGauge(
+                CONSUMER_SENDER_HTTP_1_BATCH_CLIENT_ACTIVE_CONNECTIONS, obj, f);
     }
 
     public <T> void registerHttp1BatchClientIdleConnectionsGauge(T obj, ToDoubleFunction<T> f) {
@@ -58,6 +60,7 @@ public class ConsumerSenderMetrics {
     }
 
     public <T> void registerHttp2SerialClientPendingConnectionsGauge(T obj, ToDoubleFunction<T> f) {
-        gaugeRegistrar.registerGauge(CONSUMER_SENDER_HTTP_2_SERIAL_CLIENT_PENDING_CONNECTIONS, obj, f);
+        gaugeRegistrar.registerGauge(
+                CONSUMER_SENDER_HTTP_2_SERIAL_CLIENT_PENDING_CONNECTIONS, obj, f);
     }
 }

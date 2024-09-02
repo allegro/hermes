@@ -5,8 +5,8 @@ import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaProducerParameters;
 import java.time.Duration;
 
 /**
- * See {@link pl.allegro.tech.hermes.frontend.config.FailFastLocalKafkaProducerProperties}
- * for the explanation of default values used.
+ * See {@link pl.allegro.tech.hermes.frontend.config.FailFastLocalKafkaProducerProperties} for the
+ * explanation of default values used.
  */
 public class FailFastRemoteKafkaProducerProperties implements KafkaProducerParameters {
     private Duration maxBlock = Duration.ofMillis(250);

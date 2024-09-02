@@ -6,8 +6,10 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListenableFutureTask;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.api.Topic;
 
 import java.time.Duration;
@@ -17,27 +19,40 @@ import java.util.concurrent.TimeUnit;
 
 public class CachedSchemaVersionsRepository implements SchemaVersionsRepository {
 
-    private static final Logger logger = LoggerFactory.getLogger(CachedSchemaVersionsRepository.class);
+    private static final Logger logger =
+            LoggerFactory.getLogger(CachedSchemaVersionsRepository.class);
 
     private final RawSchemaClient rawSchemaClient;
     private final ExecutorService versionsReloader;
     private final LoadingCache<Topic, List<SchemaVersion>> versionsCache;
 
-    public CachedSchemaVersionsRepository(RawSchemaClient rawSchemaClient, ExecutorService versionsReloader,
-                                          Duration refreshAfterWrite, Duration expireAfterWrite) {
-        this(rawSchemaClient, versionsReloader, refreshAfterWrite, expireAfterWrite, Ticker.systemTicker());
+    public CachedSchemaVersionsRepository(
+            RawSchemaClient rawSchemaClient,
+            ExecutorService versionsReloader,
+            Duration refreshAfterWrite,
+            Duration expireAfterWrite) {
+        this(
+                rawSchemaClient,
+                versionsReloader,
+                refreshAfterWrite,
+                expireAfterWrite,
+                Ticker.systemTicker());
     }
 
-    CachedSchemaVersionsRepository(RawSchemaClient rawSchemaClient, ExecutorService versionsReloader,
-                                   Duration refreshAfterWrite, Duration expireAfterWrite, Ticker ticker) {
+    CachedSchemaVersionsRepository(
+            RawSchemaClient rawSchemaClient,
+            ExecutorService versionsReloader,
+            Duration refreshAfterWrite,
+            Duration expireAfterWrite,
+            Ticker ticker) {
         this.rawSchemaClient = rawSchemaClient;
         this.versionsReloader = versionsReloader;
-        this.versionsCache = CacheBuilder
-                .newBuilder()
-                .ticker(ticker)
-                .refreshAfterWrite(refreshAfterWrite.toMinutes(), TimeUnit.MINUTES)
-                .expireAfterWrite(expireAfterWrite.toMinutes(), TimeUnit.MINUTES)
-                .build(new SchemaVersionsLoader(rawSchemaClient, versionsReloader));
+        this.versionsCache =
+                CacheBuilder.newBuilder()
+                        .ticker(ticker)
+                        .refreshAfterWrite(refreshAfterWrite.toMinutes(), TimeUnit.MINUTES)
+                        .expireAfterWrite(expireAfterWrite.toMinutes(), TimeUnit.MINUTES)
+                        .build(new SchemaVersionsLoader(rawSchemaClient, versionsReloader));
     }
 
     @Override
@@ -52,7 +67,10 @@ public class CachedSchemaVersionsRepository implements SchemaVersionsRepository 
                 return SchemaVersionsResult.succeeded(versions);
             }
         } catch (Exception e) {
-            logger.error("Error while loading schema versions for topic {}", topic.getQualifiedName(), e);
+            logger.error(
+                    "Error while loading schema versions for topic {}",
+                    topic.getQualifiedName(),
+                    e);
             return SchemaVersionsResult.failed();
         }
     }
@@ -74,7 +92,8 @@ public class CachedSchemaVersionsRepository implements SchemaVersionsRepository 
         private final RawSchemaClient rawSchemaClient;
         private final ExecutorService versionsReloader;
 
-        public SchemaVersionsLoader(RawSchemaClient rawSchemaClient, ExecutorService versionsReloader) {
+        public SchemaVersionsLoader(
+                RawSchemaClient rawSchemaClient, ExecutorService versionsReloader) {
             this.rawSchemaClient = rawSchemaClient;
             this.versionsReloader = versionsReloader;
         }
@@ -86,21 +105,31 @@ public class CachedSchemaVersionsRepository implements SchemaVersionsRepository 
         }
 
         @Override
-        public ListenableFuture<List<SchemaVersion>> reload(Topic topic, List<SchemaVersion> oldVersions) {
-            ListenableFutureTask<List<SchemaVersion>> task = ListenableFutureTask.create(() -> {
-                logger.debug("Reloading schema versions for topic {}", topic.getQualifiedName());
-                try {
-                    return checkSchemaVersionsAreAvailable(topic, rawSchemaClient.getVersions(topic.getName()));
-                } catch (Exception e) {
-                    logger.error("Could not reload schema versions for topic {}, will use stale data", topic.getQualifiedName(), e);
-                    return oldVersions;
-                }
-            });
+        public ListenableFuture<List<SchemaVersion>> reload(
+                Topic topic, List<SchemaVersion> oldVersions) {
+            ListenableFutureTask<List<SchemaVersion>> task =
+                    ListenableFutureTask.create(
+                            () -> {
+                                logger.debug(
+                                        "Reloading schema versions for topic {}",
+                                        topic.getQualifiedName());
+                                try {
+                                    return checkSchemaVersionsAreAvailable(
+                                            topic, rawSchemaClient.getVersions(topic.getName()));
+                                } catch (Exception e) {
+                                    logger.error(
+                                            "Could not reload schema versions for topic {}, will use stale data",
+                                            topic.getQualifiedName(),
+                                            e);
+                                    return oldVersions;
+                                }
+                            });
             versionsReloader.execute(task);
             return task;
         }
 
-        private List<SchemaVersion> checkSchemaVersionsAreAvailable(Topic topic, List<SchemaVersion> versions) {
+        private List<SchemaVersion> checkSchemaVersionsAreAvailable(
+                Topic topic, List<SchemaVersion> versions) {
             if (versions.isEmpty()) {
                 throw new NoSchemaVersionsFoundException(topic);
             }

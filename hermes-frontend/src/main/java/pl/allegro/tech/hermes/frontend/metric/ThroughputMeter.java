@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.frontend.metric;
 
 import com.codahale.metrics.Meter;
+
 import pl.allegro.tech.hermes.metrics.HermesCounter;
 import pl.allegro.tech.hermes.metrics.HermesRateMeter;
 

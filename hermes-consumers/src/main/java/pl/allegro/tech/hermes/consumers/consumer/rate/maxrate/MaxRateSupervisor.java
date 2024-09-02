@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.rate.maxrate;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistry;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
@@ -18,42 +19,45 @@ import java.util.concurrent.TimeUnit;
 
 public class MaxRateSupervisor implements Runnable {
 
-    private final Set<NegotiatedMaxRateProvider> providers = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    private final Set<NegotiatedMaxRateProvider> providers =
+            Collections.newSetFromMap(new ConcurrentHashMap<>());
     private final Duration selfUpdateInterval;
     private final ScheduledExecutorService selfUpdateExecutor;
     private final MaxRateCalculatorJob calculatorJob;
     private final MaxRateRegistry maxRateRegistry;
     private ScheduledFuture<?> updateJob;
 
-    public MaxRateSupervisor(MaxRateParameters maxRateParameters,
-                             ClusterAssignmentCache clusterAssignmentCache,
-                             MaxRateRegistry maxRateRegistry,
-                             ConsumerNodesRegistry consumerNodesRegistry,
-                             SubscriptionsCache subscriptionsCache,
-                             MetricsFacade metrics,
-                             Clock clock) {
+    public MaxRateSupervisor(
+            MaxRateParameters maxRateParameters,
+            ClusterAssignmentCache clusterAssignmentCache,
+            MaxRateRegistry maxRateRegistry,
+            ConsumerNodesRegistry consumerNodesRegistry,
+            SubscriptionsCache subscriptionsCache,
+            MetricsFacade metrics,
+            Clock clock) {
         this.maxRateRegistry = maxRateRegistry;
         this.selfUpdateInterval = maxRateParameters.getUpdateInterval();
 
-        this.selfUpdateExecutor = Executors.newSingleThreadScheduledExecutor(
-                new ThreadFactoryBuilder().setNameFormat("max-rate-provider-%d").build()
-        );
+        this.selfUpdateExecutor =
+                Executors.newSingleThreadScheduledExecutor(
+                        new ThreadFactoryBuilder().setNameFormat("max-rate-provider-%d").build());
 
-        MaxRateBalancer balancer = new MaxRateBalancer(
-                maxRateParameters.getBusyTolerance(),
-                maxRateParameters.getMinMaxRate(),
-                maxRateParameters.getMinAllowedChangePercent());
+        MaxRateBalancer balancer =
+                new MaxRateBalancer(
+                        maxRateParameters.getBusyTolerance(),
+                        maxRateParameters.getMinMaxRate(),
+                        maxRateParameters.getMinAllowedChangePercent());
 
-        this.calculatorJob = new MaxRateCalculatorJob(
-                maxRateParameters.getBalanceInterval(),
-                clusterAssignmentCache,
-                consumerNodesRegistry,
-                balancer,
-                maxRateRegistry,
-                subscriptionsCache,
-                metrics,
-                clock
-        );
+        this.calculatorJob =
+                new MaxRateCalculatorJob(
+                        maxRateParameters.getBalanceInterval(),
+                        clusterAssignmentCache,
+                        consumerNodesRegistry,
+                        balancer,
+                        maxRateRegistry,
+                        subscriptionsCache,
+                        metrics,
+                        clock);
     }
 
     public void start() throws Exception {

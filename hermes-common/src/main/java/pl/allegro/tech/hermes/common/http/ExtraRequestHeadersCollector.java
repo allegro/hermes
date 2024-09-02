@@ -9,9 +9,9 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
 
-public class ExtraRequestHeadersCollector implements Collector<Map.Entry<String, String>, StringBuilder, String> {
-    private ExtraRequestHeadersCollector() {
-    }
+public class ExtraRequestHeadersCollector
+        implements Collector<Map.Entry<String, String>, StringBuilder, String> {
+    private ExtraRequestHeadersCollector() {}
 
     public static ExtraRequestHeadersCollector extraRequestHeadersCollector() {
         return new ExtraRequestHeadersCollector();

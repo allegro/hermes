@@ -25,8 +25,7 @@ public class Response {
         private int statusCode = HttpStatus.SC_CREATED;
         private Duration fixedDelay;
 
-        private Builder() {
-        }
+        private Builder() {}
 
         public static Builder aResponse() {
             return new Builder();

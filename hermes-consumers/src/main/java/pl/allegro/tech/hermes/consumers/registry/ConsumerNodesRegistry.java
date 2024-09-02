@@ -1,5 +1,10 @@
 package pl.allegro.tech.hermes.consumers.registry;
 
+import static org.apache.commons.lang3.StringUtils.substringAfterLast;
+import static org.apache.zookeeper.CreateMode.EPHEMERAL;
+
+import static java.util.stream.Collectors.toList;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.PathChildrenCache;
@@ -10,21 +15,17 @@ import org.apache.curator.framework.recipes.leader.LeaderLatchListener;
 import org.apache.zookeeper.KeeperException.NodeExistsException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 
 import java.io.IOException;
 import java.time.Clock;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import static java.util.stream.Collectors.toList;
-import static org.apache.commons.lang3.StringUtils.substringAfterLast;
-import static org.apache.zookeeper.CreateMode.EPHEMERAL;
 
 public class ConsumerNodesRegistry extends PathChildrenCache implements PathChildrenCacheListener {
 
@@ -44,15 +45,15 @@ public class ConsumerNodesRegistry extends PathChildrenCache implements PathChil
             ConsumerNodesRegistryPaths registryPaths,
             String consumerNodeId,
             long deathOfConsumerAfterSeconds,
-            Clock clock
-    ) {
+            Clock clock) {
         super(curatorClient, registryPaths.nodesPath(), true, false, executorService);
 
         this.curatorClient = curatorClient;
         this.registryPaths = registryPaths;
         this.consumerNodeId = consumerNodeId;
         this.clock = clock;
-        this.leaderLatch = new LeaderLatch(curatorClient, registryPaths.leaderPath(), consumerNodeId);
+        this.leaderLatch =
+                new LeaderLatch(curatorClient, registryPaths.leaderPath(), consumerNodeId);
         this.deathOfConsumerAfterMillis = TimeUnit.SECONDS.toMillis(deathOfConsumerAfterSeconds);
     }
 
@@ -85,7 +86,8 @@ public class ConsumerNodesRegistry extends PathChildrenCache implements PathChil
 
     public boolean isRegistered(String consumerNodeId) {
         try {
-            return curatorClient.checkExists().forPath(registryPaths.nodePath(consumerNodeId)) != null;
+            return curatorClient.checkExists().forPath(registryPaths.nodePath(consumerNodeId))
+                    != null;
         } catch (Exception e) {
             throw new InternalProcessingException(e);
         }
@@ -104,11 +106,10 @@ public class ConsumerNodesRegistry extends PathChildrenCache implements PathChil
 
         long currentTime = clock.millis();
         List<String> currentNodes = readCurrentNodes();
-        List<String> validNodes = currentNodes.stream()
-                .filter(StringUtils::isNotBlank)
-                .toList();
+        List<String> validNodes = currentNodes.stream().filter(StringUtils::isNotBlank).toList();
         if (currentNodes.size() != validNodes.size()) {
-            logger.warn("Found {} invalid consumer nodes.", currentNodes.size() - validNodes.size());
+            logger.warn(
+                    "Found {} invalid consumer nodes.", currentNodes.size() - validNodes.size());
         }
         validNodes.forEach(node -> consumersLastSeen.put(node, currentTime));
 
@@ -133,12 +134,16 @@ public class ConsumerNodesRegistry extends PathChildrenCache implements PathChil
         try {
             String nodePath = registryPaths.nodePath(consumerNodeId);
             if (curatorClient.checkExists().forPath(nodePath) == null) {
-                curatorClient.create().creatingParentsIfNeeded()
-                        .withMode(EPHEMERAL).forPath(nodePath);
+                curatorClient
+                        .create()
+                        .creatingParentsIfNeeded()
+                        .withMode(EPHEMERAL)
+                        .forPath(nodePath);
                 logger.info("Registered in consumer nodes registry as {}", consumerNodeId);
             }
         } catch (NodeExistsException e) {
-            // Ignore as it is a race condition between threads trying to register the consumer node.
+            // Ignore as it is a race condition between threads trying to register the consumer
+            // node.
         } catch (Exception e) {
             throw new InternalProcessingException(e);
         }
@@ -148,10 +153,11 @@ public class ConsumerNodesRegistry extends PathChildrenCache implements PathChil
     private List<String> findDeadConsumers(long currentTime) {
         long tooOld = currentTime - deathOfConsumerAfterMillis;
         return consumersLastSeen.entrySet().stream()
-                .filter(entry -> {
-                    long lastSeen = entry.getValue();
-                    return lastSeen < tooOld;
-                })
+                .filter(
+                        entry -> {
+                            long lastSeen = entry.getValue();
+                            return lastSeen < tooOld;
+                        })
                 .map(Map.Entry::getKey)
                 .collect(toList());
     }

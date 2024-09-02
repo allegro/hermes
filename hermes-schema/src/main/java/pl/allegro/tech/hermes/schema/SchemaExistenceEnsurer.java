@@ -1,9 +1,8 @@
 package pl.allegro.tech.hermes.schema;
 
-import pl.allegro.tech.hermes.api.Topic;
-
 import static java.lang.String.format;
 
+import pl.allegro.tech.hermes.api.Topic;
 
 public class SchemaExistenceEnsurer {
     private final SchemaRepository schemaRepository;
@@ -25,8 +24,12 @@ public class SchemaExistenceEnsurer {
             schemaRepository.getAvroSchema(topic, version);
         } catch (SchemaException ex) {
             pullVersionsOnline(topic);
-            throw new SchemaNotLoaded(format("Could not find schema version [%s] provided in header for topic [%s]."
-                    + " Trying pulling online...", version, topic), ex);
+            throw new SchemaNotLoaded(
+                    format(
+                            "Could not find schema version [%s] provided in header for topic [%s]."
+                                    + " Trying pulling online...",
+                            version, topic),
+                    ex);
         }
     }
 
@@ -34,8 +37,12 @@ public class SchemaExistenceEnsurer {
         try {
             schemaRepository.getAvroSchema(topic, id);
         } catch (SchemaException ex) {
-            throw new SchemaNotLoaded(format("Could not find schema id [%s] provided in header for topic [%s]."
-                    + " Trying pulling online...", id, topic), ex);
+            throw new SchemaNotLoaded(
+                    format(
+                            "Could not find schema id [%s] provided in header for topic [%s]."
+                                    + " Trying pulling online...",
+                            id, topic),
+                    ex);
         }
     }
 

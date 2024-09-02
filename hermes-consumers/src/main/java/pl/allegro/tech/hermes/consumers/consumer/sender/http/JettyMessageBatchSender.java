@@ -1,10 +1,20 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 
+import static jakarta.ws.rs.core.HttpHeaders.CONTENT_TYPE;
+
+import static pl.allegro.tech.hermes.api.AvroMediaType.AVRO_BINARY;
+import static pl.allegro.tech.hermes.api.ContentType.AVRO;
+import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.BATCH_ID;
+import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.RETRY_COUNT;
+import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.SUBSCRIPTION_NAME;
+import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.TOPIC_NAME;
+
 import org.apache.hc.core5.http.ContentType;
 import org.eclipse.jetty.client.ContentResponse;
 import org.eclipse.jetty.client.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.EndpointAddressResolverMetadata;
 import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatch;
@@ -21,14 +31,6 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
-import static jakarta.ws.rs.core.HttpHeaders.CONTENT_TYPE;
-import static pl.allegro.tech.hermes.api.AvroMediaType.AVRO_BINARY;
-import static pl.allegro.tech.hermes.api.ContentType.AVRO;
-import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.BATCH_ID;
-import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.RETRY_COUNT;
-import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.SUBSCRIPTION_NAME;
-import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.TOPIC_NAME;
-
 public class JettyMessageBatchSender implements MessageBatchSender {
 
     private static final Logger logger = LoggerFactory.getLogger(JettyMessageBatchSender.class);
@@ -38,10 +40,11 @@ public class JettyMessageBatchSender implements MessageBatchSender {
     private final SendingResultHandlers resultHandlers;
     private final BatchHttpHeadersProvider headersProvider;
 
-    public JettyMessageBatchSender(BatchHttpRequestFactory requestFactory,
-                                   EndpointAddressResolver resolver,
-                                   SendingResultHandlers resultHandlers,
-                                   BatchHttpHeadersProvider headersProvider) {
+    public JettyMessageBatchSender(
+            BatchHttpRequestFactory requestFactory,
+            EndpointAddressResolver resolver,
+            SendingResultHandlers resultHandlers,
+            BatchHttpHeadersProvider headersProvider) {
         this.requestFactory = requestFactory;
         this.resolver = resolver;
         this.resultHandlers = resultHandlers;
@@ -49,10 +52,11 @@ public class JettyMessageBatchSender implements MessageBatchSender {
     }
 
     @Override
-    public MessageSendingResult send(MessageBatch batch,
-                                     EndpointAddress address,
-                                     EndpointAddressResolverMetadata metadata,
-                                     int requestTimeout) {
+    public MessageSendingResult send(
+            MessageBatch batch,
+            EndpointAddress address,
+            EndpointAddressResolverMetadata metadata,
+            int requestTimeout) {
         try {
             HttpRequestHeaders headers = headersProvider.getHeaders(address);
             return send(batch, resolver.resolve(address, batch, metadata), requestTimeout, headers);
@@ -61,7 +65,8 @@ public class JettyMessageBatchSender implements MessageBatchSender {
         }
     }
 
-    private MessageSendingResult send(MessageBatch batch, URI address, int requestTimeout, HttpRequestHeaders baseHeaders) {
+    private MessageSendingResult send(
+            MessageBatch batch, URI address, int requestTimeout, HttpRequestHeaders baseHeaders) {
         HttpRequestHeaders headers = buildHeaders(batch, baseHeaders);
         Request request = requestFactory.buildRequest(batch, address, headers, requestTimeout);
         try {
@@ -89,11 +94,14 @@ public class JettyMessageBatchSender implements MessageBatchSender {
             headers.put(SUBSCRIPTION_NAME.getName(), batch.getSubscription().getName());
         }
 
-        batch.getAdditionalHeaders().forEach(header -> headers.put(header.getName(), header.getValue()));
+        batch.getAdditionalHeaders()
+                .forEach(header -> headers.put(header.getName(), header.getValue()));
         return new HttpRequestHeaders(headers);
     }
 
     private ContentType getMediaType(pl.allegro.tech.hermes.api.ContentType contentType) {
-        return AVRO.equals(contentType) ? ContentType.create(AVRO_BINARY) : ContentType.APPLICATION_JSON;
+        return AVRO.equals(contentType)
+                ? ContentType.create(AVRO_BINARY)
+                : ContentType.APPLICATION_JSON;
     }
 }

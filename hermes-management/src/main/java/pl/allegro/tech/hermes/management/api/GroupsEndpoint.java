@@ -1,7 +1,10 @@
 package pl.allegro.tech.hermes.management.api;
 
+import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
@@ -15,8 +18,10 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.management.api.auth.HermesSecurityAwareRequestUser;
@@ -26,8 +31,6 @@ import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
 import pl.allegro.tech.hermes.management.domain.group.GroupService;
 
 import java.util.List;
-
-import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 
 @Component
 @Path("/groups")
@@ -41,9 +44,10 @@ public class GroupsEndpoint {
     private final ManagementRights managementRights;
 
     @Autowired
-    public GroupsEndpoint(GroupService groupService,
-                          ApiPreconditions preconditions,
-                          ManagementRights managementRights) {
+    public GroupsEndpoint(
+            GroupService groupService,
+            ApiPreconditions preconditions,
+            ManagementRights managementRights) {
         this.groupService = groupService;
         this.preconditions = preconditions;
         this.managementRights = managementRights;
@@ -74,8 +78,7 @@ public class GroupsEndpoint {
         groupService.createGroup(
                 group,
                 new HermesSecurityAwareRequestUser(requestContext),
-                managementRights.getGroupCreatorRights(requestContext)
-        );
+                managementRights.getGroupCreatorRights(requestContext));
         return Response.status(Response.Status.CREATED).build();
     }
 
@@ -85,10 +88,12 @@ public class GroupsEndpoint {
     @Path("/{groupName}")
     @ApiOperation(value = "Update group", response = String.class, httpMethod = HttpMethod.PUT)
     @RolesAllowed(Roles.ADMIN)
-    public Response update(@PathParam("groupName") String groupName,
-                           PatchData patch,
-                           @Context ContainerRequestContext requestContext) {
-        groupService.updateGroup(groupName, patch, new HermesSecurityAwareRequestUser(requestContext));
+    public Response update(
+            @PathParam("groupName") String groupName,
+            PatchData patch,
+            @Context ContainerRequestContext requestContext) {
+        groupService.updateGroup(
+                groupName, patch, new HermesSecurityAwareRequestUser(requestContext));
         return responseStatus(Response.Status.NO_CONTENT);
     }
 
@@ -96,7 +101,9 @@ public class GroupsEndpoint {
     @Path("/{groupName}")
     @ApiOperation(value = "Remove group", response = String.class, httpMethod = HttpMethod.DELETE)
     @RolesAllowed(Roles.ANY)
-    public Response delete(@PathParam("groupName") String groupName, @Context ContainerRequestContext requestContext) {
+    public Response delete(
+            @PathParam("groupName") String groupName,
+            @Context ContainerRequestContext requestContext) {
         groupService.removeGroup(groupName, new HermesSecurityAwareRequestUser(requestContext));
         return responseStatus(Response.Status.OK);
     }

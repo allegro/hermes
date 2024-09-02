@@ -6,5 +6,4 @@ import pl.allegro.tech.hermes.api.RawSchema;
 public interface SchemaCompiler<T> {
 
     T compile(RawSchema rawSchema);
-
 }

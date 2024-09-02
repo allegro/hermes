@@ -1,7 +1,12 @@
 package pl.allegro.tech.hermes.management.domain.subscription.health;
 
+import static pl.allegro.tech.hermes.api.Subscription.State.SUSPENDED;
+
+import static java.util.stream.Collectors.toSet;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionHealth;
 import pl.allegro.tech.hermes.api.SubscriptionHealthProblem;
@@ -10,9 +15,6 @@ import pl.allegro.tech.hermes.api.TopicMetrics;
 
 import java.util.Optional;
 import java.util.Set;
-
-import static java.util.stream.Collectors.toSet;
-import static pl.allegro.tech.hermes.api.Subscription.State.SUSPENDED;
 
 @Component
 public class SubscriptionHealthChecker {
@@ -23,7 +25,10 @@ public class SubscriptionHealthChecker {
         this.problemIndicators = problemIndicators;
     }
 
-    public SubscriptionHealth checkHealth(Subscription subscription, TopicMetrics topicMetrics, SubscriptionMetrics subscriptionMetrics) {
+    public SubscriptionHealth checkHealth(
+            Subscription subscription,
+            TopicMetrics topicMetrics,
+            SubscriptionMetrics subscriptionMetrics) {
         if (isSuspended(subscription)) {
             return SubscriptionHealth.HEALTHY;
         } else {
@@ -35,18 +40,23 @@ public class SubscriptionHealthChecker {
         return subscription.getState() == SUSPENDED;
     }
 
-    private SubscriptionHealth getActiveSubscriptionHealth(Subscription subscription,
-                                                           TopicMetrics topicMetrics,
-                                                           SubscriptionMetrics subscriptionMetrics) {
-        return SubscriptionHealthContext.createIfAllMetricsExist(subscription, topicMetrics, subscriptionMetrics)
-                .map(healthContext -> {
-                    Set<SubscriptionHealthProblem> healthProblems = getHealthProblems(healthContext);
-                    return SubscriptionHealth.of(healthProblems);
-                })
+    private SubscriptionHealth getActiveSubscriptionHealth(
+            Subscription subscription,
+            TopicMetrics topicMetrics,
+            SubscriptionMetrics subscriptionMetrics) {
+        return SubscriptionHealthContext.createIfAllMetricsExist(
+                        subscription, topicMetrics, subscriptionMetrics)
+                .map(
+                        healthContext -> {
+                            Set<SubscriptionHealthProblem> healthProblems =
+                                    getHealthProblems(healthContext);
+                            return SubscriptionHealth.of(healthProblems);
+                        })
                 .orElse(SubscriptionHealth.NO_DATA);
     }
 
-    private Set<SubscriptionHealthProblem> getHealthProblems(SubscriptionHealthContext healthContext) {
+    private Set<SubscriptionHealthProblem> getHealthProblems(
+            SubscriptionHealthContext healthContext) {
         return problemIndicators.stream()
                 .map(indicator -> indicator.getProblem(healthContext))
                 .filter(Optional::isPresent)

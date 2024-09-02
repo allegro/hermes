@@ -1,14 +1,17 @@
 package pl.allegro.tech.hermes.frontend.config;
 
 import com.google.common.io.Files;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
+
 import pl.allegro.tech.hermes.frontend.buffer.BackupMessagesLoaderParameters;
 import pl.allegro.tech.hermes.frontend.buffer.PersistentBufferExtensionParameters;
 
 import java.time.Duration;
 
 @ConfigurationProperties(prefix = "frontend.messages.local.storage")
-public class LocalMessageStorageProperties implements BackupMessagesLoaderParameters, PersistentBufferExtensionParameters {
+public class LocalMessageStorageProperties
+        implements BackupMessagesLoaderParameters, PersistentBufferExtensionParameters {
 
     private long bufferedSizeBytes = 256 * 1024 * 1024L;
 

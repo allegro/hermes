@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.Optional;
 
 public enum Operator {
-
     EQ("eq"),
     NE("ne"),
     LIKE("like"),
@@ -15,7 +14,6 @@ public enum Operator {
     GREATER_THAN("gt"),
     LOWER_THAN("lt");
 
-
     private String name;
 
     Operator(String name) {
@@ -25,8 +23,10 @@ public enum Operator {
     public static Operator from(String name) {
         return fromOptional(name)
                 .orElseThrow(
-                        () -> new IllegalArgumentException(String.format("No operator matching '%s' could be found", name))
-                );
+                        () ->
+                                new IllegalArgumentException(
+                                        String.format(
+                                                "No operator matching '%s' could be found", name)));
     }
 
     public static boolean isValid(String name) {

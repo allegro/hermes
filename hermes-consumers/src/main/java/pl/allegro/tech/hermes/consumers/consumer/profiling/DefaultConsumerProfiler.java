@@ -3,13 +3,12 @@ package pl.allegro.tech.hermes.consumers.consumer.profiling;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StopWatch;
+
 import pl.allegro.tech.hermes.api.SubscriptionName;
 
 import java.util.concurrent.TimeUnit;
 
-/**
- * This class is designed to be fully thread safe.
- */
+/** This class is designed to be fully thread safe. */
 public class DefaultConsumerProfiler implements ConsumerProfiler {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultConsumerProfiler.class);
@@ -65,13 +64,21 @@ public class DefaultConsumerProfiler implements ConsumerProfiler {
 
     private void logMeasurements(ConsumerRun consumerRun) {
         if (partialMeasurements != null) {
-            logger.info("Consumer profiler measurements for subscription {} and {} run: \n {} partialMeasurements: {} retryDelayMillis {}",
-                    subscriptionName, consumerRun, stopWatch.prettyPrint(TimeUnit.MILLISECONDS),
-                    partialMeasurements.prettyPrint(TimeUnit.MILLISECONDS), retryDelayMillis);
+            logger.info(
+                    "Consumer profiler measurements for subscription {} and {} run: \n {} partialMeasurements: {} retryDelayMillis {}",
+                    subscriptionName,
+                    consumerRun,
+                    stopWatch.prettyPrint(TimeUnit.MILLISECONDS),
+                    partialMeasurements.prettyPrint(TimeUnit.MILLISECONDS),
+                    retryDelayMillis);
         } else {
-            logger.info("Consumer profiler measurements for subscription {} and {} run: \n {} partialMeasurements: {}, retryDelayMillis {}",
-                    subscriptionName, consumerRun, stopWatch.prettyPrint(TimeUnit.MILLISECONDS),
-                    null, retryDelayMillis);
+            logger.info(
+                    "Consumer profiler measurements for subscription {} and {} run: \n {} partialMeasurements: {}, retryDelayMillis {}",
+                    subscriptionName,
+                    consumerRun,
+                    stopWatch.prettyPrint(TimeUnit.MILLISECONDS),
+                    null,
+                    retryDelayMillis);
         }
     }
 }

@@ -12,7 +12,8 @@ public class BasicAuthProvider implements HttpAuthorizationProvider {
 
     public BasicAuthProvider(EndpointAddress endpoint) {
         String credentials = endpoint.getUsername() + ":" + endpoint.getPassword();
-        String encodedCredentials = Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
+        String encodedCredentials =
+                Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
         this.token = "Basic " + encodedCredentials;
     }
 

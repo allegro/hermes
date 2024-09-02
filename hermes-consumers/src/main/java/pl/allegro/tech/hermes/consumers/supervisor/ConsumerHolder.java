@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.consumers.supervisor;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Table;
+
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
 

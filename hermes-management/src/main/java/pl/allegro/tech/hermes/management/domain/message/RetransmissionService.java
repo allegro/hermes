@@ -7,8 +7,12 @@ import java.util.List;
 
 public interface RetransmissionService {
 
-    List<PartitionOffset> indicateOffsetChange(Topic topic, String subscription, String brokersClusterName,
-                                                     long timestamp, boolean dryRun);
+    List<PartitionOffset> indicateOffsetChange(
+            Topic topic,
+            String subscription,
+            String brokersClusterName,
+            long timestamp,
+            boolean dryRun);
 
     boolean areOffsetsMoved(Topic topic, String subscriptionName, String brokersClusterName);
 }

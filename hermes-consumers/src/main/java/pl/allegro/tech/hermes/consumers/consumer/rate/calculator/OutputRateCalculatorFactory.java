@@ -11,16 +11,17 @@ public class OutputRateCalculatorFactory {
     private final RateCalculatorParameters rateCalculatorParameters;
     private final MaxRateProviderFactory maxRateProviderFactory;
 
-    public OutputRateCalculatorFactory(RateCalculatorParameters rateCalculatorParameters,
-                                       MaxRateProviderFactory maxRateProviderFactory) {
+    public OutputRateCalculatorFactory(
+            RateCalculatorParameters rateCalculatorParameters,
+            MaxRateProviderFactory maxRateProviderFactory) {
         this.rateCalculatorParameters = rateCalculatorParameters;
         this.maxRateProviderFactory = maxRateProviderFactory;
     }
 
-    public OutputRateCalculator createCalculator(Subscription subscription,
-                                                 SendCounters sendCounters,
-                                                 MetricsFacade metrics) {
-        MaxRateProvider maxRateProvider = maxRateProviderFactory.create(subscription, sendCounters, metrics);
+    public OutputRateCalculator createCalculator(
+            Subscription subscription, SendCounters sendCounters, MetricsFacade metrics) {
+        MaxRateProvider maxRateProvider =
+                maxRateProviderFactory.create(subscription, sendCounters, metrics);
         return new OutputRateCalculator(rateCalculatorParameters, maxRateProvider);
     }
 }

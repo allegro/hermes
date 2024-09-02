@@ -10,7 +10,6 @@ public class DefaultExecutorServiceFactory implements ExecutorServiceFactory {
     @Override
     public ScheduledExecutorService createSingleThreadScheduledExecutor(String nameFormat) {
         return Executors.newSingleThreadScheduledExecutor(
-                new ThreadFactoryBuilder().setNameFormat(nameFormat).build()
-        );
+                new ThreadFactoryBuilder().setNameFormat(nameFormat).build());
     }
 }

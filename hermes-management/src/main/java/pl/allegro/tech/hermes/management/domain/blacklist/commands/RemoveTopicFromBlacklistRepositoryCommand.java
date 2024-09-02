@@ -4,7 +4,8 @@ import pl.allegro.tech.hermes.management.domain.blacklist.TopicBlacklistReposito
 import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryCommand;
 
-public class RemoveTopicFromBlacklistRepositoryCommand extends RepositoryCommand<TopicBlacklistRepository> {
+public class RemoveTopicFromBlacklistRepositoryCommand
+        extends RepositoryCommand<TopicBlacklistRepository> {
     private final String qualifiedTopicName;
     private boolean exists = false;
 
@@ -23,7 +24,8 @@ public class RemoveTopicFromBlacklistRepositoryCommand extends RepositoryCommand
     }
 
     @Override
-    public void rollback(DatacenterBoundRepositoryHolder<TopicBlacklistRepository> holder, Exception exception) {
+    public void rollback(
+            DatacenterBoundRepositoryHolder<TopicBlacklistRepository> holder, Exception exception) {
         if (exists) {
             holder.getRepository().add(qualifiedTopicName);
         }

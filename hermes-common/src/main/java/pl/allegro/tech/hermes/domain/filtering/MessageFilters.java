@@ -1,21 +1,24 @@
 package pl.allegro.tech.hermes.domain.filtering;
 
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toMap;
+
 import pl.allegro.tech.hermes.api.MessageFilterSpecification;
 
 import java.util.List;
 import java.util.Map;
 
-import static java.util.function.Function.identity;
-import static java.util.stream.Collectors.toMap;
-
 public class MessageFilters implements MessageFilterSource {
     private final Map<String, SubscriptionMessageFilterCompiler> filters;
     private final List<MessageFilter> globalFilters;
 
-    public MessageFilters(List<MessageFilter> globalFilters,
-                          List<SubscriptionMessageFilterCompiler> subscriptionFilterCompilers) {
+    public MessageFilters(
+            List<MessageFilter> globalFilters,
+            List<SubscriptionMessageFilterCompiler> subscriptionFilterCompilers) {
         this.globalFilters = globalFilters;
-        this.filters = subscriptionFilterCompilers.stream().collect(toMap(SubscriptionMessageFilterCompiler::getType, identity()));
+        this.filters =
+                subscriptionFilterCompilers.stream()
+                        .collect(toMap(SubscriptionMessageFilterCompiler::getType, identity()));
     }
 
     @Override

@@ -17,5 +17,4 @@ public abstract class ManagementException extends RuntimeException {
     }
 
     public abstract ErrorCode getCode();
-
 }

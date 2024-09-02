@@ -55,8 +55,7 @@ public class MetricLongValue {
             return false;
         }
         MetricLongValue that = (MetricLongValue) o;
-        return available == that.available
-                && value == that.value;
+        return available == that.available && value == that.value;
     }
 
     @Override

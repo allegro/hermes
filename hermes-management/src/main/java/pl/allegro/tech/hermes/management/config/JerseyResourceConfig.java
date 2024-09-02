@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.management.config;
 
 import jakarta.ws.rs.ApplicationPath;
+
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
@@ -22,7 +23,9 @@ public class JerseyResourceConfig extends ResourceConfig {
             logger.info("Scanning Jersey resources in: {}", packageToScan);
         }
         property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
-        property(ServletProperties.FILTER_STATIC_CONTENT_REGEX, jerseyProperties.getFilterStaticContentRegexp());
+        property(
+                ServletProperties.FILTER_STATIC_CONTENT_REGEX,
+                jerseyProperties.getFilterStaticContentRegexp());
         register(RolesAllowedDynamicFeature.class);
         property(FreemarkerMvcFeature.TEMPLATE_BASE_PATH, "static");
         register(FreemarkerMvcFeature.class);

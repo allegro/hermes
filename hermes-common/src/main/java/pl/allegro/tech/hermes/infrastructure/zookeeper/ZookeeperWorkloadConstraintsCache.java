@@ -1,12 +1,14 @@
 package pl.allegro.tech.hermes.infrastructure.zookeeper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.PathChildrenCache;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.api.Constraints;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
@@ -16,16 +18,20 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-class ZookeeperWorkloadConstraintsCache extends PathChildrenCache implements PathChildrenCacheListener {
+class ZookeeperWorkloadConstraintsCache extends PathChildrenCache
+        implements PathChildrenCacheListener {
 
-    private static final Logger logger = LoggerFactory.getLogger(ZookeeperWorkloadConstraintsCache.class);
+    private static final Logger logger =
+            LoggerFactory.getLogger(ZookeeperWorkloadConstraintsCache.class);
 
     private final Map<TopicName, Constraints> topicConstraintsCache = new ConcurrentHashMap<>();
-    private final Map<SubscriptionName, Constraints> subscriptionConstraintsCache = new ConcurrentHashMap<>();
+    private final Map<SubscriptionName, Constraints> subscriptionConstraintsCache =
+            new ConcurrentHashMap<>();
     private final ObjectMapper objectMapper;
     private final ZookeeperPaths paths;
 
-    ZookeeperWorkloadConstraintsCache(CuratorFramework curatorFramework, ObjectMapper objectMapper, ZookeeperPaths paths) {
+    ZookeeperWorkloadConstraintsCache(
+            CuratorFramework curatorFramework, ObjectMapper objectMapper, ZookeeperPaths paths) {
         super(curatorFramework, paths.consumersWorkloadConstraintsPath(), true);
         this.objectMapper = objectMapper;
         this.paths = paths;
@@ -33,7 +39,8 @@ class ZookeeperWorkloadConstraintsCache extends PathChildrenCache implements Pat
     }
 
     ConsumersWorkloadConstraints getConsumersWorkloadConstraints() {
-        return new ConsumersWorkloadConstraints(topicConstraintsCache, subscriptionConstraintsCache);
+        return new ConsumersWorkloadConstraints(
+                topicConstraintsCache, subscriptionConstraintsCache);
     }
 
     @Override
@@ -60,11 +67,13 @@ class ZookeeperWorkloadConstraintsCache extends PathChildrenCache implements Pat
         }
         if (isSubscription(path)) {
             subscriptionConstraintsCache.put(
-                    SubscriptionName.fromString(paths.extractChildNode(path, paths.consumersWorkloadConstraintsPath())),
+                    SubscriptionName.fromString(
+                            paths.extractChildNode(path, paths.consumersWorkloadConstraintsPath())),
                     constraints.get());
         } else {
             topicConstraintsCache.put(
-                    TopicName.fromQualifiedName(paths.extractChildNode(path, paths.consumersWorkloadConstraintsPath())),
+                    TopicName.fromQualifiedName(
+                            paths.extractChildNode(path, paths.consumersWorkloadConstraintsPath())),
                     constraints.get());
         }
     }
@@ -81,10 +90,14 @@ class ZookeeperWorkloadConstraintsCache extends PathChildrenCache implements Pat
     private void removeFromCache(String path) {
         if (isSubscription(path)) {
             subscriptionConstraintsCache.remove(
-                    SubscriptionName.fromString(paths.extractChildNode(path, paths.consumersWorkloadConstraintsPath())));
+                    SubscriptionName.fromString(
+                            paths.extractChildNode(
+                                    path, paths.consumersWorkloadConstraintsPath())));
         } else {
             topicConstraintsCache.remove(
-                    TopicName.fromQualifiedName(paths.extractChildNode(path, paths.consumersWorkloadConstraintsPath())));
+                    TopicName.fromQualifiedName(
+                            paths.extractChildNode(
+                                    path, paths.consumersWorkloadConstraintsPath())));
         }
     }
 

@@ -17,16 +17,16 @@ public class SubscriptionPartitionOffset {
         this.offset = offset;
     }
 
-    public static SubscriptionPartitionOffset subscriptionPartitionOffset(SubscriptionName subscriptionName,
-                                                                          PartitionOffset partitionOffset,
-                                                                          long partitionAssignmentTerm) {
+    public static SubscriptionPartitionOffset subscriptionPartitionOffset(
+            SubscriptionName subscriptionName,
+            PartitionOffset partitionOffset,
+            long partitionAssignmentTerm) {
         return new SubscriptionPartitionOffset(
                 new SubscriptionPartition(
                         partitionOffset.getTopic(),
                         subscriptionName,
                         partitionOffset.getPartition(),
-                        partitionAssignmentTerm
-                ),
+                        partitionAssignmentTerm),
                 partitionOffset.getOffset());
     }
 
@@ -47,7 +47,10 @@ public class SubscriptionPartitionOffset {
     }
 
     public PartitionOffset getPartitionOffset() {
-        return new PartitionOffset(subscriptionPartition.getKafkaTopicName(), offset, subscriptionPartition.getPartition());
+        return new PartitionOffset(
+                subscriptionPartition.getKafkaTopicName(),
+                offset,
+                subscriptionPartition.getPartition());
     }
 
     public long getPartitionAssignmentTerm() {
@@ -61,8 +64,10 @@ public class SubscriptionPartitionOffset {
     @Override
     public String toString() {
         return "SubscriptionPartitionOffset{"
-                + "subscriptionPartition=" + subscriptionPartition
-                + ", offset=" + offset
+                + "subscriptionPartition="
+                + subscriptionPartition
+                + ", offset="
+                + offset
                 + '}';
     }
 

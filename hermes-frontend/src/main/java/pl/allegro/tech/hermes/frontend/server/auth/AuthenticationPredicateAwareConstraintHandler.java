@@ -10,7 +10,8 @@ public class AuthenticationPredicateAwareConstraintHandler extends Authenticatio
 
     private final Predicate<HttpServerExchange> predicate;
 
-    public AuthenticationPredicateAwareConstraintHandler(HttpHandler next, Predicate<HttpServerExchange> predicate) {
+    public AuthenticationPredicateAwareConstraintHandler(
+            HttpHandler next, Predicate<HttpServerExchange> predicate) {
         super(next);
         this.predicate = predicate;
     }

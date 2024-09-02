@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.frontend.metric;
 
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
+
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 
@@ -26,7 +27,6 @@ public class ThroughputRegistry {
                 metricsFacade.topics().topicThroughputBytes(topic),
                 metricsFacade.topics().topicGlobalThroughputBytes(),
                 metricRegistry.meter(topic.qualifiedName() + "Throughput"),
-                globalThroughputMeter
-        );
+                globalThroughputMeter);
     }
 }

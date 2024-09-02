@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.uri;
 
 import com.google.common.base.Splitter;
+
 import org.apache.commons.lang3.StringUtils;
 
 import java.net.URI;
@@ -9,15 +10,16 @@ import java.util.Optional;
 
 public final class UriUtils {
 
-    private UriUtils() {
-    }
+    private UriUtils() {}
 
     public static String extractHostFromUri(URI uri) {
         // we are handling here bug from jdk http://bugs.java.com/view_bug.do?bug_id=6587184
-        return Optional
-            .ofNullable(uri.getHost())
-            .orElseThrow(() -> new InvalidHostException("Host name contains invalid chars. Underscore is one of them."))
-            .replace("/", "");
+        return Optional.ofNullable(uri.getHost())
+                .orElseThrow(
+                        () ->
+                                new InvalidHostException(
+                                        "Host name contains invalid chars. Underscore is one of them."))
+                .replace("/", "");
     }
 
     public static Integer extractPortFromUri(URI uri) {
@@ -64,14 +66,13 @@ public final class UriUtils {
     }
 
     public static URI appendContext(URI uri, String context) {
-        return URI.create(StringUtils.removeEnd(uri.toString(), "/")
-                + "/"
-                + StringUtils.removeStart(context, "/")
-        );
+        return URI.create(
+                StringUtils.removeEnd(uri.toString(), "/")
+                        + "/"
+                        + StringUtils.removeStart(context, "/"));
     }
 
     private static List<String> splitUserInfo(URI uri) {
         return Splitter.on(":").splitToList(uri.getRawUserInfo());
     }
-
 }

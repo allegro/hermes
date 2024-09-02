@@ -19,7 +19,8 @@ public interface SubscriptionRepository {
 
     void updateSubscription(Subscription modifiedSubscription);
 
-    void updateSubscriptionState(TopicName topicName, String subscriptionName, Subscription.State state);
+    void updateSubscriptionState(
+            TopicName topicName, String subscriptionName, Subscription.State state);
 
     Subscription getSubscriptionDetails(TopicName topicName, String subscriptionName);
 

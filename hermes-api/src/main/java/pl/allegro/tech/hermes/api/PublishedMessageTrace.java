@@ -21,15 +21,16 @@ public class PublishedMessageTrace implements MessageTrace {
     private final String storageDatacenter;
 
     @JsonCreator
-    public PublishedMessageTrace(@JsonProperty("messageId") String messageId,
-                                 @JsonProperty("timestamp") Long timestamp,
-                                 @JsonProperty("topicName") String topicName,
-                                 @JsonProperty("status") PublishedMessageTraceStatus status,
-                                 @JsonProperty("reason") String reason,
-                                 @JsonProperty("message") String message,
-                                 @JsonProperty("cluster") String cluster,
-                                 @JsonProperty("extraRequestHeaders") String extraRequestHeaders,
-                                 @JsonProperty("storageDc") String storageDatacenter) {
+    public PublishedMessageTrace(
+            @JsonProperty("messageId") String messageId,
+            @JsonProperty("timestamp") Long timestamp,
+            @JsonProperty("topicName") String topicName,
+            @JsonProperty("status") PublishedMessageTraceStatus status,
+            @JsonProperty("reason") String reason,
+            @JsonProperty("message") String message,
+            @JsonProperty("cluster") String cluster,
+            @JsonProperty("extraRequestHeaders") String extraRequestHeaders,
+            @JsonProperty("storageDc") String storageDatacenter) {
         this.messageId = messageId;
         this.timestamp = timestamp;
         this.status = status;

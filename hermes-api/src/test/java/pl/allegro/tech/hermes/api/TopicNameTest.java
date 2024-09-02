@@ -1,8 +1,8 @@
 package pl.allegro.tech.hermes.api;
 
-import org.junit.Test;
-
 import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.Test;
 
 public class TopicNameTest {
 
@@ -10,7 +10,7 @@ public class TopicNameTest {
     public void shouldConvertQualifiedName() {
         // given
         TopicName topicName = new TopicName("group1", "topic1");
-        
+
         // when & then
         assertThat(TopicName.fromQualifiedName(topicName.qualifiedName())).isEqualTo(topicName);
     }
@@ -19,7 +19,7 @@ public class TopicNameTest {
     public void shouldHandleDottedGroupName() {
         // given
         TopicName topicName = TopicName.fromQualifiedName("group.topic");
-        
+
         // when & then
         assertThat(topicName.getGroupName()).isEqualTo("group");
         assertThat(topicName.getName()).isEqualTo("topic");
@@ -36,5 +36,4 @@ public class TopicNameTest {
         // when & then
         assertThat(TopicName.fromQualifiedName(null)).isNull();
     }
-
 }

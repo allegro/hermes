@@ -16,10 +16,9 @@ public class HermesResponseBuilder {
         return new HermesResponseBuilder().withHermesMessage(hermesMessage);
     }
 
-    public static HermesResponse hermesFailureResponse(Throwable exception, HermesMessage hermesMessage) {
-        return hermesResponse(hermesMessage)
-                .withFailureCause(exception)
-                .build();
+    public static HermesResponse hermesFailureResponse(
+            Throwable exception, HermesMessage hermesMessage) {
+        return hermesResponse(hermesMessage).withFailureCause(exception).build();
     }
 
     public HermesResponseBuilder withHttpStatus(int statusCode) {

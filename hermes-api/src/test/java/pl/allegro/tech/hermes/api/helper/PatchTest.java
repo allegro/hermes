@@ -1,6 +1,14 @@
 package pl.allegro.tech.hermes.api.helper;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import static pl.allegro.tech.hermes.api.PatchData.patchData;
+import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
+import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
+
 import org.junit.Test;
+
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionPolicy;
@@ -8,12 +16,6 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.helpers.Patch;
 
 import java.util.HashMap;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static pl.allegro.tech.hermes.api.PatchData.patchData;
-import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
-import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
-import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 public class PatchTest {
 
@@ -42,7 +44,7 @@ public class PatchTest {
 
     @Test
     public void shouldIgnoreUnknownFields() {
-        //given
+        // given
         SubscriptionPolicy policy = subscriptionPolicy().withRate(10).build();
         PatchData patch = patchData().set("unknown", 10).set("messageTtl", 30).build();
 
@@ -57,9 +59,16 @@ public class PatchTest {
     public void shouldPatchNestedObjects() {
         // given
         Subscription subscription = subscription("group.topic", "sub").build();
-        PatchData patch = patchData().set(
-                "subscriptionPolicy", patchData().set("rate", 200).set("messageTtl", 8).build().getPatch()
-        ).build();
+        PatchData patch =
+                patchData()
+                        .set(
+                                "subscriptionPolicy",
+                                patchData()
+                                        .set("rate", 200)
+                                        .set("messageTtl", 8)
+                                        .build()
+                                        .getPatch())
+                        .build();
 
         // when
         SubscriptionPolicy result = Patch.apply(subscription, patch).getSerialSubscriptionPolicy();

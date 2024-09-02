@@ -1,7 +1,10 @@
 package pl.allegro.tech.hermes.domain.filtering.json;
 
+import static pl.allegro.tech.hermes.domain.filtering.FilteringException.check;
+
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
+
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.domain.filtering.FilterableMessage;
 import pl.allegro.tech.hermes.domain.filtering.FilteringException;
@@ -14,15 +17,17 @@ import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import static pl.allegro.tech.hermes.domain.filtering.FilteringException.check;
-
 class JsonPathPredicate implements Predicate<FilterableMessage> {
     private final Configuration configuration;
     private final String path;
     private final Pattern matcher;
     private final MatchingStrategy matchingStrategy;
 
-    JsonPathPredicate(String path, Pattern matcher, Configuration configuration, MatchingStrategy matchingStrategy) {
+    JsonPathPredicate(
+            String path,
+            Pattern matcher,
+            Configuration configuration,
+            MatchingStrategy matchingStrategy) {
         this.path = path;
         this.matcher = matcher;
         this.configuration = configuration;
@@ -31,9 +36,13 @@ class JsonPathPredicate implements Predicate<FilterableMessage> {
 
     @Override
     public boolean test(FilterableMessage message) {
-        check(message.getContentType() == ContentType.JSON, "This filter supports only JSON contentType.");
+        check(
+                message.getContentType() == ContentType.JSON,
+                "This filter supports only JSON contentType.");
         try {
-            List<Object> result = JsonPath.parse(new ByteArrayInputStream(message.getData()), configuration).read(path);
+            List<Object> result =
+                    JsonPath.parse(new ByteArrayInputStream(message.getData()), configuration)
+                            .read(path);
             Stream<String> resultStream = result.stream().map(Object::toString);
 
             return !result.isEmpty() && matchResultsStream(resultStream);

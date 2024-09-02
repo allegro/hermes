@@ -1,8 +1,13 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload.weighted;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import static pl.allegro.tech.hermes.api.SubscriptionName.fromString;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
 import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionId;
@@ -19,32 +24,33 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static pl.allegro.tech.hermes.api.SubscriptionName.fromString;
-
 public class ZookeeperConsumerNodeLoadRegistryTest extends ZookeeperBaseTest {
 
-    private final SubscriptionName firstSubscription = fromString("pl.allegro.tech.hermes$testSubscription");
-    private final SubscriptionName secondSubscription = fromString("pl.allegro.tech.hermes$testSubscription2");
-    private final SubscriptionIds subscriptionIds = new TestSubscriptionIds(List.of(
-            SubscriptionId.from(firstSubscription, 1L),
-            SubscriptionId.from(secondSubscription, 2L)
-    ));
+    private final SubscriptionName firstSubscription =
+            fromString("pl.allegro.tech.hermes$testSubscription");
+    private final SubscriptionName secondSubscription =
+            fromString("pl.allegro.tech.hermes$testSubscription2");
+    private final SubscriptionIds subscriptionIds =
+            new TestSubscriptionIds(
+                    List.of(
+                            SubscriptionId.from(firstSubscription, 1L),
+                            SubscriptionId.from(secondSubscription, 2L)));
     private final String currentConsumerId = "consumer-id";
-    private final ManuallyTriggeredScheduledExecutorService scheduledExecutorService = new ManuallyTriggeredScheduledExecutorService();
+    private final ManuallyTriggeredScheduledExecutorService scheduledExecutorService =
+            new ManuallyTriggeredScheduledExecutorService();
     private final ModifiableClock clock = new ModifiableClock();
-    private final ZookeeperConsumerNodeLoadRegistry registry = new ZookeeperConsumerNodeLoadRegistry(
-            zookeeperClient,
-            subscriptionIds,
-            new ZookeeperPaths("/hermes"),
-            currentConsumerId,
-            "kafka-cluster",
-            Duration.ofMillis(50),
-            new TestExecutorServiceFactory(scheduledExecutorService),
-            clock,
-            TestMetricsFacadeFactory.create(),
-            100_000
-    );
+    private final ZookeeperConsumerNodeLoadRegistry registry =
+            new ZookeeperConsumerNodeLoadRegistry(
+                    zookeeperClient,
+                    subscriptionIds,
+                    new ZookeeperPaths("/hermes"),
+                    currentConsumerId,
+                    "kafka-cluster",
+                    Duration.ofMillis(50),
+                    new TestExecutorServiceFactory(scheduledExecutorService),
+                    clock,
+                    TestMetricsFacadeFactory.create(),
+                    100_000);
 
     @Before
     public void setUp() {
@@ -80,10 +86,13 @@ public class ZookeeperConsumerNodeLoadRegistryTest extends ZookeeperBaseTest {
 
         // then
         ConsumerNodeLoad consumerNodeLoad = registry.get(currentConsumerId);
-        Map<SubscriptionName, SubscriptionLoad> loadPerSubscription = consumerNodeLoad.getLoadPerSubscription();
+        Map<SubscriptionName, SubscriptionLoad> loadPerSubscription =
+                consumerNodeLoad.getLoadPerSubscription();
         assertThat(loadPerSubscription).hasSize(2);
-        assertThat(loadPerSubscription.get(firstSubscription).getOperationsPerSecond()).isEqualTo(2d / 60);
-        assertThat(loadPerSubscription.get(secondSubscription).getOperationsPerSecond()).isEqualTo(0d);
+        assertThat(loadPerSubscription.get(firstSubscription).getOperationsPerSecond())
+                .isEqualTo(2d / 60);
+        assertThat(loadPerSubscription.get(secondSubscription).getOperationsPerSecond())
+                .isEqualTo(0d);
     }
 
     @Test

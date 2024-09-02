@@ -1,19 +1,21 @@
 package pl.allegro.tech.hermes.frontend.server;
 
-import io.undertow.server.HttpHandler;
-import io.undertow.server.HttpServerExchange;
-import pl.allegro.tech.hermes.frontend.readiness.HealthCheckService;
-import pl.allegro.tech.hermes.frontend.readiness.ReadinessChecker;
-
 import static io.undertow.util.StatusCodes.OK;
 import static io.undertow.util.StatusCodes.SERVICE_UNAVAILABLE;
+
+import io.undertow.server.HttpHandler;
+import io.undertow.server.HttpServerExchange;
+
+import pl.allegro.tech.hermes.frontend.readiness.HealthCheckService;
+import pl.allegro.tech.hermes.frontend.readiness.ReadinessChecker;
 
 public class ReadinessCheckHandler implements HttpHandler {
 
     private final ReadinessChecker readinessChecker;
     private final HealthCheckService healthCheckService;
 
-    public ReadinessCheckHandler(ReadinessChecker readinessChecker, HealthCheckService healthCheckService) {
+    public ReadinessCheckHandler(
+            ReadinessChecker readinessChecker, HealthCheckService healthCheckService) {
         this.readinessChecker = readinessChecker;
         this.healthCheckService = healthCheckService;
     }
@@ -39,5 +41,4 @@ public class ReadinessCheckHandler implements HttpHandler {
         exchange.setStatusCode(status);
         exchange.getResponseSender().send(data);
     }
-
 }

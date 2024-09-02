@@ -63,7 +63,6 @@ public class KafkaProperties implements KafkaParameters {
         this.adminRequestTimeout = adminRequestTimeout;
     }
 
-
     @Override
     public String getJaasConfig() {
         return authentication.getJaasConfig();

@@ -11,5 +11,4 @@ public class DefaultTrackingHeaderExtractor implements TrackingHeadersExtractor 
     public Map<String, String> extractHeadersToLog(HeaderMap headers) {
         return Collections.emptyMap();
     }
-
 }

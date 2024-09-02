@@ -4,7 +4,9 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.turbo.TurboFilter;
 import ch.qos.logback.core.spi.FilterReply;
+
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 
@@ -22,20 +24,21 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.LongAdder;
 
 /**
- * <p>This class is an implementation of {@link TurboFilter} interface that allows messages of configured loggers
- * to be aggregated and logged only once with specified time interval.</p>
+ * This class is an implementation of {@link TurboFilter} interface that allows messages of
+ * configured loggers to be aggregated and logged only once with specified time interval.
  *
- * <p>Logged message contains a suffix "[occurrences=N]" with a number of logged events.
- * The logging part is a little bit tricky, as the <code>TurboFilter</code> interface does not support a way of logging out of the box,
- * it just tells whether a logged message should be passed further or not.
- * In order to logging be possible from the <code>TurboFilter</code> a small trick has to be applied, the logged message is enriched
- * with a custom {@link Marker} which is checked by the filter itself, so it won't filter it's own messages
- * and we manage to avoid recursion.</p>
+ * <p>Logged message contains a suffix "[occurrences=N]" with a number of logged events. The logging
+ * part is a little bit tricky, as the <code>TurboFilter</code> interface does not support a way of
+ * logging out of the box, it just tells whether a logged message should be passed further or not.
+ * In order to logging be possible from the <code>TurboFilter</code> a small trick has to be
+ * applied, the logged message is enriched with a custom {@link Marker} which is checked by the
+ * filter itself, so it won't filter it's own messages and we manage to avoid recursion.
  *
- * <p>An instance of <code>AggregatingTurboFilter</code> starts it's own scheduled executor service with a single thread
- * that logs the messages asynchronously.</p>
+ * <p>An instance of <code>AggregatingTurboFilter</code> starts it's own scheduled executor service
+ * with a single thread that logs the messages asynchronously.
  *
  * <p>Example logback configuration:
+ *
  * <pre>{@code
  *  <configuration>
  *      ...
@@ -65,12 +68,17 @@ public class AggregatingTurboFilter extends TurboFilter {
     public void start() {
         super.start();
         if (!aggregatedLogger.isEmpty()) {
-            ThreadFactory threadFactory = new ThreadFactoryBuilder()
-                    .setNameFormat("aggregating-filter-" + filterClassCounter.longValue() + "-thread-%d")
-                    .build();
+            ThreadFactory threadFactory =
+                    new ThreadFactoryBuilder()
+                            .setNameFormat(
+                                    "aggregating-filter-"
+                                            + filterClassCounter.longValue()
+                                            + "-thread-%d")
+                            .build();
             filterClassCounter.increment();
             executorService = Executors.newSingleThreadScheduledExecutor(threadFactory);
-            executorService.scheduleAtFixedRate(this::report, 0L, getReportingIntervalMillis(), TimeUnit.MILLISECONDS);
+            executorService.scheduleAtFixedRate(
+                    this::report, 0L, getReportingIntervalMillis(), TimeUnit.MILLISECONDS);
         }
     }
 
@@ -81,19 +89,39 @@ public class AggregatingTurboFilter extends TurboFilter {
     }
 
     void report() {
-        logAggregates.forEach((logger, loggerAggregates) ->
-                loggerAggregates.aggregates.keySet().forEach(entry -> {
-                    loggerAggregates.aggregates.computeIfPresent(entry, (key, summary) -> {
-                        logger.log(key.marker, Logger.FQCN, key.level,
-                                key.message + " [occurrences=" + summary.logsCount + "]",
-                                key.params, summary.lastException);
-                        return null;
-                    });
-                }));
+        logAggregates.forEach(
+                (logger, loggerAggregates) ->
+                        loggerAggregates
+                                .aggregates
+                                .keySet()
+                                .forEach(
+                                        entry -> {
+                                            loggerAggregates.aggregates.computeIfPresent(
+                                                    entry,
+                                                    (key, summary) -> {
+                                                        logger.log(
+                                                                key.marker,
+                                                                Logger.FQCN,
+                                                                key.level,
+                                                                key.message
+                                                                        + " [occurrences="
+                                                                        + summary.logsCount
+                                                                        + "]",
+                                                                key.params,
+                                                                summary.lastException);
+                                                        return null;
+                                                    });
+                                        }));
     }
 
     @Override
-    public FilterReply decide(Marker marker, Logger logger, Level level, String message, Object[] params, Throwable ex) {
+    public FilterReply decide(
+            Marker marker,
+            Logger logger,
+            Level level,
+            String message,
+            Object[] params,
+            Throwable ex) {
         if (isAggregatedLog(marker)) { // prevent recursion for aggregated logger events
             return FilterReply.NEUTRAL;
         }
@@ -110,10 +138,16 @@ public class AggregatingTurboFilter extends TurboFilter {
         }
         Throwable exception = ex;
 
-        LoggingEventKey loggingEventKey = new LoggingEventKey(message, params, level, getEnrichedMarker(marker));
-        logAggregates.computeIfAbsent(logger, l -> new LoggerAggregates())
-                .aggregates.merge(loggingEventKey, new AggregateSummary(ex),
-                (currentAggregate, emptyAggregate) -> AggregateSummary.incrementCount(currentAggregate, exception));
+        LoggingEventKey loggingEventKey =
+                new LoggingEventKey(message, params, level, getEnrichedMarker(marker));
+        logAggregates
+                .computeIfAbsent(logger, l -> new LoggerAggregates())
+                .aggregates
+                .merge(
+                        loggingEventKey,
+                        new AggregateSummary(ex),
+                        (currentAggregate, emptyAggregate) ->
+                                AggregateSummary.incrementCount(currentAggregate, exception));
 
         return FilterReply.DENY;
     }
@@ -125,10 +159,12 @@ public class AggregatingTurboFilter extends TurboFilter {
     private Optional<Throwable> extractLastParamThrowable(Object[] params) {
         return Optional.ofNullable(params)
                 .map(Arrays::stream)
-                .flatMap(a -> a.skip(params.length - 1)
-                        .findFirst()
-                        .filter(o -> o instanceof Throwable)
-                        .map(Throwable.class::cast));
+                .flatMap(
+                        a ->
+                                a.skip(params.length - 1)
+                                        .findFirst()
+                                        .filter(o -> o instanceof Throwable)
+                                        .map(Throwable.class::cast));
     }
 
     private Marker getEnrichedMarker(Marker marker) {
@@ -170,8 +206,10 @@ public class AggregatingTurboFilter extends TurboFilter {
             this.lastException = lastException;
         }
 
-        private static AggregateSummary incrementCount(AggregateSummary currentAggregate, Throwable lastException) {
-            return new AggregateSummary(currentAggregate.logsCount + 1,
+        private static AggregateSummary incrementCount(
+                AggregateSummary currentAggregate, Throwable lastException) {
+            return new AggregateSummary(
+                    currentAggregate.logsCount + 1,
                     Optional.ofNullable(lastException).orElse(currentAggregate.lastException));
         }
     }
@@ -213,5 +251,3 @@ public class AggregatingTurboFilter extends TurboFilter {
         }
     }
 }
-
-

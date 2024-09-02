@@ -14,7 +14,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-public class NotificationsBasedSubscriptionCache implements SubscriptionsCache, SubscriptionCallback {
+public class NotificationsBasedSubscriptionCache
+        implements SubscriptionsCache, SubscriptionCallback {
 
     private final Map<SubscriptionName, Subscription> subscriptions = new ConcurrentHashMap<>();
 
@@ -24,10 +25,11 @@ public class NotificationsBasedSubscriptionCache implements SubscriptionsCache, 
 
     private final SubscriptionRepository subscriptionRepository;
 
-    public NotificationsBasedSubscriptionCache(InternalNotificationsBus notificationsBus,
-                                               GroupRepository groupRepository,
-                                               TopicRepository topicRepository,
-                                               SubscriptionRepository subscriptionRepository) {
+    public NotificationsBasedSubscriptionCache(
+            InternalNotificationsBus notificationsBus,
+            GroupRepository groupRepository,
+            TopicRepository topicRepository,
+            SubscriptionRepository subscriptionRepository) {
         notificationsBus.registerSubscriptionCallback(this);
         this.groupRepository = groupRepository;
         this.topicRepository = topicRepository;
@@ -73,7 +75,9 @@ public class NotificationsBasedSubscriptionCache implements SubscriptionsCache, 
     public void start() {
         for (String groupName : groupRepository.listGroupNames()) {
             for (String topicName : topicRepository.listTopicNames(groupName)) {
-                for (Subscription subscription : subscriptionRepository.listSubscriptions(new TopicName(groupName, topicName))) {
+                for (Subscription subscription :
+                        subscriptionRepository.listSubscriptions(
+                                new TopicName(groupName, topicName))) {
                     subscriptions.put(subscription.getQualifiedName(), subscription);
                 }
             }

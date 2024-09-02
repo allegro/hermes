@@ -3,17 +3,21 @@ package pl.allegro.tech.hermes.management.api.mappers;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
+
 import jakarta.validation.ConstraintViolationException;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.Provider;
+
 import org.glassfish.jersey.server.validation.ValidationErrorData;
 import org.glassfish.jersey.server.validation.internal.ValidationHelper;
+
 import pl.allegro.tech.hermes.api.ErrorCode;
 
 import java.util.List;
 
 @Provider
-public class ConstraintViolationMapper extends AbstractExceptionMapper<ConstraintViolationException> {
+public class ConstraintViolationMapper
+        extends AbstractExceptionMapper<ConstraintViolationException> {
 
     @Override
     Response.Status httpStatus() {
@@ -31,15 +35,16 @@ public class ConstraintViolationMapper extends AbstractExceptionMapper<Constrain
     }
 
     private String prepareMessage(ConstraintViolationException ex) {
-        List<String> errors = Lists.transform(
-                ValidationHelper.constraintViolationToValidationErrors(ex),
-                new ValidationErrorDataConverter()
-        );
+        List<String> errors =
+                Lists.transform(
+                        ValidationHelper.constraintViolationToValidationErrors(ex),
+                        new ValidationErrorDataConverter());
 
         return Joiner.on("; ").join(errors);
     }
 
-    private static final class ValidationErrorDataConverter implements Function<ValidationErrorData, String> {
+    private static final class ValidationErrorDataConverter
+            implements Function<ValidationErrorData, String> {
         @Override
         public String apply(ValidationErrorData input) {
             return input.getPath() + " " + input.getMessage();

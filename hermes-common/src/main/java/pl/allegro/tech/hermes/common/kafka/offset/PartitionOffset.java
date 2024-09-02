@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.common.kafka.offset;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 
 import java.util.Objects;
@@ -13,9 +14,10 @@ public class PartitionOffset {
     private final long offset;
 
     @JsonCreator
-    public PartitionOffset(@JsonProperty("topic") KafkaTopicName topic,
-                           @JsonProperty("offset") long offset,
-                           @JsonProperty("partition") int partition) {
+    public PartitionOffset(
+            @JsonProperty("topic") KafkaTopicName topic,
+            @JsonProperty("offset") long offset,
+            @JsonProperty("partition") int partition) {
         this.topic = topic;
         this.offset = offset;
         this.partition = partition;
@@ -52,5 +54,4 @@ public class PartitionOffset {
     public int hashCode() {
         return Objects.hash(topic, partition, offset);
     }
-
 }

@@ -8,8 +8,9 @@ public class InconsistentMetadata {
     private final String content;
 
     @JsonCreator
-    public InconsistentMetadata(@JsonProperty("datacenter") String datacenter,
-                                @JsonProperty("content") String content) {
+    public InconsistentMetadata(
+            @JsonProperty("datacenter") String datacenter,
+            @JsonProperty("content") String content) {
         this.datacenter = datacenter;
         this.content = content;
     }

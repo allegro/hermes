@@ -19,26 +19,33 @@ class SubscriptionProfilesCalculator {
         this.weightWindowSize = weightWindowSize;
     }
 
-    SubscriptionProfiles calculate(Collection<ConsumerNodeLoad> consumerLoads, SubscriptionProfiles previousProfiles) {
+    SubscriptionProfiles calculate(
+            Collection<ConsumerNodeLoad> consumerLoads, SubscriptionProfiles previousProfiles) {
         Map<SubscriptionName, Weight> currentWeights = calculateCurrentWeights(consumerLoads);
         Map<SubscriptionName, SubscriptionProfile> newProfiles = new HashMap<>();
         Instant now = clock.instant();
         for (Map.Entry<SubscriptionName, Weight> entry : currentWeights.entrySet()) {
             SubscriptionName subscriptionName = entry.getKey();
             Weight currentWeight = entry.getValue();
-            SubscriptionProfile newProfile = applyCurrentWeight(previousProfiles, subscriptionName, currentWeight, now);
+            SubscriptionProfile newProfile =
+                    applyCurrentWeight(previousProfiles, subscriptionName, currentWeight, now);
             newProfiles.put(subscriptionName, newProfile);
         }
         return new SubscriptionProfiles(newProfiles, now);
     }
 
-    private Map<SubscriptionName, Weight> calculateCurrentWeights(Collection<ConsumerNodeLoad> consumerLoads) {
+    private Map<SubscriptionName, Weight> calculateCurrentWeights(
+            Collection<ConsumerNodeLoad> consumerLoads) {
         Map<SubscriptionName, Weight> currentWeights = new HashMap<>();
         for (ConsumerNodeLoad consumerLoad : consumerLoads) {
-            for (Map.Entry<SubscriptionName, SubscriptionLoad> entry : consumerLoad.getLoadPerSubscription().entrySet()) {
+            for (Map.Entry<SubscriptionName, SubscriptionLoad> entry :
+                    consumerLoad.getLoadPerSubscription().entrySet()) {
                 SubscriptionName subscriptionName = entry.getKey();
-                Weight currentConsumerWeight = new Weight(entry.getValue().getOperationsPerSecond());
-                Weight currentMaxWeight = currentWeights.computeIfAbsent(subscriptionName, subscription -> Weight.ZERO);
+                Weight currentConsumerWeight =
+                        new Weight(entry.getValue().getOperationsPerSecond());
+                Weight currentMaxWeight =
+                        currentWeights.computeIfAbsent(
+                                subscriptionName, subscription -> Weight.ZERO);
                 Weight newMaxWeight = Weight.max(currentMaxWeight, currentConsumerWeight);
                 currentWeights.put(subscriptionName, newMaxWeight);
             }
@@ -46,15 +53,19 @@ class SubscriptionProfilesCalculator {
         return currentWeights;
     }
 
-    private SubscriptionProfile applyCurrentWeight(SubscriptionProfiles previousProfiles,
-                                                   SubscriptionName subscriptionName,
-                                                   Weight currentWeight,
-                                                   Instant now) {
+    private SubscriptionProfile applyCurrentWeight(
+            SubscriptionProfiles previousProfiles,
+            SubscriptionName subscriptionName,
+            Weight currentWeight,
+            Instant now) {
         SubscriptionProfile previousProfile = previousProfiles.getProfile(subscriptionName);
         Weight previousWeight = previousProfile.getWeight();
-        ExponentiallyWeightedMovingAverage average = new ExponentiallyWeightedMovingAverage(weightWindowSize);
-        average.update(previousWeight.getOperationsPerSecond(), previousProfiles.getUpdateTimestamp());
+        ExponentiallyWeightedMovingAverage average =
+                new ExponentiallyWeightedMovingAverage(weightWindowSize);
+        average.update(
+                previousWeight.getOperationsPerSecond(), previousProfiles.getUpdateTimestamp());
         double opsAvg = average.update(currentWeight.getOperationsPerSecond(), now);
-        return new SubscriptionProfile(previousProfile.getLastRebalanceTimestamp(), new Weight(opsAvg));
+        return new SubscriptionProfile(
+                previousProfile.getLastRebalanceTimestamp(), new Weight(opsAvg));
     }
 }

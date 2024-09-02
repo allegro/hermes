@@ -13,17 +13,12 @@ public class GaugeRegistrar {
         this.meterRegistry = meterRegistry;
     }
 
-    public <T> void registerGauge(String name,
-                                  T stateObj,
-                                  ToDoubleFunction<T> f) {
+    public <T> void registerGauge(String name, T stateObj, ToDoubleFunction<T> f) {
         registerGauge(name, stateObj, f, Tags.empty());
     }
 
-    public <T> void registerGauge(String name,
-                                  T stateObj,
-                                  ToDoubleFunction<T> f,
-                                  Iterable<Tag> tags) {
+    public <T> void registerGauge(
+            String name, T stateObj, ToDoubleFunction<T> f, Iterable<Tag> tags) {
         meterRegistry.gauge(name, tags, stateObj, f);
     }
 }
-

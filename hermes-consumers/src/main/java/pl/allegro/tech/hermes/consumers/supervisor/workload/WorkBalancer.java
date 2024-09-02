@@ -6,8 +6,9 @@ import java.util.List;
 
 public interface WorkBalancer {
 
-    WorkBalancingResult balance(List<SubscriptionName> subscriptions,
-                                List<String> activeConsumerNodes,
-                                SubscriptionAssignmentView currentState,
-                                WorkloadConstraints constraints);
+    WorkBalancingResult balance(
+            List<SubscriptionName> subscriptions,
+            List<String> activeConsumerNodes,
+            SubscriptionAssignmentView currentState,
+            WorkloadConstraints constraints);
 }

@@ -1,8 +1,15 @@
 package pl.allegro.tech.hermes.consumers.supervisor;
 
+import static pl.allegro.tech.hermes.api.Subscription.State.ACTIVE;
+import static pl.allegro.tech.hermes.api.Subscription.State.PENDING;
+import static pl.allegro.tech.hermes.consumers.health.Checks.SUBSCRIPTIONS;
+import static pl.allegro.tech.hermes.consumers.health.Checks.SUBSCRIPTIONS_COUNT;
+
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
@@ -25,13 +32,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-import static pl.allegro.tech.hermes.api.Subscription.State.ACTIVE;
-import static pl.allegro.tech.hermes.api.Subscription.State.PENDING;
-import static pl.allegro.tech.hermes.consumers.health.Checks.SUBSCRIPTIONS;
-import static pl.allegro.tech.hermes.consumers.health.Checks.SUBSCRIPTIONS_COUNT;
-
 public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
-    private static final Logger logger = LoggerFactory.getLogger(NonblockingConsumersSupervisor.class);
+    private static final Logger logger =
+            LoggerFactory.getLogger(NonblockingConsumersSupervisor.class);
 
     private final ConsumerProcessSupervisor backgroundProcess;
     private final UndeliveredMessageLogPersister undeliveredMessageLogPersister;
@@ -40,51 +43,72 @@ public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
 
     private final ScheduledExecutorService scheduledExecutor;
 
-    public NonblockingConsumersSupervisor(CommonConsumerParameters commonConsumerParameters,
-                                          ConsumersExecutorService executor,
-                                          ConsumerFactory consumerFactory,
-                                          ConsumerPartitionAssignmentState consumerPartitionAssignmentState,
-                                          Retransmitter retransmitter,
-                                          UndeliveredMessageLogPersister undeliveredMessageLogPersister,
-                                          SubscriptionRepository subscriptionRepository,
-                                          MetricsFacade metrics,
-                                          ConsumerMonitor monitor,
-                                          Clock clock) {
+    public NonblockingConsumersSupervisor(
+            CommonConsumerParameters commonConsumerParameters,
+            ConsumersExecutorService executor,
+            ConsumerFactory consumerFactory,
+            ConsumerPartitionAssignmentState consumerPartitionAssignmentState,
+            Retransmitter retransmitter,
+            UndeliveredMessageLogPersister undeliveredMessageLogPersister,
+            SubscriptionRepository subscriptionRepository,
+            MetricsFacade metrics,
+            ConsumerMonitor monitor,
+            Clock clock) {
         this.undeliveredMessageLogPersister = undeliveredMessageLogPersister;
         this.subscriptionRepository = subscriptionRepository;
-        this.backgroundSupervisorInterval = commonConsumerParameters.getBackgroundSupervisor().getInterval();
-        this.backgroundProcess = new ConsumerProcessSupervisor(executor, clock, metrics,
-                new ConsumerProcessFactory(
-                        retransmitter,
-                        consumerFactory,
-                        commonConsumerParameters.getBackgroundSupervisor().getUnhealthyAfter(),
-                        clock),
-                commonConsumerParameters.getSignalProcessingQueueSize(),
-                commonConsumerParameters.getBackgroundSupervisor().getKillAfter());
+        this.backgroundSupervisorInterval =
+                commonConsumerParameters.getBackgroundSupervisor().getInterval();
+        this.backgroundProcess =
+                new ConsumerProcessSupervisor(
+                        executor,
+                        clock,
+                        metrics,
+                        new ConsumerProcessFactory(
+                                retransmitter,
+                                consumerFactory,
+                                commonConsumerParameters
+                                        .getBackgroundSupervisor()
+                                        .getUnhealthyAfter(),
+                                clock),
+                        commonConsumerParameters.getSignalProcessingQueueSize(),
+                        commonConsumerParameters.getBackgroundSupervisor().getKillAfter());
         this.scheduledExecutor = createExecutorForSupervision();
         monitor.register(SUBSCRIPTIONS, backgroundProcess::runningSubscriptionsStatus);
         monitor.register(SUBSCRIPTIONS_COUNT, backgroundProcess::countRunningProcesses);
     }
 
     private ScheduledExecutorService createExecutorForSupervision() {
-        ThreadFactory threadFactory = new ThreadFactoryBuilder()
-                .setNameFormat("NonblockingConsumersSupervisor-%d")
-                .setUncaughtExceptionHandler((t, e) -> logger.error("Exception from supervisor with name {}", t.getName(), e)).build();
+        ThreadFactory threadFactory =
+                new ThreadFactoryBuilder()
+                        .setNameFormat("NonblockingConsumersSupervisor-%d")
+                        .setUncaughtExceptionHandler(
+                                (t, e) ->
+                                        logger.error(
+                                                "Exception from supervisor with name {}",
+                                                t.getName(),
+                                                e))
+                        .build();
         return Executors.newSingleThreadScheduledExecutor(threadFactory);
     }
 
     @Override
     public void assignConsumerForSubscription(Subscription subscription) {
         try {
-            Signal start = Signal.of(Signal.SignalType.START, subscription.getQualifiedName(), subscription);
+            Signal start =
+                    Signal.of(
+                            Signal.SignalType.START, subscription.getQualifiedName(), subscription);
 
             backgroundProcess.accept(start);
 
             if (subscription.getState() == PENDING) {
-                subscriptionRepository.updateSubscriptionState(subscription.getTopicName(), subscription.getName(), ACTIVE);
+                subscriptionRepository.updateSubscriptionState(
+                        subscription.getTopicName(), subscription.getName(), ACTIVE);
             }
         } catch (RuntimeException e) {
-            logger.error("Error during assigning subscription {} to consumer", subscription.getQualifiedName(), e);
+            logger.error(
+                    "Error during assigning subscription {} to consumer",
+                    subscription.getQualifiedName(),
+                    e);
         }
     }
 
@@ -97,12 +121,17 @@ public class NonblockingConsumersSupervisor implements ConsumersSupervisor {
 
     @Override
     public void updateTopic(Subscription subscription, Topic topic) {
-        backgroundProcess.accept(Signal.of(Signal.SignalType.UPDATE_TOPIC, subscription.getQualifiedName(), topic));
+        backgroundProcess.accept(
+                Signal.of(Signal.SignalType.UPDATE_TOPIC, subscription.getQualifiedName(), topic));
     }
 
     @Override
     public void updateSubscription(Subscription subscription) {
-        backgroundProcess.accept(Signal.of(Signal.SignalType.UPDATE_SUBSCRIPTION, subscription.getQualifiedName(), subscription));
+        backgroundProcess.accept(
+                Signal.of(
+                        Signal.SignalType.UPDATE_SUBSCRIPTION,
+                        subscription.getQualifiedName(),
+                        subscription));
     }
 
     @Override

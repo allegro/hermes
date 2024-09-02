@@ -37,13 +37,14 @@ class HierarchicalCacheLevel extends PathChildrenCache implements PathChildrenCa
 
     private final Map<String, HierarchicalCacheLevel> subcacheMap = new HashMap<>();
 
-    HierarchicalCacheLevel(CuratorFramework curatorClient,
-                           ExecutorService executorService,
-                           String path,
-                           int depth,
-                           CacheListeners eventConsumer,
-                           Optional<BiFunction<Integer, String, HierarchicalCacheLevel>> nextLevelFactory,
-                           boolean removeNodesWithNoData) {
+    HierarchicalCacheLevel(
+            CuratorFramework curatorClient,
+            ExecutorService executorService,
+            String path,
+            int depth,
+            CacheListeners eventConsumer,
+            Optional<BiFunction<Integer, String, HierarchicalCacheLevel>> nextLevelFactory,
+            boolean removeNodesWithNoData) {
         super(curatorClient, path, true, false, executorService);
         this.curatorClient = curatorClient;
         this.currentDepth = depth;
@@ -95,8 +96,12 @@ class HierarchicalCacheLevel extends PathChildrenCache implements PathChildrenCa
         Lock writeLock = subcacheLock.writeLock();
         writeLock.lock();
         try {
-            logger.debug("Adding cache for path {}; Cache name: {}; Depth: {}; InstanceId: {}",
-                    path, cacheName, currentDepth, Integer.toHexString(hashCode()));
+            logger.debug(
+                    "Adding cache for path {}; Cache name: {}; Depth: {}; InstanceId: {}",
+                    path,
+                    cacheName,
+                    currentDepth,
+                    Integer.toHexString(hashCode()));
 
             if (ArrayUtils.isEmpty(data) && removeNodesWithNoData) {
                 logger.warn("Removing path {} due to no data in the znode", path);
@@ -108,7 +113,8 @@ class HierarchicalCacheLevel extends PathChildrenCache implements PathChildrenCa
                 logger.debug("Possible duplicate of new entry for {}, ignoring", cacheName);
                 return;
             }
-            nextLevelFactory.ifPresent(f -> subcacheMap.put(cacheName, f.apply(currentDepth + 1, path)));
+            nextLevelFactory.ifPresent(
+                    f -> subcacheMap.put(cacheName, f.apply(currentDepth + 1, path)));
         } finally {
             writeLock.unlock();
         }
@@ -117,30 +123,41 @@ class HierarchicalCacheLevel extends PathChildrenCache implements PathChildrenCa
     private void printOrphanedChildren(String path) {
         try {
             List<String> children = curatorClient.getChildren().forPath(path);
-            logger.warn("Nodes with empty parent {}: {}",
-                    path, children.stream().map(Object::toString).collect(Collectors.joining(",")));
+            logger.warn(
+                    "Nodes with empty parent {}: {}",
+                    path,
+                    children.stream().map(Object::toString).collect(Collectors.joining(",")));
             printChildrenWithEmptyParentRecursively(path, children);
         } catch (KeeperException.NoNodeException e) {
-            logger.info("Could not receive list of children for path {} as the path does not exist", path);
+            logger.info(
+                    "Could not receive list of children for path {} as the path does not exist",
+                    path);
         } catch (Exception e) {
             logger.warn("Could not receive list of children for path {} due to error", path, e);
         }
     }
 
-    private void printChildrenWithEmptyParentRecursively(String pathWithEmptyParent, List<String> children) {
-        children.forEach(c -> {
-            try {
-                String nextPath = pathWithEmptyParent + "/" + c;
-                logger.warn("Node with empty parent: {}", nextPath);
-                List<String> nextChildren = curatorClient.getChildren().forPath(nextPath);
+    private void printChildrenWithEmptyParentRecursively(
+            String pathWithEmptyParent, List<String> children) {
+        children.forEach(
+                c -> {
+                    try {
+                        String nextPath = pathWithEmptyParent + "/" + c;
+                        logger.warn("Node with empty parent: {}", nextPath);
+                        List<String> nextChildren = curatorClient.getChildren().forPath(nextPath);
 
-                printChildrenWithEmptyParentRecursively(nextPath, nextChildren);
-            } catch (KeeperException.NoNodeException e) {
-                logger.info("Could not receive list of children for path {} as the path does not exist", pathWithEmptyParent);
-            } catch (Exception e) {
-                logger.warn("Could not receive list of children for path {} due to error", pathWithEmptyParent, e);
-            }
-        });
+                        printChildrenWithEmptyParentRecursively(nextPath, nextChildren);
+                    } catch (KeeperException.NoNodeException e) {
+                        logger.info(
+                                "Could not receive list of children for path {} as the path does not exist",
+                                pathWithEmptyParent);
+                    } catch (Exception e) {
+                        logger.warn(
+                                "Could not receive list of children for path {} due to error",
+                                pathWithEmptyParent,
+                                e);
+                    }
+                });
     }
 
     private void removeNodeRecursively(String path) {
@@ -155,8 +172,12 @@ class HierarchicalCacheLevel extends PathChildrenCache implements PathChildrenCa
     private void removeSubcache(String path, String cacheName) throws Exception {
         Lock writeLock = subcacheLock.writeLock();
         writeLock.lock();
-        logger.debug("Removing cache for path {}; Cache name: {}; Depth {}; InstanceId: {}",
-                path, cacheName, currentDepth, Integer.toHexString(hashCode()));
+        logger.debug(
+                "Removing cache for path {}; Cache name: {}; Depth {}; InstanceId: {}",
+                path,
+                cacheName,
+                currentDepth,
+                Integer.toHexString(hashCode()));
         try {
             HierarchicalCacheLevel subcache = subcacheMap.remove(cacheName);
             if (subcache == null) {

@@ -1,5 +1,8 @@
 package pl.allegro.tech.hermes.management.api;
 
+import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
+import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN;
+
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -7,7 +10,9 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.GenericEntity;
 import jakarta.ws.rs.core.Response;
+
 import org.springframework.beans.factory.annotation.Autowired;
+
 import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.UnhealthySubscription;
 import pl.allegro.tech.hermes.management.domain.owner.OwnerSource;
@@ -17,9 +22,6 @@ import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService
 import java.util.List;
 import java.util.Optional;
 
-import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
-import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN;
-
 @Path("unhealthy")
 public class UnhealthyEndpoint {
 
@@ -27,8 +29,7 @@ public class UnhealthyEndpoint {
     private final SubscriptionService subscriptionService;
 
     @Autowired
-    public UnhealthyEndpoint(OwnerSources ownerSources,
-                             SubscriptionService subscriptionService) {
+    public UnhealthyEndpoint(OwnerSources ownerSources, SubscriptionService subscriptionService) {
         this.ownerSources = ownerSources;
         this.subscriptionService = subscriptionService;
     }
@@ -39,21 +40,26 @@ public class UnhealthyEndpoint {
     public Response listUnhealthy(
             @QueryParam("ownerSourceName") String ownerSourceName,
             @QueryParam("ownerId") String id,
-            @DefaultValue("true") @QueryParam("respectMonitoringSeverity") boolean respectMonitoringSeverity,
+            @DefaultValue("true") @QueryParam("respectMonitoringSeverity")
+                    boolean respectMonitoringSeverity,
             @QueryParam("subscriptionNames") List<String> subscriptionNames,
             @QueryParam("qualifiedTopicNames") List<String> qualifiedTopicNames) {
 
-        List<UnhealthySubscription> unhealthySubscriptions = areEmpty(ownerSourceName, id)
-                ? subscriptionService.getAllUnhealthy(respectMonitoringSeverity, subscriptionNames, qualifiedTopicNames)
-                : resolveOwnerId(ownerSourceName, id)
-                .map(ownerId -> subscriptionService.getUnhealthyForOwner(
-                        ownerId, respectMonitoringSeverity, subscriptionNames, qualifiedTopicNames
-                ))
-                .orElseThrow(() -> new OwnerSource.OwnerNotFound(ownerSourceName, id));
-        return Response.ok()
-                .entity(new GenericEntity<>(unhealthySubscriptions) {
-                })
-                .build();
+        List<UnhealthySubscription> unhealthySubscriptions =
+                areEmpty(ownerSourceName, id)
+                        ? subscriptionService.getAllUnhealthy(
+                                respectMonitoringSeverity, subscriptionNames, qualifiedTopicNames)
+                        : resolveOwnerId(ownerSourceName, id)
+                                .map(
+                                        ownerId ->
+                                                subscriptionService.getUnhealthyForOwner(
+                                                        ownerId,
+                                                        respectMonitoringSeverity,
+                                                        subscriptionNames,
+                                                        qualifiedTopicNames))
+                                .orElseThrow(
+                                        () -> new OwnerSource.OwnerNotFound(ownerSourceName, id));
+        return Response.ok().entity(new GenericEntity<>(unhealthySubscriptions) {}).build();
     }
 
     private boolean areEmpty(String ownerSourceName, String id) {
@@ -61,6 +67,8 @@ public class UnhealthyEndpoint {
     }
 
     private Optional<OwnerId> resolveOwnerId(String ownerSourceName, String id) {
-        return ownerSources.getByName(ownerSourceName).map(ownerSource -> new OwnerId(ownerSource.name(), id));
+        return ownerSources
+                .getByName(ownerSourceName)
+                .map(ownerSource -> new OwnerId(ownerSource.name(), id));
     }
 }

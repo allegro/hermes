@@ -1,11 +1,22 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender;
 
+import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
+import static io.netty.handler.codec.http.HttpResponseStatus.TOO_MANY_REQUESTS;
+import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
+
+import static jakarta.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
+import static jakarta.ws.rs.core.Response.Status.Family.SUCCESSFUL;
+import static jakarta.ws.rs.core.Response.Status.Family.familyOf;
+
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
+
 import jakarta.ws.rs.core.Response;
+
 import org.eclipse.jetty.client.Result;
 import org.eclipse.jetty.http.HttpFields;
 import org.eclipse.jetty.http.HttpHeader;
+
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 
 import java.net.URI;
@@ -15,13 +26,6 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Predicate;
-
-import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
-import static io.netty.handler.codec.http.HttpResponseStatus.TOO_MANY_REQUESTS;
-import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
-import static jakarta.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
-import static jakarta.ws.rs.core.Response.Status.Family.SUCCESSFUL;
-import static jakarta.ws.rs.core.Response.Status.Family.familyOf;
 
 public class SingleMessageSendingResult implements MessageSendingResult {
 
@@ -83,7 +87,9 @@ public class SingleMessageSendingResult implements MessageSendingResult {
         this.statusCode = statusCode;
         responseFamily = familyOf(statusCode);
         if (this.failure == null && !isInFamily(SUCCESSFUL)) {
-            this.failure = new InternalProcessingException("Message sending failed with status code: " + statusCode);
+            this.failure =
+                    new InternalProcessingException(
+                            "Message sending failed with status code: " + statusCode);
         }
     }
 
@@ -155,10 +161,13 @@ public class SingleMessageSendingResult implements MessageSendingResult {
     }
 
     @Override
-    public boolean ignoreInRateCalculation(boolean retryClientErrors, boolean isOAuthSecuredSubscription) {
+    public boolean ignoreInRateCalculation(
+            boolean retryClientErrors, boolean isOAuthSecuredSubscription) {
         return isRetryLater()
                 || this.ignoreInRateCalculation
-                || (isClientError() && !retryClientErrors && !(isOAuthSecuredSubscription && isUnauthorized()));
+                || (isClientError()
+                        && !retryClientErrors
+                        && !(isOAuthSecuredSubscription && isUnauthorized()));
     }
 
     private boolean isUnauthorized() {
@@ -172,7 +181,8 @@ public class SingleMessageSendingResult implements MessageSendingResult {
 
     @Override
     public List<MessageSendingResultLogInfo> getLogInfo() {
-        return Collections.singletonList(new MessageSendingResultLogInfo(getRequestUri(), failure, getRootCause()));
+        return Collections.singletonList(
+                new MessageSendingResultLogInfo(getRequestUri(), failure, getRootCause()));
     }
 
     @Override
@@ -183,5 +193,4 @@ public class SingleMessageSendingResult implements MessageSendingResult {
             return Collections.emptyList();
         }
     }
-
 }

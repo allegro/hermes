@@ -1,28 +1,35 @@
 package pl.allegro.tech.hermes.consumers.consumer.oauth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.PathChildrenCache;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.api.OAuthProvider;
 
 import java.io.IOException;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 
-public class OAuthProvidersNotifyingCache extends PathChildrenCache implements PathChildrenCacheListener {
+public class OAuthProvidersNotifyingCache extends PathChildrenCache
+        implements PathChildrenCacheListener {
 
-    private static final Logger logger = LoggerFactory.getLogger(OAuthProvidersNotifyingCache.class);
+    private static final Logger logger =
+            LoggerFactory.getLogger(OAuthProvidersNotifyingCache.class);
 
     private final ObjectMapper objectMapper;
 
     private OAuthProviderCacheListener listener;
 
-    public OAuthProvidersNotifyingCache(CuratorFramework curator, String path, ExecutorService executorService,
-                                        ObjectMapper objectMapper) {
+    public OAuthProvidersNotifyingCache(
+            CuratorFramework curator,
+            String path,
+            ExecutorService executorService,
+            ObjectMapper objectMapper) {
         super(curator, path, true, false, executorService);
         this.objectMapper = objectMapper;
         getListenable().addListener(this);
@@ -43,7 +50,8 @@ public class OAuthProvidersNotifyingCache extends PathChildrenCache implements P
             return;
         }
         if (event.getType() == PathChildrenCacheEvent.Type.CHILD_UPDATED) {
-            parseEvent(event.getData().getPath(), event.getData().getData()).ifPresent(listener::oAuthProviderUpdate);
+            parseEvent(event.getData().getPath(), event.getData().getData())
+                    .ifPresent(listener::oAuthProviderUpdate);
         }
     }
 

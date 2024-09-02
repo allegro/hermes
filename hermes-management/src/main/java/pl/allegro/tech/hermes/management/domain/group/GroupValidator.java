@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.management.domain.group;
 
 import org.springframework.stereotype.Component;
+
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.domain.group.GroupAlreadyExistsException;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
@@ -17,7 +18,8 @@ public class GroupValidator {
 
     public GroupValidator(GroupRepository repository, GroupProperties groupProperties) {
         this.repository = repository;
-        this.groupNameValidator = new GroupNameValidator(groupProperties.getAllowedGroupNameRegex());
+        this.groupNameValidator =
+                new GroupNameValidator(groupProperties.getAllowedGroupNameRegex());
     }
 
     public void checkCreation(Group toCheck, CreatorRights<Group> creatorRights) {

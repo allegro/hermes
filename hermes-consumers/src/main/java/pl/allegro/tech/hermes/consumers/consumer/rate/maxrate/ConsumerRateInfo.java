@@ -47,9 +47,13 @@ final class ConsumerRateInfo {
     @Override
     public String toString() {
         return "ConsumerRateInfo{"
-                + "consumerId='" + consumerId + '\''
-                + ", maxRate=" + maxRate
-                + ", history=" + history
+                + "consumerId='"
+                + consumerId
+                + '\''
+                + ", maxRate="
+                + maxRate
+                + ", history="
+                + history
                 + '}';
     }
 }

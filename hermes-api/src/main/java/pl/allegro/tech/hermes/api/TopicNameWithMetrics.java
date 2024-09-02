@@ -24,8 +24,7 @@ public class TopicNameWithMetrics {
             @JsonProperty("subscriptions") int subscriptions,
             @JsonProperty("throughput") MetricDecimalValue throughput,
             @JsonProperty("volume") long volume,
-            @JsonProperty("name") String qualifiedName
-    ) {
+            @JsonProperty("name") String qualifiedName) {
         this.published = published;
         this.rate = rate;
         this.deliveryRate = deliveryRate;
@@ -43,8 +42,7 @@ public class TopicNameWithMetrics {
                 metrics.getSubscriptions(),
                 metrics.getThroughput(),
                 metrics.getVolume(),
-                qualifiedName
-        );
+                qualifiedName);
     }
 
     public long getPublished() {
@@ -98,6 +96,7 @@ public class TopicNameWithMetrics {
 
     @Override
     public int hashCode() {
-        return Objects.hash(published, rate, deliveryRate, subscriptions, throughput, topicName, volume);
+        return Objects.hash(
+                published, rate, deliveryRate, subscriptions, throughput, topicName, volume);
     }
 }

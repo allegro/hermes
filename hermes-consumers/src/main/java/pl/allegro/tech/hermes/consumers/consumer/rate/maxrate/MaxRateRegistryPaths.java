@@ -1,10 +1,10 @@
 package pl.allegro.tech.hermes.consumers.consumer.rate.maxrate;
 
-import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
-
 import static pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths.CONSUMERS_RATE_PATH;
 import static pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths.MAX_RATE_HISTORY_PATH;
 import static pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths.MAX_RATE_PATH;
+
+import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 
 class MaxRateRegistryPaths {
 
@@ -14,7 +14,8 @@ class MaxRateRegistryPaths {
     private final String clusterName;
     private final String currentConsumerRateHistoryPath;
 
-    MaxRateRegistryPaths(ZookeeperPaths zookeeperPaths, String currentConsumerId, String clusterName) {
+    MaxRateRegistryPaths(
+            ZookeeperPaths zookeeperPaths, String currentConsumerId, String clusterName) {
         this.zookeeperPaths = zookeeperPaths;
         this.clusterName = clusterName;
         this.currentConsumerRateHistoryPath = consumerRateHistoryPath(currentConsumerId);
@@ -25,7 +26,8 @@ class MaxRateRegistryPaths {
     }
 
     String consumerRateHistoryPath(String consumerId) {
-        return zookeeperPaths.join(consumerRateParentRuntimePath(consumerId), MAX_RATE_HISTORY_PATH);
+        return zookeeperPaths.join(
+                consumerRateParentRuntimePath(consumerId), MAX_RATE_HISTORY_PATH);
     }
 
     String consumerRateParentRuntimePath(String consumerId) {
@@ -33,7 +35,8 @@ class MaxRateRegistryPaths {
     }
 
     String consumersRateCurrentClusterRuntimeBinaryPath() {
-        return zookeeperPaths.join(zookeeperPaths.basePath(), CONSUMERS_RATE_PATH, clusterName, RATE_RUNTIME_PATH);
+        return zookeeperPaths.join(
+                zookeeperPaths.basePath(), CONSUMERS_RATE_PATH, clusterName, RATE_RUNTIME_PATH);
     }
 
     String currentConsumerRateHistoryPath() {

@@ -1,16 +1,22 @@
 package pl.allegro.tech.hermes.management.api;
 
+import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.HttpMethod;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
 import pl.allegro.tech.hermes.api.Owner;
 import pl.allegro.tech.hermes.management.domain.owner.OwnerSource;
 import pl.allegro.tech.hermes.management.domain.owner.OwnerSourceNotFound;
@@ -19,8 +25,6 @@ import pl.allegro.tech.hermes.management.domain.owner.OwnerSources;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-
-import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 
 @Component
 @Path("/owners")
@@ -37,20 +41,25 @@ public class OwnersEndpoint {
     @GET
     @Path("/sources/{source}")
     @Produces(APPLICATION_JSON)
-    @ApiOperation(value = "Lists owners from the given source matching the search string",
-            response = List.class, httpMethod = HttpMethod.GET)
-    public List<Owner> search(@PathParam("source") String source,
-                              @QueryParam("search") String searchString) {
+    @ApiOperation(
+            value = "Lists owners from the given source matching the search string",
+            response = List.class,
+            httpMethod = HttpMethod.GET)
+    public List<Owner> search(
+            @PathParam("source") String source, @QueryParam("search") String searchString) {
         return ownerSources.getAutocompletionFor(source).ownersMatching(searchString);
     }
 
     @GET
     @Path("/sources/{source}/{id}")
     @Produces(APPLICATION_JSON)
-    @ApiOperation(value = "Returns owner from the given source of the given id", response = List.class, httpMethod = HttpMethod.GET)
-    public Owner get(@PathParam("source") String source,
-                     @PathParam("id") String id) {
-        return ownerSources.getByName(source)
+    @ApiOperation(
+            value = "Returns owner from the given source of the given id",
+            response = List.class,
+            httpMethod = HttpMethod.GET)
+    public Owner get(@PathParam("source") String source, @PathParam("id") String id) {
+        return ownerSources
+                .getByName(source)
                 .map(s -> s.get(id))
                 .orElseThrow(() -> new OwnerSourceNotFound(source));
     }
@@ -85,7 +94,5 @@ public class OwnersEndpoint {
         static SourceDescriptor of(OwnerSource source) {
             return new SourceDescriptor(source);
         }
-
     }
-
 }

@@ -21,5 +21,4 @@ public interface GroupRepository {
     List<Group> listGroups();
 
     Group getGroupDetails(String groupName);
-
 }

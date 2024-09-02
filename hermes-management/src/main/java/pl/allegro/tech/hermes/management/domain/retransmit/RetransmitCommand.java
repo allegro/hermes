@@ -14,8 +14,7 @@ public class RetransmitCommand extends RepositoryCommand<AdminTool> {
     }
 
     @Override
-    public void backup(DatacenterBoundRepositoryHolder<AdminTool> holder) {
-    }
+    public void backup(DatacenterBoundRepositoryHolder<AdminTool> holder) {}
 
     @Override
     public void execute(DatacenterBoundRepositoryHolder<AdminTool> holder) {
@@ -23,9 +22,7 @@ public class RetransmitCommand extends RepositoryCommand<AdminTool> {
     }
 
     @Override
-    public void rollback(DatacenterBoundRepositoryHolder<AdminTool> holder, Exception exception) {
-
-    }
+    public void rollback(DatacenterBoundRepositoryHolder<AdminTool> holder, Exception exception) {}
 
     @Override
     public Class<AdminTool> getRepositoryType() {

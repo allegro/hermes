@@ -10,8 +10,9 @@ public class FallbackToRemoteDatacenterAwareMessageProducer implements BrokerMes
     private final BrokerMessageProducer localDatacenterMessageProducer;
     private final BrokerMessageProducer multiDatacenterMessageProducer;
 
-    public FallbackToRemoteDatacenterAwareMessageProducer(BrokerMessageProducer localDatacenterMessageProducer,
-                                                          BrokerMessageProducer multiDatacenterMessageProducer) {
+    public FallbackToRemoteDatacenterAwareMessageProducer(
+            BrokerMessageProducer localDatacenterMessageProducer,
+            BrokerMessageProducer multiDatacenterMessageProducer) {
         this.localDatacenterMessageProducer = localDatacenterMessageProducer;
         this.multiDatacenterMessageProducer = multiDatacenterMessageProducer;
     }

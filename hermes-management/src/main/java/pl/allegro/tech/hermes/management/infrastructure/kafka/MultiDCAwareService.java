@@ -1,7 +1,10 @@
 package pl.allegro.tech.hermes.management.infrastructure.kafka;
 
+import static java.util.stream.Collectors.toList;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.api.ConsumerGroup;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
@@ -25,8 +28,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import static java.util.stream.Collectors.toList;
-
 public class MultiDCAwareService {
 
     private static final Logger logger = LoggerFactory.getLogger(MultiDCAwareService.class);
@@ -37,9 +38,12 @@ public class MultiDCAwareService {
     private final Duration offsetsMovedTimeout;
     private final MultiDatacenterRepositoryCommandExecutor multiDcExecutor;
 
-    public MultiDCAwareService(List<BrokersClusterService> clusters, Clock clock,
-                               Duration intervalBetweenCheckingIfOffsetsMoved, Duration offsetsMovedTimeout,
-                               MultiDatacenterRepositoryCommandExecutor multiDcExecutor) {
+    public MultiDCAwareService(
+            List<BrokersClusterService> clusters,
+            Clock clock,
+            Duration intervalBetweenCheckingIfOffsetsMoved,
+            Duration offsetsMovedTimeout,
+            MultiDatacenterRepositoryCommandExecutor multiDcExecutor) {
         this.clusters = clusters;
         this.clock = clock;
         this.intervalBetweenCheckingIfOffsetsMoved = intervalBetweenCheckingIfOffsetsMoved;
@@ -51,7 +55,8 @@ public class MultiDCAwareService {
         clusters.forEach(kafkaService -> kafkaService.manageTopic(manageFunction));
     }
 
-    public String readMessageFromPrimary(String clusterName, Topic topic, Integer partition, Long offset) {
+    public String readMessageFromPrimary(
+            String clusterName, Topic topic, Integer partition, Long offset) {
         return clusters.stream()
                 .filter(cluster -> clusterName.equals(cluster.getClusterName()))
                 .findFirst()
@@ -59,36 +64,49 @@ public class MultiDCAwareService {
                 .readMessageFromPrimary(topic, partition, offset);
     }
 
-    public MultiDCOffsetChangeSummary retransmit(Topic topic,
-                                                 String subscriptionName,
-                                                 Long timestamp,
-                                                 boolean dryRun,
-                                                 RequestUser requester) {
+    public MultiDCOffsetChangeSummary retransmit(
+            Topic topic,
+            String subscriptionName,
+            Long timestamp,
+            boolean dryRun,
+            RequestUser requester) {
         MultiDCOffsetChangeSummary multiDCOffsetChangeSummary = new MultiDCOffsetChangeSummary();
 
-        clusters.forEach(cluster -> multiDCOffsetChangeSummary.addPartitionOffsetList(
-                cluster.getClusterName(),
-                cluster.indicateOffsetChange(topic, subscriptionName, timestamp, dryRun)));
+        clusters.forEach(
+                cluster ->
+                        multiDCOffsetChangeSummary.addPartitionOffsetList(
+                                cluster.getClusterName(),
+                                cluster.indicateOffsetChange(
+                                        topic, subscriptionName, timestamp, dryRun)));
 
         if (!dryRun) {
-            logger.info("Starting retransmission for subscription {}. Requested by {}. Retransmission timestamp: {}",
-                    topic.getQualifiedName() + "$" + subscriptionName, requester.getUsername(), timestamp);
-            multiDcExecutor.executeByUser(new RetransmitCommand(new SubscriptionName(subscriptionName, topic.getName())), requester);
+            logger.info(
+                    "Starting retransmission for subscription {}. Requested by {}. Retransmission timestamp: {}",
+                    topic.getQualifiedName() + "$" + subscriptionName,
+                    requester.getUsername(),
+                    timestamp);
+            multiDcExecutor.executeByUser(
+                    new RetransmitCommand(new SubscriptionName(subscriptionName, topic.getName())),
+                    requester);
             clusters.forEach(clusters -> waitUntilOffsetsAreMoved(topic, subscriptionName));
             logger.info(
                     "Successfully moved offsets for retransmission of subscription {}. Requested by user: {}. Retransmission timestamp: {}",
-                    topic.getQualifiedName() + "$" + subscriptionName, requester.getUsername(), timestamp);
+                    topic.getQualifiedName() + "$" + subscriptionName,
+                    requester.getUsername(),
+                    timestamp);
         }
 
         return multiDCOffsetChangeSummary;
     }
 
     public boolean areOffsetsAvailableOnAllKafkaTopics(Topic topic) {
-        return clusters.stream().allMatch(cluster -> cluster.areOffsetsAvailableOnAllKafkaTopics(topic));
+        return clusters.stream()
+                .allMatch(cluster -> cluster.areOffsetsAvailableOnAllKafkaTopics(topic));
     }
 
     public boolean topicExists(Topic topic) {
-        return clusters.stream().allMatch(brokersClusterService -> brokersClusterService.topicExists(topic));
+        return clusters.stream()
+                .allMatch(brokersClusterService -> brokersClusterService.topicExists(topic));
     }
 
     public Set<String> listTopicFromAllDC() {
@@ -99,7 +117,8 @@ public class MultiDCAwareService {
     }
 
     public void removeTopicByName(String topicName) {
-        clusters.forEach(brokersClusterService -> brokersClusterService.removeTopicByName(topicName));
+        clusters.forEach(
+                brokersClusterService -> brokersClusterService.removeTopicByName(topicName));
     }
 
     public void createConsumerGroups(Topic topic, Subscription subscription) {
@@ -111,11 +130,15 @@ public class MultiDCAwareService {
 
         while (!areOffsetsMoved(topic, subscriptionName)) {
             if (clock.instant().isAfter(abortAttemptsInstant)) {
-                logger.error("Not all offsets related to hermes subscription {}${} were moved.", topic.getQualifiedName(),
+                logger.error(
+                        "Not all offsets related to hermes subscription {}${} were moved.",
+                        topic.getQualifiedName(),
                         subscriptionName);
                 throw new UnableToMoveOffsetsException(topic, subscriptionName);
             }
-            logger.debug("Not all offsets related to hermes subscription {} were moved, will retry", topic.getQualifiedName());
+            logger.debug(
+                    "Not all offsets related to hermes subscription {} were moved, will retry",
+                    topic.getQualifiedName());
 
             sleep(intervalBetweenCheckingIfOffsetsMoved);
         }
@@ -134,13 +157,21 @@ public class MultiDCAwareService {
         }
     }
 
-    public boolean allSubscriptionsHaveConsumersAssigned(Topic topic, List<Subscription> subscriptions) {
-        return clusters.stream().allMatch(brokersClusterService ->
-                brokersClusterService.allSubscriptionsHaveConsumersAssigned(topic, subscriptions));
+    public boolean allSubscriptionsHaveConsumersAssigned(
+            Topic topic, List<Subscription> subscriptions) {
+        return clusters.stream()
+                .allMatch(
+                        brokersClusterService ->
+                                brokersClusterService.allSubscriptionsHaveConsumersAssigned(
+                                        topic, subscriptions));
     }
 
     public List<ConsumerGroup> describeConsumerGroups(Topic topic, String subscriptionName) {
-        return clusters.stream().map(brokersClusterService -> brokersClusterService.describeConsumerGroup(topic, subscriptionName))
+        return clusters.stream()
+                .map(
+                        brokersClusterService ->
+                                brokersClusterService.describeConsumerGroup(
+                                        topic, subscriptionName))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(toList());

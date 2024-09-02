@@ -17,18 +17,55 @@ public class PublishingMessageTracker implements PublishingTracker {
     }
 
     @Override
-    public void logInflight(String messageId, TopicName topicName, String hostname, Map<String, String> extraRequestHeaders) {
-        repositories.forEach(r -> r.logInflight(messageId, clock.millis(), topicName.qualifiedName(), hostname, extraRequestHeaders));
+    public void logInflight(
+            String messageId,
+            TopicName topicName,
+            String hostname,
+            Map<String, String> extraRequestHeaders) {
+        repositories.forEach(
+                r ->
+                        r.logInflight(
+                                messageId,
+                                clock.millis(),
+                                topicName.qualifiedName(),
+                                hostname,
+                                extraRequestHeaders));
     }
 
     @Override
-    public void logPublished(String messageId, TopicName topicName, String hostname, String storageDatacenter, Map<String, String> extraRequestHeaders) {
-        repositories.forEach(r -> r.logPublished(messageId, clock.millis(), topicName.qualifiedName(), hostname, storageDatacenter, extraRequestHeaders));
+    public void logPublished(
+            String messageId,
+            TopicName topicName,
+            String hostname,
+            String storageDatacenter,
+            Map<String, String> extraRequestHeaders) {
+        repositories.forEach(
+                r ->
+                        r.logPublished(
+                                messageId,
+                                clock.millis(),
+                                topicName.qualifiedName(),
+                                hostname,
+                                storageDatacenter,
+                                extraRequestHeaders));
     }
 
     @Override
-    public void logError(String messageId, TopicName topicName, String reason, String hostname, Map<String, String> extraRequestHeaders) {
-        repositories.forEach(r -> r.logError(messageId, clock.millis(), topicName.qualifiedName(), reason, hostname, extraRequestHeaders));
+    public void logError(
+            String messageId,
+            TopicName topicName,
+            String reason,
+            String hostname,
+            Map<String, String> extraRequestHeaders) {
+        repositories.forEach(
+                r ->
+                        r.logError(
+                                messageId,
+                                clock.millis(),
+                                topicName.qualifiedName(),
+                                reason,
+                                hostname,
+                                extraRequestHeaders));
     }
 
     public void add(LogRepository logRepository) {

@@ -8,9 +8,10 @@ import java.net.UnknownHostException;
 
 public final class InetAddressInstanceIdResolver implements InstanceIdResolver {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(InetAddressInstanceIdResolver.class);
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(InetAddressInstanceIdResolver.class);
 
-    public InetAddressInstanceIdResolver() { }
+    public InetAddressInstanceIdResolver() {}
 
     public String resolve() {
         String hostname = "hostname-could-not-be-detected";
@@ -21,5 +22,4 @@ public final class InetAddressInstanceIdResolver implements InstanceIdResolver {
         }
         return hostname;
     }
-
 }

@@ -10,7 +10,8 @@ public class MessagePreview {
     private final boolean truncated;
 
     @JsonCreator
-    public MessagePreview(@JsonProperty("content") byte[] content, @JsonProperty("truncated") boolean truncated) {
+    public MessagePreview(
+            @JsonProperty("content") byte[] content, @JsonProperty("truncated") boolean truncated) {
         this.content = content;
         this.truncated = truncated;
     }

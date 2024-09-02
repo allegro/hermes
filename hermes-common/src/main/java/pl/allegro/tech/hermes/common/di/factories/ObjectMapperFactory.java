@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.InjectableValues;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
 import pl.allegro.tech.hermes.api.Topic;
 
 public class ObjectMapperFactory {
@@ -13,7 +14,8 @@ public class ObjectMapperFactory {
     private final boolean schemaIdSerializationEnabled;
     private final boolean fallbackToRemoteDatacenterEnabled;
 
-    public ObjectMapperFactory(boolean schemaIdSerializationEnabled, boolean fallbackToRemoteDatacenterEnabled) {
+    public ObjectMapperFactory(
+            boolean schemaIdSerializationEnabled, boolean fallbackToRemoteDatacenterEnabled) {
         this.schemaIdSerializationEnabled = schemaIdSerializationEnabled;
         this.fallbackToRemoteDatacenterEnabled = fallbackToRemoteDatacenterEnabled;
     }
@@ -25,9 +27,14 @@ public class ObjectMapperFactory {
         objectMapper.disable(SerializationFeature.WRITE_NULL_MAP_VALUES);
         objectMapper.registerModule(new JavaTimeModule());
 
-        final InjectableValues defaultSchemaIdAwareSerializationEnabled = new InjectableValues.Std()
-                .addValue(Topic.DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY, schemaIdSerializationEnabled)
-                .addValue(Topic.DEFAULT_FALLBACK_TO_REMOTE_DATACENTER_KEY, fallbackToRemoteDatacenterEnabled);
+        final InjectableValues defaultSchemaIdAwareSerializationEnabled =
+                new InjectableValues.Std()
+                        .addValue(
+                                Topic.DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY,
+                                schemaIdSerializationEnabled)
+                        .addValue(
+                                Topic.DEFAULT_FALLBACK_TO_REMOTE_DATACENTER_KEY,
+                                fallbackToRemoteDatacenterEnabled);
         objectMapper.setInjectableValues(defaultSchemaIdAwareSerializationEnabled);
 
         return objectMapper;

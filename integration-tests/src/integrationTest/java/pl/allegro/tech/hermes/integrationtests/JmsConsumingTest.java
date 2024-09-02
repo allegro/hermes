@@ -1,10 +1,14 @@
 package pl.allegro.tech.hermes.integrationtests;
 
+import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscriptionWithRandomName;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.http.HttpHeaders;
+
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesExtension;
 import pl.allegro.tech.hermes.integrationtests.setup.JmsStarter;
@@ -14,15 +18,11 @@ import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import java.util.UUID;
 
-import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscriptionWithRandomName;
-import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
-
 public class JmsConsumingTest {
 
     private static final String JMS_TOPIC_NAME = "hermes";
 
-    @RegisterExtension
-    public static final HermesExtension hermes = new HermesExtension();
+    @RegisterExtension public static final HermesExtension hermes = new HermesExtension();
 
     private static final JmsStarter starter = new JmsStarter();
 
@@ -41,7 +41,9 @@ public class JmsConsumingTest {
         // given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
         TestJmsSubscriber subscriber = new TestJmsSubscriber(JMS_TOPIC_NAME);
-        hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName(), jmsEndpointAddress()).build());
+        hermes.initHelper()
+                .createSubscription(
+                        subscriptionWithRandomName(topic.getName(), jmsEndpointAddress()).build());
 
         // when
         hermes.api().publish(topic.getQualifiedName(), TestMessage.simple().body());
@@ -58,7 +60,9 @@ public class JmsConsumingTest {
         headers.add("Trace-Id", traceId);
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
         TestJmsSubscriber subscriber = new TestJmsSubscriber(JMS_TOPIC_NAME);
-        hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName(), jmsEndpointAddress()).build());
+        hermes.initHelper()
+                .createSubscription(
+                        subscriptionWithRandomName(topic.getName(), jmsEndpointAddress()).build());
 
         // when
         hermes.api().publish(topic.getQualifiedName(), TestMessage.simple().body(), headers);
@@ -75,7 +79,9 @@ public class JmsConsumingTest {
         addTraceHeaders(trace, headers);
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
         TestJmsSubscriber subscriber = new TestJmsSubscriber(JMS_TOPIC_NAME);
-        hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName(), jmsEndpointAddress()).build());
+        hermes.initHelper()
+                .createSubscription(
+                        subscriptionWithRandomName(topic.getName(), jmsEndpointAddress()).build());
 
         // when
         hermes.api().publish(topic.getQualifiedName(), TestMessage.simple().body(), headers);

@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.infrastructure.zookeeper.counter;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.atomic.DistributedAtomicLong;
@@ -15,14 +16,20 @@ public class SharedCounter {
 
     private final LoadingCache<String, DistributedAtomicLong> distributedAtomicLongs;
 
-    public SharedCounter(CuratorFramework curatorClient, Duration expireAfter,
-                         Duration distributedLoaderBackoff, int distributedLoaderRetries) {
-        distributedAtomicLongs = CacheBuilder.newBuilder()
-                .expireAfterAccess(expireAfter.toHours(), TimeUnit.HOURS)
-                .build(new DistributedAtomicLongLoader(
-                                curatorClient,
-                                new ExponentialBackoffRetry((int) distributedLoaderBackoff.toMillis(), distributedLoaderRetries))
-                );
+    public SharedCounter(
+            CuratorFramework curatorClient,
+            Duration expireAfter,
+            Duration distributedLoaderBackoff,
+            int distributedLoaderRetries) {
+        distributedAtomicLongs =
+                CacheBuilder.newBuilder()
+                        .expireAfterAccess(expireAfter.toHours(), TimeUnit.HOURS)
+                        .build(
+                                new DistributedAtomicLongLoader(
+                                        curatorClient,
+                                        new ExponentialBackoffRetry(
+                                                (int) distributedLoaderBackoff.toMillis(),
+                                                distributedLoaderRetries)));
     }
 
     public boolean increment(String path, long count) {
@@ -41,7 +48,8 @@ public class SharedCounter {
         }
     }
 
-    private static final class DistributedAtomicLongLoader extends CacheLoader<String, DistributedAtomicLong> {
+    private static final class DistributedAtomicLongLoader
+            extends CacheLoader<String, DistributedAtomicLong> {
 
         private final CuratorFramework client;
 

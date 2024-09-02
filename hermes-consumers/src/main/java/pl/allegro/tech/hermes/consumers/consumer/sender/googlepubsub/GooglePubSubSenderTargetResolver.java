@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub;
 
 import com.google.common.base.Preconditions;
 import com.google.pubsub.v1.TopicName;
+
 import pl.allegro.tech.hermes.api.EndpointAddress;
 
 import java.net.URI;
@@ -32,12 +33,15 @@ public class GooglePubSubSenderTargetResolver {
 
     private CompressionCodec findCompressionCodec(String params) {
         try {
-            Map<String, List<String[]>> paramListMap = Optional.ofNullable(params)
-                    .map(q -> Arrays.stream(q.split("&"))
-                            .map(p -> p.split("="))
-                            .filter(p -> p.length > 1)
-                            .collect(Collectors.groupingBy(c -> c[0])))
-                    .orElse(Collections.emptyMap());
+            Map<String, List<String[]>> paramListMap =
+                    Optional.ofNullable(params)
+                            .map(
+                                    q ->
+                                            Arrays.stream(q.split("&"))
+                                                    .map(p -> p.split("="))
+                                                    .filter(p -> p.length > 1)
+                                                    .collect(Collectors.groupingBy(c -> c[0])))
+                            .orElse(Collections.emptyMap());
 
             return Optional.ofNullable(paramListMap.get("compression"))
                     .flatMap(p -> p.stream().findFirst())

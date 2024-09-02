@@ -1,8 +1,17 @@
 package pl.allegro.tech.hermes.tracker.elasticsearch.frontend;
 
+import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
+
+import static pl.allegro.tech.hermes.api.PublishedMessageTraceStatus.ERROR;
+import static pl.allegro.tech.hermes.api.PublishedMessageTraceStatus.INFLIGHT;
+import static pl.allegro.tech.hermes.api.PublishedMessageTraceStatus.SUCCESS;
+import static pl.allegro.tech.hermes.common.http.ExtraRequestHeadersCollector.extraRequestHeadersCollector;
+import static pl.allegro.tech.hermes.tracker.elasticsearch.ElasticsearchDocument.build;
+
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.io.stream.BytesStreamOutput;
 import org.elasticsearch.common.xcontent.XContentBuilder;
+
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.metric.TrackerElasticSearchMetrics;
 import pl.allegro.tech.hermes.tracker.BatchingLogRepository;
@@ -17,61 +26,84 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 
-import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
-import static pl.allegro.tech.hermes.api.PublishedMessageTraceStatus.ERROR;
-import static pl.allegro.tech.hermes.api.PublishedMessageTraceStatus.INFLIGHT;
-import static pl.allegro.tech.hermes.api.PublishedMessageTraceStatus.SUCCESS;
-import static pl.allegro.tech.hermes.common.http.ExtraRequestHeadersCollector.extraRequestHeadersCollector;
-import static pl.allegro.tech.hermes.tracker.elasticsearch.ElasticsearchDocument.build;
-
-public class FrontendElasticsearchLogRepository
-        extends BatchingLogRepository<ElasticsearchDocument>
+public class FrontendElasticsearchLogRepository extends BatchingLogRepository<ElasticsearchDocument>
         implements LogRepository, LogSchemaAware {
 
     private static final int DOCUMENT_EXPECTED_SIZE = 1024;
 
     private final Client elasticClient;
 
-    private FrontendElasticsearchLogRepository(Client elasticClient,
-                                               String clusterName,
-                                               String hostname,
-                                               int queueSize,
-                                               int commitInterval,
-                                               IndexFactory indexFactory,
-                                               String typeName,
-                                               MetricsFacade metricsFacade) {
+    private FrontendElasticsearchLogRepository(
+            Client elasticClient,
+            String clusterName,
+            String hostname,
+            int queueSize,
+            int commitInterval,
+            IndexFactory indexFactory,
+            String typeName,
+            MetricsFacade metricsFacade) {
         super(queueSize, clusterName, hostname);
         this.elasticClient = elasticClient;
-        registerMetrics(commitInterval, indexFactory, typeName, metricsFacade.trackerElasticSearch());
+        registerMetrics(
+                commitInterval, indexFactory, typeName, metricsFacade.trackerElasticSearch());
     }
 
     @Override
-    public void logPublished(String messageId,
-                             long timestamp,
-                             String topicName,
-                             String hostname,
-                             String storageDatacenter,
-                             Map<String, String> extraRequestHeaders) {
-        queue.offer(build(() -> success(messageId, timestamp, topicName, hostname, storageDatacenter, extraRequestHeaders)));
+    public void logPublished(
+            String messageId,
+            long timestamp,
+            String topicName,
+            String hostname,
+            String storageDatacenter,
+            Map<String, String> extraRequestHeaders) {
+        queue.offer(
+                build(
+                        () ->
+                                success(
+                                        messageId,
+                                        timestamp,
+                                        topicName,
+                                        hostname,
+                                        storageDatacenter,
+                                        extraRequestHeaders)));
     }
 
     @Override
-    public void logError(String messageId,
-                         long timestamp,
-                         String topicName,
-                         String reason,
-                         String hostname,
-                         Map<String, String> extraRequestHeaders) {
-        queue.offer(build(() -> error(messageId, timestamp, topicName, reason, hostname, extraRequestHeaders)));
+    public void logError(
+            String messageId,
+            long timestamp,
+            String topicName,
+            String reason,
+            String hostname,
+            Map<String, String> extraRequestHeaders) {
+        queue.offer(
+                build(
+                        () ->
+                                error(
+                                        messageId,
+                                        timestamp,
+                                        topicName,
+                                        reason,
+                                        hostname,
+                                        extraRequestHeaders)));
     }
 
     @Override
-    public void logInflight(String messageId,
-                            long timestamp,
-                            String topicName,
-                            String hostname,
-                            Map<String, String> extraRequestHeaders) {
-        queue.offer(build(() -> inflight(messageId, timestamp, topicName, hostname, extraRequestHeaders)));
+    public void logInflight(
+            String messageId,
+            long timestamp,
+            String topicName,
+            String hostname,
+            Map<String, String> extraRequestHeaders) {
+        queue.offer(
+                build(
+                        () ->
+                                inflight(
+                                        messageId,
+                                        timestamp,
+                                        topicName,
+                                        hostname,
+                                        extraRequestHeaders)));
     }
 
     @Override
@@ -79,47 +111,68 @@ public class FrontendElasticsearchLogRepository
         this.elasticClient.close();
     }
 
-    private XContentBuilder success(String messageId,
-                                    long timestamp,
-                                    String topicName,
-                                    String hostname,
-                                    String storageDatacenter,
-                                    Map<String, String> extraRequestHeaders)
+    private XContentBuilder success(
+            String messageId,
+            long timestamp,
+            String topicName,
+            String hostname,
+            String storageDatacenter,
+            Map<String, String> extraRequestHeaders)
             throws IOException {
-        return notEndedDocument(messageId, timestamp, topicName, SUCCESS.toString(), hostname, extraRequestHeaders)
+        return notEndedDocument(
+                        messageId,
+                        timestamp,
+                        topicName,
+                        SUCCESS.toString(),
+                        hostname,
+                        extraRequestHeaders)
                 .field(STORAGE_DATACENTER, storageDatacenter)
                 .endObject();
     }
 
-
-    private XContentBuilder inflight(String messageId,
-                                     long timestamp,
-                                     String topicName,
-                                     String hostname,
-                                     Map<String, String> extraRequestHeaders)
+    private XContentBuilder inflight(
+            String messageId,
+            long timestamp,
+            String topicName,
+            String hostname,
+            Map<String, String> extraRequestHeaders)
             throws IOException {
-        return notEndedDocument(messageId, timestamp, topicName, INFLIGHT.name(), hostname, extraRequestHeaders).endObject();
+        return notEndedDocument(
+                        messageId,
+                        timestamp,
+                        topicName,
+                        INFLIGHT.name(),
+                        hostname,
+                        extraRequestHeaders)
+                .endObject();
     }
 
-    private XContentBuilder error(String messageId,
-                                  long timestamp,
-                                  String topicName,
-                                  String reason,
-                                  String hostname,
-                                  Map<String, String> extraRequestHeaders)
+    private XContentBuilder error(
+            String messageId,
+            long timestamp,
+            String topicName,
+            String reason,
+            String hostname,
+            Map<String, String> extraRequestHeaders)
             throws IOException {
-        return notEndedDocument(messageId, timestamp, topicName, ERROR.toString(), hostname, extraRequestHeaders)
+        return notEndedDocument(
+                        messageId,
+                        timestamp,
+                        topicName,
+                        ERROR.toString(),
+                        hostname,
+                        extraRequestHeaders)
                 .field(REASON, reason)
                 .endObject();
     }
 
-
-    protected XContentBuilder notEndedDocument(String messageId,
-                                               long timestamp,
-                                               String topicName,
-                                               String status,
-                                               String hostname,
-                                               Map<String, String> extraRequestHeaders)
+    protected XContentBuilder notEndedDocument(
+            String messageId,
+            long timestamp,
+            String topicName,
+            String status,
+            String hostname,
+            Map<String, String> extraRequestHeaders)
             throws IOException {
         return jsonBuilder(new BytesStreamOutput(DOCUMENT_EXPECTED_SIZE))
                 .startObject()
@@ -131,19 +184,29 @@ public class FrontendElasticsearchLogRepository
                 .field(CLUSTER, clusterName)
                 .field(SOURCE_HOSTNAME, this.hostname)
                 .field(REMOTE_HOSTNAME, hostname)
-                .field(EXTRA_REQUEST_HEADERS, extraRequestHeaders.entrySet().stream()
-                    .collect(extraRequestHeadersCollector()));
+                .field(
+                        EXTRA_REQUEST_HEADERS,
+                        extraRequestHeaders.entrySet().stream()
+                                .collect(extraRequestHeadersCollector()));
     }
 
-    private void registerMetrics(int commitInterval,
-                                 IndexFactory indexFactory,
-                                 String typeName,
-                                 TrackerElasticSearchMetrics trackerMetrics) {
-        trackerMetrics.registerProducerTrackerElasticSearchQueueSizeGauge(this.queue, BlockingQueue::size);
-        trackerMetrics.registerProducerTrackerElasticSearchRemainingCapacity(this.queue, BlockingQueue::size);
+    private void registerMetrics(
+            int commitInterval,
+            IndexFactory indexFactory,
+            String typeName,
+            TrackerElasticSearchMetrics trackerMetrics) {
+        trackerMetrics.registerProducerTrackerElasticSearchQueueSizeGauge(
+                this.queue, BlockingQueue::size);
+        trackerMetrics.registerProducerTrackerElasticSearchRemainingCapacity(
+                this.queue, BlockingQueue::size);
 
-        ElasticsearchQueueCommitter.scheduleCommitAtFixedRate(this.queue, indexFactory, typeName, elasticClient,
-                trackerMetrics.trackerElasticSearchCommitLatencyTimer(), commitInterval);
+        ElasticsearchQueueCommitter.scheduleCommitAtFixedRate(
+                this.queue,
+                indexFactory,
+                typeName,
+                elasticClient,
+                trackerMetrics.trackerElasticSearchCommitLatencyTimer(),
+                commitInterval);
     }
 
     private long toSeconds(long millis) {
@@ -203,7 +266,8 @@ public class FrontendElasticsearchLogRepository
         }
 
         public FrontendElasticsearchLogRepository build() {
-            return new FrontendElasticsearchLogRepository(elasticClient,
+            return new FrontendElasticsearchLogRepository(
+                    elasticClient,
                     clusterName,
                     hostName,
                     queueSize,

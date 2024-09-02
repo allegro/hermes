@@ -1,7 +1,10 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload;
 
+import static org.slf4j.LoggerFactory.getLogger;
+
 import org.agrona.concurrent.UnsafeBuffer;
 import org.slf4j.Logger;
+
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionId;
 import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionIds;
@@ -11,8 +14,6 @@ import pl.allegro.tech.hermes.consumers.supervisor.workload.sbe.stubs.MessageHea
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-
-import static org.slf4j.LoggerFactory.getLogger;
 
 class ConsumerWorkloadDecoder {
 
@@ -31,12 +32,16 @@ class ConsumerWorkloadDecoder {
         UnsafeBuffer buffer = new UnsafeBuffer(data);
         header.wrap(buffer, 0);
 
-        if (header.schemaId() != AssignmentsDecoder.SCHEMA_ID || header.templateId() != AssignmentsDecoder.TEMPLATE_ID) {
-            logger.warn("Unable to decode assignments, schema or template id mismatch. "
+        if (header.schemaId() != AssignmentsDecoder.SCHEMA_ID
+                || header.templateId() != AssignmentsDecoder.TEMPLATE_ID) {
+            logger.warn(
+                    "Unable to decode assignments, schema or template id mismatch. "
                             + "Required by decoder: [schema id={}, template id={}], "
                             + "encoded in payload: [schema id={}, template id={}]",
-                    AssignmentsDecoder.SCHEMA_ID, AssignmentsDecoder.TEMPLATE_ID,
-                    header.schemaId(), header.templateId());
+                    AssignmentsDecoder.SCHEMA_ID,
+                    AssignmentsDecoder.TEMPLATE_ID,
+                    header.schemaId(),
+                    header.templateId());
             return Collections.emptySet();
         }
         body.wrap(buffer, header.encodedLength(), header.blockLength(), header.version());
@@ -44,7 +49,8 @@ class ConsumerWorkloadDecoder {
         Set<SubscriptionName> subscriptions = new HashSet<>();
         for (AssignmentsDecoder.SubscriptionsDecoder subscriptionDecoder : body.subscriptions()) {
             long id = subscriptionDecoder.id();
-            subscriptionIds.getSubscriptionId(id)
+            subscriptionIds
+                    .getSubscriptionId(id)
                     .map(SubscriptionId::getSubscriptionName)
                     .ifPresent(subscriptions::add);
         }

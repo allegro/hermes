@@ -16,8 +16,14 @@ public class ChronicleMapEntryValue implements Serializable {
     private final Integer schemaId;
     private final Map<String, String> propagatedHttpHeaders;
 
-    public ChronicleMapEntryValue(byte[] data, long timestamp, String qualifiedTopicName, String partitionKey,
-                                  Integer schemaVersion, Integer schemaId, Map<String, String> propagatedHttpHeaders) {
+    public ChronicleMapEntryValue(
+            byte[] data,
+            long timestamp,
+            String qualifiedTopicName,
+            String partitionKey,
+            Integer schemaVersion,
+            Integer schemaId,
+            Map<String, String> propagatedHttpHeaders) {
         this.data = data;
         this.timestamp = timestamp;
         this.qualifiedTopicName = qualifiedTopicName;
@@ -73,8 +79,13 @@ public class ChronicleMapEntryValue implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(data, timestamp, qualifiedTopicName, partitionKey, schemaVersion, schemaId,
+        return Objects.hash(
+                data,
+                timestamp,
+                qualifiedTopicName,
+                partitionKey,
+                schemaVersion,
+                schemaId,
                 propagatedHttpHeaders);
     }
-
 }

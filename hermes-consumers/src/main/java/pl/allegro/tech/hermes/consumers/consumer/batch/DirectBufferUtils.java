@@ -26,7 +26,6 @@ class DirectBufferUtils {
         return CLEANER != null;
     }
 
-
     static void release(ByteBuffer buffer) {
         try {
             if (supportsReleasing() && buffer.isDirect()) {

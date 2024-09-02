@@ -62,9 +62,14 @@ public class KafkaAuthenticationProperties {
         if (jaasConfig != null) {
             return jaasConfig;
         }
-        return loginModule + " required\n"
-                + "username=\"" + username + "\"\n"
-                + "password=\"" + password + "\";";
+        return loginModule
+                + " required\n"
+                + "username=\""
+                + username
+                + "\"\n"
+                + "password=\""
+                + password
+                + "\";";
     }
 
     public void setJaasConfig(String jaasConfig) {

@@ -1,12 +1,16 @@
 package pl.allegro.tech.hermes.frontend.readiness;
 
+import static pl.allegro.tech.hermes.api.DatacenterReadiness.ReadinessStatus.READY;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.ChildData;
 import org.apache.curator.framework.recipes.cache.NodeCache;
 import org.apache.curator.framework.recipes.cache.NodeCacheListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.api.DatacenterReadiness;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.domain.readiness.DatacenterReadinessList;
@@ -15,8 +19,6 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import static pl.allegro.tech.hermes.api.DatacenterReadiness.ReadinessStatus.READY;
 
 public class AdminReadinessService implements NodeCacheListener {
 
@@ -28,10 +30,11 @@ public class AdminReadinessService implements NodeCacheListener {
 
     private volatile Map<String, Boolean> readinessPerDatacenter;
 
-    public AdminReadinessService(ObjectMapper mapper,
-                                 CuratorFramework curator,
-                                 ZookeeperPaths paths,
-                                 String localDatacenterName) {
+    public AdminReadinessService(
+            ObjectMapper mapper,
+            CuratorFramework curator,
+            ZookeeperPaths paths,
+            String localDatacenterName) {
         this.mapper = mapper;
         this.localDatacenterName = localDatacenterName;
         this.cache = new NodeCache(curator, paths.datacenterReadinessPath());
@@ -65,9 +68,14 @@ public class AdminReadinessService implements NodeCacheListener {
             ChildData nodeData = cache.getCurrentData();
             if (nodeData != null) {
                 byte[] data = nodeData.getData();
-                DatacenterReadinessList readiness = mapper.readValue(data, DatacenterReadinessList.class);
-                readinessPerDatacenter = readiness.datacenters().stream()
-                        .collect(Collectors.toMap(DatacenterReadiness::getDatacenter, e -> e.getStatus() == READY));
+                DatacenterReadinessList readiness =
+                        mapper.readValue(data, DatacenterReadinessList.class);
+                readinessPerDatacenter =
+                        readiness.datacenters().stream()
+                                .collect(
+                                        Collectors.toMap(
+                                                DatacenterReadiness::getDatacenter,
+                                                e -> e.getStatus() == READY));
             } else {
                 readinessPerDatacenter = Collections.emptyMap();
             }
@@ -81,6 +89,7 @@ public class AdminReadinessService implements NodeCacheListener {
     }
 
     public boolean isDatacenterReady(String datacenter) {
-        return readinessPerDatacenter != null && readinessPerDatacenter.getOrDefault(datacenter, true);
+        return readinessPerDatacenter != null
+                && readinessPerDatacenter.getOrDefault(datacenter, true);
     }
 }

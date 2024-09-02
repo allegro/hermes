@@ -1,10 +1,12 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 
 import com.google.common.collect.ImmutableSet;
+
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.EndpointAddressResolverMetadata;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -30,7 +32,8 @@ import java.util.Set;
 
 public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProvider {
 
-    private static final Logger logger = LoggerFactory.getLogger(JettyHttpMessageSenderProvider.class);
+    private static final Logger logger =
+            LoggerFactory.getLogger(JettyHttpMessageSenderProvider.class);
 
     private static final HttpHeadersProvider http1HeadersProvider = new Http1HeadersProvider();
     private static final HttpHeadersProvider http2HeadersProvider = new Http2HeadersProvider();
@@ -67,13 +70,17 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
     }
 
     @Override
-    public MessageSender create(Subscription subscription, ResilientMessageSender resilientMessageSender) {
+    public MessageSender create(
+            Subscription subscription, ResilientMessageSender resilientMessageSender) {
         EndpointAddress endpoint = subscription.getEndpoint();
-        EndpointAddressResolverMetadata endpointAddressResolverMetadata = subscription.getEndpointAddressResolverMetadata();
+        EndpointAddressResolverMetadata endpointAddressResolverMetadata =
+                subscription.getEndpointAddressResolverMetadata();
         ResolvableEndpointAddress resolvableEndpoint =
-                new ResolvableEndpointAddress(endpoint, endpointAddressResolver, endpointAddressResolverMetadata);
+                new ResolvableEndpointAddress(
+                        endpoint, endpointAddressResolver, endpointAddressResolverMetadata);
         HttpRequestFactory requestFactory =
-                requestFactoryProvider.provideRequestFactory(subscription, getHttpClient(subscription), metadataAppender);
+                requestFactoryProvider.provideRequestFactory(
+                        subscription, getHttpClient(subscription), metadataAppender);
 
         if (subscription.getMode() == SubscriptionMode.BROADCAST) {
             return new JettyBroadCastMessageSender(
@@ -83,12 +90,14 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
                     sendingResultHandlers,
                     resilientMessageSender);
         } else {
-            JettyMessageSender jettyMessageSender =  new JettyMessageSender(
-                    requestFactory,
-                    resolvableEndpoint,
-                    getHttpRequestHeadersProvider(subscription),
-                    sendingResultHandlers);
-            return new SingleRecipientMessageSenderAdapter(jettyMessageSender, resilientMessageSender);
+            JettyMessageSender jettyMessageSender =
+                    new JettyMessageSender(
+                            requestFactory,
+                            resolvableEndpoint,
+                            getHttpRequestHeadersProvider(subscription),
+                            sendingResultHandlers);
+            return new SingleRecipientMessageSenderAdapter(
+                    jettyMessageSender, resilientMessageSender);
         }
     }
 
@@ -99,23 +108,24 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
 
     private HttpHeadersProvider getHttpRequestHeadersProvider(Subscription subscription) {
         AuthHeadersProvider authProvider = getAuthHeadersProvider(subscription);
-        Collection<HttpHeadersProvider> additionalProviders = httpHeadersProviderFactory.createAll();
-        Collection<HttpHeadersProvider> providers = ImmutableSet.<HttpHeadersProvider>builder()
-                .addAll(additionalProviders)
-                .add(authProvider)
-                .build();
+        Collection<HttpHeadersProvider> additionalProviders =
+                httpHeadersProviderFactory.createAll();
+        Collection<HttpHeadersProvider> providers =
+                ImmutableSet.<HttpHeadersProvider>builder()
+                        .addAll(additionalProviders)
+                        .add(authProvider)
+                        .build();
 
         return new HermesHeadersProvider(providers);
     }
 
     private AuthHeadersProvider getAuthHeadersProvider(Subscription subscription) {
-        Optional<HttpAuthorizationProvider> authorizationProvider = authorizationProviderFactory.create(subscription);
-        HttpHeadersProvider httpHeadersProvider = subscription.isHttp2Enabled() ? http2HeadersProvider : http1HeadersProvider;
+        Optional<HttpAuthorizationProvider> authorizationProvider =
+                authorizationProviderFactory.create(subscription);
+        HttpHeadersProvider httpHeadersProvider =
+                subscription.isHttp2Enabled() ? http2HeadersProvider : http1HeadersProvider;
 
-        return new AuthHeadersProvider(
-                httpHeadersProvider,
-                authorizationProvider.orElse(null)
-        );
+        return new AuthHeadersProvider(httpHeadersProvider, authorizationProvider.orElse(null));
     }
 
     private HttpClient getHttpClient(Subscription subscription) {
@@ -132,7 +142,8 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
             logger.info("Using http/2 for {}.", subscription.getQualifiedName());
             return http2ClientHolder.getHttp2Client().get();
         } else {
-            logger.info("Using http/1.1 for {}. Http/2 delivery is not enabled on this server.",
+            logger.info(
+                    "Using http/1.1 for {}. Http/2 delivery is not enabled on this server.",
                     subscription.getQualifiedName());
             return httpClient;
         }

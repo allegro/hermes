@@ -2,14 +2,14 @@ package pl.allegro.tech.hermes.api;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.validation.constraints.NotNull;
 
 import java.util.Objects;
 
 public class Group {
 
-    @NotNull
-    private final String groupName;
+    @NotNull private final String groupName;
 
     @JsonCreator
     public Group(@JsonProperty("groupName") String groupName) {

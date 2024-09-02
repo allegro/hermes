@@ -1,15 +1,16 @@
 package pl.allegro.tech.hermes.mock;
 
+import static org.awaitility.Awaitility.await;
+
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.stream.Collectors.toList;
+
 import org.apache.avro.Schema;
 import org.awaitility.core.ConditionTimeoutException;
 
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static java.util.stream.Collectors.toList;
-import static org.awaitility.Awaitility.await;
 
 public class HermesMockExpect {
     private final HermesMockHelper hermesMockHelper;
@@ -42,31 +43,41 @@ public class HermesMockExpect {
         assertMessages(count, () -> hermesMockQuery.allJsonMessagesAs(topicName, clazz));
     }
 
-    public <T> void jsonMessagesOnTopicAs(String topicName, int count, Class<T> clazz, Predicate<T> predicate) {
-        assertMessages(count, () -> hermesMockQuery.matchingJsonMessagesAs(topicName, clazz, predicate));
+    public <T> void jsonMessagesOnTopicAs(
+            String topicName, int count, Class<T> clazz, Predicate<T> predicate) {
+        assertMessages(
+                count, () -> hermesMockQuery.matchingJsonMessagesAs(topicName, clazz, predicate));
     }
 
     public void avroMessagesOnTopic(String topicName, int count, Schema schema) {
         assertMessages(count, () -> validateAvroMessages(topicName, schema));
     }
 
-    public <T> void avroMessagesOnTopic(String topicName, int count, Schema schema, Class<T> clazz, Predicate<T> predicate) {
+    public <T> void avroMessagesOnTopic(
+            String topicName, int count, Schema schema, Class<T> clazz, Predicate<T> predicate) {
         assertMessages(count, () -> validateAvroMessages(topicName, schema, clazz, predicate));
     }
 
     private <T> void assertMessages(int count, Supplier<List<T>> messages) {
         try {
-            await().atMost(awaitSeconds, SECONDS).until(() -> (messages != null && messages.get().size() == count));
+            await().atMost(awaitSeconds, SECONDS)
+                    .until(() -> (messages != null && messages.get().size() == count));
         } catch (ConditionTimeoutException ex) {
-            throw new HermesMockException("Hermes mock did not receive " + count + " messages, got " + messages.get().size());
+            throw new HermesMockException(
+                    "Hermes mock did not receive "
+                            + count
+                            + " messages, got "
+                            + messages.get().size());
         }
     }
 
     private void expectMessages(String topicName, int count) {
         try {
-            await().atMost(awaitSeconds, SECONDS).untilAsserted(() -> hermesMockHelper.verifyRequest(count, topicName));
+            await().atMost(awaitSeconds, SECONDS)
+                    .untilAsserted(() -> hermesMockHelper.verifyRequest(count, topicName));
         } catch (ConditionTimeoutException ex) {
-            throw new HermesMockException("Hermes mock did not receive " + count + " messages.", ex);
+            throw new HermesMockException(
+                    "Hermes mock did not receive " + count + " messages.", ex);
         }
     }
 
@@ -76,7 +87,8 @@ public class HermesMockExpect {
                 .collect(toList());
     }
 
-    private <T> List<T> validateAvroMessages(String topicName, Schema schema, Class<T> clazz, Predicate<T> predicate) {
+    private <T> List<T> validateAvroMessages(
+            String topicName, Schema schema, Class<T> clazz, Predicate<T> predicate) {
         return hermesMockQuery.allAvroRawMessages(topicName).stream()
                 .map(raw -> hermesMockHelper.deserializeAvro(raw, schema, clazz))
                 .filter(predicate)

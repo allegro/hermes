@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.idletime;
 
 import static com.google.common.base.Preconditions.checkArgument;
+
 import static java.lang.Math.min;
 
 public class ExponentiallyGrowingIdleTimeCalculator implements IdleTimeCalculator {
@@ -14,11 +15,14 @@ public class ExponentiallyGrowingIdleTimeCalculator implements IdleTimeCalculato
         this(2, initialIdleTimeMs, maxIdleTimeMs);
     }
 
-    public ExponentiallyGrowingIdleTimeCalculator(long base, long initialIdleTime, long maxIdleTimeMs) {
+    public ExponentiallyGrowingIdleTimeCalculator(
+            long base, long initialIdleTime, long maxIdleTimeMs) {
         checkArgument(base > 0, "base should be greater than zero");
         checkArgument(initialIdleTime > 0, "initialIdleTimeMs should be greater than zero");
         checkArgument(maxIdleTimeMs > 0, "maxIdleTimeMs should be greater than zero");
-        checkArgument(initialIdleTime <= maxIdleTimeMs, "maxIdleTimeMs should be grater or equal initialIdleTimeMs");
+        checkArgument(
+                initialIdleTime <= maxIdleTimeMs,
+                "maxIdleTimeMs should be grater or equal initialIdleTimeMs");
 
         this.base = base;
         this.initialIdleTimeMs = initialIdleTime;

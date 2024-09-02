@@ -1,20 +1,20 @@
 package pl.allegro.tech.hermes.integrationtests.management;
 
+import static pl.allegro.tech.hermes.test.helper.builder.GroupBuilder.groupWithRandomName;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
+
 import pl.allegro.tech.hermes.integrationtests.setup.HermesExtension;
 import pl.allegro.tech.hermes.management.TestSecurityProvider;
 import pl.allegro.tech.hermes.management.domain.mode.ModeService;
 
-import static pl.allegro.tech.hermes.test.helper.builder.GroupBuilder.groupWithRandomName;
-
 public class ReadOnlyModeTest {
 
-    @RegisterExtension
-    public static final HermesExtension hermes = new HermesExtension();
+    @RegisterExtension public static final HermesExtension hermes = new HermesExtension();
 
     @BeforeEach
     public void initialize() {
@@ -34,7 +34,8 @@ public class ReadOnlyModeTest {
         TestSecurityProvider.setUserIsAdmin(false);
 
         // when
-        WebTestClient.ResponseSpec response = hermes.api().createGroup(groupWithRandomName().build());
+        WebTestClient.ResponseSpec response =
+                hermes.api().createGroup(groupWithRandomName().build());
 
         // then
         response.expectStatus().isCreated();
@@ -47,7 +48,8 @@ public class ReadOnlyModeTest {
         TestSecurityProvider.setUserIsAdmin(false);
 
         // when
-        WebTestClient.ResponseSpec response = hermes.api().createGroup(groupWithRandomName().build());
+        WebTestClient.ResponseSpec response =
+                hermes.api().createGroup(groupWithRandomName().build());
 
         // then
         response.expectStatus().isEqualTo(503);
@@ -60,7 +62,8 @@ public class ReadOnlyModeTest {
         TestSecurityProvider.setUserIsAdmin(true);
 
         // when
-        WebTestClient.ResponseSpec response = hermes.api().createGroup(groupWithRandomName().build());
+        WebTestClient.ResponseSpec response =
+                hermes.api().createGroup(groupWithRandomName().build());
 
         // then
         response.expectStatus().isCreated();
@@ -73,7 +76,8 @@ public class ReadOnlyModeTest {
         TestSecurityProvider.setUserIsAdmin(false);
 
         // when
-        WebTestClient.ResponseSpec response = hermes.api().createGroup(groupWithRandomName().build());
+        WebTestClient.ResponseSpec response =
+                hermes.api().createGroup(groupWithRandomName().build());
 
         // then
         response.expectStatus().isEqualTo(503);

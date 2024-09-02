@@ -19,9 +19,7 @@ public interface OwnerSource {
         return false;
     }
 
-    /**
-     * Override if the implemented owner source supports autocompletion.
-     */
+    /** Override if the implemented owner source supports autocompletion. */
     default Optional<Autocompletion> autocompletion() {
         return Optional.empty();
     }
@@ -41,5 +39,4 @@ public interface OwnerSource {
             return ErrorCode.OWNER_NOT_FOUND;
         }
     }
-
 }

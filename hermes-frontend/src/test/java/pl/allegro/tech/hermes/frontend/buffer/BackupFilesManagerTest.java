@@ -1,6 +1,9 @@
 package pl.allegro.tech.hermes.frontend.buffer;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.google.common.io.Files;
+
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -13,8 +16,6 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class BackupFilesManagerTest {
 
@@ -36,7 +37,8 @@ public class BackupFilesManagerTest {
     public void shouldRolloverExistingBackupFile() throws IOException {
         // given
         new File(tempDir, "hermes-buffer-v3.dat").createNewFile();
-        BackupFilesManager backupFilesManager = new BackupFilesManager(tempDir.getAbsolutePath(), clock);
+        BackupFilesManager backupFilesManager =
+                new BackupFilesManager(tempDir.getAbsolutePath(), clock);
 
         // when
         Optional<File> backupFile = backupFilesManager.rolloverBackupFileIfExists();
@@ -48,7 +50,8 @@ public class BackupFilesManagerTest {
     @Test
     public void shouldReadBackupFilesList() throws IOException {
         // given
-        final BackupFilesManager backupFilesManager = new BackupFilesManager(tempDir.getAbsolutePath(), clock);
+        final BackupFilesManager backupFilesManager =
+                new BackupFilesManager(tempDir.getAbsolutePath(), clock);
         File timestampedBackup1 = new File(tempDir, "hermes-buffer-v3-001.dat");
         File timestampedBackup2 = new File(tempDir, "hermes-buffer-v3-002.dat");
         File customBackup = new File(tempDir, "hermes-buffer-v3-old.dat");
@@ -68,7 +71,8 @@ public class BackupFilesManagerTest {
     @Test
     public void shouldReadEmptyBackupFileList() {
         // given
-        BackupFilesManager backupFilesManager = new BackupFilesManager(tempDir.getAbsolutePath(), clock);
+        BackupFilesManager backupFilesManager =
+                new BackupFilesManager(tempDir.getAbsolutePath(), clock);
 
         // when
         List<File> backups = backupFilesManager.getRolledBackupFiles();
@@ -80,7 +84,8 @@ public class BackupFilesManagerTest {
     @Test
     public void shouldNotRolloverNotExistsBackupFile() {
         // given
-        BackupFilesManager backupFilesManager = new BackupFilesManager(tempDir.getAbsolutePath(), clock);
+        BackupFilesManager backupFilesManager =
+                new BackupFilesManager(tempDir.getAbsolutePath(), clock);
         // when
         Optional<File> backupFile = backupFilesManager.rolloverBackupFileIfExists();
 
@@ -91,7 +96,8 @@ public class BackupFilesManagerTest {
     @Test
     public void shouldUseNewNamingSchemeWhenNoFilesAvailable() {
         // given
-        BackupFilesManager backupFilesManager = new BackupFilesManager(tempDir.getAbsolutePath(), clock);
+        BackupFilesManager backupFilesManager =
+                new BackupFilesManager(tempDir.getAbsolutePath(), clock);
 
         // when
         File file = backupFilesManager.getCurrentBackupFile();
@@ -103,7 +109,8 @@ public class BackupFilesManagerTest {
     @Test
     public void shouldLoadAllTemporaryBackupV2Files() throws IOException {
         // given
-        final BackupFilesManager backupFilesManager = new BackupFilesManager(tempDir.getAbsolutePath(), clock);
+        final BackupFilesManager backupFilesManager =
+                new BackupFilesManager(tempDir.getAbsolutePath(), clock);
         File temporaryBackup1 = new File(tempDir, "hermes-buffer-v2-old.tmp");
         File temporaryBackup2 = new File(tempDir, "hermes-buffer-002-v2-old.tmp");
         File customBackup = new File(tempDir, "hermes-buffer.dat");

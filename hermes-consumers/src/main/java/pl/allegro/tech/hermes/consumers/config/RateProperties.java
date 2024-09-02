@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+
 import pl.allegro.tech.hermes.consumers.consumer.rate.calculator.RateCalculatorParameters;
 
 import java.time.Duration;
@@ -44,7 +45,8 @@ public class RateProperties implements RateCalculatorParameters {
         return limiterReportingThreadMonitoringEnabled;
     }
 
-    public void setLimiterReportingThreadMonitoringEnabled(boolean limiterReportingThreadMonitoringEnabled) {
+    public void setLimiterReportingThreadMonitoringEnabled(
+            boolean limiterReportingThreadMonitoringEnabled) {
         this.limiterReportingThreadMonitoringEnabled = limiterReportingThreadMonitoringEnabled;
     }
 

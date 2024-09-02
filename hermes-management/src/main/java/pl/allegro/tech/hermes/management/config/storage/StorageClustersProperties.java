@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.management.config.storage;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
+
 import pl.allegro.tech.hermes.infrastructure.dc.DcNameSource;
 
 import java.util.ArrayList;
@@ -23,8 +24,7 @@ public class StorageClustersProperties {
     private int connectTimeout = 1000;
     private List<StorageProperties> clusters = new ArrayList<>();
 
-    @NestedConfigurationProperty
-    private StorageAuthorizationProperties authorization;
+    @NestedConfigurationProperty private StorageAuthorizationProperties authorization;
 
     public String getPathPrefix() {
         return pathPrefix;
@@ -129,5 +129,4 @@ public class StorageClustersProperties {
     public void setConnectTimeout(int connectTimeout) {
         this.connectTimeout = connectTimeout;
     }
-
 }

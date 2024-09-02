@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.test.helper.client.integration;
 
 import jakarta.ws.rs.core.UriBuilder;
+
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 class ConsumerTestClient {
@@ -14,26 +15,28 @@ class ConsumerTestClient {
 
     public ConsumerTestClient(int consumerPort) {
         this.consumerContainerUrl = "http://localhost:" + consumerPort;
-        this.webTestClient = WebTestClient
-                .bindToServer()
-                .baseUrl(consumerContainerUrl)
-                .codecs(configurer -> configurer
-                        .defaultCodecs()
-                        .maxInMemorySize(16 * 1024 * 1024))
-                .build();
+        this.webTestClient =
+                WebTestClient.bindToServer()
+                        .baseUrl(consumerContainerUrl)
+                        .codecs(
+                                configurer ->
+                                        configurer
+                                                .defaultCodecs()
+                                                .maxInMemorySize(16 * 1024 * 1024))
+                        .build();
     }
 
     public WebTestClient.ResponseSpec getRunningSubscriptionsStatus() {
-        return webTestClient.get().uri(UriBuilder.fromUri(consumerContainerUrl)
-                        .path(STATUS_SUBSCRIPTIONS)
-                        .build())
+        return webTestClient
+                .get()
+                .uri(UriBuilder.fromUri(consumerContainerUrl).path(STATUS_SUBSCRIPTIONS).build())
                 .exchange();
     }
 
     public WebTestClient.ResponseSpec getMetrics() {
-        return webTestClient.get().uri(UriBuilder.fromUri(consumerContainerUrl)
-                        .path(METRICS_PATH)
-                        .build())
+        return webTestClient
+                .get()
+                .uri(UriBuilder.fromUri(consumerContainerUrl).path(METRICS_PATH).build())
                 .exchange();
     }
 }

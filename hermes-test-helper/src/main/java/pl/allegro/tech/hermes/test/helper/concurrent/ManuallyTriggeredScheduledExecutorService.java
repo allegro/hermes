@@ -1,5 +1,7 @@
 package pl.allegro.tech.hermes.test.helper.concurrent;
 
+import jakarta.annotation.Nonnull;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -8,20 +10,22 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import jakarta.annotation.Nonnull;
 
 public class ManuallyTriggeredScheduledExecutorService implements ScheduledExecutorService {
 
-    private final ConcurrentLinkedQueue<ScheduledTask<?>> scheduledTasks = new ConcurrentLinkedQueue<>();
+    private final ConcurrentLinkedQueue<ScheduledTask<?>> scheduledTasks =
+            new ConcurrentLinkedQueue<>();
     private boolean shutdown;
 
     @Override
-    public ScheduledFuture<?> scheduleAtFixedRate(@Nonnull Runnable command, long initialDelay, long period, @Nonnull TimeUnit unit) {
+    public ScheduledFuture<?> scheduleAtFixedRate(
+            @Nonnull Runnable command, long initialDelay, long period, @Nonnull TimeUnit unit) {
         return insertTask(command, initialDelay, unit);
     }
 
     @Override
-    public ScheduledFuture<?> scheduleWithFixedDelay(@Nonnull Runnable command, long initialDelay, long delay, @Nonnull TimeUnit unit) {
+    public ScheduledFuture<?> scheduleWithFixedDelay(
+            @Nonnull Runnable command, long initialDelay, long delay, @Nonnull TimeUnit unit) {
         return insertTask(command, initialDelay, unit);
     }
 
@@ -52,12 +56,14 @@ public class ManuallyTriggeredScheduledExecutorService implements ScheduledExecu
     }
 
     @Override
-    public ScheduledFuture<?> schedule(@Nonnull Runnable command, long delay, @Nonnull TimeUnit unit) {
+    public ScheduledFuture<?> schedule(
+            @Nonnull Runnable command, long delay, @Nonnull TimeUnit unit) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public <V> ScheduledFuture<V> schedule(@Nonnull Callable<V> callable, long delay, @Nonnull TimeUnit unit) {
+    public <V> ScheduledFuture<V> schedule(
+            @Nonnull Callable<V> callable, long delay, @Nonnull TimeUnit unit) {
         throw new UnsupportedOperationException();
     }
 
@@ -87,7 +93,10 @@ public class ManuallyTriggeredScheduledExecutorService implements ScheduledExecu
     }
 
     @Override
-    public <T> List<Future<T>> invokeAll(@Nonnull Collection<? extends Callable<T>> tasks, long timeout, @Nonnull TimeUnit unit) {
+    public <T> List<Future<T>> invokeAll(
+            @Nonnull Collection<? extends Callable<T>> tasks,
+            long timeout,
+            @Nonnull TimeUnit unit) {
         throw new UnsupportedOperationException();
     }
 
@@ -97,7 +106,10 @@ public class ManuallyTriggeredScheduledExecutorService implements ScheduledExecu
     }
 
     @Override
-    public <T> T invokeAny(@Nonnull Collection<? extends Callable<T>> tasks, long timeout, @Nonnull TimeUnit unit) {
+    public <T> T invokeAny(
+            @Nonnull Collection<? extends Callable<T>> tasks,
+            long timeout,
+            @Nonnull TimeUnit unit) {
         throw new UnsupportedOperationException();
     }
 
@@ -110,13 +122,13 @@ public class ManuallyTriggeredScheduledExecutorService implements ScheduledExecu
     }
 
     private ScheduledFuture<?> insertTask(Runnable command, long delay, TimeUnit unit) {
-        ScheduledTask<?> scheduledTask = new ScheduledTask<>(
-                () -> {
-                    command.run();
-                    return null;
-                },
-                unit.convert(delay, TimeUnit.MILLISECONDS)
-        );
+        ScheduledTask<?> scheduledTask =
+                new ScheduledTask<>(
+                        () -> {
+                            command.run();
+                            return null;
+                        },
+                        unit.convert(delay, TimeUnit.MILLISECONDS));
         scheduledTasks.offer(scheduledTask);
         return scheduledTask;
     }

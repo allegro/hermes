@@ -1,8 +1,8 @@
 package pl.allegro.tech.hermes.schema;
 
-import java.util.List;
-
 import static java.util.Collections.emptyList;
+
+import java.util.List;
 
 public class SchemaVersionsResult {
     private final Status status;

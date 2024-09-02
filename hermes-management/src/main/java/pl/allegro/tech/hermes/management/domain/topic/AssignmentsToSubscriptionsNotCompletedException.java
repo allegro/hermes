@@ -7,7 +7,10 @@ import pl.allegro.tech.hermes.management.domain.ManagementException;
 public class AssignmentsToSubscriptionsNotCompletedException extends ManagementException {
 
     public AssignmentsToSubscriptionsNotCompletedException(Topic topic) {
-        super("Not all subscriptions for topic " + topic.getQualifiedName() + "have assigned consumers");
+        super(
+                "Not all subscriptions for topic "
+                        + topic.getQualifiedName()
+                        + "have assigned consumers");
     }
 
     @Override

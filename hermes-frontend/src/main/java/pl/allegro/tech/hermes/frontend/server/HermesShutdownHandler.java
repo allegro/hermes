@@ -4,8 +4,10 @@ import io.undertow.server.ExchangeCompletionListener;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.StatusCodes;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -20,15 +22,16 @@ public class HermesShutdownHandler implements HttpHandler {
 
     private final HttpHandler next;
     private final MetricsFacade metrics;
-    private final ExchangeCompletionListener completionListener = new GracefulExchangeCompletionListener();
+    private final ExchangeCompletionListener completionListener =
+            new GracefulExchangeCompletionListener();
     private final AtomicInteger inflightRequests = new AtomicInteger();
     private volatile boolean shutdown = false;
-
 
     public HermesShutdownHandler(HttpHandler next, MetricsFacade metrics) {
         this.next = next;
         this.metrics = metrics;
-        metrics.producer().registerProducerInflightRequestGauge(inflightRequests, AtomicInteger::get);
+        metrics.producer()
+                .registerProducerInflightRequestGauge(inflightRequests, AtomicInteger::get);
     }
 
     @Override
@@ -55,7 +58,10 @@ public class HermesShutdownHandler implements HttpHandler {
     private void awaitRequestsComplete() throws InterruptedException {
         int retries = MAX_INFLIGHT_RETRIES;
         while (inflightRequests.get() > 0 && retries > 0) {
-            logger.info("Inflight requests: {}, timing out in {} ms", inflightRequests.get(), retries * MILLIS);
+            logger.info(
+                    "Inflight requests: {}, timing out in {} ms",
+                    inflightRequests.get(),
+                    retries * MILLIS);
             retries--;
             Thread.sleep(MILLIS);
         }
@@ -68,10 +74,12 @@ public class HermesShutdownHandler implements HttpHandler {
     }
 
     private boolean isBufferEmpty() {
-        long bufferUsedBytes = (long) (metrics.producer().getBufferTotalBytes()
-                - metrics.producer().getBufferAvailableBytes());
+        long bufferUsedBytes =
+                (long)
+                        (metrics.producer().getBufferTotalBytes()
+                                - metrics.producer().getBufferAvailableBytes());
         logger.info("Buffer flush: {} bytes still in use", bufferUsedBytes);
-        return  bufferUsedBytes < TOLERANCE_BYTES;
+        return bufferUsedBytes < TOLERANCE_BYTES;
     }
 
     private final class GracefulExchangeCompletionListener implements ExchangeCompletionListener {

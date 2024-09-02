@@ -2,11 +2,14 @@ package pl.allegro.tech.hermes.management.api;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.HttpMethod;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
+
 import org.springframework.stereotype.Component;
+
 import pl.allegro.tech.hermes.management.domain.console.ConsoleService;
 
 @Component

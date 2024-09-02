@@ -1,6 +1,10 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload;
 
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
+
 import com.google.common.collect.Sets;
+
 import pl.allegro.tech.hermes.api.SubscriptionName;
 
 import java.util.Collections;
@@ -11,9 +15,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
-
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
 
 public class SubscriptionAssignmentView {
 
@@ -26,21 +27,24 @@ public class SubscriptionAssignmentView {
     }
 
     private Map<SubscriptionName, Set<SubscriptionAssignment>> setupSubscriptionAssignments(
-            Map<SubscriptionName, Set<SubscriptionAssignment>> view
-    ) {
+            Map<SubscriptionName, Set<SubscriptionAssignment>> view) {
         Map<SubscriptionName, Set<SubscriptionAssignment>> map = new HashMap<>();
         view.entrySet().forEach(entry -> map.put(entry.getKey(), new HashSet<>(entry.getValue())));
         return map;
     }
 
-    private Map<String, Set<SubscriptionAssignment>> setupConsumerNodeAssignments(Map<SubscriptionName, Set<SubscriptionAssignment>> view) {
+    private Map<String, Set<SubscriptionAssignment>> setupConsumerNodeAssignments(
+            Map<SubscriptionName, Set<SubscriptionAssignment>> view) {
         Map<String, Set<SubscriptionAssignment>> map = new HashMap<>();
-        view.values().stream().flatMap(Set::stream).forEach(assignment -> {
-            if (!map.containsKey(assignment.getConsumerNodeId())) {
-                map.put(assignment.getConsumerNodeId(), new HashSet<>());
-            }
-            map.get(assignment.getConsumerNodeId()).add(assignment);
-        });
+        view.values().stream()
+                .flatMap(Set::stream)
+                .forEach(
+                        assignment -> {
+                            if (!map.containsKey(assignment.getConsumerNodeId())) {
+                                map.put(assignment.getConsumerNodeId(), new HashSet<>());
+                            }
+                            map.get(assignment.getConsumerNodeId()).add(assignment);
+                        });
         return map;
     }
 
@@ -61,30 +65,49 @@ public class SubscriptionAssignmentView {
     }
 
     public Set<String> getConsumerNodesForSubscription(SubscriptionName subscriptionName) {
-        return getAssignmentsForSubscription(subscriptionName).stream().map(SubscriptionAssignment::getConsumerNodeId).collect(toSet());
+        return getAssignmentsForSubscription(subscriptionName).stream()
+                .map(SubscriptionAssignment::getConsumerNodeId)
+                .collect(toSet());
     }
 
-    public Set<SubscriptionAssignment> getAssignmentsForSubscription(SubscriptionName subscriptionName) {
-        return Collections.unmodifiableSet(subscriptionAssignments.getOrDefault(subscriptionName, Collections.emptySet()));
+    public Set<SubscriptionAssignment> getAssignmentsForSubscription(
+            SubscriptionName subscriptionName) {
+        return Collections.unmodifiableSet(
+                subscriptionAssignments.getOrDefault(subscriptionName, Collections.emptySet()));
     }
 
     public Set<SubscriptionName> getSubscriptionsForConsumerNode(String nodeId) {
-        return getAssignmentsForConsumerNode(nodeId).stream().map(SubscriptionAssignment::getSubscriptionName).collect(toSet());
+        return getAssignmentsForConsumerNode(nodeId).stream()
+                .map(SubscriptionAssignment::getSubscriptionName)
+                .collect(toSet());
     }
 
     public Set<SubscriptionAssignment> getAssignmentsForConsumerNode(String nodeId) {
-        return Collections.unmodifiableSet(consumerNodeAssignments.getOrDefault(nodeId, Collections.emptySet()));
+        return Collections.unmodifiableSet(
+                consumerNodeAssignments.getOrDefault(nodeId, Collections.emptySet()));
     }
 
     private void removeSubscription(SubscriptionName subscription) {
-        consumerNodeAssignments.values()
-                .forEach(assignments -> assignments.removeIf(assignment -> assignment.getSubscriptionName().equals(subscription)));
+        consumerNodeAssignments
+                .values()
+                .forEach(
+                        assignments ->
+                                assignments.removeIf(
+                                        assignment ->
+                                                assignment
+                                                        .getSubscriptionName()
+                                                        .equals(subscription)));
         subscriptionAssignments.remove(subscription);
     }
 
     private void removeConsumerNode(String nodeId) {
-        subscriptionAssignments.values()
-                .forEach(assignments -> assignments.removeIf(assignment -> assignment.getConsumerNodeId().equals(nodeId)));
+        subscriptionAssignments
+                .values()
+                .forEach(
+                        assignments ->
+                                assignments.removeIf(
+                                        assignment ->
+                                                assignment.getConsumerNodeId().equals(nodeId)));
         consumerNodeAssignments.remove(nodeId);
     }
 
@@ -122,15 +145,18 @@ public class SubscriptionAssignmentView {
         return difference(target, this);
     }
 
-    private static SubscriptionAssignmentView difference(SubscriptionAssignmentView first, SubscriptionAssignmentView second) {
+    private static SubscriptionAssignmentView difference(
+            SubscriptionAssignmentView first, SubscriptionAssignmentView second) {
         HashMap<SubscriptionName, Set<SubscriptionAssignment>> result = new HashMap<>();
         for (SubscriptionName subscription : first.getSubscriptions()) {
-            Set<SubscriptionAssignment> assignments = first.getAssignmentsForSubscription(subscription);
+            Set<SubscriptionAssignment> assignments =
+                    first.getAssignmentsForSubscription(subscription);
             if (!second.getSubscriptions().contains(subscription)) {
                 result.put(subscription, assignments);
             } else {
                 Sets.SetView<SubscriptionAssignment> difference =
-                        Sets.difference(assignments, second.getAssignmentsForSubscription(subscription));
+                        Sets.difference(
+                                assignments, second.getAssignmentsForSubscription(subscription));
                 if (!difference.isEmpty()) {
                     result.put(subscription, difference);
                 }
@@ -142,11 +168,13 @@ public class SubscriptionAssignmentView {
     public static SubscriptionAssignmentView of(Set<SubscriptionAssignment> assignments) {
         Map<SubscriptionName, Set<SubscriptionAssignment>> snapshot = new HashMap<>();
         for (SubscriptionAssignment assignment : assignments) {
-            snapshot.compute(assignment.getSubscriptionName(), (k, v) -> {
-                v = (v == null ? new HashSet<>() : v);
-                v.add(assignment);
-                return v;
-            });
+            snapshot.compute(
+                    assignment.getSubscriptionName(),
+                    (k, v) -> {
+                        v = (v == null ? new HashSet<>() : v);
+                        v.add(assignment);
+                        return v;
+                    });
         }
         return new SubscriptionAssignmentView(snapshot);
     }
@@ -196,44 +224,48 @@ public class SubscriptionAssignmentView {
         void transferAssignment(String from, String to, SubscriptionName subscriptionName);
     }
 
-    public SubscriptionAssignmentView transform(BiConsumer<SubscriptionAssignmentView, Transformer> consumer) {
+    public SubscriptionAssignmentView transform(
+            BiConsumer<SubscriptionAssignmentView, Transformer> consumer) {
         SubscriptionAssignmentView view = SubscriptionAssignmentView.copyOf(this);
-        consumer.accept(view, new Transformer() {
-            @Override
-            public void removeSubscription(SubscriptionName subscriptionName) {
-                view.removeSubscription(subscriptionName);
-            }
+        consumer.accept(
+                view,
+                new Transformer() {
+                    @Override
+                    public void removeSubscription(SubscriptionName subscriptionName) {
+                        view.removeSubscription(subscriptionName);
+                    }
 
-            @Override
-            public void removeConsumerNode(String nodeId) {
-                view.removeConsumerNode(nodeId);
-            }
+                    @Override
+                    public void removeConsumerNode(String nodeId) {
+                        view.removeConsumerNode(nodeId);
+                    }
 
-            @Override
-            public void addSubscription(SubscriptionName subscriptionName) {
-                view.addSubscription(subscriptionName);
-            }
+                    @Override
+                    public void addSubscription(SubscriptionName subscriptionName) {
+                        view.addSubscription(subscriptionName);
+                    }
 
-            @Override
-            public void addConsumerNode(String nodeId) {
-                view.addConsumerNode(nodeId);
-            }
+                    @Override
+                    public void addConsumerNode(String nodeId) {
+                        view.addConsumerNode(nodeId);
+                    }
 
-            @Override
-            public void addAssignment(SubscriptionAssignment assignment) {
-                view.addAssignment(assignment);
-            }
+                    @Override
+                    public void addAssignment(SubscriptionAssignment assignment) {
+                        view.addAssignment(assignment);
+                    }
 
-            @Override
-            public void removeAssignment(SubscriptionAssignment assignment) {
-                view.removeAssignment(assignment);
-            }
+                    @Override
+                    public void removeAssignment(SubscriptionAssignment assignment) {
+                        view.removeAssignment(assignment);
+                    }
 
-            @Override
-            public void transferAssignment(String from, String to, SubscriptionName subscriptionName) {
-                view.transferAssignment(from, to, subscriptionName);
-            }
-        });
+                    @Override
+                    public void transferAssignment(
+                            String from, String to, SubscriptionName subscriptionName) {
+                        view.transferAssignment(from, to, subscriptionName);
+                    }
+                });
         return copyOf(view);
     }
 }

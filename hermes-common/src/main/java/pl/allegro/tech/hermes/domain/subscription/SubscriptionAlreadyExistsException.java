@@ -20,7 +20,8 @@ public class SubscriptionAlreadyExistsException extends HermesException {
     }
 
     private static String message(Subscription subscription) {
-        return String.format("Subscription %s for topic %s already exists.",
+        return String.format(
+                "Subscription %s for topic %s already exists.",
                 subscription.getName(), subscription.getQualifiedTopicName());
     }
 }

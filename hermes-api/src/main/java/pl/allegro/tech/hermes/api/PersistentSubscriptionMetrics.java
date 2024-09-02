@@ -10,9 +10,10 @@ public class PersistentSubscriptionMetrics {
     private long volume;
 
     @JsonCreator
-    public PersistentSubscriptionMetrics(@JsonProperty("delivered") long delivered,
-                                         @JsonProperty("discarded") long discarded,
-                                         @JsonProperty("volume") long volume) {
+    public PersistentSubscriptionMetrics(
+            @JsonProperty("delivered") long delivered,
+            @JsonProperty("discarded") long discarded,
+            @JsonProperty("volume") long volume) {
         this.delivered = delivered;
         this.discarded = discarded;
         this.volume = volume;

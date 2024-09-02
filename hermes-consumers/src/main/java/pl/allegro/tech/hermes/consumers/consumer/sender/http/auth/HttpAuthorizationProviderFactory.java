@@ -17,9 +17,10 @@ public class HttpAuthorizationProviderFactory {
         if (subscription.getEndpoint().containsCredentials()) {
             return Optional.of(new BasicAuthProvider(subscription.getEndpoint()));
         } else if (subscription.hasOAuthPolicy()) {
-            return Optional.of(new OAuthHttpAuthorizationProvider(subscription.getQualifiedName(), accessTokens));
+            return Optional.of(
+                    new OAuthHttpAuthorizationProvider(
+                            subscription.getQualifiedName(), accessTokens));
         }
         return Optional.empty();
     }
-
 }

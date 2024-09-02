@@ -11,15 +11,14 @@ class SlowModeOutputRateCalculator implements ModeOutputRateCalculator {
     }
 
     @Override
-    public OutputRateCalculationResult calculateOutputRate(double currentRate,
-                                                           double maximumOutputRate,
-                                                           SendCounters counters) {
+    public OutputRateCalculationResult calculateOutputRate(
+            double currentRate, double maximumOutputRate, SendCounters counters) {
         if (counters.majorityOfFailures()) {
-            return new OutputRateCalculationResult(heartbeatModeRate, OutputRateCalculator.Mode.HEARTBEAT);
+            return new OutputRateCalculationResult(
+                    heartbeatModeRate, OutputRateCalculator.Mode.HEARTBEAT);
         } else if (counters.onlySuccessess()) {
             return new OutputRateCalculationResult(currentRate, OutputRateCalculator.Mode.NORMAL);
         }
         return new OutputRateCalculationResult(currentRate, OutputRateCalculator.Mode.SLOW);
     }
-
 }

@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.frontend.publishing.preview;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreviewRepository;
 
 import java.time.Duration;
@@ -20,22 +21,34 @@ public class DefaultMessagePreviewPersister implements MessagePreviewPersister {
 
     private final Optional<ScheduledExecutorService> scheduledExecutorService;
 
-    public DefaultMessagePreviewPersister(MessagePreviewLog messagePreviewLog,
-                                          MessagePreviewRepository repository,
-                                          Duration logPersistPeriod,
-                                          boolean previewEnabled) {
+    public DefaultMessagePreviewPersister(
+            MessagePreviewLog messagePreviewLog,
+            MessagePreviewRepository repository,
+            Duration logPersistPeriod,
+            boolean previewEnabled) {
         this.messagePreviewLog = messagePreviewLog;
         this.repository = repository;
         this.period = logPersistPeriod;
 
-        this.scheduledExecutorService = previewEnabled ? Optional.of(Executors.newSingleThreadScheduledExecutor(
-                new ThreadFactoryBuilder().setNameFormat("message-preview-persister-%d").build())) : Optional.empty();
+        this.scheduledExecutorService =
+                previewEnabled
+                        ? Optional.of(
+                                Executors.newSingleThreadScheduledExecutor(
+                                        new ThreadFactoryBuilder()
+                                                .setNameFormat("message-preview-persister-%d")
+                                                .build()))
+                        : Optional.empty();
     }
 
     @Override
     public void start() {
         scheduledExecutorService.ifPresent(
-                s -> s.scheduleAtFixedRate(this::persist, period.toSeconds(), period.toSeconds(), TimeUnit.SECONDS));
+                s ->
+                        s.scheduleAtFixedRate(
+                                this::persist,
+                                period.toSeconds(),
+                                period.toSeconds(),
+                                TimeUnit.SECONDS));
     }
 
     private void persist() {
@@ -46,5 +59,4 @@ public class DefaultMessagePreviewPersister implements MessagePreviewPersister {
     public void shutdown() {
         scheduledExecutorService.ifPresent(ExecutorService::shutdown);
     }
-
 }

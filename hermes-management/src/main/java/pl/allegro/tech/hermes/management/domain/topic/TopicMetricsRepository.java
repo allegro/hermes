@@ -6,5 +6,4 @@ import pl.allegro.tech.hermes.api.TopicName;
 public interface TopicMetricsRepository {
 
     TopicMetrics loadMetrics(TopicName topicName);
-
 }

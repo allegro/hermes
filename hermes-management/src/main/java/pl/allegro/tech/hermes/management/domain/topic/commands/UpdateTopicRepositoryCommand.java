@@ -26,7 +26,8 @@ public class UpdateTopicRepositoryCommand extends RepositoryCommand<TopicReposit
     }
 
     @Override
-    public void rollback(DatacenterBoundRepositoryHolder<TopicRepository> holder, Exception exception) {
+    public void rollback(
+            DatacenterBoundRepositoryHolder<TopicRepository> holder, Exception exception) {
         holder.getRepository().updateTopic(backup);
     }
 

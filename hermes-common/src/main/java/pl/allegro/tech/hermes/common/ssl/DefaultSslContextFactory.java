@@ -8,7 +8,10 @@ public class DefaultSslContextFactory implements SslContextFactory {
     private final KeyManagersProvider keyManagersProvider;
     private final TrustManagersProvider trustManagersProvider;
 
-    public DefaultSslContextFactory(String protocol, KeyManagersProvider keyManagersProvider, TrustManagersProvider trustManagersProvider) {
+    public DefaultSslContextFactory(
+            String protocol,
+            KeyManagersProvider keyManagersProvider,
+            TrustManagersProvider trustManagersProvider) {
         this.protocol = protocol;
         this.keyManagersProvider = keyManagersProvider;
         this.trustManagersProvider = trustManagersProvider;
@@ -18,7 +21,10 @@ public class DefaultSslContextFactory implements SslContextFactory {
     public SSLContextHolder create() {
         try {
             SSLContext sslContext = SSLContext.getInstance(protocol);
-            sslContext.init(keyManagersProvider.getKeyManagers(), trustManagersProvider.getTrustManagers(), null);
+            sslContext.init(
+                    keyManagersProvider.getKeyManagers(),
+                    trustManagersProvider.getTrustManagers(),
+                    null);
             return new SSLContextHolder(sslContext, trustManagersProvider.getTrustManagers());
         } catch (Exception e) {
             throw new SslContextCreationException(e);

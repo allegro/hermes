@@ -1,8 +1,18 @@
 package pl.allegro.tech.hermes.tracker.elasticsearch.consumers;
 
+import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
+
+import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.DISCARDED;
+import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.FAILED;
+import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.FILTERED;
+import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.INFLIGHT;
+import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.SUCCESS;
+import static pl.allegro.tech.hermes.tracker.elasticsearch.ElasticsearchDocument.build;
+
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.io.stream.BytesStreamOutput;
 import org.elasticsearch.common.xcontent.XContentBuilder;
+
 import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.metric.TrackerElasticSearchMetrics;
@@ -18,14 +28,6 @@ import pl.allegro.tech.hermes.tracker.elasticsearch.SchemaManager;
 import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
 
-import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
-import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.DISCARDED;
-import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.FAILED;
-import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.FILTERED;
-import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.INFLIGHT;
-import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.SUCCESS;
-import static pl.allegro.tech.hermes.tracker.elasticsearch.ElasticsearchDocument.build;
-
 public class ConsumersElasticsearchLogRepository
         extends BatchingLogRepository<ElasticsearchDocument>
         implements LogRepository, LogSchemaAware {
@@ -34,34 +36,40 @@ public class ConsumersElasticsearchLogRepository
 
     private final Client elasticClient;
 
-    private ConsumersElasticsearchLogRepository(Client elasticClient,
-                                                String clusterName,
-                                                String hostname,
-                                                int queueSize,
-                                                int commitInterval,
-                                                IndexFactory indexFactory,
-                                                String typeName,
-                                                MetricsFacade metricsFacade) {
+    private ConsumersElasticsearchLogRepository(
+            Client elasticClient,
+            String clusterName,
+            String hostname,
+            int queueSize,
+            int commitInterval,
+            IndexFactory indexFactory,
+            String typeName,
+            MetricsFacade metricsFacade) {
         super(queueSize, clusterName, hostname);
         this.elasticClient = elasticClient;
-        registerMetrics(commitInterval, indexFactory, typeName, metricsFacade.trackerElasticSearch());
+        registerMetrics(
+                commitInterval, indexFactory, typeName, metricsFacade.trackerElasticSearch());
     }
 
     @Override
     public void logSuccessful(MessageMetadata message, String hostname, long timestamp) {
-        queue.offer(build(() ->
-                notEndedDocument(message, timestamp, SUCCESS.toString())
-                        .field(REMOTE_HOSTNAME, hostname)
-                        .endObject()));
+        queue.offer(
+                build(
+                        () ->
+                                notEndedDocument(message, timestamp, SUCCESS.toString())
+                                        .field(REMOTE_HOSTNAME, hostname)
+                                        .endObject()));
     }
 
     @Override
     public void logFailed(MessageMetadata message, String hostname, long timestamp, String reason) {
-        queue.offer(build(() ->
-                notEndedDocument(message, timestamp, FAILED.toString())
-                        .field(REASON, reason)
-                        .field(REMOTE_HOSTNAME, hostname)
-                        .endObject()));
+        queue.offer(
+                build(
+                        () ->
+                                notEndedDocument(message, timestamp, FAILED.toString())
+                                        .field(REASON, reason)
+                                        .field(REMOTE_HOSTNAME, hostname)
+                                        .endObject()));
     }
 
     @Override
@@ -84,16 +92,22 @@ public class ConsumersElasticsearchLogRepository
         elasticClient.close();
     }
 
-    private ElasticsearchDocument document(MessageMetadata message, long createdAt, SentMessageTraceStatus status) {
+    private ElasticsearchDocument document(
+            MessageMetadata message, long createdAt, SentMessageTraceStatus status) {
         return build(() -> notEndedDocument(message, createdAt, status.toString()).endObject());
     }
 
-    private ElasticsearchDocument document(MessageMetadata message, long timestamp, SentMessageTraceStatus status, String reason) {
-        return build(() -> notEndedDocument(message, timestamp, status.toString()).field(REASON, reason).endObject());
+    private ElasticsearchDocument document(
+            MessageMetadata message, long timestamp, SentMessageTraceStatus status, String reason) {
+        return build(
+                () ->
+                        notEndedDocument(message, timestamp, status.toString())
+                                .field(REASON, reason)
+                                .endObject());
     }
 
-    protected XContentBuilder notEndedDocument(MessageMetadata message, long timestamp, String status)
-            throws IOException {
+    protected XContentBuilder notEndedDocument(
+            MessageMetadata message, long timestamp, String status) throws IOException {
         return jsonBuilder(new BytesStreamOutput(DOCUMENT_EXPECTED_SIZE))
                 .startObject()
                 .field(MESSAGE_ID, message.getMessageId())
@@ -110,15 +124,23 @@ public class ConsumersElasticsearchLogRepository
                 .field(SOURCE_HOSTNAME, hostname);
     }
 
-    private void registerMetrics(int commitInterval,
-                                 IndexFactory indexFactory,
-                                 String typeName,
-                                 TrackerElasticSearchMetrics trackerMetrics) {
-        trackerMetrics.registerConsumerTrackerElasticSearchQueueSizeGauge(this.queue, BlockingQueue::size);
-        trackerMetrics.registerConsumerTrackerElasticSearchRemainingCapacity(this.queue, BlockingQueue::size);
+    private void registerMetrics(
+            int commitInterval,
+            IndexFactory indexFactory,
+            String typeName,
+            TrackerElasticSearchMetrics trackerMetrics) {
+        trackerMetrics.registerConsumerTrackerElasticSearchQueueSizeGauge(
+                this.queue, BlockingQueue::size);
+        trackerMetrics.registerConsumerTrackerElasticSearchRemainingCapacity(
+                this.queue, BlockingQueue::size);
 
-        ElasticsearchQueueCommitter.scheduleCommitAtFixedRate(this.queue, indexFactory, typeName, elasticClient,
-                trackerMetrics.trackerElasticSearchCommitLatencyTimer(), commitInterval);
+        ElasticsearchQueueCommitter.scheduleCommitAtFixedRate(
+                this.queue,
+                indexFactory,
+                typeName,
+                elasticClient,
+                trackerMetrics.trackerElasticSearchCommitLatencyTimer(),
+                commitInterval);
     }
 
     private long toSeconds(long millis) {
@@ -178,7 +200,8 @@ public class ConsumersElasticsearchLogRepository
         }
 
         public ConsumersElasticsearchLogRepository build() {
-            return new ConsumersElasticsearchLogRepository(elasticClient,
+            return new ConsumersElasticsearchLogRepository(
+                    elasticClient,
                     clusterName,
                     hostName,
                     queueSize,

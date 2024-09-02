@@ -25,7 +25,8 @@ public class UnhealthySubscription {
         this.problems = problems;
     }
 
-    public static UnhealthySubscription from(Subscription subscription, SubscriptionHealth subscriptionHealth) {
+    public static UnhealthySubscription from(
+            Subscription subscription, SubscriptionHealth subscriptionHealth) {
         return new UnhealthySubscription(
                 subscription.getName(),
                 subscription.getQualifiedTopicName(),
@@ -56,10 +57,16 @@ public class UnhealthySubscription {
     @Override
     public String toString() {
         return "UnhealthySubscription{"
-                + "name='" + name + '\''
-                + ", qualifiedTopicName='" + qualifiedTopicName + '\''
-                + ", severity=" + severity
-                + ", problems=" + problems
+                + "name='"
+                + name
+                + '\''
+                + ", qualifiedTopicName='"
+                + qualifiedTopicName
+                + '\''
+                + ", severity="
+                + severity
+                + ", problems="
+                + problems
                 + '}';
     }
 

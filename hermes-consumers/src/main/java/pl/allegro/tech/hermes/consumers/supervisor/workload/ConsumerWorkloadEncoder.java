@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.consumers.supervisor.workload;
 
 import org.agrona.ExpandableDirectByteBuffer;
 import org.agrona.MutableDirectBuffer;
+
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionId;
 import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionIds;
@@ -27,16 +28,16 @@ class ConsumerWorkloadEncoder {
         MessageHeaderEncoder headerEncoder = new MessageHeaderEncoder();
         AssignmentsEncoder body = new AssignmentsEncoder();
 
-        Set<SubscriptionId> ids = subscriptions.stream()
-                .map(this.subscriptionIds::getSubscriptionId)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(Collectors.toSet());
+        Set<SubscriptionId> ids =
+                subscriptions.stream()
+                        .map(this.subscriptionIds::getSubscriptionId)
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
+                        .collect(Collectors.toSet());
 
-        AssignmentsEncoder.SubscriptionsEncoder subscriptionsEncoder = body.wrapAndApplyHeader(buffer, 0, headerEncoder)
-                .subscriptionsCount(ids.size());
-        ids.forEach(id -> subscriptionsEncoder.next()
-                .id(id.getValue()));
+        AssignmentsEncoder.SubscriptionsEncoder subscriptionsEncoder =
+                body.wrapAndApplyHeader(buffer, 0, headerEncoder).subscriptionsCount(ids.size());
+        ids.forEach(id -> subscriptionsEncoder.next().id(id.getValue()));
 
         int len = headerEncoder.encodedLength() + body.encodedLength();
 

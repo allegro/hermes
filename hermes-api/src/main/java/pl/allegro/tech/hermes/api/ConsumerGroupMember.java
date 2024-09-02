@@ -14,10 +14,11 @@ public class ConsumerGroupMember {
     private final Set<TopicPartition> partitions;
 
     @JsonCreator
-    public ConsumerGroupMember(@JsonProperty("consumerId") String consumerId,
-                               @JsonProperty("clientId") String clientId,
-                               @JsonProperty("host")String host,
-                               @JsonProperty("partitions") Set<TopicPartition> partitions) {
+    public ConsumerGroupMember(
+            @JsonProperty("consumerId") String consumerId,
+            @JsonProperty("clientId") String clientId,
+            @JsonProperty("host") String host,
+            @JsonProperty("partitions") Set<TopicPartition> partitions) {
         this.consumerId = consumerId;
         this.clientId = clientId;
         this.host = host;

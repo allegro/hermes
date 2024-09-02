@@ -1,16 +1,17 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload.weighted;
 
+import static java.util.Comparator.comparing;
+
 import pl.allegro.tech.hermes.api.SubscriptionName;
 
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.Objects;
 
-import static java.util.Comparator.comparing;
-
 class ConsumerTask {
 
-    static Comparator<ConsumerTask> HEAVIEST_TASK_FIRST = comparing(ConsumerTask::getWeight).reversed();
+    static Comparator<ConsumerTask> HEAVIEST_TASK_FIRST =
+            comparing(ConsumerTask::getWeight).reversed();
 
     private final SubscriptionName subscriptionName;
     private final Instant lastRebalanceTimestamp;

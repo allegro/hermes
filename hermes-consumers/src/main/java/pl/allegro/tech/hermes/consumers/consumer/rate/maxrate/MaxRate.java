@@ -35,8 +35,6 @@ final class MaxRate {
 
     @Override
     public String toString() {
-        return "MaxRate{"
-                + "maxRate=" + maxRate
-                + '}';
+        return "MaxRate{" + "maxRate=" + maxRate + '}';
     }
 }

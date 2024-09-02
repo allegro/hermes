@@ -12,10 +12,10 @@ public class OrMatcher implements Matcher {
 
     @Override
     public boolean match(Object value) {
-        return matchers.stream().reduce(
-                false,
-                (match, matcher) -> match || matcher.match(value),
-                (first, second) -> first || second
-        );
+        return matchers.stream()
+                .reduce(
+                        false,
+                        (match, matcher) -> match || matcher.match(value),
+                        (first, second) -> first || second);
     }
 }

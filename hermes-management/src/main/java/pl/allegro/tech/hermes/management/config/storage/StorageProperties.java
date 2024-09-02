@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.management.config.storage;
 
-
 public class StorageProperties {
     private String datacenter = "dc";
     private String clusterName = "zk";

@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.metrics;
 
-
 import org.apache.commons.text.TextStringBuilder;
 
 public class PathsCompiler {

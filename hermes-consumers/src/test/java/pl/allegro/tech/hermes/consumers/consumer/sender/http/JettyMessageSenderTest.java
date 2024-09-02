@@ -1,11 +1,23 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 
+import static jakarta.ws.rs.core.Response.Status.ACCEPTED;
+import static jakarta.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import static pl.allegro.tech.hermes.consumers.test.MessageBuilder.TEST_MESSAGE_CONTENT;
+import static pl.allegro.tech.hermes.consumers.test.MessageBuilder.testMessage;
+
+import static java.lang.String.format;
+
 import com.github.tomakehurst.wiremock.WireMockServer;
+
 import org.eclipse.jetty.client.HttpClient;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.EndpointAddressResolverMetadata;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
@@ -32,18 +44,13 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static jakarta.ws.rs.core.Response.Status.ACCEPTED;
-import static jakarta.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-import static java.lang.String.format;
-import static org.assertj.core.api.Assertions.assertThat;
-import static pl.allegro.tech.hermes.consumers.test.MessageBuilder.TEST_MESSAGE_CONTENT;
-import static pl.allegro.tech.hermes.consumers.test.MessageBuilder.testMessage;
-
 public class JettyMessageSenderTest {
 
     private static final int ENDPOINT_PORT = Ports.nextAvailable();
-    private static final EndpointAddress ENDPOINT = EndpointAddress.of(format("http://localhost:%d/", ENDPOINT_PORT));
-    private static final EndpointAddressResolverMetadata METADATA = EndpointAddressResolverMetadata.empty();
+    private static final EndpointAddress ENDPOINT =
+            EndpointAddress.of(format("http://localhost:%d/", ENDPOINT_PORT));
+    private static final EndpointAddressResolverMetadata METADATA =
+            EndpointAddressResolverMetadata.empty();
 
     private static HttpClient client;
     private static WireMockServer wireMockServer;
@@ -52,23 +59,24 @@ public class JettyMessageSenderTest {
     private RemoteServiceEndpoint remoteServiceEndpoint;
     private JettyMessageSender messageSender;
 
-    private final HttpHeadersProvider headersProvider = new HermesHeadersProvider(Collections.singleton(new Http1HeadersProvider()));
+    private final HttpHeadersProvider headersProvider =
+            new HermesHeadersProvider(Collections.singleton(new Http1HeadersProvider()));
 
     @BeforeClass
     public static void setupEnvironment() throws Exception {
         wireMockServer = new WireMockServer(ENDPOINT_PORT);
         wireMockServer.start();
 
-        SslContextFactoryProvider sslContextFactoryProvider = new SslContextFactoryProvider(null, new SslContextProperties());
+        SslContextFactoryProvider sslContextFactoryProvider =
+                new SslContextFactoryProvider(null, new SslContextProperties());
         ConsumerSenderConfiguration consumerConfiguration = new ConsumerSenderConfiguration();
-        client = consumerConfiguration.http1SerialClient(
-                new HttpClientsFactory(
-                        new InstrumentedExecutorServiceFactory(
-                                TestMetricsFacadeFactory.create()
-                        ),
-                        sslContextFactoryProvider),
-                new Http1ClientProperties()
-        );
+        client =
+                consumerConfiguration.http1SerialClient(
+                        new HttpClientsFactory(
+                                new InstrumentedExecutorServiceFactory(
+                                        TestMetricsFacadeFactory.create()),
+                                sslContextFactoryProvider),
+                        new Http1ClientProperties());
         client.start();
     }
 
@@ -81,9 +89,18 @@ public class JettyMessageSenderTest {
     @Before
     public void setUp() throws Exception {
         remoteServiceEndpoint = new RemoteServiceEndpoint(wireMockServer);
-        address = new ResolvableEndpointAddress(ENDPOINT, new SimpleEndpointAddressResolver(), METADATA);
-        HttpRequestFactory httpRequestFactory = new DefaultHttpRequestFactory(client, 1000, 1000, new DefaultHttpMetadataAppender());
-        messageSender = new JettyMessageSender(httpRequestFactory, address, headersProvider, new DefaultSendingResultHandlers());
+        address =
+                new ResolvableEndpointAddress(
+                        ENDPOINT, new SimpleEndpointAddressResolver(), METADATA);
+        HttpRequestFactory httpRequestFactory =
+                new DefaultHttpRequestFactory(
+                        client, 1000, 1000, new DefaultHttpMetadataAppender());
+        messageSender =
+                new JettyMessageSender(
+                        httpRequestFactory,
+                        address,
+                        headersProvider,
+                        new DefaultSendingResultHandlers());
     }
 
     @Test
@@ -115,7 +132,8 @@ public class JettyMessageSenderTest {
     }
 
     @Test
-    public void shouldNotRedirectMessage() throws InterruptedException, ExecutionException, TimeoutException {
+    public void shouldNotRedirectMessage()
+            throws InterruptedException, ExecutionException, TimeoutException {
         // given
         final int numberOfExpectedMessages = 1;
         final int maximumWaitTimeInSeconds = 1;
@@ -156,7 +174,8 @@ public class JettyMessageSenderTest {
 
         // then
         remoteServiceEndpoint.waitUntilReceived();
-        assertThat(remoteServiceEndpoint.getLastReceivedRequest().getHeader("Hermes-Message-Id")).isEqualTo("id");
+        assertThat(remoteServiceEndpoint.getLastReceivedRequest().getHeader("Hermes-Message-Id"))
+                .isEqualTo("id");
     }
 
     @Test
@@ -170,11 +189,13 @@ public class JettyMessageSenderTest {
 
         // then
         remoteServiceEndpoint.waitUntilReceived();
-        assertThat(remoteServiceEndpoint.getLastReceivedRequest().getHeader("Trace-Id")).isEqualTo("traceId");
+        assertThat(remoteServiceEndpoint.getLastReceivedRequest().getHeader("Trace-Id"))
+                .isEqualTo("traceId");
     }
 
     @Test
-    public void shouldSendRetryCounterInHeader() throws InterruptedException, ExecutionException, TimeoutException {
+    public void shouldSendRetryCounterInHeader()
+            throws InterruptedException, ExecutionException, TimeoutException {
         // given
         remoteServiceEndpoint.expectMessages(TEST_MESSAGE_CONTENT);
 
@@ -185,21 +206,27 @@ public class JettyMessageSenderTest {
         // then
         assertThat(future.get(1000, TimeUnit.MILLISECONDS).getStatusCode()).isEqualTo(200);
         remoteServiceEndpoint.waitUntilReceived();
-        assertThat(remoteServiceEndpoint.getLastReceivedRequest().getHeader("Hermes-Retry-Count")).isEqualTo("0");
+        assertThat(remoteServiceEndpoint.getLastReceivedRequest().getHeader("Hermes-Retry-Count"))
+                .isEqualTo("0");
     }
 
     @Test
     public void shouldSendAuthorizationHeaderIfAuthorizationProviderAttached() {
         // given
-        HttpRequestFactory httpRequestFactory = new DefaultHttpRequestFactory(client, 1000, 1000, new DefaultHttpMetadataAppender());
+        HttpRequestFactory httpRequestFactory =
+                new DefaultHttpRequestFactory(
+                        client, 1000, 1000, new DefaultHttpMetadataAppender());
 
         JettyMessageSender messageSender =
-                new JettyMessageSender(httpRequestFactory, address, new HermesHeadersProvider(Collections.singleton(
-                        new AuthHeadersProvider(
-                                new Http1HeadersProvider(),
-                                () -> Optional.of("Basic Auth Hello!")
-                        ))
-                ), new DefaultSendingResultHandlers());
+                new JettyMessageSender(
+                        httpRequestFactory,
+                        address,
+                        new HermesHeadersProvider(
+                                Collections.singleton(
+                                        new AuthHeadersProvider(
+                                                new Http1HeadersProvider(),
+                                                () -> Optional.of("Basic Auth Hello!")))),
+                        new DefaultSendingResultHandlers());
         Message message = MessageBuilder.withTestMessage().build();
         remoteServiceEndpoint.expectMessages(TEST_MESSAGE_CONTENT);
 
@@ -209,19 +236,24 @@ public class JettyMessageSenderTest {
 
         // then
         remoteServiceEndpoint.waitUntilReceived();
-        assertThat(remoteServiceEndpoint.getLastReceivedRequest().getHeader("Authorization")).isEqualTo("Basic Auth Hello!");
+        assertThat(remoteServiceEndpoint.getLastReceivedRequest().getHeader("Authorization"))
+                .isEqualTo("Basic Auth Hello!");
     }
 
     @Test
-    public void shouldUseSuppliedRequestTimeout() throws ExecutionException, InterruptedException, TimeoutException {
+    public void shouldUseSuppliedRequestTimeout()
+            throws ExecutionException, InterruptedException, TimeoutException {
         // given
-        HttpRequestFactory httpRequestFactory = new DefaultHttpRequestFactory(client,
-                100, 1000,
-                new DefaultHttpMetadataAppender());
+        HttpRequestFactory httpRequestFactory =
+                new DefaultHttpRequestFactory(client, 100, 1000, new DefaultHttpMetadataAppender());
         remoteServiceEndpoint.setDelay(500);
 
         JettyMessageSender messageSender =
-                new JettyMessageSender(httpRequestFactory, address, headersProvider, new DefaultSendingResultHandlers());
+                new JettyMessageSender(
+                        httpRequestFactory,
+                        address,
+                        headersProvider,
+                        new DefaultSendingResultHandlers());
         Message message = MessageBuilder.withTestMessage().build();
         remoteServiceEndpoint.expectMessages(TEST_MESSAGE_CONTENT);
 
@@ -235,15 +267,19 @@ public class JettyMessageSenderTest {
     }
 
     @Test
-    public void shouldUseSuppliedSocketTimeout() throws ExecutionException, InterruptedException, TimeoutException {
+    public void shouldUseSuppliedSocketTimeout()
+            throws ExecutionException, InterruptedException, TimeoutException {
         // given
-        HttpRequestFactory httpRequestFactory = new DefaultHttpRequestFactory(client,
-                1000, 100,
-                new DefaultHttpMetadataAppender());
+        HttpRequestFactory httpRequestFactory =
+                new DefaultHttpRequestFactory(client, 1000, 100, new DefaultHttpMetadataAppender());
         remoteServiceEndpoint.setDelay(200);
 
         JettyMessageSender messageSender =
-                new JettyMessageSender(httpRequestFactory, address, headersProvider, new DefaultSendingResultHandlers());
+                new JettyMessageSender(
+                        httpRequestFactory,
+                        address,
+                        headersProvider,
+                        new DefaultSendingResultHandlers());
         Message message = MessageBuilder.withTestMessage().build();
         remoteServiceEndpoint.expectMessages(TEST_MESSAGE_CONTENT);
 

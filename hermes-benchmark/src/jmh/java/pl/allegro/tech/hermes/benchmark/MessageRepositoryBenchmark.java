@@ -1,7 +1,12 @@
 package pl.allegro.tech.hermes.benchmark;
 
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
+
+import static java.util.Collections.emptyMap;
+
 import net.openhft.chronicle.map.ChronicleMap;
 import net.openhft.chronicle.map.ChronicleMapBuilder;
+
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -13,6 +18,7 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
+
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.frontend.buffer.BackupMessage;
 import pl.allegro.tech.hermes.frontend.buffer.MessageRepository;
@@ -29,9 +35,6 @@ import java.nio.file.Files;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-
-import static java.util.Collections.emptyMap;
-import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 @Fork(1)
 @Warmup(iterations = 5)
@@ -57,14 +60,18 @@ public class MessageRepositoryBenchmark {
             message = generateMessage();
             topic = topic("groupName.topic").build();
 
-            hermesImplMessageRepository = new ChronicleMapMessageRepository(prepareFile(), ENTRIES, AVERAGE_MESSAGE_SIZE);
-            baselineMessageRepository = new BaselineChronicleMapMessageRepository(prepareFile(), ENTRIES, AVERAGE_MESSAGE_SIZE);
+            hermesImplMessageRepository =
+                    new ChronicleMapMessageRepository(prepareFile(), ENTRIES, AVERAGE_MESSAGE_SIZE);
+            baselineMessageRepository =
+                    new BaselineChronicleMapMessageRepository(
+                            prepareFile(), ENTRIES, AVERAGE_MESSAGE_SIZE);
         }
 
         private Message generateMessage() {
             byte[] messageContent = UUID.randomUUID().toString().getBytes();
             String id = MessageIdGenerator.generate();
-            return new JsonMessage(id, messageContent, System.currentTimeMillis(), "partition-key", emptyMap());
+            return new JsonMessage(
+                    id, messageContent, System.currentTimeMillis(), "partition-key", emptyMap());
         }
 
         private File prepareFile() throws IOException {
@@ -89,14 +96,16 @@ public class MessageRepositoryBenchmark {
 
         private final ChronicleMap<String, ChronicleMapEntryValue> map;
 
-        public BaselineChronicleMapMessageRepository(File file, int entries, int averageMessageSize) {
+        public BaselineChronicleMapMessageRepository(
+                File file, int entries, int averageMessageSize) {
             try {
-                map = ChronicleMapBuilder.of(String.class, ChronicleMapEntryValue.class)
-                        .constantKeySizeBySample(MessageIdGenerator.generate())
-                        .averageValueSize(averageMessageSize)
-                        .entries(entries)
-                        .sparseFile(true)
-                        .createOrRecoverPersistedTo(file, SAME_BUILDER_CONFIG);
+                map =
+                        ChronicleMapBuilder.of(String.class, ChronicleMapEntryValue.class)
+                                .constantKeySizeBySample(MessageIdGenerator.generate())
+                                .averageValueSize(averageMessageSize)
+                                .entries(entries)
+                                .sparseFile(true)
+                                .createOrRecoverPersistedTo(file, SAME_BUILDER_CONFIG);
             } catch (IOException e) {
                 throw new ChronicleMapCreationException(e);
             }
@@ -104,14 +113,15 @@ public class MessageRepositoryBenchmark {
 
         @Override
         public void save(Message message, Topic topic) {
-            ChronicleMapEntryValue entryValue = new ChronicleMapEntryValue(
-                    message.getData(),
-                    message.getTimestamp(),
-                    topic.getQualifiedName(),
-                    message.getPartitionKey(),
-                    null,
-                    null,
-                    emptyMap());
+            ChronicleMapEntryValue entryValue =
+                    new ChronicleMapEntryValue(
+                            message.getData(),
+                            message.getTimestamp(),
+                            topic.getQualifiedName(),
+                            message.getPartitionKey(),
+                            null,
+                            null,
+                            emptyMap());
             map.put(message.getId(), entryValue);
         }
 

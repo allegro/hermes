@@ -1,14 +1,16 @@
 package pl.allegro.tech.hermes.test.helper.containers;
 
+import static java.lang.String.format;
+
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
-import static java.lang.String.format;
-
-public class ConfluentSchemaRegistryContainer extends GenericContainer<ConfluentSchemaRegistryContainer> {
-    private static final DockerImageName DEFAULT_SCHEMA_REGISTRY_IMAGE_NAME = DockerImageName.parse("confluentinc/cp-schema-registry")
-            .withTag(ImageTags.confluentImagesTag());
+public class ConfluentSchemaRegistryContainer
+        extends GenericContainer<ConfluentSchemaRegistryContainer> {
+    private static final DockerImageName DEFAULT_SCHEMA_REGISTRY_IMAGE_NAME =
+            DockerImageName.parse("confluentinc/cp-schema-registry")
+                    .withTag(ImageTags.confluentImagesTag());
     private static final int SCHEMA_REGISTRY_PORT = 8081;
 
     public ConfluentSchemaRegistryContainer() {
@@ -21,7 +23,9 @@ public class ConfluentSchemaRegistryContainer extends GenericContainer<Confluent
 
     public ConfluentSchemaRegistryContainer withKafkaCluster(KafkaContainerCluster cluster) {
         withNetwork(cluster.getNetwork());
-        withEnv("SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS", "PLAINTEXT://" + cluster.getBootstrapServersForInternalClients());
+        withEnv(
+                "SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS",
+                "PLAINTEXT://" + cluster.getBootstrapServersForInternalClients());
         return self();
     }
 

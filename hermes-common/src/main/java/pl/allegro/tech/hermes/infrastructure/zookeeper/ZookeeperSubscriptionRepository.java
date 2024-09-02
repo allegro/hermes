@@ -1,10 +1,12 @@
 package pl.allegro.tech.hermes.infrastructure.zookeeper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.KeeperException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
@@ -19,16 +21,19 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class ZookeeperSubscriptionRepository extends ZookeeperBasedRepository implements SubscriptionRepository {
+public class ZookeeperSubscriptionRepository extends ZookeeperBasedRepository
+        implements SubscriptionRepository {
 
-    private static final Logger logger = LoggerFactory.getLogger(ZookeeperSubscriptionRepository.class);
+    private static final Logger logger =
+            LoggerFactory.getLogger(ZookeeperSubscriptionRepository.class);
 
     private final TopicRepository topicRepository;
 
-    public ZookeeperSubscriptionRepository(CuratorFramework zookeeper,
-                                           ObjectMapper mapper,
-                                           ZookeeperPaths paths,
-                                           TopicRepository topicRepository) {
+    public ZookeeperSubscriptionRepository(
+            CuratorFramework zookeeper,
+            ObjectMapper mapper,
+            ZookeeperPaths paths,
+            TopicRepository topicRepository) {
         super(zookeeper, mapper, paths);
         this.topicRepository = topicRepository;
     }
@@ -64,7 +69,9 @@ public class ZookeeperSubscriptionRepository extends ZookeeperBasedRepository im
     @Override
     public void removeSubscription(TopicName topicName, String subscriptionName) {
         ensureSubscriptionExists(topicName, subscriptionName);
-        logger.info("Removing subscription {}", new SubscriptionName(subscriptionName, topicName).getQualifiedName());
+        logger.info(
+                "Removing subscription {}",
+                new SubscriptionName(subscriptionName, topicName).getQualifiedName());
 
         try {
             remove(paths.subscriptionPath(topicName, subscriptionName));
@@ -75,7 +82,8 @@ public class ZookeeperSubscriptionRepository extends ZookeeperBasedRepository im
 
     @Override
     public void updateSubscription(Subscription modifiedSubscription) {
-        ensureSubscriptionExists(modifiedSubscription.getTopicName(), modifiedSubscription.getName());
+        ensureSubscriptionExists(
+                modifiedSubscription.getTopicName(), modifiedSubscription.getName());
         logger.info("Updating subscription {}", modifiedSubscription.getQualifiedName());
         try {
             overwrite(paths.subscriptionPath(modifiedSubscription), modifiedSubscription);
@@ -85,11 +93,14 @@ public class ZookeeperSubscriptionRepository extends ZookeeperBasedRepository im
     }
 
     @Override
-    public void updateSubscriptionState(TopicName topicName, String subscriptionName, Subscription.State state) {
+    public void updateSubscriptionState(
+            TopicName topicName, String subscriptionName, Subscription.State state) {
         ensureSubscriptionExists(topicName, subscriptionName);
 
-        logger.info("Changing subscription {} state to {}",
-                new SubscriptionName(subscriptionName, topicName).getQualifiedName(), state.toString());
+        logger.info(
+                "Changing subscription {} state to {}",
+                new SubscriptionName(subscriptionName, topicName).getQualifiedName(),
+                state.toString());
 
         Subscription modifiedSubscription = getSubscriptionDetails(topicName, subscriptionName);
         if (!modifiedSubscription.getState().equals(state)) {
@@ -102,19 +113,21 @@ public class ZookeeperSubscriptionRepository extends ZookeeperBasedRepository im
     public Subscription getSubscriptionDetails(TopicName topicName, String subscriptionName) {
         ensureSubscriptionExists(topicName, subscriptionName);
         return readWithStatFrom(
-                paths.subscriptionPath(topicName, subscriptionName),
-                Subscription.class,
-                (sub, stat) -> {
-                    sub.setCreatedAt(stat.getCtime());
-                    sub.setModifiedAt(stat.getMtime());
-                },
-                false
-        ).get();
+                        paths.subscriptionPath(topicName, subscriptionName),
+                        Subscription.class,
+                        (sub, stat) -> {
+                            sub.setCreatedAt(stat.getCtime());
+                            sub.setModifiedAt(stat.getMtime());
+                        },
+                        false)
+                .get();
     }
 
-    private Optional<Subscription> getSubscriptionDetails(TopicName topicName, String subscriptionName, boolean quiet) {
+    private Optional<Subscription> getSubscriptionDetails(
+            TopicName topicName, String subscriptionName, boolean quiet) {
         ensureSubscriptionExists(topicName, subscriptionName);
-        return readFrom(paths.subscriptionPath(topicName, subscriptionName), Subscription.class, quiet);
+        return readFrom(
+                paths.subscriptionPath(topicName, subscriptionName), Subscription.class, quiet);
     }
 
     @Override
@@ -123,7 +136,8 @@ public class ZookeeperSubscriptionRepository extends ZookeeperBasedRepository im
     }
 
     @Override
-    public List<Subscription> getSubscriptionDetails(Collection<SubscriptionName> subscriptionNames) {
+    public List<Subscription> getSubscriptionDetails(
+            Collection<SubscriptionName> subscriptionNames) {
         return subscriptionNames.stream()
                 .map(n -> getSubscriptionDetails(n.getTopicName(), n.getName()))
                 .collect(Collectors.toList());

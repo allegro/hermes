@@ -6,7 +6,10 @@ import pl.allegro.tech.hermes.management.domain.ManagementException;
 public class TopicSchemaExistsException extends ManagementException {
 
     TopicSchemaExistsException(String topic) {
-        super("Schema already exists for topic " + topic + ", please remove it before creating topic.");
+        super(
+                "Schema already exists for topic "
+                        + topic
+                        + ", please remove it before creating topic.");
     }
 
     @Override

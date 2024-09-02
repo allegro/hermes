@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.oauth;
 
 import com.google.common.base.Preconditions;
+
 import pl.allegro.tech.hermes.api.OAuthProvider;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.domain.oauth.OAuthProviderRepository;
@@ -11,12 +12,13 @@ public class OAuthTokenRequestRateLimiterFactory {
 
     private final double rateReductionFactor;
 
-    public OAuthTokenRequestRateLimiterFactory(OAuthProviderRepository oAuthProviderRepository,
-                                               double rateReductionFactor) {
+    public OAuthTokenRequestRateLimiterFactory(
+            OAuthProviderRepository oAuthProviderRepository, double rateReductionFactor) {
         this.oAuthProviderRepository = oAuthProviderRepository;
         this.rateReductionFactor = rateReductionFactor;
 
-        Preconditions.checkArgument(rateReductionFactor >= 1,
+        Preconditions.checkArgument(
+                rateReductionFactor >= 1,
                 "Token request rate limiter rate reduction factor must be greater or equal to 1");
     }
 
@@ -25,7 +27,10 @@ public class OAuthTokenRequestRateLimiterFactory {
         OAuthProvider oAuthProvider = oAuthProviderRepository.getOAuthProviderDetails(providerName);
         double initialRate = delayToRate(oAuthProvider.getTokenRequestInitialDelay());
         double minimalRate = delayToRate(oAuthProvider.getTokenRequestMaxDelay());
-        return new OAuthTokenRequestRateLimiter(initialRate, minimalRate, rateReductionFactor,
+        return new OAuthTokenRequestRateLimiter(
+                initialRate,
+                minimalRate,
+                rateReductionFactor,
                 oAuthProvider.getTokenRequestInitialDelay());
     }
 

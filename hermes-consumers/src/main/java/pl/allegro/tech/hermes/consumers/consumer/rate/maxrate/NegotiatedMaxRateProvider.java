@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.consumers.consumer.rate.maxrate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.consumer.rate.SendCounters;
@@ -25,22 +26,25 @@ public class NegotiatedMaxRateProvider implements MaxRateProvider {
     private volatile double maxRate;
     private volatile double previousRecordedRate = -1;
 
-    NegotiatedMaxRateProvider(String consumerId,
-                              MaxRateRegistry registry,
-                              MaxRateSupervisor maxRateSupervisor,
-                              Subscription subscription,
-                              SendCounters sendCounters,
-                              MetricsFacade metrics,
-                              double initialMaxRate,
-                              double minSignificantChange,
-                              int historyLimit) {
+    NegotiatedMaxRateProvider(
+            String consumerId,
+            MaxRateRegistry registry,
+            MaxRateSupervisor maxRateSupervisor,
+            Subscription subscription,
+            SendCounters sendCounters,
+            MetricsFacade metrics,
+            double initialMaxRate,
+            double minSignificantChange,
+            int historyLimit) {
         this.consumer = new ConsumerInstance(consumerId, subscription.getQualifiedName());
         this.registry = registry;
         this.maxRateSupervisor = maxRateSupervisor;
         this.sendCounters = sendCounters;
         this.metrics = metrics;
-        this.fetchFailuresCounter = metrics.maxRate().fetchFailuresCounter(subscription.getQualifiedName());
-        this.historyUpdateFailuresCounter = metrics.maxRate().historyUpdateFailuresCounter(subscription.getQualifiedName());
+        this.fetchFailuresCounter =
+                metrics.maxRate().fetchFailuresCounter(subscription.getQualifiedName());
+        this.historyUpdateFailuresCounter =
+                metrics.maxRate().historyUpdateFailuresCounter(subscription.getQualifiedName());
         this.minSignificantChange = minSignificantChange;
         this.historyLimit = historyLimit;
         this.maxRate = initialMaxRate;
@@ -61,7 +65,8 @@ public class NegotiatedMaxRateProvider implements MaxRateProvider {
         if (shouldRecordHistory(usedRate)) {
             try {
                 RateHistory rateHistory = registry.getRateHistory(consumer);
-                RateHistory updatedHistory = RateHistory.updatedRates(rateHistory, usedRate, historyLimit);
+                RateHistory updatedHistory =
+                        RateHistory.updatedRates(rateHistory, usedRate, historyLimit);
                 registry.writeRateHistory(consumer, updatedHistory);
                 previousRecordedRate = usedRate;
             } catch (Exception e) {
@@ -72,7 +77,8 @@ public class NegotiatedMaxRateProvider implements MaxRateProvider {
     }
 
     private boolean shouldRecordHistory(double usedRate) {
-        return previousRecordedRate < 0 || Math.abs(previousRecordedRate - usedRate) > minSignificantChange;
+        return previousRecordedRate < 0
+                || Math.abs(previousRecordedRate - usedRate) > minSignificantChange;
     }
 
     private Optional<MaxRate> fetchCurrentMaxRate() {
@@ -87,8 +93,12 @@ public class NegotiatedMaxRateProvider implements MaxRateProvider {
 
     public void start() {
         maxRateSupervisor.register(this);
-        metrics.maxRate().registerCalculatedRateGauge(consumer.getSubscription(), this, NegotiatedMaxRateProvider::get);
-        metrics.maxRate().registerActualRateGauge(consumer.getSubscription(), sendCounters, SendCounters::getRate);
+        metrics.maxRate()
+                .registerCalculatedRateGauge(
+                        consumer.getSubscription(), this, NegotiatedMaxRateProvider::get);
+        metrics.maxRate()
+                .registerActualRateGauge(
+                        consumer.getSubscription(), sendCounters, SendCounters::getRate);
     }
 
     public void shutdown() {

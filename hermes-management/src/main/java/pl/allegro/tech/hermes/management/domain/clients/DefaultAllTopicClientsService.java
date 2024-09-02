@@ -16,7 +16,9 @@ public class DefaultAllTopicClientsService implements AllTopicClientsService {
 
     @Override
     public List<String> getAllClientsByTopic(TopicName topicName) {
-        return subscriptionRepository.listSubscriptions(topicName)
-                .stream().map(subscription -> subscription.getOwner().getId()).distinct().collect(Collectors.toList());
+        return subscriptionRepository.listSubscriptions(topicName).stream()
+                .map(subscription -> subscription.getOwner().getId())
+                .distinct()
+                .collect(Collectors.toList());
     }
 }

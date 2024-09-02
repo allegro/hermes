@@ -1,11 +1,21 @@
 package pl.allegro.tech.hermes.tracker.elasticsearch.management;
 
+import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
+import static org.elasticsearch.index.query.QueryBuilders.termQuery;
+
+import static pl.allegro.tech.hermes.tracker.elasticsearch.SchemaManager.schemaManagerWithDailyIndexes;
+
+import static java.util.Arrays.stream;
+import static java.util.stream.Collectors.toList;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.sort.SortOrder;
+
 import pl.allegro.tech.hermes.api.MessageTrace;
 import pl.allegro.tech.hermes.api.PublishedMessageTrace;
 import pl.allegro.tech.hermes.api.SentMessageTrace;
@@ -19,12 +29,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
-
-import static java.util.Arrays.stream;
-import static java.util.stream.Collectors.toList;
-import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
-import static org.elasticsearch.index.query.QueryBuilders.termQuery;
-import static pl.allegro.tech.hermes.tracker.elasticsearch.SchemaManager.schemaManagerWithDailyIndexes;
 
 public class ElasticsearchLogRepository implements LogRepository, LogSchemaAware {
 
@@ -44,12 +48,16 @@ public class ElasticsearchLogRepository implements LogRepository, LogSchemaAware
     }
 
     @Override
-    public List<SentMessageTrace> getLastUndeliveredMessages(String topicName, String subscriptionName, int limit) {
-        SearchResponse response = searchSentMessages(limit, SortOrder.DESC,
-                boolQuery()
-                        .must(termQuery(TOPIC_NAME, topicName))
-                        .must(termQuery(SUBSCRIPTION, subscriptionName))
-                        .must(termQuery(STATUS, SentMessageTraceStatus.DISCARDED.name())));
+    public List<SentMessageTrace> getLastUndeliveredMessages(
+            String topicName, String subscriptionName, int limit) {
+        SearchResponse response =
+                searchSentMessages(
+                        limit,
+                        SortOrder.DESC,
+                        boolQuery()
+                                .must(termQuery(TOPIC_NAME, topicName))
+                                .must(termQuery(SUBSCRIPTION, subscriptionName))
+                                .must(termQuery(STATUS, SentMessageTraceStatus.DISCARDED.name())));
 
         return stream(response.getHits().getHits())
                 .map(hit -> toMessageTrace(hit, SentMessageTrace.class))
@@ -57,23 +65,31 @@ public class ElasticsearchLogRepository implements LogRepository, LogSchemaAware
     }
 
     @Override
-    public List<MessageTrace> getMessageStatus(String topicName, String subscriptionName, String messageId) {
+    public List<MessageTrace> getMessageStatus(
+            String topicName, String subscriptionName, String messageId) {
 
         try {
-            SearchResponse publishedResponse = searchPublishedMessages(LIMIT,
-                    boolQuery()
-                            .must(termQuery(TOPIC_NAME, topicName))
-                            .must(termQuery(MESSAGE_ID, messageId)));
+            SearchResponse publishedResponse =
+                    searchPublishedMessages(
+                            LIMIT,
+                            boolQuery()
+                                    .must(termQuery(TOPIC_NAME, topicName))
+                                    .must(termQuery(MESSAGE_ID, messageId)));
 
-            SearchResponse sentResponse = searchSentMessages(LIMIT, SortOrder.ASC,
-                    boolQuery()
-                            .must(termQuery(TOPIC_NAME, topicName))
-                            .must(termQuery(SUBSCRIPTION, subscriptionName))
-                            .must(termQuery(MESSAGE_ID, messageId)));
+            SearchResponse sentResponse =
+                    searchSentMessages(
+                            LIMIT,
+                            SortOrder.ASC,
+                            boolQuery()
+                                    .must(termQuery(TOPIC_NAME, topicName))
+                                    .must(termQuery(SUBSCRIPTION, subscriptionName))
+                                    .must(termQuery(MESSAGE_ID, messageId)));
 
             return Stream.concat(
-                    stream(publishedResponse.getHits().getHits()).map(hit -> toMessageTrace(hit, PublishedMessageTrace.class)),
-                    stream(sentResponse.getHits().getHits()).map(hit -> toMessageTrace(hit, SentMessageTrace.class)))
+                            stream(publishedResponse.getHits().getHits())
+                                    .map(hit -> toMessageTrace(hit, PublishedMessageTrace.class)),
+                            stream(sentResponse.getHits().getHits())
+                                    .map(hit -> toMessageTrace(hit, SentMessageTrace.class)))
                     .collect(toList());
         } catch (InterruptedException | ExecutionException ex) {
             throw new ElasticsearchRepositoryException(ex);
@@ -81,7 +97,8 @@ public class ElasticsearchLogRepository implements LogRepository, LogSchemaAware
     }
 
     private SearchResponse searchSentMessages(int limit, SortOrder sort, QueryBuilder query) {
-        return elasticClient.prepareSearch(SchemaManager.SENT_ALIAS_NAME)
+        return elasticClient
+                .prepareSearch(SchemaManager.SENT_ALIAS_NAME)
                 .setTypes(SchemaManager.SENT_TYPE)
                 .setTrackScores(true)
                 .setQuery(query)
@@ -91,8 +108,10 @@ public class ElasticsearchLogRepository implements LogRepository, LogSchemaAware
                 .actionGet();
     }
 
-    private SearchResponse searchPublishedMessages(int limit, QueryBuilder query) throws InterruptedException, ExecutionException {
-        return elasticClient.prepareSearch(SchemaManager.PUBLISHED_ALIAS_NAME)
+    private SearchResponse searchPublishedMessages(int limit, QueryBuilder query)
+            throws InterruptedException, ExecutionException {
+        return elasticClient
+                .prepareSearch(SchemaManager.PUBLISHED_ALIAS_NAME)
                 .setTypes(SchemaManager.PUBLISHED_TYPE)
                 .setTrackScores(true)
                 .setQuery(query)
@@ -107,7 +126,9 @@ public class ElasticsearchLogRepository implements LogRepository, LogSchemaAware
             return objectMapper.readValue(h.getSourceRef().streamInput(), messageTraceType);
         } catch (IOException e) {
             throw new RuntimeException(
-                    "Exception during deserialization of message trace class named " + messageTraceType.getCanonicalName(), e);
+                    "Exception during deserialization of message trace class named "
+                            + messageTraceType.getCanonicalName(),
+                    e);
         }
     }
 }

@@ -5,6 +5,7 @@ import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
 import org.apache.zookeeper.KeeperException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 
 import java.util.ArrayList;
@@ -33,12 +34,13 @@ public class HierarchicalCache {
 
     private HierarchicalCacheLevel rootCache;
 
-    public HierarchicalCache(CuratorFramework curatorFramework,
-                             ExecutorService executorService,
-                             String basePath,
-                             int maxDepth,
-                             List<String> levelPrefixes,
-                             boolean removeNodesWithNoData) {
+    public HierarchicalCache(
+            CuratorFramework curatorFramework,
+            ExecutorService executorService,
+            String basePath,
+            int maxDepth,
+            List<String> levelPrefixes,
+            boolean removeNodesWithNoData) {
         this.curatorFramework = curatorFramework;
         this.executorService = executorService;
         this.basePath = basePath;
@@ -65,19 +67,27 @@ public class HierarchicalCache {
     }
 
     private HierarchicalCacheLevel createLevelCache(int depth, String path) {
-        BiFunction<Integer, String, HierarchicalCacheLevel> function = depth + 1 < maxDepth ? this::createLevelCache : null;
-        HierarchicalCacheLevel levelCache = new HierarchicalCacheLevel(curatorFramework,
-                executorService,
-                path(depth, path),
-                depth,
-                levelCallbacks.get(depth),
-                Optional.ofNullable(function),
-                removeNodesWithNoData);
+        BiFunction<Integer, String, HierarchicalCacheLevel> function =
+                depth + 1 < maxDepth ? this::createLevelCache : null;
+        HierarchicalCacheLevel levelCache =
+                new HierarchicalCacheLevel(
+                        curatorFramework,
+                        executorService,
+                        path(depth, path),
+                        depth,
+                        levelCallbacks.get(depth),
+                        Optional.ofNullable(function),
+                        removeNodesWithNoData);
         try {
-            logger.debug("Starting hierarchical cache level for path  {} and depth {}", path, depth);
+            logger.debug(
+                    "Starting hierarchical cache level for path  {} and depth {}", path, depth);
             levelCache.start();
         } catch (Exception e) {
-            logger.error("Failed to start hierarchical cache level for path {} and depth {}", path(depth, path), depth, e);
+            logger.error(
+                    "Failed to start hierarchical cache level for path {} and depth {}",
+                    path(depth, path),
+                    depth,
+                    e);
         }
         return levelCache;
     }

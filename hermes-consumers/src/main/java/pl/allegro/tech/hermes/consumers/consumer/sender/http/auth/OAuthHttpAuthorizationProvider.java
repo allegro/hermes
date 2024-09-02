@@ -14,14 +14,16 @@ public class OAuthHttpAuthorizationProvider implements HttpAuthorizationProvider
 
     private final OAuthAccessTokens accessTokens;
 
-    public OAuthHttpAuthorizationProvider(SubscriptionName subscriptionName, OAuthAccessTokens accessTokens) {
+    public OAuthHttpAuthorizationProvider(
+            SubscriptionName subscriptionName, OAuthAccessTokens accessTokens) {
         this.subscriptionName = subscriptionName;
         this.accessTokens = accessTokens;
     }
 
     @Override
     public Optional<String> authorizationToken() {
-        return accessTokens.getTokenIfPresent(subscriptionName)
+        return accessTokens
+                .getTokenIfPresent(subscriptionName)
                 .map(OAuthAccessToken::getTokenValue)
                 .map(value -> BEARER_TOKEN_PREFIX + value);
     }

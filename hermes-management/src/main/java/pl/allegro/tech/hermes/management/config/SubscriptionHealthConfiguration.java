@@ -1,10 +1,12 @@
 package pl.allegro.tech.hermes.management.config;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.management.domain.Auditor;
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
@@ -33,8 +35,7 @@ import java.util.concurrent.Executors;
 public class SubscriptionHealthConfiguration {
     private static final DisabledIndicator DISABLED_INDICATOR = new DisabledIndicator();
 
-    @Autowired
-    private SubscriptionHealthProperties subscriptionHealthProperties;
+    @Autowired private SubscriptionHealthProperties subscriptionHealthProperties;
 
     @Bean
     public SubscriptionHealthProblemIndicator laggingIndicator() {
@@ -85,19 +86,20 @@ public class SubscriptionHealthConfiguration {
     }
 
     @Bean
-    public SubscriptionService subscriptionService(SubscriptionRepository subscriptionRepository,
-                                                   SubscriptionOwnerCache subscriptionOwnerCache,
-                                                   TopicService topicService,
-                                                   SubscriptionMetricsRepository metricsRepository,
-                                                   SubscriptionHealthChecker subscriptionHealthChecker,
-                                                   LogRepository logRepository,
-                                                   SubscriptionValidator subscriptionValidator,
-                                                   Auditor auditor,
-                                                   MultiDatacenterRepositoryCommandExecutor multiDcExecutor,
-                                                   MultiDCAwareService multiDCAwareService,
-                                                   RepositoryManager repositoryManager,
-                                                   SubscriptionHealthProperties subscriptionHealthProperties,
-                                                   SubscriptionRemover subscriptionRemover) {
+    public SubscriptionService subscriptionService(
+            SubscriptionRepository subscriptionRepository,
+            SubscriptionOwnerCache subscriptionOwnerCache,
+            TopicService topicService,
+            SubscriptionMetricsRepository metricsRepository,
+            SubscriptionHealthChecker subscriptionHealthChecker,
+            LogRepository logRepository,
+            SubscriptionValidator subscriptionValidator,
+            Auditor auditor,
+            MultiDatacenterRepositoryCommandExecutor multiDcExecutor,
+            MultiDCAwareService multiDCAwareService,
+            RepositoryManager repositoryManager,
+            SubscriptionHealthProperties subscriptionHealthProperties,
+            SubscriptionRemover subscriptionRemover) {
         return new SubscriptionService(
                 subscriptionRepository,
                 subscriptionOwnerCache,
@@ -112,19 +114,23 @@ public class SubscriptionHealthConfiguration {
                 repositoryManager,
                 Executors.newFixedThreadPool(
                         subscriptionHealthProperties.getThreads(),
-                        new ThreadFactoryBuilder().setNameFormat("subscription-health-check-executor-%d").build()
-                ),
+                        new ThreadFactoryBuilder()
+                                .setNameFormat("subscription-health-check-executor-%d")
+                                .build()),
                 subscriptionHealthProperties.getTimeoutMillis(),
-                subscriptionRemover
-        );
+                subscriptionRemover);
     }
 
     @Bean
-    public SubscriptionRemover subscriptionRemover(Auditor auditor,
-                                                   MultiDatacenterRepositoryCommandExecutor multiDatacenterRepositoryCommandExecutor,
-                                                   SubscriptionOwnerCache subscriptionOwnerCache,
-                                                   SubscriptionRepository subscriptionRepository) {
-        return new SubscriptionRemover(auditor, multiDatacenterRepositoryCommandExecutor,
-                subscriptionOwnerCache, subscriptionRepository);
+    public SubscriptionRemover subscriptionRemover(
+            Auditor auditor,
+            MultiDatacenterRepositoryCommandExecutor multiDatacenterRepositoryCommandExecutor,
+            SubscriptionOwnerCache subscriptionOwnerCache,
+            SubscriptionRepository subscriptionRepository) {
+        return new SubscriptionRemover(
+                auditor,
+                multiDatacenterRepositoryCommandExecutor,
+                subscriptionOwnerCache,
+                subscriptionRepository);
     }
 }

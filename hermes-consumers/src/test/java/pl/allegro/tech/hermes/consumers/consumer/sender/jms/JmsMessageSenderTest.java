@@ -1,5 +1,14 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.jms;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.MESSAGE_ID;
+import static pl.allegro.tech.hermes.consumers.test.MessageBuilder.withTestMessage;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -9,25 +18,19 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+
 import javax.jms.BytesMessage;
 import javax.jms.CompletionListener;
 import javax.jms.JMSContext;
 import javax.jms.JMSException;
 import javax.jms.JMSProducer;
 import javax.jms.JMSRuntimeException;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.MESSAGE_ID;
-import static pl.allegro.tech.hermes.consumers.test.MessageBuilder.withTestMessage;
 
 @RunWith(MockitoJUnitRunner.class)
 public class JmsMessageSenderTest {
@@ -40,21 +43,17 @@ public class JmsMessageSenderTest {
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private JMSProducer jmsProducerMock;
 
-    @Mock
-    private BytesMessage messageMock;
+    @Mock private BytesMessage messageMock;
 
-    @Spy
-    private JmsMetadataAppender metadataAppender;
+    @Spy private JmsMetadataAppender metadataAppender;
 
-    @InjectMocks
-    private JmsMessageSender messageSender;
+    @InjectMocks private JmsMessageSender messageSender;
 
     @Before
     public void setUp() throws Exception {
         when(jmsContextMock.createBytesMessage()).thenReturn(messageMock);
         when(jmsContextMock.createProducer()).thenReturn(jmsProducerMock);
     }
-
 
     @Test
     public void shouldReturnTrueWhenMessageSuccessfullyPublished() throws Exception {
@@ -63,7 +62,8 @@ public class JmsMessageSenderTest {
         messageSender.send(SOME_MESSAGE, future);
 
         // then
-        ArgumentCaptor<CompletionListener> listenerCaptor = ArgumentCaptor.forClass(CompletionListener.class);
+        ArgumentCaptor<CompletionListener> listenerCaptor =
+                ArgumentCaptor.forClass(CompletionListener.class);
         verify(jmsProducerMock).setAsync(listenerCaptor.capture());
         listenerCaptor.getValue().onCompletion(messageMock);
         assertTrue(future.get(1, TimeUnit.SECONDS).succeeded());
@@ -76,7 +76,8 @@ public class JmsMessageSenderTest {
         messageSender.send(SOME_MESSAGE, future);
 
         // then
-        ArgumentCaptor<CompletionListener> listenerCaptor = ArgumentCaptor.forClass(CompletionListener.class);
+        ArgumentCaptor<CompletionListener> listenerCaptor =
+                ArgumentCaptor.forClass(CompletionListener.class);
         verify(jmsProducerMock).setAsync(listenerCaptor.capture());
         listenerCaptor.getValue().onException(messageMock, new RuntimeException());
         assertFalse(future.get(1, TimeUnit.SECONDS).succeeded());

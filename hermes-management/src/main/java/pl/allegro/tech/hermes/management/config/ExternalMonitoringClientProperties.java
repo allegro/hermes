@@ -19,7 +19,6 @@ public class ExternalMonitoringClientProperties {
 
     private String externalMonitoringUrl = "http://localhost:18090";
 
-
     public int getConnectionTimeoutMillis() {
         return connectionTimeoutMillis;
     }

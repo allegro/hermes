@@ -17,9 +17,10 @@ public final class SubscriptionHealthContext {
     private final double batchRate;
     private final long lag;
 
-    private SubscriptionHealthContext(Subscription subscription,
-                                      TopicMetrics topicMetrics,
-                                      SubscriptionMetrics subscriptionMetrics) {
+    private SubscriptionHealthContext(
+            Subscription subscription,
+            TopicMetrics topicMetrics,
+            SubscriptionMetrics subscriptionMetrics) {
         this.subscription = subscription;
         this.topicRate = topicMetrics.getRate().toDouble();
         this.subscriptionRate = subscriptionMetrics.getRate().toDouble();
@@ -31,9 +32,10 @@ public final class SubscriptionHealthContext {
         this.lag = subscriptionMetrics.getLag().toLong();
     }
 
-    static Optional<SubscriptionHealthContext> createIfAllMetricsExist(Subscription subscription,
-                                                                       TopicMetrics topicMetrics,
-                                                                       SubscriptionMetrics subscriptionMetrics) {
+    static Optional<SubscriptionHealthContext> createIfAllMetricsExist(
+            Subscription subscription,
+            TopicMetrics topicMetrics,
+            SubscriptionMetrics subscriptionMetrics) {
         if (topicMetrics.getRate().isAvailable()
                 && subscriptionMetrics.getRate().isAvailable()
                 && subscriptionMetrics.getTimeouts().isAvailable()
@@ -42,7 +44,8 @@ public final class SubscriptionHealthContext {
                 && subscriptionMetrics.getCodes5xx().isAvailable()
                 && subscriptionMetrics.getBatchRate().isAvailable()
                 && subscriptionMetrics.getLag().isAvailable()) {
-            return Optional.of(new SubscriptionHealthContext(subscription, topicMetrics, subscriptionMetrics));
+            return Optional.of(
+                    new SubscriptionHealthContext(subscription, topicMetrics, subscriptionMetrics));
         }
         return Optional.empty();
     }

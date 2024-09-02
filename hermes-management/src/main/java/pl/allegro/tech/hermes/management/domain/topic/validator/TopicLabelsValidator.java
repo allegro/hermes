@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.management.domain.topic.validator;
 
 import org.springframework.stereotype.Component;
+
 import pl.allegro.tech.hermes.api.TopicLabel;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
 
@@ -9,7 +10,8 @@ import java.util.Set;
 @Component
 public class TopicLabelsValidator {
 
-    private static final String ERROR_MESSAGE = "One of topic labels %s is not within allowed topic labels %s";
+    private static final String ERROR_MESSAGE =
+            "One of topic labels %s is not within allowed topic labels %s";
 
     private final Set<TopicLabel> allowedTopicLabels;
 
@@ -19,7 +21,8 @@ public class TopicLabelsValidator {
 
     public void check(Set<TopicLabel> labels) {
         if (!allowedTopicLabels.containsAll(labels)) {
-            throw new TopicValidationException(String.format(ERROR_MESSAGE, labels, allowedTopicLabels));
+            throw new TopicValidationException(
+                    String.format(ERROR_MESSAGE, labels, allowedTopicLabels));
         }
     }
 }

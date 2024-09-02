@@ -17,7 +17,9 @@ public class ExecutorMetrics {
         return ExecutorServiceMetrics.monitor(meterRegistry, executorService, executorName);
     }
 
-    public ScheduledExecutorService monitor(ScheduledExecutorService scheduledExecutorService, String executorName) {
-        return ExecutorServiceMetrics.monitor(meterRegistry, scheduledExecutorService, executorName);
+    public ScheduledExecutorService monitor(
+            ScheduledExecutorService scheduledExecutorService, String executorName) {
+        return ExecutorServiceMetrics.monitor(
+                meterRegistry, scheduledExecutorService, executorName);
     }
 }

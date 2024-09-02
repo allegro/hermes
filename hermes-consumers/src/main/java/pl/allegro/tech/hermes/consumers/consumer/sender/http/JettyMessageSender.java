@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 
 import org.eclipse.jetty.client.Request;
+
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.CompletableFutureAwareMessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
@@ -20,10 +21,11 @@ public class JettyMessageSender implements CompletableFutureAwareMessageSender {
     private final HttpHeadersProvider requestHeadersProvider;
     private final SendingResultHandlers sendingResultHandlers;
 
-    public JettyMessageSender(HttpRequestFactory requestFactory,
-                              ResolvableEndpointAddress addressResolver,
-                              HttpHeadersProvider headersProvider,
-                              SendingResultHandlers sendingResultHandlers) {
+    public JettyMessageSender(
+            HttpRequestFactory requestFactory,
+            ResolvableEndpointAddress addressResolver,
+            HttpHeadersProvider headersProvider,
+            SendingResultHandlers sendingResultHandlers) {
         this.requestFactory = requestFactory;
         this.addressResolver = addressResolver;
         this.requestHeadersProvider = headersProvider;
@@ -33,9 +35,10 @@ public class JettyMessageSender implements CompletableFutureAwareMessageSender {
     @Override
     public void send(Message message, final CompletableFuture<MessageSendingResult> resultFuture) {
         try {
-            final HttpRequestData requestData = new HttpRequestDataBuilder()
-                    .withRawAddress(addressResolver.getRawAddress())
-                    .build();
+            final HttpRequestData requestData =
+                    new HttpRequestDataBuilder()
+                            .withRawAddress(addressResolver.getRawAddress())
+                            .build();
 
             HttpRequestHeaders headers = requestHeadersProvider.getHeaders(message, requestData);
 
@@ -49,6 +52,5 @@ public class JettyMessageSender implements CompletableFutureAwareMessageSender {
     }
 
     @Override
-    public void stop() {
-    }
+    public void stop() {}
 }

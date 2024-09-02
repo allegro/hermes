@@ -1,5 +1,15 @@
 package pl.allegro.tech.hermes.test.helper.containers;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import static org.rnorth.ducttape.unreliables.Unreliables.retryUntilTrue;
+
+import static pl.allegro.tech.hermes.test.helper.containers.TestcontainersUtils.copyScriptToContainer;
+import static pl.allegro.tech.hermes.test.helper.containers.TestcontainersUtils.readFileFromClasspath;
+
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.stream.Collectors.toList;
+
 import org.testcontainers.containers.Container.ExecResult;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
@@ -18,20 +28,16 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static java.util.stream.Collectors.toList;
-import static org.rnorth.ducttape.unreliables.Unreliables.retryUntilTrue;
-import static pl.allegro.tech.hermes.test.helper.containers.TestcontainersUtils.copyScriptToContainer;
-import static pl.allegro.tech.hermes.test.helper.containers.TestcontainersUtils.readFileFromClasspath;
-
 public class KafkaContainerCluster implements Startable {
-    private static final DockerImageName ZOOKEEPER_IMAGE_NAME = DockerImageName.parse("confluentinc/cp-zookeeper")
-            .withTag(ImageTags.confluentImagesTag());
-    private static final DockerImageName KAFKA_IMAGE_NAME = DockerImageName.parse("confluentinc/cp-kafka")
-            .withTag(ImageTags.confluentImagesTag());
-    private static final DockerImageName TOXIPROXY_IMAGE_NAME = DockerImageName.parse("ghcr.io/shopify/toxiproxy")
-            .withTag("2.4.0").asCompatibleSubstituteFor("shopify/toxiproxy");
+    private static final DockerImageName ZOOKEEPER_IMAGE_NAME =
+            DockerImageName.parse("confluentinc/cp-zookeeper")
+                    .withTag(ImageTags.confluentImagesTag());
+    private static final DockerImageName KAFKA_IMAGE_NAME =
+            DockerImageName.parse("confluentinc/cp-kafka").withTag(ImageTags.confluentImagesTag());
+    private static final DockerImageName TOXIPROXY_IMAGE_NAME =
+            DockerImageName.parse("ghcr.io/shopify/toxiproxy")
+                    .withTag("2.4.0")
+                    .asCompatibleSubstituteFor("shopify/toxiproxy");
 
     private static final Duration CLUSTER_START_TIMEOUT = Duration.ofMinutes(360);
     private static final String ZOOKEEPER_NETWORK_ALIAS = "zookeeper";
@@ -50,19 +56,23 @@ public class KafkaContainerCluster implements Startable {
         this.brokersNum = brokersNum;
         this.minInSyncReplicas = Math.max(brokersNum - 1, 1);
         this.zookeeper = createZookeeper(Network.newNetwork());
-        this.toxiproxy = new ToxiproxyContainer(TOXIPROXY_IMAGE_NAME)
-                .withNetwork(zookeeper.getNetwork());
+        this.toxiproxy =
+                new ToxiproxyContainer(TOXIPROXY_IMAGE_NAME).withNetwork(zookeeper.getNetwork());
         int internalTopicsRf = Math.max(brokersNum - 1, 1);
         for (int brokerId = 0; brokerId < brokersNum; brokerId++) {
-            KafkaContainer container = new KafkaContainer(KAFKA_IMAGE_NAME, zookeeper.getNetwork(), brokerId)
-                    .dependsOn(zookeeper)
-                    .withExternalZookeeper(ZOOKEEPER_NETWORK_ALIAS + ":" + ZOOKEEPER_PORT)
-                    .withEnv("KAFKA_BROKER_ID", brokerId + "")
-                    .withEnv("KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR", internalTopicsRf + "")
-                    .withEnv("KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS", internalTopicsRf + "")
-                    .withEnv("KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR", internalTopicsRf + "")
-                    .withEnv("KAFKA_TRANSACTION_STATE_LOG_MIN_ISR", internalTopicsRf + "")
-                    .withEnv("KAFKA_MIN_INSYNC_REPLICAS", minInSyncReplicas + "");
+            KafkaContainer container =
+                    new KafkaContainer(KAFKA_IMAGE_NAME, zookeeper.getNetwork(), brokerId)
+                            .dependsOn(zookeeper)
+                            .withExternalZookeeper(ZOOKEEPER_NETWORK_ALIAS + ":" + ZOOKEEPER_PORT)
+                            .withEnv("KAFKA_BROKER_ID", brokerId + "")
+                            .withEnv(
+                                    "KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR", internalTopicsRf + "")
+                            .withEnv("KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS", internalTopicsRf + "")
+                            .withEnv(
+                                    "KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR",
+                                    internalTopicsRf + "")
+                            .withEnv("KAFKA_TRANSACTION_STATE_LOG_MIN_ISR", internalTopicsRf + "")
+                            .withEnv("KAFKA_MIN_INSYNC_REPLICAS", minInSyncReplicas + "");
             brokers.add(container);
         }
     }
@@ -101,9 +111,9 @@ public class KafkaContainerCluster implements Startable {
     public void start() {
         try {
             startToxiproxy();
-            Startables.deepStart(brokers)
-                    .get(CLUSTER_START_TIMEOUT.getSeconds(), SECONDS);
-            String readinessScript = readFileFromClasspath("testcontainers/kafka_readiness_check.sh");
+            Startables.deepStart(brokers).get(CLUSTER_START_TIMEOUT.getSeconds(), SECONDS);
+            String readinessScript =
+                    readFileFromClasspath("testcontainers/kafka_readiness_check.sh");
             for (KafkaContainer kafkaContainer : brokers) {
                 copyScriptToContainer(readinessScript, kafkaContainer, READINESS_CHECK_SCRIPT);
             }
@@ -116,22 +126,19 @@ public class KafkaContainerCluster implements Startable {
     private void startToxiproxy() {
         toxiproxy.start();
         for (KafkaContainer kafkaContainer : brokers) {
-            ContainerProxy proxy = toxiproxy.getProxy(kafkaContainer, kafkaContainer.getExposedPorts().get(0));
+            ContainerProxy proxy =
+                    toxiproxy.getProxy(kafkaContainer, kafkaContainer.getExposedPorts().get(0));
             proxies.add(proxy);
             kafkaContainer.withAdvertisedPort(proxy.getProxyPort());
         }
     }
 
     public void stop(List<BrokerId> brokerIds) {
-        select(brokerIds).stream()
-                .parallel()
-                .forEach(KafkaContainer::stopKafka);
+        select(brokerIds).stream().parallel().forEach(KafkaContainer::stopKafka);
     }
 
     public void start(List<BrokerId> brokerIds) {
-        select(brokerIds).stream()
-                .parallel()
-                .forEach(KafkaContainer::startKafka);
+        select(brokerIds).stream().parallel().forEach(KafkaContainer::startKafka);
     }
 
     private Set<KafkaContainer> select(List<BrokerId> brokerIds) {
@@ -165,27 +172,30 @@ public class KafkaContainerCluster implements Startable {
     }
 
     private void waitForClusterFormation() {
-        retryUntilTrue((int) CLUSTER_START_TIMEOUT.getSeconds(), TimeUnit.SECONDS, this::isZookeeperReady);
-        retryUntilTrue((int) CLUSTER_START_TIMEOUT.getSeconds(), TimeUnit.SECONDS, this::isKafkaReady);
+        retryUntilTrue(
+                (int) CLUSTER_START_TIMEOUT.getSeconds(), TimeUnit.SECONDS, this::isZookeeperReady);
+        retryUntilTrue(
+                (int) CLUSTER_START_TIMEOUT.getSeconds(), TimeUnit.SECONDS, this::isKafkaReady);
     }
 
     private boolean isZookeeperReady() throws IOException, InterruptedException {
-        ExecResult result = zookeeper.execInContainer(
-                "sh",
-                "-c",
-                "zookeeper-shell " + ZOOKEEPER_NETWORK_ALIAS + ":" + ZOOKEEPER_PORT + " ls /brokers/ids | tail -n 1"
-        );
+        ExecResult result =
+                zookeeper.execInContainer(
+                        "sh",
+                        "-c",
+                        "zookeeper-shell "
+                                + ZOOKEEPER_NETWORK_ALIAS
+                                + ":"
+                                + ZOOKEEPER_PORT
+                                + " ls /brokers/ids | tail -n 1");
         String brokers = result.getStdout();
         return brokers != null && brokers.split(",").length == brokersNum;
     }
 
     private boolean isKafkaReady() throws IOException, InterruptedException {
         KafkaContainer firstBroker = selectFirstRunningBroker();
-        ExecResult result = firstBroker.execInContainer(
-                "sh",
-                "-c",
-                READINESS_CHECK_SCRIPT + " " + brokersNum
-        );
+        ExecResult result =
+                firstBroker.execInContainer("sh", "-c", READINESS_CHECK_SCRIPT + " " + brokersNum);
         return result.getExitCode() == 0;
     }
 
@@ -199,14 +209,14 @@ public class KafkaContainerCluster implements Startable {
 
     private int countPartitions(String option) throws IOException, InterruptedException {
         KafkaContainer firstBroker = selectFirstRunningBroker();
-        ExecResult result = firstBroker.execInContainer(
-                "sh",
-                "-c",
-                "kafka-topics --bootstrap-server localhost:9092 --describe " + option + " | wc -l"
-        );
-        String sanitizedOutput = result.getStdout()
-                .replaceAll("\"", "")
-                .replaceAll("\\s+", "");
+        ExecResult result =
+                firstBroker.execInContainer(
+                        "sh",
+                        "-c",
+                        "kafka-topics --bootstrap-server localhost:9092 --describe "
+                                + option
+                                + " | wc -l");
+        String sanitizedOutput = result.getStdout().replaceAll("\"", "").replaceAll("\\s+", "");
         return Integer.parseInt(sanitizedOutput);
     }
 

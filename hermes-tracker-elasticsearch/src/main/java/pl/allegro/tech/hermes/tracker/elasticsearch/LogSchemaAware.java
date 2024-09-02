@@ -18,5 +18,4 @@ public interface LogSchemaAware {
     String REMOTE_HOSTNAME = "remote_hostname";
     String EXTRA_REQUEST_HEADERS = "extra_request_headers";
     String STORAGE_DATACENTER = "storageDc";
-
 }

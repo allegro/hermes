@@ -22,7 +22,8 @@ public class MessageSenderFactory {
         }
     }
 
-    public MessageSender create(Subscription subscription, ResilientMessageSender resilientMessageSender) {
+    public MessageSender create(
+            Subscription subscription, ResilientMessageSender resilientMessageSender) {
         EndpointAddress endpoint = subscription.getEndpoint();
 
         ProtocolMessageSenderProvider provider = protocolProviders.get(endpoint.getProtocol());
@@ -43,17 +44,23 @@ public class MessageSenderFactory {
         try {
             provider.start();
         } catch (Exception e) {
-            throw new InternalProcessingException("Something went wrong while starting message sender provider", e);
+            throw new InternalProcessingException(
+                    "Something went wrong while starting message sender provider", e);
         }
     }
 
     public void closeProviders() {
-        protocolProviders.values().forEach(provider -> {
-            try {
-                provider.stop();
-            } catch (Exception e) {
-                throw new InternalProcessingException("Something went wrong while stopping message sender provider", e);
-            }
-        });
+        protocolProviders
+                .values()
+                .forEach(
+                        provider -> {
+                            try {
+                                provider.stop();
+                            } catch (Exception e) {
+                                throw new InternalProcessingException(
+                                        "Something went wrong while stopping message sender provider",
+                                        e);
+                            }
+                        });
     }
 }

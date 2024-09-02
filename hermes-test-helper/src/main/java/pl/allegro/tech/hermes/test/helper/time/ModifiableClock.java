@@ -1,12 +1,12 @@
 package pl.allegro.tech.hermes.test.helper.time;
 
+import static java.time.Instant.now;
+
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
-
-import static java.time.Instant.now;
 
 public class ModifiableClock extends Clock {
 

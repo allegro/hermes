@@ -9,6 +9,7 @@ import io.micrometer.core.instrument.config.MeterFilter;
 import io.micrometer.core.instrument.distribution.DistributionStatisticConfig;
 import io.micrometer.prometheus.PrometheusConfig;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
+
 import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.common.metric.counter.zookeeper.ZookeeperCounterReporter;
 
@@ -20,9 +21,11 @@ public class PrometheusMeterRegistryFactory {
     private final CounterStorage counterStorage;
     private final String prefix;
 
-    public PrometheusMeterRegistryFactory(MicrometerRegistryParameters parameters,
-                                          PrometheusConfig prometheusConfig,
-                                          CounterStorage counterStorage, String prefix) {
+    public PrometheusMeterRegistryFactory(
+            MicrometerRegistryParameters parameters,
+            PrometheusConfig prometheusConfig,
+            CounterStorage counterStorage,
+            String prefix) {
         this.parameters = parameters;
         this.prometheusConfig = prometheusConfig;
         this.counterStorage = counterStorage;
@@ -40,20 +43,27 @@ public class PrometheusMeterRegistryFactory {
     }
 
     private void applyFilters(PrometheusMeterRegistry meterRegistry) {
-        meterRegistry.config().meterFilter(new MeterFilter() {
-            @Override
-            public Meter.Id map(Meter.Id id) {
-                return id.withName(prefix + id.getName());
-            }
+        meterRegistry
+                .config()
+                .meterFilter(
+                        new MeterFilter() {
+                            @Override
+                            public Meter.Id map(Meter.Id id) {
+                                return id.withName(prefix + id.getName());
+                            }
 
-            @Override
-            public DistributionStatisticConfig configure(Meter.Id id, DistributionStatisticConfig config) {
-                return DistributionStatisticConfig.builder()
-                        .percentiles(parameters.getPercentiles()
-                                .stream().mapToDouble(Double::doubleValue).toArray()
-                ).build().merge(config);
-            }
-        });
+                            @Override
+                            public DistributionStatisticConfig configure(
+                                    Meter.Id id, DistributionStatisticConfig config) {
+                                return DistributionStatisticConfig.builder()
+                                        .percentiles(
+                                                parameters.getPercentiles().stream()
+                                                        .mapToDouble(Double::doubleValue)
+                                                        .toArray())
+                                        .build()
+                                        .merge(config);
+                            }
+                        });
     }
 
     private void registerZookeeperReporter(PrometheusMeterRegistry meterRegistry) {

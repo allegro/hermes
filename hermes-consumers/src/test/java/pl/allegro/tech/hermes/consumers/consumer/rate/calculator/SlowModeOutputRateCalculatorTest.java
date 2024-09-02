@@ -1,28 +1,31 @@
 package pl.allegro.tech.hermes.consumers.consumer.rate.calculator;
 
+import static pl.allegro.tech.hermes.consumers.test.HermesConsumersAssertions.assertThat;
+
 import org.junit.Test;
+
 import pl.allegro.tech.hermes.consumers.consumer.rate.SendCounters;
 
 import java.time.Clock;
-
-import static pl.allegro.tech.hermes.consumers.test.HermesConsumersAssertions.assertThat;
 
 public class SlowModeOutputRateCalculatorTest {
 
     private static final double HEARTBEAT_RATE = 1;
 
-    private final SlowModeOutputRateCalculator calculator = new SlowModeOutputRateCalculator(HEARTBEAT_RATE);
+    private final SlowModeOutputRateCalculator calculator =
+            new SlowModeOutputRateCalculator(HEARTBEAT_RATE);
 
     private final SendCounters counters = new SendCounters(Clock.systemDefaultZone());
 
     @Test
     public void shouldStayInSlowModeIfThereWereSomeFailures() {
         // given
-        counters.incrementSuccesses()
-                .incrementFailures();
+        counters.incrementSuccesses().incrementFailures();
 
         // when then
-        assertThat(calculator.calculateOutputRate(10, 20, counters)).hasRate(10).isInMode(OutputRateCalculator.Mode.SLOW);
+        assertThat(calculator.calculateOutputRate(10, 20, counters))
+                .hasRate(10)
+                .isInMode(OutputRateCalculator.Mode.SLOW);
     }
 
     @Test
@@ -31,7 +34,9 @@ public class SlowModeOutputRateCalculatorTest {
         counters.incrementSuccesses();
 
         // when then
-        assertThat(calculator.calculateOutputRate(10, 20, counters)).hasRate(10).isInMode(OutputRateCalculator.Mode.NORMAL);
+        assertThat(calculator.calculateOutputRate(10, 20, counters))
+                .hasRate(10)
+                .isInMode(OutputRateCalculator.Mode.NORMAL);
     }
 
     @Test
@@ -40,7 +45,8 @@ public class SlowModeOutputRateCalculatorTest {
         counters.incrementFailures();
 
         // when then
-        assertThat(calculator.calculateOutputRate(10, 20, counters)).hasRate(HEARTBEAT_RATE).isInMode(OutputRateCalculator.Mode.HEARTBEAT);
+        assertThat(calculator.calculateOutputRate(10, 20, counters))
+                .hasRate(HEARTBEAT_RATE)
+                .isInMode(OutputRateCalculator.Mode.HEARTBEAT);
     }
-
 }

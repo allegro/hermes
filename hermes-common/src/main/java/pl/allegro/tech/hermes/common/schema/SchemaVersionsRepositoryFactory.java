@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.common.schema;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
 import pl.allegro.tech.hermes.schema.CachedCompiledSchemaRepository;
 import pl.allegro.tech.hermes.schema.CachedSchemaVersionsRepository;
@@ -19,10 +20,11 @@ public class SchemaVersionsRepositoryFactory {
     private final InternalNotificationsBus notificationsBus;
     private final CompiledSchemaRepository<?> compiledSchemaRepository;
 
-    public SchemaVersionsRepositoryFactory(RawSchemaClient rawSchemaClient,
-                                           SchemaVersionRepositoryParameters schemaVersionsRepositoryParameters,
-                                           InternalNotificationsBus notificationsBus,
-                                           CompiledSchemaRepository<?> compiledSchemaRepository) {
+    public SchemaVersionsRepositoryFactory(
+            RawSchemaClient rawSchemaClient,
+            SchemaVersionRepositoryParameters schemaVersionsRepositoryParameters,
+            InternalNotificationsBus notificationsBus,
+            CompiledSchemaRepository<?> compiledSchemaRepository) {
         this.rawSchemaClient = rawSchemaClient;
         this.schemaVersionsRepositoryParameters = schemaVersionsRepositoryParameters;
         this.notificationsBus = notificationsBus;
@@ -31,11 +33,12 @@ public class SchemaVersionsRepositoryFactory {
 
     public SchemaVersionsRepository provide() {
         if (schemaVersionsRepositoryParameters.isCacheEnabled()) {
-            CachedSchemaVersionsRepository cachedSchemaVersionsRepository = new CachedSchemaVersionsRepository(
-                    rawSchemaClient,
-                    getVersionsReloader(),
-                    schemaVersionsRepositoryParameters.getRefreshAfterWrite(),
-                    schemaVersionsRepositoryParameters.getExpireAfterWrite());
+            CachedSchemaVersionsRepository cachedSchemaVersionsRepository =
+                    new CachedSchemaVersionsRepository(
+                            rawSchemaClient,
+                            getVersionsReloader(),
+                            schemaVersionsRepositoryParameters.getRefreshAfterWrite(),
+                            schemaVersionsRepositoryParameters.getExpireAfterWrite());
 
             notificationsBus.registerTopicCallback(
                     new SchemaCacheRefresherCallback<>(

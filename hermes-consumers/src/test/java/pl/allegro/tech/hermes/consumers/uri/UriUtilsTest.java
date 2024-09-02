@@ -1,11 +1,7 @@
 package pl.allegro.tech.hermes.consumers.uri;
 
-import org.junit.Test;
-
-import java.net.URI;
-
-import static java.net.URI.create;
 import static org.assertj.core.api.Assertions.assertThat;
+
 import static pl.allegro.tech.hermes.consumers.uri.UriUtils.appendContext;
 import static pl.allegro.tech.hermes.consumers.uri.UriUtils.extractAddressFromUri;
 import static pl.allegro.tech.hermes.consumers.uri.UriUtils.extractContextFromUri;
@@ -14,10 +10,18 @@ import static pl.allegro.tech.hermes.consumers.uri.UriUtils.extractPasswordFromU
 import static pl.allegro.tech.hermes.consumers.uri.UriUtils.extractPortFromUri;
 import static pl.allegro.tech.hermes.consumers.uri.UriUtils.extractUserNameFromUri;
 
+import static java.net.URI.create;
+
+import org.junit.Test;
+
+import java.net.URI;
+
 public class UriUtilsTest {
 
-    private static final URI FULL_URI = create("jms://user:pass@localhost:123123/12312312/312?param=test");
-    private static final URI NO_PORT_URI = create("jms://user:pass@localhost/12312312/312?param=test");
+    private static final URI FULL_URI =
+            create("jms://user:pass@localhost:123123/12312312/312?param=test");
+    private static final URI NO_PORT_URI =
+            create("jms://user:pass@localhost/12312312/312?param=test");
     private static final URI NO_USER_URI = create("jms://localhost:123123/12312312/312?param=test");
 
     @Test(expected = InvalidHostException.class)
@@ -59,8 +63,11 @@ public class UriUtilsTest {
         assertContext("http://localhost:8080", "");
         assertContext("http://localhost:8080/", "/");
         assertContext("http://localhost:8080/path/1", "/path/1");
-        assertContext("http://localhost:8080/path/1?arg1=test1&arg2=test2", "/path/1?arg1=test1&arg2=test2");
-        assertContext("http://localhost:8080/path/1?arg=test#fragment", "/path/1?arg=test#fragment");
+        assertContext(
+                "http://localhost:8080/path/1?arg1=test1&arg2=test2",
+                "/path/1?arg1=test1&arg2=test2");
+        assertContext(
+                "http://localhost:8080/path/1?arg=test#fragment", "/path/1?arg=test#fragment");
         assertContext("http://localhost:8080?arg=test", "?arg=test");
         assertContext("http://localhost:8080?arg=test#fragment", "?arg=test#fragment");
         assertContext("http://localhost:8080#fragment", "#fragment");

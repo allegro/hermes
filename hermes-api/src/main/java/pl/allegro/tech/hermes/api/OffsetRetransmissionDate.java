@@ -2,17 +2,19 @@ package pl.allegro.tech.hermes.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import jakarta.validation.constraints.NotNull;
+
 import pl.allegro.tech.hermes.api.jackson.OffsetDateTimeSerializer;
 
 import java.time.OffsetDateTime;
 
 public class OffsetRetransmissionDate {
 
-    @NotNull
-    private final OffsetDateTime retransmissionDate;
+    @NotNull private final OffsetDateTime retransmissionDate;
 
-    public OffsetRetransmissionDate(@JsonProperty("retransmissionDate") OffsetDateTime retransmissionDate) {
+    public OffsetRetransmissionDate(
+            @JsonProperty("retransmissionDate") OffsetDateTime retransmissionDate) {
         this.retransmissionDate = retransmissionDate;
     }
 

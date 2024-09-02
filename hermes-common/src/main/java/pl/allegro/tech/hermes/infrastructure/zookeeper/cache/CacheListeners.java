@@ -23,8 +23,11 @@ class CacheListeners {
             try {
                 callback.accept(event);
             } catch (Exception exception) {
-                logger.error("Failed to run callback action {} for event with data: {}",
-                        callback.getClass().getSimpleName(), event.getData(), exception);
+                logger.error(
+                        "Failed to run callback action {} for event with data: {}",
+                        callback.getClass().getSimpleName(),
+                        event.getData(),
+                        exception);
             }
         }
     }

@@ -2,8 +2,12 @@ package pl.allegro.tech.hermes.integrationtests.setup;
 
 import java.util.UUID;
 
-public record TraceContext(String traceId, String spanId, String parentSpanId, String traceSampled,
-                           String traceReported) {
+public record TraceContext(
+        String traceId,
+        String spanId,
+        String parentSpanId,
+        String traceSampled,
+        String traceReported) {
 
     public static TraceContext random() {
 

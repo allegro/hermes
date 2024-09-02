@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+
 import pl.allegro.tech.hermes.api.jackson.EndpointAddressDeserializer;
 import pl.allegro.tech.hermes.api.jackson.EndpointAddressSerializer;
 
@@ -19,7 +20,8 @@ public class EndpointAddress implements Anonymizable {
 
     private static final String ANONYMIZED_PASSWORD = "*****";
 
-    private static final Pattern URL_PATTERN = Pattern.compile("([a-zA-Z0-9]*)://(([a-zA-Z0-9\\.\\~\\-\\_]*):(.*)@)?(.*)");
+    private static final Pattern URL_PATTERN =
+            Pattern.compile("([a-zA-Z0-9]*)://(([a-zA-Z0-9\\.\\~\\-\\_]*):(.*)@)?(.*)");
 
     private static final int PROTOCOL_GROUP = 1;
 
@@ -54,7 +56,10 @@ public class EndpointAddress implements Anonymizable {
             this.username = containsCredentials ? matcher.group(USERNAME_GROUP) : null;
             this.password = containsCredentials ? matcher.group(PASSWORD_GROUP) : null;
 
-            this.endpoint = containsCredentials ? protocol + "://" + matcher.group(ADDRESS_GROUP) : endpoint;
+            this.endpoint =
+                    containsCredentials
+                            ? protocol + "://" + matcher.group(ADDRESS_GROUP)
+                            : endpoint;
         } else {
             this.protocol = null;
             this.containsCredentials = false;
@@ -71,7 +76,14 @@ public class EndpointAddress implements Anonymizable {
         this.username = username;
         this.password = ANONYMIZED_PASSWORD;
 
-        this.rawEndpoint = protocol + "://" + username + ":" + password + "@" + endpoint.replace(protocol + "://", "");
+        this.rawEndpoint =
+                protocol
+                        + "://"
+                        + username
+                        + ":"
+                        + password
+                        + "@"
+                        + endpoint.replace(protocol + "://", "");
     }
 
     public static EndpointAddress of(String endpoint) {
@@ -123,9 +135,7 @@ public class EndpointAddress implements Anonymizable {
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper(this)
-                .add("endpoint", endpoint)
-                .toString();
+        return MoreObjects.toStringHelper(this).add("endpoint", endpoint).toString();
     }
 
     public boolean containsCredentials() {

@@ -15,5 +15,4 @@ public class HealthCheckService {
     public void startup() {
         this.shutdown = false;
     }
-
 }

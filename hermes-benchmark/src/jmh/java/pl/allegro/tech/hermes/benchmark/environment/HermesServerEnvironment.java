@@ -8,6 +8,7 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
 
 import java.io.IOException;
@@ -18,7 +19,7 @@ public class HermesServerEnvironment {
 
     private static final Logger logger = LoggerFactory.getLogger(HermesServerEnvironment.class);
     private static final int MAX_CONNECTIONS_PER_ROUTE = 200;
-    
+
     public static final String BENCHMARK_TOPIC = "bench.topic";
 
     private HermesPublisher publisher;
@@ -39,7 +40,11 @@ public class HermesServerEnvironment {
     public void setupPublisher() throws Exception {
 
         String messageBody = loadMessageResource("completeMessage");
-        publisher = new HermesPublisher(MAX_CONNECTIONS_PER_ROUTE, "http://localhost:8080/topics/" + BENCHMARK_TOPIC, messageBody);
+        publisher =
+                new HermesPublisher(
+                        MAX_CONNECTIONS_PER_ROUTE,
+                        "http://localhost:8080/topics/" + BENCHMARK_TOPIC,
+                        messageBody);
     }
 
     @TearDown(Level.Trial)
@@ -57,8 +62,9 @@ public class HermesServerEnvironment {
     }
 
     public static String loadMessageResource(String name) throws IOException {
-        return IOUtils.toString(Objects.requireNonNull(HermesServerEnvironment.class
-            .getResourceAsStream(String.format("/message/%s.json", name))));
+        return IOUtils.toString(
+                Objects.requireNonNull(
+                        HermesServerEnvironment.class.getResourceAsStream(
+                                String.format("/message/%s.json", name))));
     }
-
 }

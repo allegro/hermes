@@ -1,9 +1,9 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload.weighted;
 
+import static java.util.stream.Collectors.toMap;
+
 import java.util.Collection;
 import java.util.Map;
-
-import static java.util.stream.Collectors.toMap;
 
 public class AvgTargetWeightCalculator implements TargetWeightCalculator {
 
@@ -20,13 +20,12 @@ public class AvgTargetWeightCalculator implements TargetWeightCalculator {
         }
 
         metrics.reportCurrentWeights(consumers);
-        Weight sum = consumers.stream()
-                .map(ConsumerNode::getWeight)
-                .reduce(Weight.ZERO, Weight::add);
+        Weight sum =
+                consumers.stream().map(ConsumerNode::getWeight).reduce(Weight.ZERO, Weight::add);
         Weight average = sum.divide(consumers.size());
 
-        Map<String, Weight> newWeights = consumers.stream()
-                .collect(toMap(ConsumerNode::getConsumerId, ignore -> average));
+        Map<String, Weight> newWeights =
+                consumers.stream().collect(toMap(ConsumerNode::getConsumerId, ignore -> average));
         metrics.reportProposedWeights(newWeights);
         return newWeights;
     }

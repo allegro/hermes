@@ -1,8 +1,14 @@
 package pl.allegro.tech.hermes.management.infrastructure.query.parser.json;
 
+import static pl.allegro.tech.hermes.management.infrastructure.query.MatcherQuery.fromMatcher;
+import static pl.allegro.tech.hermes.management.infrastructure.utils.Iterators.stream;
+
+import static java.util.stream.StreamSupport.stream;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
+
 import pl.allegro.tech.hermes.api.Query;
 import pl.allegro.tech.hermes.management.infrastructure.query.matcher.AndMatcher;
 import pl.allegro.tech.hermes.management.infrastructure.query.matcher.Matcher;
@@ -20,10 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static java.util.stream.StreamSupport.stream;
-import static pl.allegro.tech.hermes.management.infrastructure.query.MatcherQuery.fromMatcher;
-import static pl.allegro.tech.hermes.management.infrastructure.utils.Iterators.stream;
-
 public class JsonQueryParser implements QueryParser, QueryParserContext {
 
     private static final String QUERY = "query";
@@ -37,9 +39,7 @@ public class JsonQueryParser implements QueryParser, QueryParserContext {
     @Override
     public <T> Query<T> parse(InputStream input, Class<T> type) {
         try {
-            return parseDocument(
-                    objectMapper.readTree(input)
-            );
+            return parseDocument(objectMapper.readTree(input));
         } catch (IOException | MatcherNotFoundException e) {
             throw new ParseException("Query could not be parsed", e);
         }
@@ -86,9 +86,7 @@ public class JsonQueryParser implements QueryParser, QueryParserContext {
         if (!node.isArray()) {
             throw new ParseException("Element value was expected to be an array");
         }
-        return stream(node.spliterator(), false)
-                .map(this::parseValue)
-                .toArray();
+        return stream(node.spliterator(), false).map(this::parseValue).toArray();
     }
 
     private <T> Query<T> parseDocument(JsonNode document) {
@@ -126,13 +124,12 @@ public class JsonQueryParser implements QueryParser, QueryParserContext {
 
     private <T> Matcher parseObject(String key, JsonNode node) {
         Map.Entry<String, JsonNode> entry = singleNode(node);
-        return MatcherFactories.getMatcherFactory(entry.getKey()).createMatcher(key, entry.getValue(), this);
+        return MatcherFactories.getMatcherFactory(entry.getKey())
+                .createMatcher(key, entry.getValue(), this);
     }
 
     private <T> List<Matcher> parseObjectArray(JsonNode node) {
-        return stream(node.iterator())
-                .map(this::parseCompoundObject)
-                .collect(Collectors.toList());
+        return stream(node.iterator()).map(this::parseCompoundObject).collect(Collectors.toList());
     }
 
     private <T> Matcher parseAttribute(String key, JsonNode node) {
@@ -149,9 +146,7 @@ public class JsonQueryParser implements QueryParser, QueryParserContext {
             throw new MatcherNotFoundException(
                     String.format(
                             "The object must define exactly one member, but defines %s",
-                            Lists.newArrayList(node.fieldNames()).toString()
-                    )
-            );
+                            Lists.newArrayList(node.fieldNames()).toString()));
         }
         return attributes.get(0);
     }

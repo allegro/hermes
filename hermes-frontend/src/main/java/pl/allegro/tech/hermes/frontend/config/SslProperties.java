@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.frontend.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+
 import pl.allegro.tech.hermes.frontend.server.SslParameters;
 
 @ConfigurationProperties(prefix = "frontend.ssl")
@@ -138,4 +139,3 @@ public class SslProperties implements SslParameters {
         this.truststoreFormat = truststoreFormat;
     }
 }
-

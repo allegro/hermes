@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.schema.confluent;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import pl.allegro.tech.hermes.api.RawSchema;
 
 import java.util.Objects;

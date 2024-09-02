@@ -2,17 +2,16 @@ package pl.allegro.tech.hermes.api;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.validation.constraints.NotNull;
 
 import java.util.Objects;
 
 public class Header {
 
-    @NotNull
-    private String name;
+    @NotNull private String name;
 
-    @NotNull
-    private String value;
+    @NotNull private String value;
 
     @JsonCreator
     public Header(@JsonProperty("name") String name, @JsonProperty("value") String value) {
@@ -37,8 +36,7 @@ public class Header {
             return false;
         }
         Header header = (Header) o;
-        return Objects.equals(name, header.name)
-                && Objects.equals(value, header.value);
+        return Objects.equals(name, header.name) && Objects.equals(value, header.value);
     }
 
     @Override

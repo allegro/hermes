@@ -5,34 +5,26 @@ import pl.allegro.tech.hermes.api.Subscription;
 public class BatchConsumerRateLimiter implements ConsumerRateLimiter {
 
     @Override
-    public void initialize() {
-    }
+    public void initialize() {}
 
     @Override
-    public void shutdown() {
-    }
+    public void shutdown() {}
 
     @Override
-    public void acquire() {
-    }
+    public void acquire() {}
 
     @Override
-    public void acquireFiltered() {
-    }
+    public void acquireFiltered() {}
 
     @Override
-    public void adjustConsumerRate() {
-    }
+    public void adjustConsumerRate() {}
 
     @Override
-    public void updateSubscription(Subscription newSubscription) {
-    }
+    public void updateSubscription(Subscription newSubscription) {}
 
     @Override
-    public void registerSuccessfulSending() {
-    }
+    public void registerSuccessfulSending() {}
 
     @Override
-    public void registerFailedSending() {
-    }
+    public void registerFailedSending() {}
 }

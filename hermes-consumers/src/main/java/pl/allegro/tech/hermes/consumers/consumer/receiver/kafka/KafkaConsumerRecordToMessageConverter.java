@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.receiver.kafka;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
@@ -20,12 +21,13 @@ public class KafkaConsumerRecordToMessageConverter {
     private final KafkaHeaderExtractor kafkaHeaderExtractor;
     private final Clock clock;
 
-    public KafkaConsumerRecordToMessageConverter(Topic topic,
-                                                 Subscription subscription,
-                                                 Map<String, KafkaTopic> topics,
-                                                 MessageContentReader messageContentReader,
-                                                 KafkaHeaderExtractor kafkaHeaderExtractor,
-                                                 Clock clock) {
+    public KafkaConsumerRecordToMessageConverter(
+            Topic topic,
+            Subscription subscription,
+            Map<String, KafkaTopic> topics,
+            MessageContentReader messageContentReader,
+            KafkaHeaderExtractor kafkaHeaderExtractor,
+            Clock clock) {
         this.topic = topic;
         this.subscription = subscription;
         this.topics = topics;
@@ -34,12 +36,17 @@ public class KafkaConsumerRecordToMessageConverter {
         this.clock = clock;
     }
 
-    public Message convertToMessage(ConsumerRecord<byte[], byte[]> record, long partitionAssignmentTerm) {
+    public Message convertToMessage(
+            ConsumerRecord<byte[], byte[]> record, long partitionAssignmentTerm) {
         KafkaTopic kafkaTopic = topics.get(record.topic());
-        UnwrappedMessageContent unwrappedContent = messageContentReader.read(record, kafkaTopic.contentType());
+        UnwrappedMessageContent unwrappedContent =
+                messageContentReader.read(record, kafkaTopic.contentType());
 
-        Map<String, String> externalMetadataFromBody = unwrappedContent.getMessageMetadata().getExternalMetadata();
-        Map<String, String> externalMetadata = kafkaHeaderExtractor.extractExternalMetadata(record.headers(), externalMetadataFromBody);
+        Map<String, String> externalMetadataFromBody =
+                unwrappedContent.getMessageMetadata().getExternalMetadata();
+        Map<String, String> externalMetadata =
+                kafkaHeaderExtractor.extractExternalMetadata(
+                        record.headers(), externalMetadataFromBody);
 
         return new Message(
                 kafkaHeaderExtractor.extractMessageId(record.headers()),
@@ -54,12 +61,10 @@ public class KafkaConsumerRecordToMessageConverter {
                 externalMetadata,
                 subscription.getHeaders(),
                 subscription.getName(),
-                subscription.isSubscriptionIdentityHeadersEnabled()
-        );
+                subscription.isSubscriptionIdentityHeadersEnabled());
     }
 
     public void update(Subscription newSubscription) {
         this.subscription = newSubscription;
     }
-
 }

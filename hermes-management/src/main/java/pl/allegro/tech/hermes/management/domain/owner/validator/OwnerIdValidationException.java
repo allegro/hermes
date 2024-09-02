@@ -13,5 +13,4 @@ public class OwnerIdValidationException extends ManagementException {
     public ErrorCode getCode() {
         return ErrorCode.VALIDATION_ERROR;
     }
-
 }

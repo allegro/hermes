@@ -15,12 +15,13 @@ public class TopicPartition {
     private final ContentType contentType;
 
     @JsonCreator
-    public TopicPartition(@JsonProperty("partition") int partition,
-                          @JsonProperty("topic") String topic,
-                          @JsonProperty("currentOffset") long currentOffset,
-                          @JsonProperty("logEndOffset") long logEndOffset,
-                          @JsonProperty("offsetMetadata") String offsetMetadata,
-                          @JsonProperty("contentType") ContentType contentType) {
+    public TopicPartition(
+            @JsonProperty("partition") int partition,
+            @JsonProperty("topic") String topic,
+            @JsonProperty("currentOffset") long currentOffset,
+            @JsonProperty("logEndOffset") long logEndOffset,
+            @JsonProperty("offsetMetadata") String offsetMetadata,
+            @JsonProperty("contentType") ContentType contentType) {
         this.partition = partition;
         this.topic = topic;
         this.currentOffset = currentOffset;
@@ -83,6 +84,7 @@ public class TopicPartition {
 
     @Override
     public int hashCode() {
-        return Objects.hash(partition, topic, currentOffset, logEndOffset, contentType, lag, offsetMetadata);
+        return Objects.hash(
+                partition, topic, currentOffset, logEndOffset, contentType, lag, offsetMetadata);
     }
 }

@@ -59,8 +59,7 @@ public class MessageFilterSpecification {
             return false;
         }
         MessageFilterSpecification that = (MessageFilterSpecification) o;
-        return Objects.equals(type, that.type)
-                && Objects.equals(spec, that.spec);
+        return Objects.equals(type, that.type) && Objects.equals(spec, that.spec);
     }
 
     @Override

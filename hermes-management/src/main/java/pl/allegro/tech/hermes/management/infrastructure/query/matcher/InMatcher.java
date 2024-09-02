@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.management.infrastructure.query.matcher;
 
 import org.apache.commons.jxpath.JXPathException;
+
 import pl.allegro.tech.hermes.management.infrastructure.query.graph.ObjectGraph;
 
 import java.util.Arrays;
@@ -26,13 +27,13 @@ public class InMatcher implements Matcher {
             Object actual = ObjectGraph.from(value).navigate(attribute).value();
             return actual != null && (contains(actual) || contains(asString(actual)));
         } catch (JXPathException e) {
-            throw new MatcherException(String.format("Could not navigate to specific path: '%s'", attribute), e);
+            throw new MatcherException(
+                    String.format("Could not navigate to specific path: '%s'", attribute), e);
         }
     }
 
     private boolean contains(Object actual) {
-        return Arrays.stream(values)
-                .anyMatch(actual::equals);
+        return Arrays.stream(values).anyMatch(actual::equals);
     }
 
     private String asString(Object actual) {

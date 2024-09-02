@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.google.common.collect.ImmutableMap;
+
 import jakarta.validation.constraints.NotNull;
 
 import java.io.IOException;
@@ -15,13 +16,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-@JsonSerialize(using = EndpointAddressResolverMetadata.EndpointAddressResolverMetadataSerializer.class)
+@JsonSerialize(
+        using = EndpointAddressResolverMetadata.EndpointAddressResolverMetadataSerializer.class)
 public class EndpointAddressResolverMetadata {
 
-    private static final EndpointAddressResolverMetadata EMPTY_INSTANCE = new EndpointAddressResolverMetadata(Collections.emptyMap());
+    private static final EndpointAddressResolverMetadata EMPTY_INSTANCE =
+            new EndpointAddressResolverMetadata(Collections.emptyMap());
 
-    @NotNull
-    private Map<String, Object> entries;
+    @NotNull private Map<String, Object> entries;
 
     @JsonCreator
     public EndpointAddressResolverMetadata(Map<String, Object> entries) {
@@ -66,14 +68,18 @@ public class EndpointAddressResolverMetadata {
         return Objects.hash(entries);
     }
 
-    public static class EndpointAddressResolverMetadataSerializer extends StdSerializer<EndpointAddressResolverMetadata> {
+    public static class EndpointAddressResolverMetadataSerializer
+            extends StdSerializer<EndpointAddressResolverMetadata> {
 
         protected EndpointAddressResolverMetadataSerializer() {
             super(EndpointAddressResolverMetadata.class);
         }
 
         @Override
-        public void serialize(EndpointAddressResolverMetadata metadata, JsonGenerator jgen, SerializerProvider provider)
+        public void serialize(
+                EndpointAddressResolverMetadata metadata,
+                JsonGenerator jgen,
+                SerializerProvider provider)
                 throws IOException {
             jgen.writeObject(metadata.entries);
         }

@@ -20,7 +20,6 @@ public class Http1ClientProperties implements Http1ClientParameters {
 
     private Duration connectionTimeout = Duration.ofSeconds(15);
 
-
     @Override
     public int getThreadPoolSize() {
         return threadPoolSize;

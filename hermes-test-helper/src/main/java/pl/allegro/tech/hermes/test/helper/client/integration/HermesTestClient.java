@@ -1,10 +1,16 @@
 package pl.allegro.tech.hermes.test.helper.client.integration;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.waitAtMost;
+
+import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
+
 import jakarta.ws.rs.core.Response;
-import java.time.Duration;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.util.MultiValueMap;
+
 import pl.allegro.tech.hermes.api.BlacklistStatus;
 import pl.allegro.tech.hermes.api.ConsumerGroup;
 import pl.allegro.tech.hermes.api.Group;
@@ -19,13 +25,10 @@ import pl.allegro.tech.hermes.api.TopicWithSchema;
 import pl.allegro.tech.hermes.consumers.supervisor.process.RunningSubscriptionStatus;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.waitAtMost;
-import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
 public class HermesTestClient {
     private final ManagementTestClient managementTestClient;
@@ -38,8 +41,14 @@ public class HermesTestClient {
         this.consumerTestClient = new ConsumerTestClient(consumerPort);
     }
 
-    public HermesTestClient(int managementPort, int frontendPort, int consumerPort, String defaultHeaderName, String defaultHeaderValue) {
-        this.managementTestClient = new ManagementTestClient(managementPort, defaultHeaderName, defaultHeaderValue);
+    public HermesTestClient(
+            int managementPort,
+            int frontendPort,
+            int consumerPort,
+            String defaultHeaderName,
+            String defaultHeaderValue) {
+        this.managementTestClient =
+                new ManagementTestClient(managementPort, defaultHeaderName, defaultHeaderValue);
         this.frontendTestClient = new FrontendTestClient(frontendPort);
         this.consumerTestClient = new ConsumerTestClient(consumerPort);
     }
@@ -58,18 +67,24 @@ public class HermesTestClient {
 
     public WebTestClient.ResponseSpec saveSchema(String topicQualifiedName, String schema) {
         return managementTestClient.saveSchema(topicQualifiedName, schema);
-
     }
 
     public void ensureSchemaSaved(String topicQualifiedName, boolean validate, String schema) {
-        managementTestClient.saveSchema(topicQualifiedName, validate, schema)
-                .expectStatus().isCreated();
-        waitAtMost(adjust(Duration.ofMinutes(1))).untilAsserted(() ->
-                managementTestClient.getSchema(topicQualifiedName).expectStatus().isOk()
-        );
+        managementTestClient
+                .saveSchema(topicQualifiedName, validate, schema)
+                .expectStatus()
+                .isCreated();
+        waitAtMost(adjust(Duration.ofMinutes(1)))
+                .untilAsserted(
+                        () ->
+                                managementTestClient
+                                        .getSchema(topicQualifiedName)
+                                        .expectStatus()
+                                        .isOk());
     }
 
-    public WebTestClient.ResponseSpec saveSchema(String topicQualifiedName, boolean validate, String schema) {
+    public WebTestClient.ResponseSpec saveSchema(
+            String topicQualifiedName, boolean validate, String schema) {
         return managementTestClient.saveSchema(topicQualifiedName, validate, schema);
     }
 
@@ -94,75 +109,114 @@ public class HermesTestClient {
                 .getResponseBody();
     }
 
-    public WebTestClient.ResponseSpec getSubscriptionResponse(String topicQualifiedName, String subscriptionName) {
+    public WebTestClient.ResponseSpec getSubscriptionResponse(
+            String topicQualifiedName, String subscriptionName) {
         return managementTestClient.getSubscription(topicQualifiedName, subscriptionName);
     }
 
-    public WebTestClient.ResponseSpec getSubscriptionMetrics(String topicQualifiedName, String subscriptionName) {
+    public WebTestClient.ResponseSpec getSubscriptionMetrics(
+            String topicQualifiedName, String subscriptionName) {
         return managementTestClient.getSubscriptionMetrics(topicQualifiedName, subscriptionName);
     }
 
     public WebTestClient.ResponseSpec suspendSubscription(Topic topic, String subscription) {
-        return managementTestClient.updateSubscriptionState(topic, subscription, Subscription.State.SUSPENDED)
+        return managementTestClient
+                .updateSubscriptionState(topic, subscription, Subscription.State.SUSPENDED)
                 .expectStatus()
                 .is2xxSuccessful();
     }
 
     public void waitUntilSubscriptionActivated(String topicQualifiedName, String subscriptionName) {
         waitAtMost(Duration.ofSeconds(10))
-                .untilAsserted(() -> {
-                            assertThat(managementTestClient.getSubscription(topicQualifiedName, subscriptionName)
-                                    .expectStatus()
-                                    .is2xxSuccessful()
-                                    .expectBody(Subscription.class)
-                                    .returnResult().getResponseBody().getState())
+                .untilAsserted(
+                        () -> {
+                            assertThat(
+                                            managementTestClient
+                                                    .getSubscription(
+                                                            topicQualifiedName, subscriptionName)
+                                                    .expectStatus()
+                                                    .is2xxSuccessful()
+                                                    .expectBody(Subscription.class)
+                                                    .returnResult()
+                                                    .getResponseBody()
+                                                    .getState())
                                     .isEqualTo(Subscription.State.ACTIVE);
-                            assertThat(managementTestClient.getConsumerGroupsDescription(topicQualifiedName, subscriptionName)
-                                    .expectBodyList(ConsumerGroup.class).returnResult().getResponseBody()
-                                    .get(0)
-                                    .getState())
+                            assertThat(
+                                            managementTestClient
+                                                    .getConsumerGroupsDescription(
+                                                            topicQualifiedName, subscriptionName)
+                                                    .expectBodyList(ConsumerGroup.class)
+                                                    .returnResult()
+                                                    .getResponseBody()
+                                                    .get(0)
+                                                    .getState())
                                     .isEqualTo("Stable");
-                        }
-                );
+                        });
     }
 
     public void waitUntilSubscriptionSuspended(String topicQualifiedName, String subscriptionName) {
         waitAtMost(Duration.ofSeconds(10))
-                .untilAsserted(() -> {
-                            assertThat(managementTestClient.getSubscription(topicQualifiedName, subscriptionName)
-                                    .expectStatus()
-                                    .is2xxSuccessful()
-                                    .expectBody(Subscription.class)
-                                    .returnResult().getResponseBody().getState())
+                .untilAsserted(
+                        () -> {
+                            assertThat(
+                                            managementTestClient
+                                                    .getSubscription(
+                                                            topicQualifiedName, subscriptionName)
+                                                    .expectStatus()
+                                                    .is2xxSuccessful()
+                                                    .expectBody(Subscription.class)
+                                                    .returnResult()
+                                                    .getResponseBody()
+                                                    .getState())
                                     .isEqualTo(Subscription.State.SUSPENDED);
-                            assertThat(managementTestClient.getConsumerGroupsDescription(topicQualifiedName, subscriptionName)
-                                    .expectBodyList(ConsumerGroup.class).returnResult().getResponseBody()
-                                    .get(0)
-                                    .getState())
+                            assertThat(
+                                            managementTestClient
+                                                    .getConsumerGroupsDescription(
+                                                            topicQualifiedName, subscriptionName)
+                                                    .expectBodyList(ConsumerGroup.class)
+                                                    .returnResult()
+                                                    .getResponseBody()
+                                                    .get(0)
+                                                    .getState())
                                     .isEqualTo("Empty");
-                        }
-                );
+                        });
     }
 
     public void waitUntilConsumerCommitsOffset(String topicQualifiedName, String subscriptionName) {
-        long committedMessagesCount = calculateCommittedMessages(topicQualifiedName, subscriptionName);
-        waitAtMost(adjust(Duration.ofMinutes(1))).untilAsserted(() -> {
-                    long currentCommittedMessagesCount = calculateCommittedMessages(topicQualifiedName, subscriptionName);
-                    assertThat(currentCommittedMessagesCount).isGreaterThan(committedMessagesCount);
-                }
-        );
+        long committedMessagesCount =
+                calculateCommittedMessages(topicQualifiedName, subscriptionName);
+        waitAtMost(adjust(Duration.ofMinutes(1)))
+                .untilAsserted(
+                        () -> {
+                            long currentCommittedMessagesCount =
+                                    calculateCommittedMessages(
+                                            topicQualifiedName, subscriptionName);
+                            assertThat(currentCommittedMessagesCount)
+                                    .isGreaterThan(committedMessagesCount);
+                        });
     }
 
     private long calculateCommittedMessages(String topicQualifiedName, String subscription) {
         AtomicLong messagesCommittedCount = new AtomicLong(0);
-        List<ConsumerGroup> consumerGroups = getConsumerGroupsDescription(topicQualifiedName, subscription)
-                .expectBodyList(ConsumerGroup.class)
-                .returnResult().getResponseBody();
-        Objects.requireNonNull(consumerGroups).forEach(consumerGroup ->
-                consumerGroup.getMembers().forEach(member ->
-                        member.getPartitions().forEach(partition ->
-                                messagesCommittedCount.addAndGet(partition.getCurrentOffset())
-                        )));
+        List<ConsumerGroup> consumerGroups =
+                getConsumerGroupsDescription(topicQualifiedName, subscription)
+                        .expectBodyList(ConsumerGroup.class)
+                        .returnResult()
+                        .getResponseBody();
+        Objects.requireNonNull(consumerGroups)
+                .forEach(
+                        consumerGroup ->
+                                consumerGroup
+                                        .getMembers()
+                                        .forEach(
+                                                member ->
+                                                        member.getPartitions()
+                                                                .forEach(
+                                                                        partition ->
+                                                                                messagesCommittedCount
+                                                                                        .addAndGet(
+                                                                                                partition
+                                                                                                        .getCurrentOffset()))));
         return messagesCommittedCount.get();
     }
 
@@ -174,27 +228,32 @@ public class HermesTestClient {
         return frontendTestClient.publishUntilStatus(topicQualifiedName, body, statusCode);
     }
 
-    public int publishUntilSuccess(String topicQualifiedName, String body, MultiValueMap<String, String> headers) {
+    public int publishUntilSuccess(
+            String topicQualifiedName, String body, MultiValueMap<String, String> headers) {
         return frontendTestClient.publishUntilSuccess(topicQualifiedName, body, headers);
     }
 
     public int publishJSONUntilSuccess(String topicQualifiedName, String body) {
-        return frontendTestClient.publishJSONUntilSuccess(topicQualifiedName, body, new HttpHeaders());
+        return frontendTestClient.publishJSONUntilSuccess(
+                topicQualifiedName, body, new HttpHeaders());
     }
 
     public int publishAvroUntilSuccess(String topicQualifiedName, byte[] body) {
         return frontendTestClient.publishAvroUntilSuccess(topicQualifiedName, body);
     }
 
-    public int publishAvroUntilSuccess(String topicQualifiedName, byte[] body, MultiValueMap<String, String> headers) {
+    public int publishAvroUntilSuccess(
+            String topicQualifiedName, byte[] body, MultiValueMap<String, String> headers) {
         return frontendTestClient.publishAvroUntilSuccess(topicQualifiedName, body, headers);
     }
 
-    public WebTestClient.ResponseSpec updateSubscription(Topic topic, String subscription, PatchData patch) {
+    public WebTestClient.ResponseSpec updateSubscription(
+            Topic topic, String subscription, PatchData patch) {
         return managementTestClient.updateSubscription(topic, subscription, patch);
     }
 
-    public WebTestClient.ResponseSpec publish(String topicQualifiedName, String body, MultiValueMap<String, String> headers) {
+    public WebTestClient.ResponseSpec publish(
+            String topicQualifiedName, String body, MultiValueMap<String, String> headers) {
         return frontendTestClient.publishWithHeaders(topicQualifiedName, body, headers);
     }
 
@@ -206,7 +265,8 @@ public class HermesTestClient {
         return frontendTestClient.publishAvro(topicQualifiedName, body, new HttpHeaders());
     }
 
-    public WebTestClient.ResponseSpec publishAvro(String topicQualifiedName, byte[] body, MultiValueMap<String, String> headers) {
+    public WebTestClient.ResponseSpec publishAvro(
+            String topicQualifiedName, byte[] body, MultiValueMap<String, String> headers) {
         return frontendTestClient.publishAvro(topicQualifiedName, body, headers);
     }
 
@@ -218,14 +278,33 @@ public class HermesTestClient {
         return frontendTestClient.publishChunked(topicQualifiedName, body);
     }
 
-    public String publishSlowly(int clientTimeout, int pauseTimeBetweenChunks, int delayBeforeSendingFirstData,
-                                String topicName, boolean chunkedEncoding) throws IOException, InterruptedException {
-        return frontendTestClient.publishSlowly(clientTimeout, pauseTimeBetweenChunks, delayBeforeSendingFirstData, topicName, chunkedEncoding);
+    public String publishSlowly(
+            int clientTimeout,
+            int pauseTimeBetweenChunks,
+            int delayBeforeSendingFirstData,
+            String topicName,
+            boolean chunkedEncoding)
+            throws IOException, InterruptedException {
+        return frontendTestClient.publishSlowly(
+                clientTimeout,
+                pauseTimeBetweenChunks,
+                delayBeforeSendingFirstData,
+                topicName,
+                chunkedEncoding);
     }
 
-    public String publishSlowly(int clientTimeout, int pauseTimeBetweenChunks, int delayBeforeSendingFirstData, String topicName)
+    public String publishSlowly(
+            int clientTimeout,
+            int pauseTimeBetweenChunks,
+            int delayBeforeSendingFirstData,
+            String topicName)
             throws IOException, InterruptedException {
-        return publishSlowly(clientTimeout, pauseTimeBetweenChunks, delayBeforeSendingFirstData, topicName, false);
+        return publishSlowly(
+                clientTimeout,
+                pauseTimeBetweenChunks,
+                delayBeforeSendingFirstData,
+                topicName,
+                false);
     }
 
     public void blacklistTopic(String topicQualifiedName) {
@@ -241,7 +320,8 @@ public class HermesTestClient {
     }
 
     public BlacklistStatus isTopicBlacklisted(String topicQualifiedName) {
-        return managementTestClient.isTopicBlacklisted(topicQualifiedName)
+        return managementTestClient
+                .isTopicBlacklisted(topicQualifiedName)
                 .expectStatus()
                 .is2xxSuccessful()
                 .expectBody(BlacklistStatus.class)
@@ -253,12 +333,15 @@ public class HermesTestClient {
         return managementTestClient.unblacklistTopic(topicQualifiedName);
     }
 
-    public WebTestClient.ResponseSpec getLatestUndeliveredMessage(String topicQualifiedName, String subscriptionName) {
-        return managementTestClient.getLatestUndeliveredMessage(topicQualifiedName, subscriptionName);
+    public WebTestClient.ResponseSpec getLatestUndeliveredMessage(
+            String topicQualifiedName, String subscriptionName) {
+        return managementTestClient.getLatestUndeliveredMessage(
+                topicQualifiedName, subscriptionName);
     }
 
     public List<RunningSubscriptionStatus> getRunningSubscriptionsStatus() {
-        return consumerTestClient.getRunningSubscriptionsStatus()
+        return consumerTestClient
+                .getRunningSubscriptionsStatus()
                 .expectStatus()
                 .is2xxSuccessful()
                 .expectBodyList(RunningSubscriptionStatus.class)
@@ -266,12 +349,19 @@ public class HermesTestClient {
                 .getResponseBody();
     }
 
-    public WebTestClient.ResponseSpec retransmit(String qualifiedName, String subscriptionName, OffsetRetransmissionDate retransmissionDate, boolean dryRun) {
-        return managementTestClient.retransmit(qualifiedName, subscriptionName, retransmissionDate, dryRun);
+    public WebTestClient.ResponseSpec retransmit(
+            String qualifiedName,
+            String subscriptionName,
+            OffsetRetransmissionDate retransmissionDate,
+            boolean dryRun) {
+        return managementTestClient.retransmit(
+                qualifiedName, subscriptionName, retransmissionDate, dryRun);
     }
 
-    public WebTestClient.ResponseSpec getPreview(String qualifiedTopicName, String primaryKafkaClusterName, int partition, long offset) {
-        return managementTestClient.getPreview(qualifiedTopicName, primaryKafkaClusterName, partition, offset);
+    public WebTestClient.ResponseSpec getPreview(
+            String qualifiedTopicName, String primaryKafkaClusterName, int partition, long offset) {
+        return managementTestClient.getPreview(
+                qualifiedTopicName, primaryKafkaClusterName, partition, offset);
     }
 
     public WebTestClient.ResponseSpec getPreview(String qualifiedTopicName) {
@@ -298,8 +388,8 @@ public class HermesTestClient {
         return frontendTestClient.getMetrics();
     }
 
-    public WebTestClient.ResponseSpec verifyFilters(String qualifiedTopicName,
-                                                    MessageFiltersVerificationInput input) {
+    public WebTestClient.ResponseSpec verifyFilters(
+            String qualifiedTopicName, MessageFiltersVerificationInput input) {
         return managementTestClient.verifyFilters(qualifiedTopicName, input);
     }
 
@@ -331,7 +421,8 @@ public class HermesTestClient {
         return managementTestClient.getSubscriptionsForOwner(source, ownerId);
     }
 
-    public WebTestClient.ResponseSpec deleteSubscription(String topicQualifiedName, String subscriptionName) {
+    public WebTestClient.ResponseSpec deleteSubscription(
+            String topicQualifiedName, String subscriptionName) {
         return managementTestClient.deleteSubscription(topicQualifiedName, subscriptionName);
     }
 
@@ -395,12 +486,16 @@ public class HermesTestClient {
         return managementTestClient.listUnhealthyForTopicAsPlainText(qualifiedName);
     }
 
-    public WebTestClient.ResponseSpec listUnhealthyForSubscription(String topicQualifiedName, String subscriptionName) {
-        return managementTestClient.listUnhealthyForSubscription(topicQualifiedName, subscriptionName);
+    public WebTestClient.ResponseSpec listUnhealthyForSubscription(
+            String topicQualifiedName, String subscriptionName) {
+        return managementTestClient.listUnhealthyForSubscription(
+                topicQualifiedName, subscriptionName);
     }
 
-    public WebTestClient.ResponseSpec listUnhealthyForSubscriptionAsPlainText(String topicQualifiedName, String subscriptionName) {
-        return managementTestClient.listUnhealthyForSubscriptionAsPlainText(topicQualifiedName, subscriptionName);
+    public WebTestClient.ResponseSpec listUnhealthyForSubscriptionAsPlainText(
+            String topicQualifiedName, String subscriptionName) {
+        return managementTestClient.listUnhealthyForSubscriptionAsPlainText(
+                topicQualifiedName, subscriptionName);
     }
 
     public WebTestClient.ResponseSpec createOAuthProvider(OAuthProvider provider) {
@@ -435,7 +530,8 @@ public class HermesTestClient {
         return managementTestClient.deleteOfflineRetransmissionTask(taskId);
     }
 
-    public WebTestClient.ResponseSpec createOfflineRetransmissionTask(OfflineRetransmissionRequest request) {
+    public WebTestClient.ResponseSpec createOfflineRetransmissionTask(
+            OfflineRetransmissionRequest request) {
         return managementTestClient.createOfflineRetransmissionTask(request);
     }
 
@@ -451,12 +547,15 @@ public class HermesTestClient {
         return managementTestClient.querySubscriptions(qualifiedName, query);
     }
 
-    public WebTestClient.ResponseSpec getSubscriptionHealth(String qualifiedTopicName, String name) {
+    public WebTestClient.ResponseSpec getSubscriptionHealth(
+            String qualifiedTopicName, String name) {
         return managementTestClient.getSubscriptionHealth(qualifiedTopicName, name);
     }
 
-    public WebTestClient.ResponseSpec getConsumerGroupsDescription(String qualifiedTopicName, String subscriptionName) {
-        return managementTestClient.getConsumerGroupsDescription(qualifiedTopicName, subscriptionName);
+    public WebTestClient.ResponseSpec getConsumerGroupsDescription(
+            String qualifiedTopicName, String subscriptionName) {
+        return managementTestClient.getConsumerGroupsDescription(
+                qualifiedTopicName, subscriptionName);
     }
 
     public WebTestClient.ResponseSpec deleteGroup(String groupName) {
@@ -471,7 +570,8 @@ public class HermesTestClient {
         return managementTestClient.getGroups();
     }
 
-    public WebTestClient.ResponseSpec moveOffsetsToTheEnd(String topicQualifiedName, String subscriptionName) {
+    public WebTestClient.ResponseSpec moveOffsetsToTheEnd(
+            String topicQualifiedName, String subscriptionName) {
         return managementTestClient.moveOffsetsToTheEnd(topicQualifiedName, subscriptionName);
     }
 }

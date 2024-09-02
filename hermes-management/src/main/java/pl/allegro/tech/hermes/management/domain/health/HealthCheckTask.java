@@ -1,9 +1,12 @@
 package pl.allegro.tech.hermes.management.domain.health;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.micrometer.core.instrument.MeterRegistry;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.management.domain.mode.ModeService;
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClient;
 
@@ -23,8 +26,12 @@ class HealthCheckTask implements Runnable {
     private final ModeService modeService;
     private final MeterRegistry meterRegistry;
 
-    HealthCheckTask(Collection<ZookeeperClient> zookeeperClients, String healthCheckPath, ObjectMapper objectMapper,
-                    ModeService modeService, MeterRegistry meterRegistry) {
+    HealthCheckTask(
+            Collection<ZookeeperClient> zookeeperClients,
+            String healthCheckPath,
+            ObjectMapper objectMapper,
+            ModeService modeService,
+            MeterRegistry meterRegistry) {
         this.zookeeperClients = zookeeperClients;
         this.healthCheckPath = healthCheckPath;
         this.objectMapper = objectMapper;
@@ -34,9 +41,8 @@ class HealthCheckTask implements Runnable {
 
     @Override
     public void run() {
-        final List<HealthCheckResult> healthCheckResults = zookeeperClients.stream()
-                .map(this::doHealthCheck)
-                .collect(Collectors.toList());
+        final List<HealthCheckResult> healthCheckResults =
+                zookeeperClients.stream().map(this::doHealthCheck).collect(Collectors.toList());
         updateMode(healthCheckResults);
     }
 
@@ -44,14 +50,18 @@ class HealthCheckTask implements Runnable {
         final String timestamp = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         try {
             zookeeperClient.ensureEphemeralNodeExists(healthCheckPath);
-            zookeeperClient.getCuratorFramework()
+            zookeeperClient
+                    .getCuratorFramework()
                     .setData()
                     .forPath(healthCheckPath, objectMapper.writeValueAsBytes(timestamp));
             meterRegistry.counter("storage-health-check.successful").increment();
             return HealthCheckResult.HEALTHY;
         } catch (Exception e) {
             meterRegistry.counter("storage-health-check.failed").increment();
-            logger.error("Storage health check failed for datacenter {}", zookeeperClient.getDatacenterName(), e);
+            logger.error(
+                    "Storage health check failed for datacenter {}",
+                    zookeeperClient.getDatacenterName(),
+                    e);
             return HealthCheckResult.UNHEALTHY;
         }
     }
@@ -65,6 +75,7 @@ class HealthCheckTask implements Runnable {
     }
 
     private enum HealthCheckResult {
-        HEALTHY, UNHEALTHY
+        HEALTHY,
+        UNHEALTHY
     }
 }

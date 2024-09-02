@@ -1,35 +1,44 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload.weighted;
 
+import static pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths.CONSUMERS_WORKLOAD_PATH;
+import static pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths.SUBSCRIPTION_PROFILES_PATH;
+
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionIds;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 
-import static pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths.CONSUMERS_WORKLOAD_PATH;
-import static pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths.SUBSCRIPTION_PROFILES_PATH;
-
 public class ZookeeperSubscriptionProfileRegistry implements SubscriptionProfileRegistry {
 
-    private static final Logger logger = LoggerFactory.getLogger(ZookeeperSubscriptionProfileRegistry.class);
+    private static final Logger logger =
+            LoggerFactory.getLogger(ZookeeperSubscriptionProfileRegistry.class);
 
     private final CuratorFramework curator;
     private final SubscriptionProfilesEncoder encoder;
     private final SubscriptionProfilesDecoder decoder;
     private final String profilesPath;
 
-    public ZookeeperSubscriptionProfileRegistry(CuratorFramework curator,
-                                                SubscriptionIds subscriptionIds,
-                                                ZookeeperPaths zookeeperPaths,
-                                                String clusterName,
-                                                int subscriptionProfilesEncoderBufferSizeBytes) {
+    public ZookeeperSubscriptionProfileRegistry(
+            CuratorFramework curator,
+            SubscriptionIds subscriptionIds,
+            ZookeeperPaths zookeeperPaths,
+            String clusterName,
+            int subscriptionProfilesEncoderBufferSizeBytes) {
         this.curator = curator;
-        this.encoder = new SubscriptionProfilesEncoder(subscriptionIds, subscriptionProfilesEncoderBufferSizeBytes);
+        this.encoder =
+                new SubscriptionProfilesEncoder(
+                        subscriptionIds, subscriptionProfilesEncoderBufferSizeBytes);
         this.decoder = new SubscriptionProfilesDecoder(subscriptionIds);
         this.profilesPath =
-                zookeeperPaths.join(zookeeperPaths.basePath(), CONSUMERS_WORKLOAD_PATH, clusterName, SUBSCRIPTION_PROFILES_PATH);
+                zookeeperPaths.join(
+                        zookeeperPaths.basePath(),
+                        CONSUMERS_WORKLOAD_PATH,
+                        clusterName,
+                        SUBSCRIPTION_PROFILES_PATH);
     }
 
     @Override

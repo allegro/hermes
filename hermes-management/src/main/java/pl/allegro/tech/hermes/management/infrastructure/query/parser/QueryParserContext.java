@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.management.infrastructure.query.parser;
 
 import com.fasterxml.jackson.databind.JsonNode;
+
 import pl.allegro.tech.hermes.management.infrastructure.query.matcher.Matcher;
 
 import java.util.List;

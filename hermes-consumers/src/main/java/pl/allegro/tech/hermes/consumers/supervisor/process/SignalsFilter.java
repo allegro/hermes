@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.supervisor.process;
 
 import com.google.common.collect.ImmutableMap;
+
 import pl.allegro.tech.hermes.consumers.queue.MpscQueue;
 import pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType;
 
@@ -11,10 +12,11 @@ import java.util.Map;
 
 class SignalsFilter {
 
-    private static final Map<SignalType, SignalType> MERGEABLE_SIGNALS = ImmutableMap.<SignalType, SignalType>builder()
-            .put(SignalType.START, SignalType.STOP)
-            .put(SignalType.STOP, SignalType.START)
-            .build();
+    private static final Map<SignalType, SignalType> MERGEABLE_SIGNALS =
+            ImmutableMap.<SignalType, SignalType>builder()
+                    .put(SignalType.START, SignalType.STOP)
+                    .put(SignalType.STOP, SignalType.START)
+                    .build();
 
     private final Clock clock;
 
@@ -42,7 +44,8 @@ class SignalsFilter {
         return filteredSignals;
     }
 
-    private void addWithoutDuplicationMergeableSignals(List<Signal> filteredSignals, Signal signal) {
+    private void addWithoutDuplicationMergeableSignals(
+            List<Signal> filteredSignals, Signal signal) {
         if (MERGEABLE_SIGNALS.containsKey(signal.getType())) {
             if (!filteredSignals.contains(signal)) {
                 filteredSignals.add(signal);

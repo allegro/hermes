@@ -9,10 +9,11 @@ class NormalModeOutputRateCalculator implements ModeOutputRateCalculator {
     private final double failuresSpeedupToleranceRatio;
     private final double failuresNochangeToleranceRatio;
 
-    NormalModeOutputRateCalculator(double rateConvergenceFactor, 
-                                   double slowModeRate,
-                                   double failuresSpeedupToleranceRatio,
-                                   double failuresNochangeToleranceRatio) {
+    NormalModeOutputRateCalculator(
+            double rateConvergenceFactor,
+            double slowModeRate,
+            double failuresSpeedupToleranceRatio,
+            double failuresNochangeToleranceRatio) {
         this.rateConvergenceFactor = rateConvergenceFactor;
         this.slowModeRate = slowModeRate;
         this.failuresSpeedupToleranceRatio = failuresSpeedupToleranceRatio;
@@ -20,13 +21,13 @@ class NormalModeOutputRateCalculator implements ModeOutputRateCalculator {
     }
 
     @Override
-    public OutputRateCalculationResult calculateOutputRate(double currentRate,
-                                                           double maximumOutputRate,
-                                                           SendCounters counters) {
+    public OutputRateCalculationResult calculateOutputRate(
+            double currentRate, double maximumOutputRate, SendCounters counters) {
         double calculatedRate = currentRate;
         OutputRateCalculator.Mode calculatedMode = OutputRateCalculator.Mode.NORMAL;
 
-        if (!counters.failuresRatioExceeds(failuresSpeedupToleranceRatio) && currentRate < maximumOutputRate) {
+        if (!counters.failuresRatioExceeds(failuresSpeedupToleranceRatio)
+                && currentRate < maximumOutputRate) {
             double rateAddOn = (maximumOutputRate - currentRate) * rateConvergenceFactor;
             calculatedRate = Math.min(maximumOutputRate, currentRate + rateAddOn);
         } else if (counters.majorityOfFailures()) {
@@ -38,5 +39,4 @@ class NormalModeOutputRateCalculator implements ModeOutputRateCalculator {
 
         return new OutputRateCalculationResult(calculatedRate, calculatedMode);
     }
-
 }

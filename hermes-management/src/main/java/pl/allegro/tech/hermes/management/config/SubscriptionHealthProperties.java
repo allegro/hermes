@@ -62,7 +62,8 @@ public class SubscriptionHealthProperties {
         return minSubscriptionRateForReliableMetrics;
     }
 
-    public void setMinSubscriptionRateForReliableMetrics(double minSubscriptionRateForReliableMetrics) {
+    public void setMinSubscriptionRateForReliableMetrics(
+            double minSubscriptionRateForReliableMetrics) {
         this.minSubscriptionRateForReliableMetrics = minSubscriptionRateForReliableMetrics;
     }
 
@@ -86,8 +87,10 @@ public class SubscriptionHealthProperties {
         return receivingMalformedMessagesIndicatorEnabled;
     }
 
-    public void setReceivingMalformedMessagesIndicatorEnabled(boolean receivingMalformedMessagesIndicatorEnabled) {
-        this.receivingMalformedMessagesIndicatorEnabled = receivingMalformedMessagesIndicatorEnabled;
+    public void setReceivingMalformedMessagesIndicatorEnabled(
+            boolean receivingMalformedMessagesIndicatorEnabled) {
+        this.receivingMalformedMessagesIndicatorEnabled =
+                receivingMalformedMessagesIndicatorEnabled;
     }
 
     public boolean isTimingOutIndicatorEnabled() {

@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.rate.maxrate;
 
 import org.agrona.concurrent.UnsafeBuffer;
+
 import pl.allegro.tech.hermes.consumers.consumer.rate.sbe.stubs.MessageHeaderDecoder;
 import pl.allegro.tech.hermes.consumers.consumer.rate.sbe.stubs.RateHistoryDecoder;
 import pl.allegro.tech.hermes.consumers.consumer.rate.sbe.stubs.RateHistoryDecoder.SubscriptionsDecoder.RatesDecoder;
@@ -26,8 +27,10 @@ class ConsumerRateHistoriesDecoder {
         header.wrap(buffer, 0);
 
         if (header.templateId() != RateHistoryDecoder.TEMPLATE_ID) {
-            throw new IllegalStateException(String.format("RateHistoryDecoder TEMPLATE_ID=%d does not match encoded TEMPLATE_ID=%d",
-                    RateHistoryDecoder.TEMPLATE_ID, header.templateId()));
+            throw new IllegalStateException(
+                    String.format(
+                            "RateHistoryDecoder TEMPLATE_ID=%d does not match encoded TEMPLATE_ID=%d",
+                            RateHistoryDecoder.TEMPLATE_ID, header.templateId()));
         }
 
         body.wrap(buffer, header.encodedLength(), header.blockLength(), header.version());
@@ -35,14 +38,19 @@ class ConsumerRateHistoriesDecoder {
         ConsumerRateHistory result = new ConsumerRateHistory();
         for (RateHistoryDecoder.SubscriptionsDecoder subscriptionDecoder : body.subscriptions()) {
             long id = subscriptionDecoder.id();
-            List<Double> rates = StreamSupport.stream(subscriptionDecoder.rates().spliterator(), false)
-                    .map(RatesDecoder::rate)
-                    .collect(Collectors.toList());
+            List<Double> rates =
+                    StreamSupport.stream(subscriptionDecoder.rates().spliterator(), false)
+                            .map(RatesDecoder::rate)
+                            .collect(Collectors.toList());
 
-            subscriptionIds.getSubscriptionId(id)
-                    .ifPresent(subscriptionId -> {
-                        result.setRateHistory(subscriptionId.getSubscriptionName(), new RateHistory(rates));
-                    });
+            subscriptionIds
+                    .getSubscriptionId(id)
+                    .ifPresent(
+                            subscriptionId -> {
+                                result.setRateHistory(
+                                        subscriptionId.getSubscriptionName(),
+                                        new RateHistory(rates));
+                            });
         }
         return result;
     }

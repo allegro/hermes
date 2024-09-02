@@ -17,19 +17,20 @@ class HermesClientTermination {
     CompletableFuture<Void> observe(BooleanSupplier condition) {
         final CompletableFuture<Void> result = new CompletableFuture<>();
 
-        executorService.submit(() -> {
-            try {
-                while (!condition.getAsBoolean()) {
-                    Thread.sleep(pollInterval);
-                }
-                result.complete(null);
-            } catch (InterruptedException e) {
-                result.completeExceptionally(e);
-                Thread.currentThread().interrupt();
-            } finally {
-                executorService.shutdown();
-            }
-        });
+        executorService.submit(
+                () -> {
+                    try {
+                        while (!condition.getAsBoolean()) {
+                            Thread.sleep(pollInterval);
+                        }
+                        result.complete(null);
+                    } catch (InterruptedException e) {
+                        result.completeExceptionally(e);
+                        Thread.currentThread().interrupt();
+                    } finally {
+                        executorService.shutdown();
+                    }
+                });
 
         return result;
     }

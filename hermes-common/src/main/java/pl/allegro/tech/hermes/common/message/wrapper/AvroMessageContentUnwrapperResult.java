@@ -5,18 +5,20 @@ class AvroMessageContentUnwrapperResult {
     private final UnwrappedMessageContent content;
     private final AvroMessageContentUnwrapperResultStatus status;
 
-    private AvroMessageContentUnwrapperResult(UnwrappedMessageContent content,
-                                              AvroMessageContentUnwrapperResultStatus status) {
+    private AvroMessageContentUnwrapperResult(
+            UnwrappedMessageContent content, AvroMessageContentUnwrapperResultStatus status) {
         this.content = content;
         this.status = status;
     }
 
     public static AvroMessageContentUnwrapperResult success(UnwrappedMessageContent content) {
-        return new AvroMessageContentUnwrapperResult(content, AvroMessageContentUnwrapperResultStatus.SUCCESS);
+        return new AvroMessageContentUnwrapperResult(
+                content, AvroMessageContentUnwrapperResultStatus.SUCCESS);
     }
 
     public static AvroMessageContentUnwrapperResult failure() {
-        return new AvroMessageContentUnwrapperResult(null, AvroMessageContentUnwrapperResultStatus.FAILURE);
+        return new AvroMessageContentUnwrapperResult(
+                null, AvroMessageContentUnwrapperResultStatus.FAILURE);
     }
 
     public UnwrappedMessageContent getContent() {
@@ -28,6 +30,7 @@ class AvroMessageContentUnwrapperResult {
     }
 
     enum AvroMessageContentUnwrapperResultStatus {
-        SUCCESS, FAILURE
+        SUCCESS,
+        FAILURE
     }
 }

@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.frontend.publishing.avro;
 
 import org.apache.avro.Schema;
+
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
@@ -17,12 +18,13 @@ public class AvroMessage implements Message {
     private final String partitionKey;
     private final Map<String, String> propagatedHTTPHeaders;
 
-    public AvroMessage(String id,
-                       byte[] data,
-                       long timestamp,
-                       CompiledSchema<Schema> schema,
-                       String partitionKey,
-                       Map<String, String> propagatedHTTPHeaders) {
+    public AvroMessage(
+            String id,
+            byte[] data,
+            long timestamp,
+            CompiledSchema<Schema> schema,
+            String partitionKey,
+            Map<String, String> propagatedHTTPHeaders) {
         this.id = id;
         this.data = data;
         this.timestamp = timestamp;

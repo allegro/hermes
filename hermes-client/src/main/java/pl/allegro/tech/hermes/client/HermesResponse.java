@@ -1,9 +1,9 @@
 package pl.allegro.tech.hermes.client;
 
-import java.util.Optional;
-
 import static java.net.HttpURLConnection.HTTP_ACCEPTED;
 import static java.net.HttpURLConnection.HTTP_CREATED;
+
+import java.util.Optional;
 
 public interface HermesResponse {
 
@@ -63,18 +63,16 @@ public interface HermesResponse {
     }
 
     default String getDebugLog() {
-        StringBuilder builder = new StringBuilder("Sending message ")
-                .append(getMessageId())
-                .append(" to Hermes ")
-                .append(isSuccess() ? "succeeded" : "failed")
-                .append(", response code: ")
-                .append(getHttpStatus())
-                .append(", body: ")
-                .append(getBody());
-        getFailureCause().ifPresent(ex ->
-                builder.append(", exception: ")
-                       .append(ex.getMessage())
-        );
+        StringBuilder builder =
+                new StringBuilder("Sending message ")
+                        .append(getMessageId())
+                        .append(" to Hermes ")
+                        .append(isSuccess() ? "succeeded" : "failed")
+                        .append(", response code: ")
+                        .append(getHttpStatus())
+                        .append(", body: ")
+                        .append(getBody());
+        getFailureCause().ifPresent(ex -> builder.append(", exception: ").append(ex.getMessage()));
         return builder.toString();
     }
 }

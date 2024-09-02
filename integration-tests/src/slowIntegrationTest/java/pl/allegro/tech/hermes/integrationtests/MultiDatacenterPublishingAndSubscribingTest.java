@@ -1,10 +1,15 @@
 package pl.allegro.tech.hermes.integrationtests;
 
+import static pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProvider.DEFAULT_DC_NAME;
+import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.testcontainers.lifecycle.Startable;
+
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesConsumersTestApp;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesFrontendTestApp;
@@ -22,16 +27,13 @@ import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import static pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProvider.DEFAULT_DC_NAME;
-import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
-import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
-
 public class MultiDatacenterPublishingAndSubscribingTest {
 
     @RegisterExtension
     public static final TestSubscribersExtension subscribers = new TestSubscribersExtension();
 
-    private static final ConfluentSchemaRegistryContainer schemaRegistry = new ConfluentSchemaRegistryContainer();
+    private static final ConfluentSchemaRegistryContainer schemaRegistry =
+            new ConfluentSchemaRegistryContainer();
     private static final HermesDatacenter dc1 = new HermesDatacenter();
     private static final HermesDatacenter dc2 = new HermesDatacenter();
 
@@ -40,15 +42,13 @@ public class MultiDatacenterPublishingAndSubscribingTest {
 
     @BeforeAll
     public static void setup() {
-        Stream.of(dc1, dc2)
-                .parallel()
-                .forEach(HermesDatacenter::startKafkaAndZookeeper);
+        Stream.of(dc1, dc2).parallel().forEach(HermesDatacenter::startKafkaAndZookeeper);
         schemaRegistry.start();
-        management = new HermesManagementTestApp(
-                Map.of(DEFAULT_DC_NAME, dc1.hermesZookeeper, "dc2", dc2.hermesZookeeper),
-                Map.of(DEFAULT_DC_NAME, dc1.kafka, "dc2", dc2.kafka),
-                schemaRegistry
-        );
+        management =
+                new HermesManagementTestApp(
+                        Map.of(DEFAULT_DC_NAME, dc1.hermesZookeeper, "dc2", dc2.hermesZookeeper),
+                        Map.of(DEFAULT_DC_NAME, dc1.kafka, "dc2", dc2.kafka),
+                        schemaRegistry);
         management.start();
         initHelper = new HermesInitHelper(management.getPort());
         dc1.startConsumersAndFrontend();
@@ -58,9 +58,7 @@ public class MultiDatacenterPublishingAndSubscribingTest {
     @AfterAll
     public static void clean() {
         management.stop();
-        Stream.of(dc1, dc2)
-                .parallel()
-                .forEach(HermesDatacenter::stop);
+        Stream.of(dc1, dc2).parallel().forEach(HermesDatacenter::stop);
         schemaRegistry.stop();
     }
 
@@ -72,8 +70,8 @@ public class MultiDatacenterPublishingAndSubscribingTest {
         TestMessage messageDc2 = TestMessage.of("key2", "value2");
         Topic topic = initHelper.createTopic(topicWithRandomName().build());
         initHelper.createSubscription(
-                subscription(topic.getQualifiedName(), "subscription", subscriber.getEndpoint()).build()
-        );
+                subscription(topic.getQualifiedName(), "subscription", subscriber.getEndpoint())
+                        .build());
 
         // when
         dc1.api().publishUntilSuccess(topic.getQualifiedName(), messageDc1.body());
@@ -86,10 +84,13 @@ public class MultiDatacenterPublishingAndSubscribingTest {
 
     private static class HermesDatacenter {
 
-        private final ZookeeperContainer hermesZookeeper = new ZookeeperContainer("HermesZookeeper");
+        private final ZookeeperContainer hermesZookeeper =
+                new ZookeeperContainer("HermesZookeeper");
         private final KafkaContainerCluster kafka = new KafkaContainerCluster(1);
-        private final HermesConsumersTestApp consumers = new HermesConsumersTestApp(hermesZookeeper, kafka, schemaRegistry);
-        private final HermesFrontendTestApp frontend = new HermesFrontendTestApp(hermesZookeeper, kafka, schemaRegistry);
+        private final HermesConsumersTestApp consumers =
+                new HermesConsumersTestApp(hermesZookeeper, kafka, schemaRegistry);
+        private final HermesFrontendTestApp frontend =
+                new HermesFrontendTestApp(hermesZookeeper, kafka, schemaRegistry);
         private FrontendTestClient frontendClient;
 
         public HermesDatacenter() {
@@ -97,9 +98,7 @@ public class MultiDatacenterPublishingAndSubscribingTest {
         }
 
         void startKafkaAndZookeeper() {
-            Stream.of(hermesZookeeper, kafka)
-                    .parallel()
-                    .forEach(Startable::start);
+            Stream.of(hermesZookeeper, kafka).parallel().forEach(Startable::start);
         }
 
         void startConsumersAndFrontend() {
@@ -109,12 +108,8 @@ public class MultiDatacenterPublishingAndSubscribingTest {
         }
 
         void stop() {
-            Stream.of(consumers, frontend)
-                    .parallel()
-                    .forEach(HermesTestApp::stop);
-            Stream.of(hermesZookeeper, kafka)
-                    .parallel()
-                    .forEach(Startable::stop);
+            Stream.of(consumers, frontend).parallel().forEach(HermesTestApp::stop);
+            Stream.of(hermesZookeeper, kafka).parallel().forEach(Startable::stop);
         }
 
         FrontendTestClient api() {

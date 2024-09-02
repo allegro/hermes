@@ -11,9 +11,8 @@ class HeartbeatModeOutputRateCalculator implements ModeOutputRateCalculator {
     }
 
     @Override
-    public OutputRateCalculationResult calculateOutputRate(double currentRate,
-                                                           double maximumOutputRate,
-                                                           SendCounters counters) {
+    public OutputRateCalculationResult calculateOutputRate(
+            double currentRate, double maximumOutputRate, SendCounters counters) {
         if (counters.onlySuccessess()) {
             return new OutputRateCalculationResult(slowModeRate, OutputRateCalculator.Mode.SLOW);
         }

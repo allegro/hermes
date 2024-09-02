@@ -1,6 +1,9 @@
 package pl.allegro.tech.hermes.consumers.supervisor.process;
 
+import static java.util.stream.Collectors.toList;
+
 import com.google.common.collect.ImmutableSet;
+
 import pl.allegro.tech.hermes.api.SubscriptionName;
 
 import java.time.Clock;
@@ -11,11 +14,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.toList;
-
 class RunningConsumerProcesses {
 
-    private final Map<SubscriptionName, RunningConsumerProcess> processes = new ConcurrentHashMap<>();
+    private final Map<SubscriptionName, RunningConsumerProcess> processes =
+            new ConcurrentHashMap<>();
     private final Clock clock;
 
     RunningConsumerProcesses(Clock clock) {
@@ -23,7 +25,9 @@ class RunningConsumerProcesses {
     }
 
     void add(ConsumerProcess process, Future executionHandle) {
-        this.processes.put(process.getSubscription().getQualifiedName(), new RunningConsumerProcess(process, executionHandle, clock));
+        this.processes.put(
+                process.getSubscription().getQualifiedName(),
+                new RunningConsumerProcess(process, executionHandle, clock));
     }
 
     void add(RunningConsumerProcess process) {
@@ -60,10 +64,15 @@ class RunningConsumerProcesses {
 
     List<RunningSubscriptionStatus> listRunningSubscriptions() {
         return processes.entrySet().stream()
-                .map(entry -> new RunningSubscriptionStatus(
-                        entry.getKey().getQualifiedName(),
-                        entry.getValue().getConsumerProcess().getSignalTimesheet()))
-                .sorted((s1, s2) -> String.CASE_INSENSITIVE_ORDER.compare(s1.getQualifiedName(), s2.getQualifiedName()))
+                .map(
+                        entry ->
+                                new RunningSubscriptionStatus(
+                                        entry.getKey().getQualifiedName(),
+                                        entry.getValue().getConsumerProcess().getSignalTimesheet()))
+                .sorted(
+                        (s1, s2) ->
+                                String.CASE_INSENSITIVE_ORDER.compare(
+                                        s1.getQualifiedName(), s2.getQualifiedName()))
                 .collect(toList());
     }
 

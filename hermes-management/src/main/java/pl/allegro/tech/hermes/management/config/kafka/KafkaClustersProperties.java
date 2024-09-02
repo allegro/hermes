@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.management.config.kafka;
 
-
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.ArrayList;

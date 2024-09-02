@@ -11,13 +11,13 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 /**
- * The purpose of this job is to periodically refresh the cache in
- * {@link org.apache.kafka.clients.producer.KafkaProducer} that stores topic metadata.
- * This is especially important to avoid a cold start, i.e. when a new hermes-frontend
- * instance is launched with the cache being empty. Since the producer relies on topic
- * metadata to send produce requests to Kafka, if the cache is empty, the producer must
- * load the metadata before sending the produce request. Fetching the metadata might be
- * costly, therefore we want to avoid passing on this cost to the Hermes client.
+ * The purpose of this job is to periodically refresh the cache in {@link
+ * org.apache.kafka.clients.producer.KafkaProducer} that stores topic metadata. This is especially
+ * important to avoid a cold start, i.e. when a new hermes-frontend instance is launched with the
+ * cache being empty. Since the producer relies on topic metadata to send produce requests to Kafka,
+ * if the cache is empty, the producer must load the metadata before sending the produce request.
+ * Fetching the metadata might be costly, therefore we want to avoid passing on this cost to the
+ * Hermes client.
  */
 public class ProducerMetadataLoadingJob implements Runnable {
 
@@ -28,14 +28,13 @@ public class ProducerMetadataLoadingJob implements Runnable {
 
     private ScheduledFuture<?> job;
 
-    public ProducerMetadataLoadingJob(List<KafkaMessageSenders> kafkaMessageSendersList,
-                                      boolean enabled,
-                                      Duration interval) {
+    public ProducerMetadataLoadingJob(
+            List<KafkaMessageSenders> kafkaMessageSendersList, boolean enabled, Duration interval) {
         this.kafkaMessageSendersList = kafkaMessageSendersList;
         this.enabled = enabled;
         this.interval = interval;
-        ThreadFactory threadFactory = new ThreadFactoryBuilder()
-                .setNameFormat("TopicMetadataLoadingJob-%d").build();
+        ThreadFactory threadFactory =
+                new ThreadFactoryBuilder().setNameFormat("TopicMetadataLoadingJob-%d").build();
         this.executorService = Executors.newSingleThreadScheduledExecutor(threadFactory);
     }
 
@@ -47,7 +46,9 @@ public class ProducerMetadataLoadingJob implements Runnable {
     public void start() {
         if (enabled) {
             refreshTopicMetadata();
-            job = executorService.scheduleAtFixedRate(this, interval.toSeconds(), interval.toSeconds(), TimeUnit.SECONDS);
+            job =
+                    executorService.scheduleAtFixedRate(
+                            this, interval.toSeconds(), interval.toSeconds(), TimeUnit.SECONDS);
         }
     }
 

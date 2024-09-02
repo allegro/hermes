@@ -4,43 +4,41 @@ import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaProducerParameters;
 
 import java.time.Duration;
 
-
 /**
-    Kafka producer maintains a single connection to each broker, over which produce request are sent.
-    When producer request duration exceeds requestTimeout, producer closes the connection to the broker
-    that the request was sent to. This causes all inflight requests that were sent to that broker to be cancelled.
-    The number of inflight requests is configured by maxInflightRequestsPerConnection property.
-
-    Let's assume that we have requestTimeout set to 500ms, maxInflightRequestsPerConnection set to 5,
-    and there are following inflight batches in the producer being sent to broker1:
-
-    batchId   | time spent in send buffer (socket)
-    ------------------------------------
-    batch1    | 10ms
-    batch2    | 200ms
-    batch3    | 300ms
-    batch4    | 400ms
-    batch5    | 501ms
-
-    Batch5 exceeded the requestTimeout so producer will close the connection to broker1. This causes batch5 to be marked
-    as failed but also causes batches 1-4 to be retried. This has the following consequences:
-    1. Batches 1-4 will probably get duplicated - even tough they were cancelled, they were probably sent to the broker,
-     just haven't been ACKd yet. Retry would cause them to be sent once again resulting in duplicates.
-    2. On retry, batches 1-4 will have a smaller time budget to complete. Part of their budget was already wasted
-    in send buffer + retryBackoff will be applied to them. They will have little time to complete on retry which can cause
-    them to be timed out, potentially resulting in a vicious circle.
-    3. Connection to the broker must be reestablished which takes time.
-
-    To avoid problems described above we actually set requestTimeout and deliveryTimeout to be much higher than the
-    maximum frontend request duration (frontend.handlers.maxPublishRequestDuration). This means that when
-    maxPublishRequestDuration is exceeded for a message we received, a client will receive 5xx even tough the
-    corresponding message is still being processed in the producer. The message will eventually be ACKd by Kafka so upon client-side
-    retry the message will be duplicated. This however, would likely also happen if the message was promptly timed-out by producer
-    before maxPublishRequestDuration elapsed - the message was likely already sent to Kafka, there just haven't been a response yet.
-
-    So by using large requestTimeout we cause the first slow message to be duplicated (by client-side retry) but:
-    - we protect other inflight messages from being duplicated,
-    - we prevent connections from being frequently dropped and reestablished.
+ * Kafka producer maintains a single connection to each broker, over which produce request are sent.
+ * When producer request duration exceeds requestTimeout, producer closes the connection to the
+ * broker that the request was sent to. This causes all inflight requests that were sent to that
+ * broker to be cancelled. The number of inflight requests is configured by
+ * maxInflightRequestsPerConnection property.
+ *
+ * <p>Let's assume that we have requestTimeout set to 500ms, maxInflightRequestsPerConnection set to
+ * 5, and there are following inflight batches in the producer being sent to broker1:
+ *
+ * <p>batchId | time spent in send buffer (socket) ------------------------------------ batch1 |
+ * 10ms batch2 | 200ms batch3 | 300ms batch4 | 400ms batch5 | 501ms
+ *
+ * <p>Batch5 exceeded the requestTimeout so producer will close the connection to broker1. This
+ * causes batch5 to be marked as failed but also causes batches 1-4 to be retried. This has the
+ * following consequences: 1. Batches 1-4 will probably get duplicated - even tough they were
+ * cancelled, they were probably sent to the broker, just haven't been ACKd yet. Retry would cause
+ * them to be sent once again resulting in duplicates. 2. On retry, batches 1-4 will have a smaller
+ * time budget to complete. Part of their budget was already wasted in send buffer + retryBackoff
+ * will be applied to them. They will have little time to complete on retry which can cause them to
+ * be timed out, potentially resulting in a vicious circle. 3. Connection to the broker must be
+ * reestablished which takes time.
+ *
+ * <p>To avoid problems described above we actually set requestTimeout and deliveryTimeout to be
+ * much higher than the maximum frontend request duration
+ * (frontend.handlers.maxPublishRequestDuration). This means that when maxPublishRequestDuration is
+ * exceeded for a message we received, a client will receive 5xx even tough the corresponding
+ * message is still being processed in the producer. The message will eventually be ACKd by Kafka so
+ * upon client-side retry the message will be duplicated. This however, would likely also happen if
+ * the message was promptly timed-out by producer before maxPublishRequestDuration elapsed - the
+ * message was likely already sent to Kafka, there just haven't been a response yet.
+ *
+ * <p>So by using large requestTimeout we cause the first slow message to be duplicated (by
+ * client-side retry) but: - we protect other inflight messages from being duplicated, - we prevent
+ * connections from being frequently dropped and reestablished.
  */
 public class FailFastLocalKafkaProducerProperties implements KafkaProducerParameters {
     private Duration maxBlock = Duration.ofMillis(500);

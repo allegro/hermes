@@ -17,12 +17,21 @@ public class Signal {
     private final long id;
 
     public enum SignalType {
-        START, STOP, RETRANSMIT, UPDATE_SUBSCRIPTION, UPDATE_TOPIC
+        START,
+        STOP,
+        RETRANSMIT,
+        UPDATE_SUBSCRIPTION,
+        UPDATE_TOPIC
     }
 
     private static final AtomicLong SIGNALS_COUNTER = new AtomicLong();
 
-    private Signal(SignalType type, SubscriptionName target, Object payload, long executeAfterTimestamp, long id) {
+    private Signal(
+            SignalType type,
+            SubscriptionName target,
+            Object payload,
+            long executeAfterTimestamp,
+            long id) {
         this.type = type;
         this.target = target;
         this.payload = payload;
@@ -38,8 +47,10 @@ public class Signal {
         return of(type, target, payload, -1);
     }
 
-    public static Signal of(SignalType type, SubscriptionName target, Object payload, long executeAfterTimestamp) {
-        return new Signal(type, target, payload, executeAfterTimestamp, SIGNALS_COUNTER.incrementAndGet());
+    public static Signal of(
+            SignalType type, SubscriptionName target, Object payload, long executeAfterTimestamp) {
+        return new Signal(
+                type, target, payload, executeAfterTimestamp, SIGNALS_COUNTER.incrementAndGet());
     }
 
     Signal createChild(SignalType type) {
@@ -80,8 +91,7 @@ public class Signal {
         if (!(o instanceof Signal signal)) {
             return false;
         }
-        return type == signal.type
-                && Objects.equals(target, signal.target);
+        return type == signal.type && Objects.equals(target, signal.target);
     }
 
     @Override

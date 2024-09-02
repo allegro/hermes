@@ -1,10 +1,21 @@
 package pl.allegro.tech.hermes.domain.filtering.avro;
 
+import static org.apache.commons.lang3.StringUtils.strip;
+
+import static pl.allegro.tech.hermes.common.message.converter.AvroRecordToBytesConverter.bytesToRecord;
+import static pl.allegro.tech.hermes.domain.filtering.FilteringException.check;
+
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyListIterator;
+import static java.util.Collections.singletonList;
+
 import jakarta.annotation.Nullable;
+
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericArray;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.util.Utf8;
+
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.domain.filtering.FilterableMessage;
 import pl.allegro.tech.hermes.domain.filtering.FilteringException;
@@ -24,20 +35,15 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyListIterator;
-import static java.util.Collections.singletonList;
-import static org.apache.commons.lang3.StringUtils.strip;
-import static pl.allegro.tech.hermes.common.message.converter.AvroRecordToBytesConverter.bytesToRecord;
-import static pl.allegro.tech.hermes.domain.filtering.FilteringException.check;
-
 class AvroPathPredicate implements Predicate<FilterableMessage> {
     private static final String WILDCARD_IDX = "*";
     private static final String GROUP_SELECTOR = "selector";
     private static final String GROUP_IDX = "index";
     private static final String ARRAY_PATTERN_SELECTOR_PART = "(?<" + GROUP_SELECTOR + ">..*)";
-    private static final String ARRAY_PATTERN_IDX_PART = "\\[(?<" + GROUP_IDX + ">\\" + WILDCARD_IDX + "|\\d+)]";
-    private static final Pattern ARRAY_PATTERN = Pattern.compile(ARRAY_PATTERN_SELECTOR_PART + ARRAY_PATTERN_IDX_PART);
+    private static final String ARRAY_PATTERN_IDX_PART =
+            "\\[(?<" + GROUP_IDX + ">\\" + WILDCARD_IDX + "|\\d+)]";
+    private static final Pattern ARRAY_PATTERN =
+            Pattern.compile(ARRAY_PATTERN_SELECTOR_PART + ARRAY_PATTERN_IDX_PART);
     private static final String NULL_AS_STRING = "null";
     private final List<String> path;
     private final Pattern pattern;
@@ -51,7 +57,9 @@ class AvroPathPredicate implements Predicate<FilterableMessage> {
 
     @Override
     public boolean test(final FilterableMessage message) {
-        check(message.getContentType() == ContentType.AVRO, "This filter supports only AVRO contentType.");
+        check(
+                message.getContentType() == ContentType.AVRO,
+                "This filter supports only AVRO contentType.");
         try {
             List<Object> result = select(message);
             Stream<String> resultStream = result.stream().map(Object::toString);
@@ -107,16 +115,25 @@ class AvroPathPredicate implements Predicate<FilterableMessage> {
             }
         }
 
-        return iter.hasNext() ? emptyList() : singletonList(current == null ? NULL_AS_STRING : current);
+        return iter.hasNext()
+                ? emptyList()
+                : singletonList(current == null ? NULL_AS_STRING : current);
     }
 
     private boolean isSupportedType(Object record) {
         return record instanceof GenericRecord || record instanceof HashMap;
     }
 
-    private List<Object> selectMultipleArrayItems(ListIterator<String> iter, GenericArray<Object> currentArray) {
+    private List<Object> selectMultipleArrayItems(
+            ListIterator<String> iter, GenericArray<Object> currentArray) {
         return currentArray.stream()
-                .map(item -> select(item, iter.hasNext() ? path.listIterator(iter.nextIndex()) : emptyListIterator()))
+                .map(
+                        item ->
+                                select(
+                                        item,
+                                        iter.hasNext()
+                                                ? path.listIterator(iter.nextIndex())
+                                                : emptyListIterator()))
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
     }

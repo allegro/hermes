@@ -9,15 +9,17 @@ public class DefaultMessageConverterResolver implements MessageConverterResolver
     private final AvroToJsonMessageConverter avroToJsonMessageConverter;
     private final NoOperationMessageConverter noOperationMessageConverter;
 
-    public DefaultMessageConverterResolver(AvroToJsonMessageConverter avroToJsonMessageConverter,
-                                           NoOperationMessageConverter noOperationMessageConverter) {
+    public DefaultMessageConverterResolver(
+            AvroToJsonMessageConverter avroToJsonMessageConverter,
+            NoOperationMessageConverter noOperationMessageConverter) {
         this.avroToJsonMessageConverter = avroToJsonMessageConverter;
         this.noOperationMessageConverter = noOperationMessageConverter;
     }
 
     @Override
     public MessageConverter converterFor(Message message, Subscription subscription) {
-        if (message.getContentType() == ContentType.AVRO && subscription.getContentType() == ContentType.JSON) {
+        if (message.getContentType() == ContentType.AVRO
+                && subscription.getContentType() == ContentType.JSON) {
             return avroToJsonMessageConverter;
         }
 

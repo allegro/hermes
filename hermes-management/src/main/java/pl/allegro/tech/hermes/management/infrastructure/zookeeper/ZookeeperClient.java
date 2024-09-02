@@ -1,11 +1,12 @@
 package pl.allegro.tech.hermes.management.infrastructure.zookeeper;
 
+import static org.slf4j.LoggerFactory.getLogger;
+
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.CreateMode;
 import org.slf4j.Logger;
-import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 
-import static org.slf4j.LoggerFactory.getLogger;
+import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 
 public class ZookeeperClient {
 
@@ -29,7 +30,8 @@ public class ZookeeperClient {
     public void ensureEphemeralNodeExists(String path) {
         try {
             if (curatorFramework.checkExists().forPath(path) == null) {
-                curatorFramework.create()
+                curatorFramework
+                        .create()
                         .creatingParentsIfNeeded()
                         .withMode(CreateMode.EPHEMERAL)
                         .forPath(path);

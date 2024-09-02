@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.management.infrastructure.query.matcher;
 
 import org.apache.commons.jxpath.JXPathException;
+
 import pl.allegro.tech.hermes.management.infrastructure.query.graph.ObjectGraph;
 
 import java.util.regex.Pattern;
@@ -17,7 +18,8 @@ public class LikeMatcher implements Matcher {
         try {
             this.expected = Pattern.compile(asString(expected));
         } catch (PatternSyntaxException e) {
-            throw new MatcherException(String.format("Could not parse regexp pattern: '%s'", expected), e);
+            throw new MatcherException(
+                    String.format("Could not parse regexp pattern: '%s'", expected), e);
         }
     }
 
@@ -27,7 +29,8 @@ public class LikeMatcher implements Matcher {
             Object actual = ObjectGraph.from(value).navigate(attribute).value();
             return expected.matcher(asString(actual)).matches();
         } catch (JXPathException e) {
-            throw new MatcherException(String.format("Could not navigate to specific path: '%s'", attribute), e);
+            throw new MatcherException(
+                    String.format("Could not navigate to specific path: '%s'", attribute), e);
         }
     }
 

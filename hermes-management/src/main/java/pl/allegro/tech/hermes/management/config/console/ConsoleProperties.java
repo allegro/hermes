@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.management.config.console;
 
 import com.google.common.collect.Lists;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.Collections;
@@ -11,7 +12,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
- * This class could have a much better structure, however it has this one due to compatibility with old JSON config file format.
+ * This class could have a much better structure, however it has this one due to compatibility with
+ * old JSON config file format.
  */
 @ConfigurationProperties(prefix = "console")
 public class ConsoleProperties {
@@ -341,15 +343,13 @@ public class ConsoleProperties {
         private boolean removeSchema = false;
         private boolean schemaIdAwareSerializationEnabled = false;
         private boolean avroContentTypeMetadataRequired = true;
-        private List<TopicContentType> contentTypes = Lists.newArrayList(
-                new TopicContentType("AVRO", "AVRO"),
-                new TopicContentType("JSON", "JSON")
-        );
+        private List<TopicContentType> contentTypes =
+                Lists.newArrayList(
+                        new TopicContentType("AVRO", "AVRO"), new TopicContentType("JSON", "JSON"));
         private boolean readOnlyModeEnabled = false;
         private Set<String> allowedTopicLabels = Collections.emptySet();
-        private List<RetentionUnit> retentionUnits = Lists.newArrayList(
-                new RetentionUnit("DAYS", "DAYS")
-        );
+        private List<RetentionUnit> retentionUnits =
+                Lists.newArrayList(new RetentionUnit("DAYS", "DAYS"));
         private boolean offlineRetransmissionEnabled = false;
         private String offlineRetransmissionDescription = "Offline retransmission";
 
@@ -421,7 +421,8 @@ public class ConsoleProperties {
             return schemaIdAwareSerializationEnabled;
         }
 
-        public void setSchemaIdAwareSerializationEnabled(boolean schemaIdAwareSerializationEnabled) {
+        public void setSchemaIdAwareSerializationEnabled(
+                boolean schemaIdAwareSerializationEnabled) {
             this.schemaIdAwareSerializationEnabled = schemaIdAwareSerializationEnabled;
         }
 
@@ -551,8 +552,7 @@ public class ConsoleProperties {
         private String value = "";
         private String label = "";
 
-        public TopicContentType() {
-        }
+        public TopicContentType() {}
 
         public TopicContentType(String value, String label) {
             this.value = value;
@@ -580,8 +580,7 @@ public class ConsoleProperties {
         private String value = "";
         private String label = "";
 
-        public RetentionUnit() {
-        }
+        public RetentionUnit() {}
 
         public RetentionUnit(String value, String label) {
             this.value = value;
@@ -606,8 +605,8 @@ public class ConsoleProperties {
     }
 
     public static final class Owner {
-        private List<OwnerSource> sources = Lists.newArrayList(
-                new OwnerSource("Plaintext", "Name of the owner"));
+        private List<OwnerSource> sources =
+                Lists.newArrayList(new OwnerSource("Plaintext", "Name of the owner"));
 
         public List<OwnerSource> getSources() {
             return sources;
@@ -622,8 +621,7 @@ public class ConsoleProperties {
         private String name = "";
         private String placeholder = "";
 
-        public OwnerSource() {
-        }
+        public OwnerSource() {}
 
         public OwnerSource(String name, String placeholder) {
             this.name = name;
@@ -648,21 +646,23 @@ public class ConsoleProperties {
     }
 
     public static final class SubscriptionView {
-        private Map<String, EndpointAddressResolverMetadata> endpointAddressResolverMetadata = new HashMap<>();
+        private Map<String, EndpointAddressResolverMetadata> endpointAddressResolverMetadata =
+                new HashMap<>();
         private boolean showHeadersFilter = false;
         private boolean showFixedHeaders = false;
         private int requestTimeoutWarningThreshold = 1001;
         private DefaultSubscriptionView defaults = new DefaultSubscriptionView();
-        private List<SubscriptionDeliveryType> deliveryTypes = Lists.newArrayList(
-                new SubscriptionDeliveryType("SERIAL", "SERIAL"),
-                new SubscriptionDeliveryType("BATCH", "BATCH")
-        );
+        private List<SubscriptionDeliveryType> deliveryTypes =
+                Lists.newArrayList(
+                        new SubscriptionDeliveryType("SERIAL", "SERIAL"),
+                        new SubscriptionDeliveryType("BATCH", "BATCH"));
 
         public Map<String, EndpointAddressResolverMetadata> getEndpointAddressResolverMetadata() {
             return endpointAddressResolverMetadata;
         }
 
-        public void setEndpointAddressResolverMetadata(Map<String, EndpointAddressResolverMetadata> endpointAddressResolverMetadata) {
+        public void setEndpointAddressResolverMetadata(
+                Map<String, EndpointAddressResolverMetadata> endpointAddressResolverMetadata) {
             this.endpointAddressResolverMetadata = endpointAddressResolverMetadata;
         }
 
@@ -795,8 +795,7 @@ public class ConsoleProperties {
         private String value = "";
         private String label = "";
 
-        public SubscriptionDeliveryType() {
-        }
+        public SubscriptionDeliveryType() {}
 
         public SubscriptionDeliveryType(String value, String label) {
             this.value = value;

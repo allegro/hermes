@@ -3,8 +3,10 @@ package pl.allegro.tech.hermes.consumers.consumer;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
+
 import org.apache.avro.Schema;
 import org.apache.commons.lang3.ArrayUtils;
+
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Header;
 import pl.allegro.tech.hermes.api.SubscriptionPolicy;
@@ -23,8 +25,8 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * Implementation note: this class is partially mutable and may be accessed from multiple
- * threads involved in message lifecycle, it must be thread safe.
+ * Implementation note: this class is partially mutable and may be accessed from multiple threads
+ * involved in message lifecycle, it must be thread safe.
  */
 public class Message implements FilterableMessage {
 
@@ -53,19 +55,20 @@ public class Message implements FilterableMessage {
 
     private boolean isFiltered = false;
 
-    public Message(String id,
-                   String topic,
-                   byte[] content,
-                   ContentType contentType,
-                   Optional<CompiledSchema<Schema>> schema,
-                   long publishingTimestamp,
-                   long readingTimestamp,
-                   PartitionOffset partitionOffset,
-                   long partitionAssignmentTerm,
-                   Map<String, String> externalMetadata,
-                   List<Header> additionalHeaders,
-                   String subscription,
-                   boolean hasSubscriptionIdentityHeaders) {
+    public Message(
+            String id,
+            String topic,
+            byte[] content,
+            ContentType contentType,
+            Optional<CompiledSchema<Schema>> schema,
+            long publishingTimestamp,
+            long readingTimestamp,
+            PartitionOffset partitionOffset,
+            long partitionAssignmentTerm,
+            Map<String, String> externalMetadata,
+            List<Header> additionalHeaders,
+            String subscription,
+            boolean hasSubscriptionIdentityHeaders) {
         this.id = id;
         this.data = content;
         this.topic = topic;
@@ -151,12 +154,17 @@ public class Message implements FilterableMessage {
         return additionalHeaders;
     }
 
-    public synchronized long updateAndGetCurrentMessageBackoff(SubscriptionPolicy subscriptionPolicy) {
+    public synchronized long updateAndGetCurrentMessageBackoff(
+            SubscriptionPolicy subscriptionPolicy) {
         if (currentMessageBackoff == -1) {
             currentMessageBackoff = subscriptionPolicy.getMessageBackoff();
         } else {
-            currentMessageBackoff = Math.min(subscriptionPolicy.getBackoffMaxIntervalMillis(),
-                    (long) (currentMessageBackoff * subscriptionPolicy.getBackoffMultiplier()));
+            currentMessageBackoff =
+                    Math.min(
+                            subscriptionPolicy.getBackoffMaxIntervalMillis(),
+                            (long)
+                                    (currentMessageBackoff
+                                            * subscriptionPolicy.getBackoffMultiplier()));
         }
         return currentMessageBackoff;
     }
@@ -233,8 +241,7 @@ public class Message implements FilterableMessage {
 
         private List<Header> additionalHeaders = Collections.emptyList();
 
-        public Builder() {
-        }
+        public Builder() {}
 
         public Builder fromMessage(Message message) {
             this.id = message.getId();
@@ -287,8 +294,19 @@ public class Message implements FilterableMessage {
 
         public Message build() {
             return new Message(
-                    id, topic, data, contentType, schema, publishingTimestamp, readingTimestamp, partitionOffset, partitionAssignmentTerm, externalMetadata, additionalHeaders, subscription, hasSubscriptionIdentityHeaders
-            );
+                    id,
+                    topic,
+                    data,
+                    contentType,
+                    schema,
+                    publishingTimestamp,
+                    readingTimestamp,
+                    partitionOffset,
+                    partitionAssignmentTerm,
+                    externalMetadata,
+                    additionalHeaders,
+                    subscription,
+                    hasSubscriptionIdentityHeaders);
         }
     }
 }

@@ -11,6 +11,7 @@ import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.openjdk.jmh.runner.options.TimeValue;
+
 import pl.allegro.tech.hermes.benchmark.environment.HermesServerEnvironment;
 
 import java.util.concurrent.TimeUnit;
@@ -33,20 +34,20 @@ public class HermesServerBenchmark {
     }
 
     public static void main(String[] args) throws RunnerException {
-        Options opt = new OptionsBuilder()
-                .include(".*" + HermesServerBenchmark.class.getSimpleName() + ".*")
-                .warmupIterations(4)
-                .measurementIterations(4)
-                //.addProfiler(JmhFlightRecorderProfiler.class)
-                //.jvmArgs("-XX:+UnlockCommercialFeatures")
-                .measurementTime(TimeValue.seconds(60))
-                .warmupTime(TimeValue.seconds(40))
-                .forks(1)
-                .threads(2)
-                .syncIterations(false)
-                .build();
+        Options opt =
+                new OptionsBuilder()
+                        .include(".*" + HermesServerBenchmark.class.getSimpleName() + ".*")
+                        .warmupIterations(4)
+                        .measurementIterations(4)
+                        // .addProfiler(JmhFlightRecorderProfiler.class)
+                        // .jvmArgs("-XX:+UnlockCommercialFeatures")
+                        .measurementTime(TimeValue.seconds(60))
+                        .warmupTime(TimeValue.seconds(40))
+                        .forks(1)
+                        .threads(2)
+                        .syncIterations(false)
+                        .build();
 
         new Runner(opt).run();
     }
-
 }

@@ -6,6 +6,7 @@ import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.pubsub.v1.Publisher;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,11 +26,12 @@ class GooglePubSubClientsPool {
 
     private final TransportChannelProvider transportChannelProvider;
 
-    GooglePubSubClientsPool(CredentialsProvider credentialsProvider,
-                            ExecutorProvider publishingExecutorProvider,
-                            RetrySettings retrySettings,
-                            BatchingSettings batchingSettings,
-                            TransportChannelProvider transportChannelProvider) {
+    GooglePubSubClientsPool(
+            CredentialsProvider credentialsProvider,
+            ExecutorProvider publishingExecutorProvider,
+            RetrySettings retrySettings,
+            BatchingSettings batchingSettings,
+            TransportChannelProvider transportChannelProvider) {
         this.credentialsProvider = credentialsProvider;
         this.publishingExecutorProvider = publishingExecutorProvider;
         this.retrySettings = retrySettings;
@@ -37,7 +39,8 @@ class GooglePubSubClientsPool {
         this.transportChannelProvider = transportChannelProvider;
     }
 
-    synchronized GooglePubSubClient acquire(GooglePubSubSenderTarget resolvedTarget) throws IOException {
+    synchronized GooglePubSubClient acquire(GooglePubSubSenderTarget resolvedTarget)
+            throws IOException {
         GooglePubSubClient client = clients.get(resolvedTarget);
         if (client == null) {
             client = createClient(resolvedTarget);
@@ -67,13 +70,15 @@ class GooglePubSubClientsPool {
         counters.clear();
     }
 
-    protected GooglePubSubClient createClient(GooglePubSubSenderTarget resolvedTarget) throws IOException {
-        final Publisher.Builder builder = Publisher.newBuilder(resolvedTarget.getTopicName())
-                .setEndpoint(resolvedTarget.getPubSubEndpoint())
-                .setCredentialsProvider(credentialsProvider)
-                .setRetrySettings(retrySettings)
-                .setBatchingSettings(batchingSettings)
-                .setExecutorProvider(publishingExecutorProvider);
+    protected GooglePubSubClient createClient(GooglePubSubSenderTarget resolvedTarget)
+            throws IOException {
+        final Publisher.Builder builder =
+                Publisher.newBuilder(resolvedTarget.getTopicName())
+                        .setEndpoint(resolvedTarget.getPubSubEndpoint())
+                        .setCredentialsProvider(credentialsProvider)
+                        .setRetrySettings(retrySettings)
+                        .setBatchingSettings(batchingSettings)
+                        .setExecutorProvider(publishingExecutorProvider);
 
         Publisher publisher;
         if (transportChannelProvider == null) {

@@ -4,8 +4,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * Small util to calculate delta between previous and current state of metric. It helps in developing incremental metric storage, as Metrics
- * always wants to push current state of Metric, not increment.
+ * Small util to calculate delta between previous and current state of metric. It helps in
+ * developing incremental metric storage, as Metrics always wants to push current state of Metric,
+ * not increment.
  */
 public class MetricsDeltaCalculator {
 

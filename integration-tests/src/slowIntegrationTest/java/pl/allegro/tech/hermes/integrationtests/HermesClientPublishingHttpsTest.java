@@ -1,11 +1,23 @@
 package pl.allegro.tech.hermes.integrationtests;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import static pl.allegro.tech.hermes.client.HermesClientBuilder.hermesClient;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_HTTP2_ENABLED;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_SSL_ENABLED;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_SSL_KEYSTORE_SOURCE;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_SSL_PORT;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_SSL_TRUSTSTORE_SOURCE;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
+
 import okhttp3.OkHttpClient;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.client.HermesClient;
 import pl.allegro.tech.hermes.client.HermesResponse;
@@ -22,16 +34,8 @@ import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 import java.net.URI;
 import java.time.Duration;
-import javax.net.ssl.X509TrustManager;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static pl.allegro.tech.hermes.client.HermesClientBuilder.hermesClient;
-import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_HTTP2_ENABLED;
-import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_SSL_ENABLED;
-import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_SSL_KEYSTORE_SOURCE;
-import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_SSL_PORT;
-import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_SSL_TRUSTSTORE_SOURCE;
-import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
+import javax.net.ssl.X509TrustManager;
 
 public class HermesClientPublishingHttpsTest {
 
@@ -47,7 +51,9 @@ public class HermesClientPublishingHttpsTest {
 
     @BeforeAll
     public static void setup() {
-        frontend = new HermesFrontendTestApp(infra.hermesZookeeper(), infra.kafka(), infra.schemaRegistry());
+        frontend =
+                new HermesFrontendTestApp(
+                        infra.hermesZookeeper(), infra.kafka(), infra.schemaRegistry());
         frontend.withProperty(FRONTEND_SSL_ENABLED, true);
         frontend.withProperty(FRONTEND_HTTP2_ENABLED, true);
         frontend.withProperty(FRONTEND_SSL_PORT, 0);
@@ -68,12 +74,15 @@ public class HermesClientPublishingHttpsTest {
         Topic topic = management.initHelper().createTopic(topicWithRandomName().build());
         String message = TestMessage.of("hello", "world").body();
 
-        OkHttpHermesSender okHttpHermesSender = new OkHttpHermesSender(getOkHttpClientWithSslContextConfigured());
-        HermesClient client = hermesClient(okHttpHermesSender)
-                .withRetries(5)
-                .withRetrySleep(Duration.ofSeconds(5).toMillis(), Duration.ofSeconds(10).toMillis())
-                .withURI(URI.create("https://localhost:" + frontend.getSSLPort()))
-                .build();
+        OkHttpHermesSender okHttpHermesSender =
+                new OkHttpHermesSender(getOkHttpClientWithSslContextConfigured());
+        HermesClient client =
+                hermesClient(okHttpHermesSender)
+                        .withRetries(5)
+                        .withRetrySleep(
+                                Duration.ofSeconds(5).toMillis(), Duration.ofSeconds(10).toMillis())
+                        .withURI(URI.create("https://localhost:" + frontend.getSSLPort()))
+                        .build();
 
         // when
         HermesResponse response = client.publish(topic.getQualifiedName(), message).join();
@@ -89,20 +98,19 @@ public class HermesClientPublishingHttpsTest {
         return new OkHttpClient.Builder()
                 .sslSocketFactory(
                         sslContextHolder.getSslContext().getSocketFactory(),
-                        (X509TrustManager) sslContextHolder.getTrustManagers()[0]
-                )
+                        (X509TrustManager) sslContextHolder.getTrustManagers()[0])
                 .build();
     }
 
     private static DefaultSslContextFactory getDefaultSslContextFactory() {
         String protocol = "TLS";
-        KeystoreProperties keystoreProperties = new KeystoreProperties("classpath:client.keystore", "JKS", "password");
-        KeystoreProperties truststoreProperties = new KeystoreProperties("classpath:client.truststore", "JKS", "password");
+        KeystoreProperties keystoreProperties =
+                new KeystoreProperties("classpath:client.keystore", "JKS", "password");
+        KeystoreProperties truststoreProperties =
+                new KeystoreProperties("classpath:client.truststore", "JKS", "password");
         return new DefaultSslContextFactory(
                 protocol,
                 new ProvidedKeyManagersProvider(keystoreProperties),
-                new ProvidedTrustManagersProvider(truststoreProperties)
-        );
+                new ProvidedTrustManagersProvider(truststoreProperties));
     }
-
 }

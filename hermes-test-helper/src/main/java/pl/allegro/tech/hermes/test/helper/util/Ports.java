@@ -13,8 +13,7 @@ public final class Ports {
 
     private static final Logger logger = LoggerFactory.getLogger(Ports.class);
 
-    private Ports() {
-    }
+    private Ports() {}
 
     public static int nextAvailable() {
         try {
@@ -24,9 +23,12 @@ public final class Ports {
             socket.getLocalSocketAddress();
             socket.close();
 
-            // second check whether the port is available as on some dynamic environments it can be still in use
+            // second check whether the port is available as on some dynamic environments it can be
+            // still in use
             try (Socket ignore = new Socket("127.0.0.1", port)) {
-                logger.warn("Connected to randomly selected port {} meaning it is still in use. Drawing next port.", port);
+                logger.warn(
+                        "Connected to randomly selected port {} meaning it is still in use. Drawing next port.",
+                        port);
                 return nextAvailable();
             } catch (ConnectException ex) {
                 // expected exception as on provided port no one should listen

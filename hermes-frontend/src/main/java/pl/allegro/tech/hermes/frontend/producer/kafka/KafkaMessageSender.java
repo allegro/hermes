@@ -12,6 +12,7 @@ import org.apache.kafka.common.errors.InterruptException;
 import org.apache.kafka.common.record.RecordBatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
@@ -41,11 +42,12 @@ public class KafkaMessageSender<K, V> {
     private final String datacenter;
     private final ScheduledExecutorService chaosScheduler;
 
-    KafkaMessageSender(Producer<K, V> kafkaProducer,
-                       BrokerLatencyReporter brokerLatencyReporter,
-                       MetricsFacade metricsFacade,
-                       String datacenter,
-                       ScheduledExecutorService chaosScheduler) {
+    KafkaMessageSender(
+            Producer<K, V> kafkaProducer,
+            BrokerLatencyReporter brokerLatencyReporter,
+            MetricsFacade metricsFacade,
+            String datacenter,
+            ScheduledExecutorService chaosScheduler) {
         this.producer = kafkaProducer;
         this.brokerLatencyReporter = brokerLatencyReporter;
         this.metricsFacade = metricsFacade;
@@ -57,23 +59,33 @@ public class KafkaMessageSender<K, V> {
         return datacenter;
     }
 
-    public void send(ProducerRecord<K, V> producerRecord,
-                     CachedTopic cachedTopic,
-                     Message message,
-                     Callback callback,
-                     MultiDatacenterMessageProducer.ChaosExperiment experiment) {
+    public void send(
+            ProducerRecord<K, V> producerRecord,
+            CachedTopic cachedTopic,
+            Message message,
+            Callback callback,
+            MultiDatacenterMessageProducer.ChaosExperiment experiment) {
         if (experiment.enabled()) {
             try {
-                chaosScheduler.schedule(() -> {
-                    if (experiment.completeWithError()) {
-                        var exception = new ChaosException(datacenter, experiment.delayInMillis(), message.getId());
-                        callback.onCompletion(exceptionalRecordMetadata(cachedTopic), exception);
-                    } else {
-                        send(producerRecord, cachedTopic, message, callback);
-                    }
-                }, experiment.delayInMillis(), TimeUnit.MILLISECONDS);
+                chaosScheduler.schedule(
+                        () -> {
+                            if (experiment.completeWithError()) {
+                                var exception =
+                                        new ChaosException(
+                                                datacenter,
+                                                experiment.delayInMillis(),
+                                                message.getId());
+                                callback.onCompletion(
+                                        exceptionalRecordMetadata(cachedTopic), exception);
+                            } else {
+                                send(producerRecord, cachedTopic, message, callback);
+                            }
+                        },
+                        experiment.delayInMillis(),
+                        TimeUnit.MILLISECONDS);
             } catch (RejectedExecutionException e) {
-                logger.warn("Failed while scheduling chaos experiment. Sending message to Kafka.", e);
+                logger.warn(
+                        "Failed while scheduling chaos experiment. Sending message to Kafka.", e);
                 send(producerRecord, cachedTopic, message, callback);
             }
         } else {
@@ -81,10 +93,11 @@ public class KafkaMessageSender<K, V> {
         }
     }
 
-    public void send(ProducerRecord<K, V> producerRecord,
-                     CachedTopic cachedTopic,
-                     Message message,
-                     Callback callback) {
+    public void send(
+            ProducerRecord<K, V> producerRecord,
+            CachedTopic cachedTopic,
+            Message message,
+            Callback callback) {
         HermesTimerContext timer = cachedTopic.startBrokerLatencyTimer();
         Callback meteredCallback = new MeteredCallback(timer, message, cachedTopic, callback);
         try {
@@ -95,7 +108,10 @@ public class KafkaMessageSender<K, V> {
     }
 
     private static RecordMetadata exceptionalRecordMetadata(CachedTopic cachedTopic) {
-        var tp = new TopicPartition(cachedTopic.getKafkaTopics().getPrimary().name().asString(), RecordMetadata.UNKNOWN_PARTITION);
+        var tp =
+                new TopicPartition(
+                        cachedTopic.getKafkaTopics().getPrimary().name().asString(),
+                        RecordMetadata.UNKNOWN_PARTITION);
         return new RecordMetadata(tp, -1, -1, RecordBatch.NO_TIMESTAMP, -1L, -1, -1);
     }
 
@@ -113,17 +129,22 @@ public class KafkaMessageSender<K, V> {
             try {
                 List<PartitionInfo> topicPartitions = producer.partitionsFor(kafkaTopicName);
 
-                Optional<PartitionInfo> partitionInfo = topicPartitions.stream()
-                        .filter(p -> p.partition() == recordMetadata.partition())
-                        .findFirst();
+                Optional<PartitionInfo> partitionInfo =
+                        topicPartitions.stream()
+                                .filter(p -> p.partition() == recordMetadata.partition())
+                                .findFirst();
 
-                return partitionInfo.map(partition -> partition.leader().host())
+                return partitionInfo
+                        .map(partition -> partition.leader().host())
                         .map(ProduceMetadata::new)
                         .orElse(ProduceMetadata.empty());
             } catch (InterruptException e) {
                 Thread.currentThread().interrupt();
             } catch (Exception e) {
-                logger.warn("Could not read information about partitions for topic {}. {}", kafkaTopicName, e.getMessage());
+                logger.warn(
+                        "Could not read information about partitions for topic {}. {}",
+                        kafkaTopicName,
+                        e.getMessage());
             }
             return ProduceMetadata.empty();
         };
@@ -136,7 +157,11 @@ public class KafkaMessageSender<K, V> {
         private final CachedTopic cachedTopic;
         private final Callback callback;
 
-        public MeteredCallback(HermesTimerContext hermesTimerContext, Message message, CachedTopic cachedTopic, Callback callback) {
+        public MeteredCallback(
+                HermesTimerContext hermesTimerContext,
+                Message message,
+                CachedTopic cachedTopic,
+                Callback callback) {
             this.hermesTimerContext = hermesTimerContext;
             this.message = message;
             this.cachedTopic = cachedTopic;
@@ -147,43 +172,106 @@ public class KafkaMessageSender<K, V> {
         public void onCompletion(RecordMetadata metadata, Exception exception) {
             callback.onCompletion(metadata, exception);
             Supplier<ProduceMetadata> produceMetadataSupplier = produceMetadataSupplier(metadata);
-            brokerLatencyReporter.report(hermesTimerContext, message, cachedTopic.getTopic().getAck(), produceMetadataSupplier);
+            brokerLatencyReporter.report(
+                    hermesTimerContext,
+                    message,
+                    cachedTopic.getTopic().getAck(),
+                    produceMetadataSupplier);
         }
     }
 
     public void registerGauges(Topic.Ack ack, String sender) {
-        MetricName bufferTotalBytes = producerMetricMame("buffer-total-bytes", "producer-metrics", "buffer total bytes");
-        MetricName bufferAvailableBytes = producerMetricMame("buffer-available-bytes", "producer-metrics", "buffer available bytes");
-        MetricName compressionRate = producerMetricMame("compression-rate-avg", "producer-metrics", "average compression rate");
-        MetricName failedBatches = producerMetricMame("record-error-total", "producer-metrics", "failed publishing batches");
-        MetricName metadataAge = producerMetricMame("metadata-age", "producer-metrics", "age [s] of metadata");
-        MetricName queueTimeMax = producerMetricMame("record-queue-time-max", "producer-metrics", "maximum time [ms] that batch spent in the send buffer");
-        MetricName recordSendTotal = producerMetricMame("record-send-total", "producer-metrics", "total number of records sent - including retries");
+        MetricName bufferTotalBytes =
+                producerMetricMame("buffer-total-bytes", "producer-metrics", "buffer total bytes");
+        MetricName bufferAvailableBytes =
+                producerMetricMame(
+                        "buffer-available-bytes", "producer-metrics", "buffer available bytes");
+        MetricName compressionRate =
+                producerMetricMame(
+                        "compression-rate-avg", "producer-metrics", "average compression rate");
+        MetricName failedBatches =
+                producerMetricMame(
+                        "record-error-total", "producer-metrics", "failed publishing batches");
+        MetricName metadataAge =
+                producerMetricMame("metadata-age", "producer-metrics", "age [s] of metadata");
+        MetricName queueTimeMax =
+                producerMetricMame(
+                        "record-queue-time-max",
+                        "producer-metrics",
+                        "maximum time [ms] that batch spent in the send buffer");
+        MetricName recordSendTotal =
+                producerMetricMame(
+                        "record-send-total",
+                        "producer-metrics",
+                        "total number of records sent - including retries");
 
         if (ack == Topic.Ack.ALL) {
-            metricsFacade.producer().registerAckAllTotalBytesGauge(producer, producerMetric(bufferTotalBytes), sender, datacenter);
-            metricsFacade.producer().registerAckAllAvailableBytesGauge(producer, producerMetric(bufferAvailableBytes), sender, datacenter);
-            metricsFacade.producer().registerAckAllCompressionRateGauge(producer, producerMetric(compressionRate), sender, datacenter);
-            metricsFacade.producer().registerAckAllFailedBatchesGauge(producer, producerMetric(failedBatches), sender, datacenter);
-            metricsFacade.producer().registerAckAllMetadataAgeGauge(producer, producerMetric(metadataAge), sender, datacenter);
-            metricsFacade.producer().registerAckAllRecordQueueTimeMaxGauge(producer, producerMetric(queueTimeMax), sender, datacenter);
-            metricsFacade.producer().registerAckAllRecordSendCounter(producer, producerMetric(recordSendTotal), sender, datacenter);
+            metricsFacade
+                    .producer()
+                    .registerAckAllTotalBytesGauge(
+                            producer, producerMetric(bufferTotalBytes), sender, datacenter);
+            metricsFacade
+                    .producer()
+                    .registerAckAllAvailableBytesGauge(
+                            producer, producerMetric(bufferAvailableBytes), sender, datacenter);
+            metricsFacade
+                    .producer()
+                    .registerAckAllCompressionRateGauge(
+                            producer, producerMetric(compressionRate), sender, datacenter);
+            metricsFacade
+                    .producer()
+                    .registerAckAllFailedBatchesGauge(
+                            producer, producerMetric(failedBatches), sender, datacenter);
+            metricsFacade
+                    .producer()
+                    .registerAckAllMetadataAgeGauge(
+                            producer, producerMetric(metadataAge), sender, datacenter);
+            metricsFacade
+                    .producer()
+                    .registerAckAllRecordQueueTimeMaxGauge(
+                            producer, producerMetric(queueTimeMax), sender, datacenter);
+            metricsFacade
+                    .producer()
+                    .registerAckAllRecordSendCounter(
+                            producer, producerMetric(recordSendTotal), sender, datacenter);
         } else if (ack == Topic.Ack.LEADER) {
-            metricsFacade.producer().registerAckLeaderTotalBytesGauge(producer, producerMetric(bufferTotalBytes), sender, datacenter);
-            metricsFacade.producer().registerAckLeaderAvailableBytesGauge(producer, producerMetric(bufferAvailableBytes), sender, datacenter);
-            metricsFacade.producer().registerAckLeaderCompressionRateGauge(producer, producerMetric(compressionRate), sender, datacenter);
-            metricsFacade.producer().registerAckLeaderFailedBatchesGauge(producer, producerMetric(failedBatches), sender, datacenter);
-            metricsFacade.producer().registerAckLeaderMetadataAgeGauge(producer, producerMetric(metadataAge), sender, datacenter);
-            metricsFacade.producer().registerAckLeaderRecordQueueTimeMaxGauge(producer, producerMetric(queueTimeMax), sender, datacenter);
-            metricsFacade.producer().registerAckLeaderRecordSendCounter(producer, producerMetric(recordSendTotal), sender, datacenter);
+            metricsFacade
+                    .producer()
+                    .registerAckLeaderTotalBytesGauge(
+                            producer, producerMetric(bufferTotalBytes), sender, datacenter);
+            metricsFacade
+                    .producer()
+                    .registerAckLeaderAvailableBytesGauge(
+                            producer, producerMetric(bufferAvailableBytes), sender, datacenter);
+            metricsFacade
+                    .producer()
+                    .registerAckLeaderCompressionRateGauge(
+                            producer, producerMetric(compressionRate), sender, datacenter);
+            metricsFacade
+                    .producer()
+                    .registerAckLeaderFailedBatchesGauge(
+                            producer, producerMetric(failedBatches), sender, datacenter);
+            metricsFacade
+                    .producer()
+                    .registerAckLeaderMetadataAgeGauge(
+                            producer, producerMetric(metadataAge), sender, datacenter);
+            metricsFacade
+                    .producer()
+                    .registerAckLeaderRecordQueueTimeMaxGauge(
+                            producer, producerMetric(queueTimeMax), sender, datacenter);
+            metricsFacade
+                    .producer()
+                    .registerAckLeaderRecordSendCounter(
+                            producer, producerMetric(recordSendTotal), sender, datacenter);
         }
     }
 
-    private double findProducerMetric(Producer<K, V> producer,
-                                      Predicate<Map.Entry<MetricName, ? extends Metric>> predicate) {
+    private double findProducerMetric(
+            Producer<K, V> producer, Predicate<Map.Entry<MetricName, ? extends Metric>> predicate) {
         Optional<? extends Map.Entry<MetricName, ? extends Metric>> first =
                 producer.metrics().entrySet().stream().filter(predicate).findFirst();
-        Object value = first.map(metricNameEntry -> metricNameEntry.getValue().metricValue()).orElse(0.0d);
+        Object value =
+                first.map(metricNameEntry -> metricNameEntry.getValue().metricValue()).orElse(0.0d);
         if (value instanceof Number) {
             return ((Number) value).doubleValue();
         } else {
@@ -192,8 +280,10 @@ public class KafkaMessageSender<K, V> {
     }
 
     private ToDoubleFunction<Producer<K, V>> producerMetric(MetricName producerMetricName) {
-        Predicate<Map.Entry<MetricName, ? extends Metric>> predicate = entry -> entry.getKey().group().equals(producerMetricName.group())
-                && entry.getKey().name().equals(producerMetricName.name());
+        Predicate<Map.Entry<MetricName, ? extends Metric>> predicate =
+                entry ->
+                        entry.getKey().group().equals(producerMetricName.group())
+                                && entry.getKey().name().equals(producerMetricName.name());
         return producer -> findProducerMetric(producer, predicate);
     }
 

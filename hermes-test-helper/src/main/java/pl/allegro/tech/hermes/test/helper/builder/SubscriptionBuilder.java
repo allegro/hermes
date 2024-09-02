@@ -40,7 +40,8 @@ public class SubscriptionBuilder {
 
     private String description = "description";
 
-    private SubscriptionPolicy serialSubscriptionPolicy = new SubscriptionPolicy(100, 10, 1000, 1000, false, 100, null, 0, 1, 600);
+    private SubscriptionPolicy serialSubscriptionPolicy =
+            new SubscriptionPolicy(100, 10, 1000, 1000, false, 100, null, 0, 1, 600);
 
     private BatchSubscriptionPolicy batchSubscriptionPolicy;
 
@@ -73,7 +74,8 @@ public class SubscriptionBuilder {
 
     private boolean autoDeleteWithTopicEnabled = false;
 
-    private SubscriptionBuilder(TopicName topicName, String subscriptionName, EndpointAddress endpoint) {
+    private SubscriptionBuilder(
+            TopicName topicName, String subscriptionName, EndpointAddress endpoint) {
         this.topicName = topicName;
         this.name = subscriptionName;
         this.endpoint = endpoint;
@@ -84,8 +86,12 @@ public class SubscriptionBuilder {
         this.name = subscriptionName;
     }
 
-    public static SubscriptionBuilder subscriptionWithRandomName(TopicName topicName, String endpoint) {
-        return new SubscriptionBuilder(topicName, "subscription" + sequence.incrementAndGet(), EndpointAddress.of(endpoint));
+    public static SubscriptionBuilder subscriptionWithRandomName(
+            TopicName topicName, String endpoint) {
+        return new SubscriptionBuilder(
+                topicName,
+                "subscription" + sequence.incrementAndGet(),
+                EndpointAddress.of(endpoint));
     }
 
     public static SubscriptionBuilder subscriptionWithRandomName(TopicName topicName) {
@@ -104,43 +110,83 @@ public class SubscriptionBuilder {
         return new SubscriptionBuilder(topic.getName(), subscriptionName);
     }
 
-    public static SubscriptionBuilder subscription(TopicName topicName, String subscriptionName, EndpointAddress endpoint) {
+    public static SubscriptionBuilder subscription(
+            TopicName topicName, String subscriptionName, EndpointAddress endpoint) {
         return new SubscriptionBuilder(topicName, subscriptionName, endpoint);
     }
 
-    public static SubscriptionBuilder subscription(String topicQualifiedName, String subscriptionName) {
-        return new SubscriptionBuilder(TopicName.fromQualifiedName(topicQualifiedName), subscriptionName);
+    public static SubscriptionBuilder subscription(
+            String topicQualifiedName, String subscriptionName) {
+        return new SubscriptionBuilder(
+                TopicName.fromQualifiedName(topicQualifiedName), subscriptionName);
     }
 
-    public static SubscriptionBuilder subscription(String topicQualifiedName, String subscriptionName, String endpoint) {
-        return subscription(TopicName.fromQualifiedName(topicQualifiedName), subscriptionName, EndpointAddress.of(endpoint));
+    public static SubscriptionBuilder subscription(
+            String topicQualifiedName, String subscriptionName, String endpoint) {
+        return subscription(
+                TopicName.fromQualifiedName(topicQualifiedName),
+                subscriptionName,
+                EndpointAddress.of(endpoint));
     }
 
-    public static SubscriptionBuilder subscription(String topicQualifiedName, String subscriptionName, URI endpoint) {
-        return subscription(TopicName.fromQualifiedName(topicQualifiedName), subscriptionName, EndpointAddress.of(endpoint));
+    public static SubscriptionBuilder subscription(
+            String topicQualifiedName, String subscriptionName, URI endpoint) {
+        return subscription(
+                TopicName.fromQualifiedName(topicQualifiedName),
+                subscriptionName,
+                EndpointAddress.of(endpoint));
     }
 
-    public static SubscriptionBuilder subscription(String topicQualifiedName, String subscriptionName, EndpointAddress endpoint) {
-        return subscription(TopicName.fromQualifiedName(topicQualifiedName), subscriptionName, endpoint);
+    public static SubscriptionBuilder subscription(
+            String topicQualifiedName, String subscriptionName, EndpointAddress endpoint) {
+        return subscription(
+                TopicName.fromQualifiedName(topicQualifiedName), subscriptionName, endpoint);
     }
 
     public Subscription build() {
         if (deliveryType == DeliveryType.SERIAL) {
             return Subscription.createSerialSubscription(
-                    topicName, name, endpoint, state, description,
-                    serialSubscriptionPolicy, trackingEnabled,
-                    trackingMode, owner, monitoringDetails, contentType,
-                    filters, mode, headers, metadata, oAuthPolicy, http2Enabled, profilingEnabled,
-                    profilingThresholdMs, attachingIdentityHeadersEnabled, autoDeleteWithTopicEnabled
-            );
+                    topicName,
+                    name,
+                    endpoint,
+                    state,
+                    description,
+                    serialSubscriptionPolicy,
+                    trackingEnabled,
+                    trackingMode,
+                    owner,
+                    monitoringDetails,
+                    contentType,
+                    filters,
+                    mode,
+                    headers,
+                    metadata,
+                    oAuthPolicy,
+                    http2Enabled,
+                    profilingEnabled,
+                    profilingThresholdMs,
+                    attachingIdentityHeadersEnabled,
+                    autoDeleteWithTopicEnabled);
         } else {
             return Subscription.createBatchSubscription(
-                    topicName, name, endpoint, state, description,
-                    batchSubscriptionPolicy, trackingEnabled,
-                    trackingMode, owner, monitoringDetails, contentType,
-                    filters, headers, metadata, oAuthPolicy, http2Enabled,
-                    attachingIdentityHeadersEnabled, autoDeleteWithTopicEnabled
-            );
+                    topicName,
+                    name,
+                    endpoint,
+                    state,
+                    description,
+                    batchSubscriptionPolicy,
+                    trackingEnabled,
+                    trackingMode,
+                    owner,
+                    monitoringDetails,
+                    contentType,
+                    filters,
+                    headers,
+                    metadata,
+                    oAuthPolicy,
+                    http2Enabled,
+                    attachingIdentityHeadersEnabled,
+                    autoDeleteWithTopicEnabled);
         }
     }
 
@@ -183,9 +229,13 @@ public class SubscriptionBuilder {
 
     public SubscriptionBuilder withRequestTimeout(int timeout) {
         SubscriptionPolicy policy = this.serialSubscriptionPolicy;
-        this.serialSubscriptionPolicy = SubscriptionPolicy.Builder.subscriptionPolicy().withRate(policy.getRate())
-                .withMessageTtl(policy.getMessageTtl()).withMessageBackoff(policy.getMessageBackoff())
-                .withRequestTimeout(timeout).build();
+        this.serialSubscriptionPolicy =
+                SubscriptionPolicy.Builder.subscriptionPolicy()
+                        .withRate(policy.getRate())
+                        .withMessageTtl(policy.getMessageTtl())
+                        .withMessageBackoff(policy.getMessageBackoff())
+                        .withRequestTimeout(timeout)
+                        .build();
         return this;
     }
 
@@ -245,7 +295,8 @@ public class SubscriptionBuilder {
         return this;
     }
 
-    public SubscriptionBuilder withEndpointAddressResolverMetadata(EndpointAddressResolverMetadata metadata) {
+    public SubscriptionBuilder withEndpointAddressResolverMetadata(
+            EndpointAddressResolverMetadata metadata) {
         this.metadata = metadata;
         return this;
     }
@@ -255,7 +306,8 @@ public class SubscriptionBuilder {
         return this;
     }
 
-    public SubscriptionBuilder withAttachingIdentityHeadersEnabled(boolean attachingIdentityHeadersEnabled) {
+    public SubscriptionBuilder withAttachingIdentityHeadersEnabled(
+            boolean attachingIdentityHeadersEnabled) {
         this.attachingIdentityHeadersEnabled = attachingIdentityHeadersEnabled;
         return this;
     }

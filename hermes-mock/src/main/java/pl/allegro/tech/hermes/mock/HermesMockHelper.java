@@ -1,5 +1,10 @@
 package pl.allegro.tech.hermes.mock;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
@@ -7,13 +12,16 @@ import com.github.tomakehurst.wiremock.matching.StringValuePattern;
 import com.github.tomakehurst.wiremock.matching.ValueMatcher;
 import com.github.tomakehurst.wiremock.stubbing.StubMapping;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
+
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.io.BinaryDecoder;
 import org.apache.avro.io.DecoderFactory;
+
 import pl.allegro.tech.hermes.mock.exchange.Request;
 import pl.allegro.tech.hermes.mock.exchange.Response;
 import pl.allegro.tech.hermes.mock.matching.StartsWithPattern;
+
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
 import java.io.IOException;
@@ -21,11 +29,6 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.post;
-import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 
 public class HermesMockHelper {
     private final WireMockServer wireMockServer;
@@ -51,7 +54,8 @@ public class HermesMockHelper {
         try {
             return objectMapper.readValue(content, clazz);
         } catch (IOException ex) {
-            throw new HermesMockException("Cannot read body " + content.toString() + " as " + clazz.getSimpleName(), ex);
+            throw new HermesMockException(
+                    "Cannot read body " + content.toString() + " as " + clazz.getSimpleName(), ex);
         }
     }
 
@@ -64,7 +68,8 @@ public class HermesMockHelper {
             byte[] json = new JsonAvroConverter().convertToJson(raw, schema);
             return deserializeJson(json, clazz);
         } catch (RuntimeException ex) {
-            throw new HermesMockException("Cannot decode body " + raw + " to " + clazz.getSimpleName(), ex);
+            throw new HermesMockException(
+                    "Cannot decode body " + raw + " to " + clazz.getSimpleName(), ex);
         }
     }
 
@@ -86,30 +91,37 @@ public class HermesMockHelper {
     }
 
     public StubMapping addStub(String topicName, Response response, String contentType) {
-        return wireMockServer.stubFor(post(urlEqualTo("/topics/" + topicName))
-                .withHeader("Content-Type", startsWith(contentType))
-                .willReturn(aResponse()
-                        .withStatus(response.getStatusCode())
-                        .withHeader("Hermes-Message-Id", UUID.randomUUID().toString())
-                        .withFixedDelay(toIntMilliseconds(response.getFixedDelay())))
-        );
+        return wireMockServer.stubFor(
+                post(urlEqualTo("/topics/" + topicName))
+                        .withHeader("Content-Type", startsWith(contentType))
+                        .willReturn(
+                                aResponse()
+                                        .withStatus(response.getStatusCode())
+                                        .withHeader(
+                                                "Hermes-Message-Id", UUID.randomUUID().toString())
+                                        .withFixedDelay(
+                                                toIntMilliseconds(response.getFixedDelay()))));
     }
 
-    public StubMapping addStub(String topicName, Response response, String contentType,
-                        ValueMatcher<com.github.tomakehurst.wiremock.http.Request> valueMatcher) {
-        return wireMockServer.stubFor(post(urlEqualTo("/topics/" + topicName))
-                .andMatching(valueMatcher)
-                .withHeader("Content-Type", startsWith(contentType))
-                .willReturn(aResponse()
-                        .withStatus(response.getStatusCode())
-                        .withHeader("Hermes-Message-Id", UUID.randomUUID().toString())
-                        .withFixedDelay(toIntMilliseconds(response.getFixedDelay()))
-                )
-        );
+    public StubMapping addStub(
+            String topicName,
+            Response response,
+            String contentType,
+            ValueMatcher<com.github.tomakehurst.wiremock.http.Request> valueMatcher) {
+        return wireMockServer.stubFor(
+                post(urlEqualTo("/topics/" + topicName))
+                        .andMatching(valueMatcher)
+                        .withHeader("Content-Type", startsWith(contentType))
+                        .willReturn(
+                                aResponse()
+                                        .withStatus(response.getStatusCode())
+                                        .withHeader(
+                                                "Hermes-Message-Id", UUID.randomUUID().toString())
+                                        .withFixedDelay(
+                                                toIntMilliseconds(response.getFixedDelay()))));
     }
 
     public void removeStubMapping(StubMapping stubMapping) {
         wireMockServer.removeStubMapping(stubMapping);
     }
-
 }

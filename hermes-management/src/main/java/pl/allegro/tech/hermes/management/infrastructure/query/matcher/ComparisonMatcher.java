@@ -1,11 +1,12 @@
 package pl.allegro.tech.hermes.management.infrastructure.query.matcher;
 
+import static java.lang.Double.parseDouble;
+
 import org.apache.commons.jxpath.JXPathException;
+
 import pl.allegro.tech.hermes.management.infrastructure.query.graph.ObjectGraph;
 
 import java.util.Optional;
-
-import static java.lang.Double.parseDouble;
 
 public class ComparisonMatcher implements Matcher {
 
@@ -42,11 +43,13 @@ public class ComparisonMatcher implements Matcher {
             Object value = ObjectGraph.from(object).navigate(attribute).value();
 
             if (value == null) {
-                throw new MatcherInputException(String.format("Cannot find '%s' attribute", this.attribute));
+                throw new MatcherInputException(
+                        String.format("Cannot find '%s' attribute", this.attribute));
             }
             return value;
         } catch (JXPathException e) {
-            throw new MatcherException(String.format("Could not navigate to specific path: '%s'", attribute), e);
+            throw new MatcherException(
+                    String.format("Could not navigate to specific path: '%s'", attribute), e);
         }
     }
 

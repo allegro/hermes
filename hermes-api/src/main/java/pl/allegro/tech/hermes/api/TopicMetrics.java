@@ -1,8 +1,8 @@
 package pl.allegro.tech.hermes.api;
 
-import java.util.Objects;
-
 import static pl.allegro.tech.hermes.api.MetricDecimalValue.of;
+
+import java.util.Objects;
 
 public class TopicMetrics {
     private long published;
@@ -51,21 +51,22 @@ public class TopicMetrics {
         }
         final TopicMetrics other = (TopicMetrics) obj;
         return Objects.equals(this.published, other.published)
-            && Objects.equals(this.rate, other.rate)
-            && Objects.equals(this.deliveryRate, other.deliveryRate)
-            && Objects.equals(this.subscriptions, other.subscriptions)
-            && Objects.equals(this.throughput, other.throughput)
-            && Objects.equals(this.volume, other.volume);
+                && Objects.equals(this.rate, other.rate)
+                && Objects.equals(this.deliveryRate, other.deliveryRate)
+                && Objects.equals(this.subscriptions, other.subscriptions)
+                && Objects.equals(this.throughput, other.throughput)
+                && Objects.equals(this.volume, other.volume);
     }
 
     public static TopicMetrics unavailable() {
-        return Builder.topicMetrics().withRate(MetricDecimalValue.unavailable())
-                                     .withDeliveryRate(MetricDecimalValue.unavailable())
-                                     .withPublished(0)
-                                     .withVolume(0)
-                                     .withSubscriptions(0)
-                                     .withThroughput(MetricDecimalValue.unavailable())
-                                     .build();
+        return Builder.topicMetrics()
+                .withRate(MetricDecimalValue.unavailable())
+                .withDeliveryRate(MetricDecimalValue.unavailable())
+                .withPublished(0)
+                .withVolume(0)
+                .withSubscriptions(0)
+                .withThroughput(MetricDecimalValue.unavailable())
+                .build();
     }
 
     public static class Builder {

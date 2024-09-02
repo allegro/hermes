@@ -5,5 +5,4 @@ import pl.allegro.tech.hermes.api.Topic;
 public interface CreatorRights {
 
     boolean allowedToManage(Topic topic);
-
 }

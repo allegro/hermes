@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.schema;
 
 import com.google.common.base.MoreObjects;
+
 import pl.allegro.tech.hermes.api.RawSchemaWithMetadata;
 
 import java.util.Objects;
@@ -21,12 +22,12 @@ public class CompiledSchema<T> {
         return new CompiledSchema<>(schema, SchemaId.valueOf(id), SchemaVersion.valueOf(version));
     }
 
-    public static <T> CompiledSchema<T> of(SchemaCompiler<T> schemaCompiler, RawSchemaWithMetadata rawSchemaWithMetadata) {
+    public static <T> CompiledSchema<T> of(
+            SchemaCompiler<T> schemaCompiler, RawSchemaWithMetadata rawSchemaWithMetadata) {
         return CompiledSchema.of(
                 schemaCompiler.compile(rawSchemaWithMetadata.getSchema()),
                 rawSchemaWithMetadata.getId(),
-                rawSchemaWithMetadata.getVersion()
-        );
+                rawSchemaWithMetadata.getVersion());
     }
 
     public T getSchema() {

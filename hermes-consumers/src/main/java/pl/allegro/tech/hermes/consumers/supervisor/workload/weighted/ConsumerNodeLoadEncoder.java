@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.consumers.supervisor.workload.weighted;
 
 import org.agrona.ExpandableDirectByteBuffer;
 import org.agrona.MutableDirectBuffer;
+
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionId;
 import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionIds;
@@ -24,20 +25,22 @@ class ConsumerNodeLoadEncoder {
     }
 
     byte[] encode(ConsumerNodeLoad consumerNodeLoad) {
-        Map<SubscriptionId, SubscriptionLoad> subscriptionLoads = mapToSubscriptionIds(consumerNodeLoad);
+        Map<SubscriptionId, SubscriptionLoad> subscriptionLoads =
+                mapToSubscriptionIds(consumerNodeLoad);
 
         MessageHeaderEncoder headerEncoder = new MessageHeaderEncoder();
-        ConsumerLoadEncoder body = new ConsumerLoadEncoder()
-                .wrapAndApplyHeader(buffer, 0, headerEncoder);
+        ConsumerLoadEncoder body =
+                new ConsumerLoadEncoder().wrapAndApplyHeader(buffer, 0, headerEncoder);
 
-        SubscriptionsEncoder loadPerSubscriptionEncoder = body
-                .cpuUtilization(consumerNodeLoad.getCpuUtilization())
-                .subscriptionsCount(subscriptionLoads.size());
+        SubscriptionsEncoder loadPerSubscriptionEncoder =
+                body.cpuUtilization(consumerNodeLoad.getCpuUtilization())
+                        .subscriptionsCount(subscriptionLoads.size());
 
         for (Map.Entry<SubscriptionId, SubscriptionLoad> entry : subscriptionLoads.entrySet()) {
             SubscriptionId subscriptionId = entry.getKey();
             SubscriptionLoad load = entry.getValue();
-            loadPerSubscriptionEncoder.next()
+            loadPerSubscriptionEncoder
+                    .next()
                     .id(subscriptionId.getValue())
                     .operationsPerSecond(load.getOperationsPerSecond());
         }
@@ -51,8 +54,10 @@ class ConsumerNodeLoadEncoder {
 
     private Map<SubscriptionId, SubscriptionLoad> mapToSubscriptionIds(ConsumerNodeLoad metrics) {
         Map<SubscriptionId, SubscriptionLoad> subscriptionLoads = new HashMap<>();
-        for (Map.Entry<SubscriptionName, SubscriptionLoad> entry : metrics.getLoadPerSubscription().entrySet()) {
-            Optional<SubscriptionId> subscriptionId = subscriptionIds.getSubscriptionId(entry.getKey());
+        for (Map.Entry<SubscriptionName, SubscriptionLoad> entry :
+                metrics.getLoadPerSubscription().entrySet()) {
+            Optional<SubscriptionId> subscriptionId =
+                    subscriptionIds.getSubscriptionId(entry.getKey());
             subscriptionId.ifPresent(id -> subscriptionLoads.put(id, entry.getValue()));
         }
         return subscriptionLoads;

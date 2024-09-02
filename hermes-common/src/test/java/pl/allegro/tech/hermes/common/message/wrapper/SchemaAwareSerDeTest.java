@@ -1,11 +1,12 @@
 package pl.allegro.tech.hermes.common.message.wrapper;
 
-import org.junit.Test;
-import pl.allegro.tech.hermes.schema.SchemaId;
-import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
+
+import org.junit.Test;
+
+import pl.allegro.tech.hermes.schema.SchemaId;
+import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 
 public class SchemaAwareSerDeTest {
     static final AvroUser avro = new AvroUser("bob", 10, "red");
@@ -38,6 +39,8 @@ public class SchemaAwareSerDeTest {
     @Test
     public void shouldThrowExceptionWhenDeserializingWithoutMagicByte() {
         // when
-        assertThrows(DeserializationException.class, () -> SchemaAwareSerDe.deserialize(new byte[]{1, 2, 3}));
+        assertThrows(
+                DeserializationException.class,
+                () -> SchemaAwareSerDe.deserialize(new byte[] {1, 2, 3}));
     }
 }

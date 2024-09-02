@@ -9,6 +9,7 @@ import org.apache.avro.io.Decoder;
 import org.apache.avro.io.DecoderFactory;
 import org.apache.avro.io.Encoder;
 import org.apache.avro.io.EncoderFactory;
+
 import tech.allegro.schema.json2avro.converter.AvroConversionException;
 
 import java.io.ByteArrayInputStream;
@@ -24,8 +25,8 @@ class AvroEncodedJsonAvroConverter {
         } catch (IOException e) {
             throw new AvroConversionException("Failed to convert to AVRO.", e);
         } catch (AvroRuntimeException e) {
-                throw new AvroConversionException(
-                        String.format("Failed to convert to AVRO: %s.", e.getMessage()), e);
+            throw new AvroConversionException(
+                    String.format("Failed to convert to AVRO: %s.", e.getMessage()), e);
         }
     }
 

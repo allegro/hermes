@@ -1,12 +1,13 @@
 package pl.allegro.tech.hermes.tracker.consumers;
 
-import org.junit.Before;
-import org.junit.Test;
-import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
-
 import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.DISCARDED;
 import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.INFLIGHT;
 import static pl.allegro.tech.hermes.api.SentMessageTraceStatus.SUCCESS;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import pl.allegro.tech.hermes.api.SentMessageTraceStatus;
 
 public abstract class AbstractLogRepositoryTest {
 
@@ -54,7 +55,8 @@ public abstract class AbstractLogRepositoryTest {
         String topic = "group.undeliveredMessage";
 
         // when
-        logRepository.logDiscarded(TestMessageMetadata.of(id, topic, SUBSCRIPTION), 1234L, "reason");
+        logRepository.logDiscarded(
+                TestMessageMetadata.of(id, topic, SUBSCRIPTION), 1234L, "reason");
 
         // then
         awaitUntilMessageIsPersisted(topic, SUBSCRIPTION, id, DISCARDED);
@@ -68,26 +70,22 @@ public abstract class AbstractLogRepositoryTest {
         String topic = "group.sentBatchMessage";
 
         // when
-        logRepository.logSuccessful(TestMessageMetadata.of(messageId, batchId, topic, SUBSCRIPTION), "host", 1234L);
+        logRepository.logSuccessful(
+                TestMessageMetadata.of(messageId, batchId, topic, SUBSCRIPTION), "host", 1234L);
 
         // then
         awaitUntilBatchMessageIsPersisted(topic, SUBSCRIPTION, messageId, batchId, SUCCESS);
     }
 
     protected abstract void awaitUntilMessageIsPersisted(
-        String topic,
-        String subscription,
-        String id,
-        SentMessageTraceStatus status
-    )
-        throws Exception;
+            String topic, String subscription, String id, SentMessageTraceStatus status)
+            throws Exception;
 
     protected abstract void awaitUntilBatchMessageIsPersisted(
-        String topic,
-        String subscription,
-        String messageId,
-        String batchId,
-        SentMessageTraceStatus status
-    )
-        throws Exception;
+            String topic,
+            String subscription,
+            String messageId,
+            String batchId,
+            SentMessageTraceStatus status)
+            throws Exception;
 }

@@ -1,14 +1,17 @@
 package pl.allegro.tech.hermes.frontend.publishing.message;
 
-import org.apache.avro.Schema;
-import org.apache.commons.lang3.StringUtils;
-import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.message.wrapper.UnsupportedContentTypeException;
-import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
-
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
+
 import static pl.allegro.tech.hermes.api.AvroMediaType.AVRO_BINARY;
 import static pl.allegro.tech.hermes.api.AvroMediaType.AVRO_JSON;
+
+import org.apache.avro.Schema;
+import org.apache.commons.lang3.StringUtils;
+
+import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.common.message.wrapper.UnsupportedContentTypeException;
+
+import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
 public class MessageContentTypeEnforcer implements AvroEnforcer {
 
@@ -16,7 +19,8 @@ public class MessageContentTypeEnforcer implements AvroEnforcer {
     private static final String AVRO_JSON_WITH_DELIM = AVRO_JSON + ";";
     private static final String AVRO_BINARY_WITH_DELIM = AVRO_BINARY + ";";
     private final JsonAvroConverter defaultJsonAvroConverter = new JsonAvroConverter();
-    private final AvroEncodedJsonAvroConverter avroEncodedJsonAvroConverter = new AvroEncodedJsonAvroConverter();
+    private final AvroEncodedJsonAvroConverter avroEncodedJsonAvroConverter =
+            new AvroEncodedJsonAvroConverter();
 
     @Override
     public byte[] enforceAvro(String payloadContentType, byte[] data, Schema schema, Topic topic) {
@@ -44,7 +48,10 @@ public class MessageContentTypeEnforcer implements AvroEnforcer {
         return isOfType(contentType, AVRO_BINARY, AVRO_BINARY_WITH_DELIM);
     }
 
-    private boolean isOfType(String contentType, String expectedContentType, String expectedWithDelim) {
-        return contentType != null && (contentType.equals(expectedContentType) || contentType.startsWith(expectedWithDelim));
+    private boolean isOfType(
+            String contentType, String expectedContentType, String expectedWithDelim) {
+        return contentType != null
+                && (contentType.equals(expectedContentType)
+                        || contentType.startsWith(expectedWithDelim));
     }
 }

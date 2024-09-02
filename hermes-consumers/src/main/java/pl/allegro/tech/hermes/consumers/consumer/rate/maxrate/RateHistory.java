@@ -20,8 +20,9 @@ public final class RateHistory {
 
     static RateHistory updatedRates(RateHistory history, double newRate, int limit) {
         Preconditions.checkArgument(limit > 0);
-        List<Double> rates = Stream.concat(
-                Stream.of(newRate), history.getRates().stream().limit(limit - 1)).collect(Collectors.toList());
+        List<Double> rates =
+                Stream.concat(Stream.of(newRate), history.getRates().stream().limit(limit - 1))
+                        .collect(Collectors.toList());
         return new RateHistory(rates);
     }
 
@@ -56,9 +57,6 @@ public final class RateHistory {
 
     @Override
     public String toString() {
-        return "RateHistory{"
-                + "rates="
-                + rates
-                + '}';
+        return "RateHistory{" + "rates=" + rates + '}';
     }
 }

@@ -1,9 +1,10 @@
 package pl.allegro.tech.hermes.test.helper.client;
 
-import java.io.IOException;
-import java.util.function.Function;
 import jakarta.ws.rs.client.ClientRequestContext;
 import jakarta.ws.rs.client.ClientRequestFilter;
+
+import java.io.IOException;
+import java.util.function.Function;
 
 public class OAuth2AuthenticationFeature implements ClientRequestFilter {
 
@@ -15,6 +16,10 @@ public class OAuth2AuthenticationFeature implements ClientRequestFilter {
 
     @Override
     public void filter(ClientRequestContext requestContext) throws IOException {
-        requestContext.getHeaders().add("Authorization", String.format("Token %s", authTokenSupplier.apply(requestContext)));
+        requestContext
+                .getHeaders()
+                .add(
+                        "Authorization",
+                        String.format("Token %s", authTokenSupplier.apply(requestContext)));
     }
 }

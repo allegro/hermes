@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.management.infrastructure.schema.validator;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.ErrorCode;
 import pl.allegro.tech.hermes.management.domain.ManagementException;
@@ -21,7 +22,8 @@ public class SchemaValidatorProvider {
 
     public SchemaValidator provide(ContentType contentType) {
         if (!validators.containsKey(contentType)) {
-            throw new SchemaValidatorNotAvailable("No schema validator for content-type: " + contentType.name());
+            throw new SchemaValidatorNotAvailable(
+                    "No schema validator for content-type: " + contentType.name());
         }
 
         return validators.get(contentType);
@@ -37,5 +39,4 @@ public class SchemaValidatorProvider {
             return ErrorCode.VALIDATION_ERROR;
         }
     }
-
 }

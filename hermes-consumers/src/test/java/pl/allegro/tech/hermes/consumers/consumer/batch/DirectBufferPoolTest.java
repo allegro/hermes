@@ -1,5 +1,8 @@
 package pl.allegro.tech.hermes.consumers.consumer.batch;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,9 +16,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 public class DirectBufferPoolTest {
     long totalMemory = 10 * 1024;
     int poolableSize = 1024;
@@ -27,7 +27,6 @@ public class DirectBufferPoolTest {
     public void setup() {
         this.pool = new DirectBufferPool(totalMemory, poolableSize, false);
     }
-
 
     @After
     public void cleanup() {
@@ -46,8 +45,12 @@ public class DirectBufferPoolTest {
 
         // then
         assertEquals("Buffer size should equal requested size.", size, buffer.limit());
-        assertEquals("Unallocated memory should have shrunk", totalMemory - size, pool.unallocatedMemory());
-        assertEquals("Available memory should have shrunk", totalMemory - size, pool.availableMemory());
+        assertEquals(
+                "Unallocated memory should have shrunk",
+                totalMemory - size,
+                pool.unallocatedMemory());
+        assertEquals(
+                "Available memory should have shrunk", totalMemory - size, pool.availableMemory());
     }
 
     @Test
@@ -75,7 +78,10 @@ public class DirectBufferPoolTest {
         // then
         assertEquals("Recycled buffer should be cleared.", 0, buffer.position());
         assertEquals("Recycled buffer should be cleared.", buffer.capacity(), buffer.limit());
-        assertEquals("Still a single buffer on the free list", totalMemory - poolableSize, pool.unallocatedMemory());
+        assertEquals(
+                "Still a single buffer on the free list",
+                totalMemory - poolableSize,
+                pool.unallocatedMemory());
     }
 
     @Test
@@ -88,7 +94,10 @@ public class DirectBufferPoolTest {
 
         // then
         assertEquals("All memory should be available", totalMemory, pool.availableMemory());
-        assertEquals("Non-standard size didn't go to the free list.", totalMemory, pool.unallocatedMemory());
+        assertEquals(
+                "Non-standard size didn't go to the free list.",
+                totalMemory,
+                pool.unallocatedMemory());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -122,40 +131,45 @@ public class DirectBufferPoolTest {
         CountDownLatch allocation = asyncAllocate(pool, total);
 
         // then
-        assertEquals("Allocation shouldn't have happened yet, waiting on memory.", 1L, allocation.getCount());
+        assertEquals(
+                "Allocation shouldn't have happened yet, waiting on memory.",
+                1L,
+                allocation.getCount());
         doDeallocation.countDown();
         allocation.await();
     }
 
     private CountDownLatch asyncDeallocate(final DirectBufferPool pool, final ByteBuffer buffer) {
         final CountDownLatch latch = new CountDownLatch(1);
-        Thread thread = new Thread() {
-            public void run() {
-                try {
-                    latch.await();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                pool.deallocate(buffer);
-            }
-        };
+        Thread thread =
+                new Thread() {
+                    public void run() {
+                        try {
+                            latch.await();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        pool.deallocate(buffer);
+                    }
+                };
         thread.start();
         return latch;
     }
 
     private CountDownLatch asyncAllocate(final DirectBufferPool pool, final int size) {
         final CountDownLatch completed = new CountDownLatch(1);
-        Thread thread = new Thread() {
-            public void run() {
-                try {
-                    pool.allocate(size);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } finally {
-                    completed.countDown();
-                }
-            }
-        };
+        Thread thread =
+                new Thread() {
+                    public void run() {
+                        try {
+                            pool.allocate(size);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        } finally {
+                            completed.countDown();
+                        }
+                    }
+                };
         thread.start();
         return completed;
     }
@@ -169,17 +183,21 @@ public class DirectBufferPoolTest {
         final int totalMemory = numThreads / 2 * poolableSize;
         final DirectBufferPool pool = new DirectBufferPool(totalMemory, poolableSize, true);
 
-        List<StressTestThread> threads = IntStream.range(0, numThreads)
-                .mapToObj(i -> new StressTestThread(pool, iterations))
-                .collect(Collectors.toList());
+        List<StressTestThread> threads =
+                IntStream.range(0, numThreads)
+                        .mapToObj(i -> new StressTestThread(pool, iterations))
+                        .collect(Collectors.toList());
 
         // when
         threads.forEach(StressTestThread::start);
         threads.forEach(StressTestThread::joinQuietly);
 
         // then
-        threads.forEach(thread ->
-                assertTrue("Thread should have completed all iterations successfully.", thread.success.get()));
+        threads.forEach(
+                thread ->
+                        assertTrue(
+                                "Thread should have completed all iterations successfully.",
+                                thread.success.get()));
         assertEquals(totalMemory, pool.availableMemory());
     }
 
@@ -197,7 +215,10 @@ public class DirectBufferPoolTest {
         public void run() {
             try {
                 for (int i = 0; i < iterations; i++) {
-                    int size = random.nextBoolean() ? pool.poolableSize() : random.nextInt((int) pool.totalMemory());
+                    int size =
+                            random.nextBoolean()
+                                    ? pool.poolableSize()
+                                    : random.nextInt((int) pool.totalMemory());
                     ByteBuffer buffer = pool.allocate(size);
                     pool.deallocate(buffer);
                 }

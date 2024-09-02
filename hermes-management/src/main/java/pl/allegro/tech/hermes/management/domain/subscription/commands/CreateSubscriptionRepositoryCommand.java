@@ -23,12 +23,14 @@ public class CreateSubscriptionRepositoryCommand extends RepositoryCommand<Subsc
     }
 
     @Override
-    public void rollback(DatacenterBoundRepositoryHolder<SubscriptionRepository> holder, Exception exception) {
+    public void rollback(
+            DatacenterBoundRepositoryHolder<SubscriptionRepository> holder, Exception exception) {
         if (exception instanceof SubscriptionAlreadyExistsException) {
             // prevents removal of already existing subscription
             return;
         }
-        holder.getRepository().removeSubscription(subscription.getTopicName(), subscription.getName());
+        holder.getRepository()
+                .removeSubscription(subscription.getTopicName(), subscription.getName());
     }
 
     @Override

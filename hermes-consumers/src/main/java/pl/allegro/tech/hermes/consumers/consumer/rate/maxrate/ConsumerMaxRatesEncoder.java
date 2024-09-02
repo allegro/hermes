@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.consumers.consumer.rate.maxrate;
 
 import org.agrona.ExpandableDirectByteBuffer;
 import org.agrona.MutableDirectBuffer;
+
 import pl.allegro.tech.hermes.consumers.consumer.rate.sbe.stubs.MaxRateEncoder;
 import pl.allegro.tech.hermes.consumers.consumer.rate.sbe.stubs.MessageHeaderEncoder;
 import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionId;
@@ -23,16 +24,17 @@ class ConsumerMaxRatesEncoder {
         MessageHeaderEncoder headerEncoder = new MessageHeaderEncoder();
         MaxRateEncoder body = new MaxRateEncoder();
 
-        Map<SubscriptionId, MaxRate> filteredRates = consumerMaxRates.toSubscriptionsIdsMap(subscriptionIds::getSubscriptionId);
+        Map<SubscriptionId, MaxRate> filteredRates =
+                consumerMaxRates.toSubscriptionsIdsMap(subscriptionIds::getSubscriptionId);
 
-        MaxRateEncoder.SubscriptionsEncoder subscriptionsEncoder = body.wrapAndApplyHeader(buffer, 0, headerEncoder)
-                .subscriptionsCount(filteredRates.size());
+        MaxRateEncoder.SubscriptionsEncoder subscriptionsEncoder =
+                body.wrapAndApplyHeader(buffer, 0, headerEncoder)
+                        .subscriptionsCount(filteredRates.size());
 
-        filteredRates.forEach((id, maxRate) -> {
-            subscriptionsEncoder.next()
-                    .id(id.getValue())
-                    .maxRate(maxRate.getMaxRate());
-        });
+        filteredRates.forEach(
+                (id, maxRate) -> {
+                    subscriptionsEncoder.next().id(id.getValue()).maxRate(maxRate.getMaxRate());
+                });
 
         int len = headerEncoder.encodedLength() + body.encodedLength();
 

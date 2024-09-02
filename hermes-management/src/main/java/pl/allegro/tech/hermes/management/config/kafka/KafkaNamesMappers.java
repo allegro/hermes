@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.management.config.kafka;
 
 import com.google.common.collect.ImmutableMap;
+
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 
 import java.util.Map;

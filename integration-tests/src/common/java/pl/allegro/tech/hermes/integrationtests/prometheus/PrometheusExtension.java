@@ -1,27 +1,31 @@
 package pl.allegro.tech.hermes.integrationtests.prometheus;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+
+import static pl.allegro.tech.hermes.management.infrastructure.prometheus.PrometheusClient.forSubscription;
+import static pl.allegro.tech.hermes.management.infrastructure.prometheus.PrometheusClient.forSubscriptionStatusCode;
+import static pl.allegro.tech.hermes.management.infrastructure.prometheus.PrometheusClient.forTopic;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.matching.AnythingPattern;
+
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
+
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
 
 import java.time.Duration;
 import java.util.List;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
-import static pl.allegro.tech.hermes.management.infrastructure.prometheus.PrometheusClient.forSubscription;
-import static pl.allegro.tech.hermes.management.infrastructure.prometheus.PrometheusClient.forSubscriptionStatusCode;
-import static pl.allegro.tech.hermes.management.infrastructure.prometheus.PrometheusClient.forTopic;
-
-public class PrometheusExtension implements AfterEachCallback, BeforeAllCallback, ExtensionContext.Store.CloseableResource {
+public class PrometheusExtension
+        implements AfterEachCallback, BeforeAllCallback, ExtensionContext.Store.CloseableResource {
 
     private static final WireMockServer wiremock = new WireMockServer(0);
     private static boolean started = false;
@@ -52,15 +56,37 @@ public class PrometheusExtension implements AfterEachCallback, BeforeAllCallback
     @SuppressWarnings("checkstyle:VariableDeclarationUsageDistance")
     public void stubSubscriptionMetrics(SubscriptionMetrics metrics) {
         SubscriptionName subName = metrics.name();
-        String deliveredQuery = forSubscription("hermes_consumers_subscription_delivered_total", subName, "");
-        String timeoutsQuery = forSubscription("hermes_consumers_subscription_timeouts_total", subName, "");
-        String retriesQuery = forSubscription("hermes_consumers_subscription_retries_total", subName, "");
-        String throughputQuery = forSubscription("hermes_consumers_subscription_throughput_bytes_total", subName, "");
-        String errorsQuery = forSubscription("hermes_consumers_subscription_other_errors_total", subName, "");
-        String batchesQuery = forSubscription("hermes_consumers_subscription_batches_total", subName, "");
-        String statusCodes2xxQuery = forSubscriptionStatusCode("hermes_consumers_subscription_http_status_codes_total", subName, "2.*", "");
-        String statusCodes4xxQuery = forSubscriptionStatusCode("hermes_consumers_subscription_http_status_codes_total", subName, "4.*", "");
-        String statusCodes5xxQuery = forSubscriptionStatusCode("hermes_consumers_subscription_http_status_codes_total", subName, "5.*", "");
+        String deliveredQuery =
+                forSubscription("hermes_consumers_subscription_delivered_total", subName, "");
+        String timeoutsQuery =
+                forSubscription("hermes_consumers_subscription_timeouts_total", subName, "");
+        String retriesQuery =
+                forSubscription("hermes_consumers_subscription_retries_total", subName, "");
+        String throughputQuery =
+                forSubscription(
+                        "hermes_consumers_subscription_throughput_bytes_total", subName, "");
+        String errorsQuery =
+                forSubscription("hermes_consumers_subscription_other_errors_total", subName, "");
+        String batchesQuery =
+                forSubscription("hermes_consumers_subscription_batches_total", subName, "");
+        String statusCodes2xxQuery =
+                forSubscriptionStatusCode(
+                        "hermes_consumers_subscription_http_status_codes_total",
+                        subName,
+                        "2.*",
+                        "");
+        String statusCodes4xxQuery =
+                forSubscriptionStatusCode(
+                        "hermes_consumers_subscription_http_status_codes_total",
+                        subName,
+                        "4.*",
+                        "");
+        String statusCodes5xxQuery =
+                forSubscriptionStatusCode(
+                        "hermes_consumers_subscription_http_status_codes_total",
+                        subName,
+                        "5.*",
+                        "");
 
         stub(deliveredQuery, metrics.toPrometheusRateResponse());
         stub(timeoutsQuery, metrics.toPrometheusDefaultResponse());
@@ -81,17 +107,17 @@ public class PrometheusExtension implements AfterEachCallback, BeforeAllCallback
                                 aResponse()
                                         .withStatus(200)
                                         .withHeader("Content-Type", "application/json")
-                                        .withBody(writeValueAsString(response))
-                        )
-                        .build()
-        );
+                                        .withBody(writeValueAsString(response)))
+                        .build());
     }
 
     public void stubTopicMetrics(TopicMetrics metrics) {
         TopicName topicName = metrics.name();
         String requestsQuery = forTopic("hermes_frontend_topic_requests_total", topicName, "");
-        String deliveredQuery = forTopic("hermes_consumers_subscription_delivered_total", topicName, "");
-        String throughputQuery = forTopic("hermes_frontend_topic_throughput_bytes_total", topicName, "");
+        String deliveredQuery =
+                forTopic("hermes_consumers_subscription_delivered_total", topicName, "");
+        String throughputQuery =
+                forTopic("hermes_frontend_topic_throughput_bytes_total", topicName, "");
 
         stub(requestsQuery, metrics.toPrometheusRequestsResponse());
         stub(deliveredQuery, metrics.toDeliveredResponse());
@@ -99,7 +125,8 @@ public class PrometheusExtension implements AfterEachCallback, BeforeAllCallback
     }
 
     public void stubDelay(Duration duration) {
-        var response = new PrometheusResponse("success", new PrometheusResponse.Data("vector", List.of()));
+        var response =
+                new PrometheusResponse("success", new PrometheusResponse.Data("vector", List.of()));
         wiremock.addStubMapping(
                 get(urlPathEqualTo("/api/v1/query"))
                         .withQueryParam("query", new AnythingPattern())
@@ -108,10 +135,8 @@ public class PrometheusExtension implements AfterEachCallback, BeforeAllCallback
                                         .withStatus(200)
                                         .withHeader("Content-Type", "application/json")
                                         .withBody(writeValueAsString(response))
-                                        .withFixedDelay((int) duration.toMillis())
-                        )
-                        .build()
-        );
+                                        .withFixedDelay((int) duration.toMillis()))
+                        .build());
     }
 
     public void stub500Error() {
@@ -121,10 +146,8 @@ public class PrometheusExtension implements AfterEachCallback, BeforeAllCallback
                         .willReturn(
                                 aResponse()
                                         .withStatus(500)
-                                        .withHeader("Content-Type", "application/json")
-                        )
-                        .build()
-        );
+                                        .withHeader("Content-Type", "application/json"))
+                        .build());
     }
 
     private String writeValueAsString(Object o) {

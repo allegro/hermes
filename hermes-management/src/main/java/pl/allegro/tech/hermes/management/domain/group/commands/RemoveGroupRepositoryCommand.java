@@ -26,7 +26,8 @@ public class RemoveGroupRepositoryCommand extends RepositoryCommand<GroupReposit
     }
 
     @Override
-    public void rollback(DatacenterBoundRepositoryHolder<GroupRepository> holder, Exception exception) {
+    public void rollback(
+            DatacenterBoundRepositoryHolder<GroupRepository> holder, Exception exception) {
         holder.getRepository().createGroup(backup);
     }
 

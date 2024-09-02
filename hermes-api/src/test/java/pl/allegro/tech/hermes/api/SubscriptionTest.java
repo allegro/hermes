@@ -1,15 +1,18 @@
 package pl.allegro.tech.hermes.api;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Test;
-import pl.allegro.tech.hermes.api.helpers.Patch;
-
 import static org.assertj.core.api.Assertions.assertThat;
+
 import static pl.allegro.tech.hermes.api.PatchData.patchData;
 import static pl.allegro.tech.hermes.api.SubscriptionOAuthPolicy.GrantType.CLIENT_CREDENTIALS;
 import static pl.allegro.tech.hermes.api.SubscriptionOAuthPolicy.GrantType.USERNAME_PASSWORD;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.junit.Test;
+
+import pl.allegro.tech.hermes.api.helpers.Patch;
 
 public class SubscriptionTest {
 
@@ -18,11 +21,12 @@ public class SubscriptionTest {
     @Test
     public void shouldDeserializeSubscription() throws Exception {
         // given
-        String json = "{"
-            + "\"name\": \"test\", "
-            + "\"topicName\": \"g1.t1\", "
-            + "\"endpoint\": \"http://localhost:8888\""
-            + "}";
+        String json =
+                "{"
+                        + "\"name\": \"test\", "
+                        + "\"topicName\": \"g1.t1\", "
+                        + "\"endpoint\": \"http://localhost:8888\""
+                        + "}";
 
         // when
         Subscription subscription = mapper.readValue(json, Subscription.class);
@@ -48,7 +52,8 @@ public class SubscriptionTest {
     @Test
     public void shouldDeserializeSubscriptionWithoutBackoff() throws Exception {
         // given
-        String json = "{\"name\": \"test\", \"endpoint\": \"http://localhost:8888\", \"subscriptionPolicy\": {\"messageTtl\": 100}}";
+        String json =
+                "{\"name\": \"test\", \"endpoint\": \"http://localhost:8888\", \"subscriptionPolicy\": {\"messageTtl\": 100}}";
 
         // when
         Subscription subscription = mapper.readValue(json, Subscription.class);
@@ -60,11 +65,12 @@ public class SubscriptionTest {
     @Test
     public void shouldDeserializeSubscriptionWithDefaultTracking() throws Exception {
         // given
-        String json = "{"
-            + "\"name\": \"test\", "
-            + "\"topicName\": \"g1.t1\", "
-            + "\"endpoint\": \"http://localhost:8888\""
-            + "}";
+        String json =
+                "{"
+                        + "\"name\": \"test\", "
+                        + "\"topicName\": \"g1.t1\", "
+                        + "\"endpoint\": \"http://localhost:8888\""
+                        + "}";
 
         // when
         Subscription subscription = mapper.readValue(json, Subscription.class);
@@ -77,12 +83,13 @@ public class SubscriptionTest {
     @Test
     public void shouldDeserializeSubscriptionWithTrackAllMode() throws Exception {
         // given
-        String json = "{"
-            + "\"name\": \"test\", "
-            + "\"topicName\": \"g1.t1\", "
-            + "\"endpoint\": \"http://localhost:8888\", "
-            + "\"trackingMode\": \"trackingAll\""
-            + "}";
+        String json =
+                "{"
+                        + "\"name\": \"test\", "
+                        + "\"topicName\": \"g1.t1\", "
+                        + "\"endpoint\": \"http://localhost:8888\", "
+                        + "\"trackingMode\": \"trackingAll\""
+                        + "}";
 
         // when
         Subscription subscription = mapper.readValue(json, Subscription.class);
@@ -95,12 +102,13 @@ public class SubscriptionTest {
     @Test
     public void shouldDeserializeSubscriptionWithTrackEnabled() throws Exception {
         // given
-        String json = "{"
-            + "\"name\": \"test\", "
-            + "\"topicName\": \"g1.t1\", "
-            + "\"endpoint\": \"http://localhost:8888\", "
-            + "\"trackingEnabled\": \"true\""
-            + "}";
+        String json =
+                "{"
+                        + "\"name\": \"test\", "
+                        + "\"topicName\": \"g1.t1\", "
+                        + "\"endpoint\": \"http://localhost:8888\", "
+                        + "\"trackingEnabled\": \"true\""
+                        + "}";
 
         // when
         Subscription subscription = mapper.readValue(json, Subscription.class);
@@ -113,13 +121,14 @@ public class SubscriptionTest {
     @Test
     public void shouldDeserializeSubscriptionWithTrackEnabledAndTrackMode() throws Exception {
         // given
-        String json = "{"
-            + "\"name\": \"test\", "
-            + "\"topicName\": \"g1.t1\", "
-            + "\"endpoint\": \"http://localhost:8888\", "
-            + "\"trackingEnabled\": \"true\", "
-            + "\"trackingMode\": \"discardedOnly\""
-            + "}";
+        String json =
+                "{"
+                        + "\"name\": \"test\", "
+                        + "\"topicName\": \"g1.t1\", "
+                        + "\"endpoint\": \"http://localhost:8888\", "
+                        + "\"trackingEnabled\": \"true\", "
+                        + "\"trackingMode\": \"discardedOnly\""
+                        + "}";
 
         // when
         Subscription subscription = mapper.readValue(json, Subscription.class);
@@ -131,41 +140,48 @@ public class SubscriptionTest {
 
     @Test
     public void shouldApplyPatchToSubscriptionPolicy() {
-        //given
+        // given
         PatchData patch = patchData().set("rate", 8).build();
 
-        //when
-        SubscriptionPolicy subscription = subscriptionPolicy()
-                .withRate(1)
-                .applyPatch(patch).build();
+        // when
+        SubscriptionPolicy subscription =
+                subscriptionPolicy().withRate(1).applyPatch(patch).build();
 
-        //then
+        // then
         assertThat(subscription.getRate()).isEqualTo(8);
     }
 
     @Test
     public void shouldAnonymizePassword() {
         // given
-        Subscription subscription = subscription("group.topic", "subscription").withEndpoint("http://user:password@service/path").build();
+        Subscription subscription =
+                subscription("group.topic", "subscription")
+                        .withEndpoint("http://user:password@service/path")
+                        .build();
 
         // when & then
-        assertThat(subscription.anonymize().getEndpoint()).isEqualTo(new EndpointAddress("http://user:*****@service/path"));
+        assertThat(subscription.anonymize().getEndpoint())
+                .isEqualTo(new EndpointAddress("http://user:*****@service/path"));
     }
 
     @Test
     public void shouldApplyPatchChangingSubscriptionOAuthPolicyGrantType() {
         // given
-        Subscription subscription = subscription("group.topic", "subscription")
-                .withOAuthPolicy(new SubscriptionOAuthPolicy(CLIENT_CREDENTIALS, "myProvider", "repo", null, null))
-                .build();
-        PatchData oAuthPolicyPatchData = patchData()
-                .set("grantType", SubscriptionOAuthPolicy.GrantType.USERNAME_PASSWORD.getName())
-                .set("username", "user1")
-                .set("password", "abc123")
-                .build();
-        PatchData patch = patchData()
-                .set("oAuthPolicy", oAuthPolicyPatchData)
-                .build();
+        Subscription subscription =
+                subscription("group.topic", "subscription")
+                        .withOAuthPolicy(
+                                new SubscriptionOAuthPolicy(
+                                        CLIENT_CREDENTIALS, "myProvider", "repo", null, null))
+                        .build();
+        PatchData oAuthPolicyPatchData =
+                patchData()
+                        .set(
+                                "grantType",
+                                SubscriptionOAuthPolicy.GrantType.USERNAME_PASSWORD.getName())
+                        .set("username", "user1")
+                        .set("password", "abc123")
+                        .build();
+        PatchData patch = patchData().set("oAuthPolicy", oAuthPolicyPatchData).build();
 
         // when
         Subscription updated = Patch.apply(subscription, patch);
@@ -179,7 +195,8 @@ public class SubscriptionTest {
     @Test
     public void shouldReadIntBackoffMultiplier() throws Exception {
         // given
-        String json = "{\"name\": \"test\", \"endpoint\": \"http://localhost:8888\", \"subscriptionPolicy\": {\"messageBackoff\": 1000, \"backoffMultiplier\": 3}}";
+        String json =
+                "{\"name\": \"test\", \"endpoint\": \"http://localhost:8888\", \"subscriptionPolicy\": {\"messageBackoff\": 1000, \"backoffMultiplier\": 3}}";
 
         // when
         Subscription subscription = mapper.readValue(json, Subscription.class);

@@ -15,7 +15,10 @@ public class ResolvableEndpointAddress {
 
     private final EndpointAddressResolverMetadata metadata;
 
-    public ResolvableEndpointAddress(EndpointAddress address, EndpointAddressResolver resolver, EndpointAddressResolverMetadata metadata) {
+    public ResolvableEndpointAddress(
+            EndpointAddress address,
+            EndpointAddressResolver resolver,
+            EndpointAddressResolverMetadata metadata) {
         this.address = address;
         this.resolver = resolver;
         this.metadata = metadata;

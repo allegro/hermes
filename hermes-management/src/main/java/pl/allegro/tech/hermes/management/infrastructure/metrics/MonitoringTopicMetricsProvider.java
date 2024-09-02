@@ -6,10 +6,10 @@ import pl.allegro.tech.hermes.api.TopicName;
 public interface MonitoringTopicMetricsProvider {
     MonitoringTopicMetrics topicMetrics(TopicName topicName);
 
-    record MonitoringTopicMetrics(MetricDecimalValue rate,
-                                  MetricDecimalValue deliveryRate,
-                                  MetricDecimalValue throughput) {
-    }
+    record MonitoringTopicMetrics(
+            MetricDecimalValue rate,
+            MetricDecimalValue deliveryRate,
+            MetricDecimalValue throughput) {}
 
     static MetricsBuilder metricsBuilder() {
         return new MetricsBuilder();

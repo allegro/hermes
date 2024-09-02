@@ -9,5 +9,4 @@ public interface MessagePreviewRepository {
     List<MessagePreview> loadPreview(TopicName topicName);
 
     void persist(TopicsMessagesPreview topicsMessagesPreview);
-
 }

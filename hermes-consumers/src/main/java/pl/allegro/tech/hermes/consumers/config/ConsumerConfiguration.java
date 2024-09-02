@@ -4,6 +4,7 @@ import org.apache.curator.framework.CuratorFramework;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
@@ -41,13 +42,13 @@ import java.util.List;
 
 @Configuration
 @EnableConfigurationProperties({
-        CommitOffsetProperties.class,
-        SenderAsyncTimeoutProperties.class,
-        RateProperties.class,
-        BatchProperties.class,
-        KafkaClustersProperties.class,
-        WorkloadProperties.class,
-        MaxRateProperties.class
+    CommitOffsetProperties.class,
+    SenderAsyncTimeoutProperties.class,
+    RateProperties.class,
+    BatchProperties.class,
+    KafkaClustersProperties.class,
+    WorkloadProperties.class,
+    MaxRateProperties.class
 })
 public class ConsumerConfiguration {
 
@@ -67,16 +68,18 @@ public class ConsumerConfiguration {
     }
 
     @Bean
-    public MaxRateRegistry maxRateRegistry(MaxRateProperties maxRateProperties,
-                                           KafkaClustersProperties kafkaClustersProperties,
-                                           WorkloadProperties workloadProperties,
-                                           CuratorFramework curator,
-                                           ZookeeperPaths zookeeperPaths,
-                                           SubscriptionIds subscriptionIds,
-                                           ConsumerAssignmentCache assignmentCache,
-                                           ClusterAssignmentCache clusterAssignmentCache,
-                                           DatacenterNameProvider datacenterNameProvider) {
-        KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
+    public MaxRateRegistry maxRateRegistry(
+            MaxRateProperties maxRateProperties,
+            KafkaClustersProperties kafkaClustersProperties,
+            WorkloadProperties workloadProperties,
+            CuratorFramework curator,
+            ZookeeperPaths zookeeperPaths,
+            SubscriptionIds subscriptionIds,
+            ConsumerAssignmentCache assignmentCache,
+            ClusterAssignmentCache clusterAssignmentCache,
+            DatacenterNameProvider datacenterNameProvider) {
+        KafkaProperties kafkaProperties =
+                kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
         return new MaxRateRegistry(
                 maxRateProperties.getRegistryBinaryEncoder().getHistoryBufferSizeBytes(),
                 maxRateProperties.getRegistryBinaryEncoder().getMaxRateBufferSizeBytes(),
@@ -86,18 +89,18 @@ public class ConsumerConfiguration {
                 assignmentCache,
                 curator,
                 zookeeperPaths,
-                subscriptionIds
-        );
+                subscriptionIds);
     }
 
     @Bean(initMethod = "start", destroyMethod = "stop")
-    public MaxRateSupervisor maxRateSupervisor(MaxRateProperties maxRateProperties,
-                                               ClusterAssignmentCache clusterAssignmentCache,
-                                               MaxRateRegistry maxRateRegistry,
-                                               ConsumerNodesRegistry consumerNodesRegistry,
-                                               SubscriptionsCache subscriptionsCache,
-                                               MetricsFacade metrics,
-                                               Clock clock) {
+    public MaxRateSupervisor maxRateSupervisor(
+            MaxRateProperties maxRateProperties,
+            ClusterAssignmentCache clusterAssignmentCache,
+            MaxRateRegistry maxRateRegistry,
+            ConsumerNodesRegistry consumerNodesRegistry,
+            SubscriptionsCache subscriptionsCache,
+            MetricsFacade metrics,
+            Clock clock) {
         return new MaxRateSupervisor(
                 maxRateProperties,
                 clusterAssignmentCache,
@@ -105,8 +108,7 @@ public class ConsumerConfiguration {
                 consumerNodesRegistry,
                 subscriptionsCache,
                 metrics,
-                clock
-        );
+                clock);
     }
 
     @Bean
@@ -115,11 +117,16 @@ public class ConsumerConfiguration {
     }
 
     @Bean
-    public MaxRateProviderFactory maxRateProviderFactory(MaxRateProperties maxRateProperties,
-                                                         MaxRateRegistry maxRateRegistry,
-                                                         MaxRateSupervisor maxRateSupervisor,
-                                                         WorkloadProperties workloadProperties) {
-        return new MaxRateProviderFactory(maxRateProperties, workloadProperties.getNodeId(), maxRateRegistry, maxRateSupervisor);
+    public MaxRateProviderFactory maxRateProviderFactory(
+            MaxRateProperties maxRateProperties,
+            MaxRateRegistry maxRateRegistry,
+            MaxRateSupervisor maxRateSupervisor,
+            WorkloadProperties workloadProperties) {
+        return new MaxRateProviderFactory(
+                maxRateProperties,
+                workloadProperties.getNodeId(),
+                maxRateRegistry,
+                maxRateSupervisor);
     }
 
     @Bean
@@ -128,38 +135,44 @@ public class ConsumerConfiguration {
     }
 
     @Bean
-    public OutputRateCalculatorFactory outputRateCalculatorFactory(RateProperties rateProperties,
-                                                                   MaxRateProviderFactory maxRateProviderFactory) {
+    public OutputRateCalculatorFactory outputRateCalculatorFactory(
+            RateProperties rateProperties, MaxRateProviderFactory maxRateProviderFactory) {
         return new OutputRateCalculatorFactory(rateProperties, maxRateProviderFactory);
     }
 
     @Bean
-    public MessageBatchFactory messageBatchFactory(MetricsFacade metrics,
-                                                   Clock clock,
-                                                   BatchProperties batchProperties) {
-        return new ByteBufferMessageBatchFactory(batchProperties.getPoolableSize(), batchProperties.getMaxPoolSize(), clock, metrics);
+    public MessageBatchFactory messageBatchFactory(
+            MetricsFacade metrics, Clock clock, BatchProperties batchProperties) {
+        return new ByteBufferMessageBatchFactory(
+                batchProperties.getPoolableSize(),
+                batchProperties.getMaxPoolSize(),
+                clock,
+                metrics);
     }
 
     @Bean
-    public MessageConverterResolver defaultMessageConverterResolver(AvroToJsonMessageConverter avroToJsonMessageConverter,
-                                                                    NoOperationMessageConverter noOperationMessageConverter) {
-        return new DefaultMessageConverterResolver(avroToJsonMessageConverter, noOperationMessageConverter);
+    public MessageConverterResolver defaultMessageConverterResolver(
+            AvroToJsonMessageConverter avroToJsonMessageConverter,
+            NoOperationMessageConverter noOperationMessageConverter) {
+        return new DefaultMessageConverterResolver(
+                avroToJsonMessageConverter, noOperationMessageConverter);
     }
 
-
-
     @Bean
-    public ConsumerMessageSenderFactory consumerMessageSenderFactory(KafkaClustersProperties kafkaClustersProperties,
-                                                                     MessageSenderFactory messageSenderFactory,
-                                                                     Trackers trackers,
-                                                                     FutureAsyncTimeout futureAsyncTimeout,
-                                                                     UndeliveredMessageLog undeliveredMessageLog, Clock clock,
-                                                                     InstrumentedExecutorServiceFactory instrumentedExecutorServiceFactory,
-                                                                     ConsumerAuthorizationHandler consumerAuthorizationHandler,
-                                                                     SenderAsyncTimeoutProperties senderAsyncTimeoutProperties,
-                                                                     RateProperties rateProperties,
-                                                                     DatacenterNameProvider datacenterNameProvider) {
-        KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
+    public ConsumerMessageSenderFactory consumerMessageSenderFactory(
+            KafkaClustersProperties kafkaClustersProperties,
+            MessageSenderFactory messageSenderFactory,
+            Trackers trackers,
+            FutureAsyncTimeout futureAsyncTimeout,
+            UndeliveredMessageLog undeliveredMessageLog,
+            Clock clock,
+            InstrumentedExecutorServiceFactory instrumentedExecutorServiceFactory,
+            ConsumerAuthorizationHandler consumerAuthorizationHandler,
+            SenderAsyncTimeoutProperties senderAsyncTimeoutProperties,
+            RateProperties rateProperties,
+            DatacenterNameProvider datacenterNameProvider) {
+        KafkaProperties kafkaProperties =
+                kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
         return new ConsumerMessageSenderFactory(
                 kafkaProperties.getClusterName(),
                 messageSenderFactory,
@@ -171,8 +184,7 @@ public class ConsumerConfiguration {
                 consumerAuthorizationHandler,
                 senderAsyncTimeoutProperties.getMilliseconds(),
                 rateProperties.getLimiterReportingThreadPoolSize(),
-                rateProperties.isLimiterReportingThreadMonitoringEnabled()
-        );
+                rateProperties.isLimiterReportingThreadMonitoringEnabled());
     }
 
     @Bean

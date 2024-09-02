@@ -1,21 +1,22 @@
 package pl.allegro.tech.hermes.mock;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import groovy.json.JsonOutput;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+
 import pl.allegro.tech.hermes.test.helper.client.integration.FrontendTestClient;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 import pl.allegro.tech.hermes.test.helper.util.Ports;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class HermesMockExtensionTest {
 
     private static final int port = Ports.nextAvailable();
 
-    @RegisterExtension
-    static final HermesMockExtension hermes = new HermesMockExtension(port);
+    @RegisterExtension static final HermesMockExtension hermes = new HermesMockExtension(port);
 
     private FrontendTestClient publisher;
 

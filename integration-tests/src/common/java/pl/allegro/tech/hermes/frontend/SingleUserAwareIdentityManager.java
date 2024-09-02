@@ -4,6 +4,7 @@ import io.undertow.security.idm.Account;
 import io.undertow.security.idm.Credential;
 import io.undertow.security.idm.IdentityManager;
 import io.undertow.security.idm.PasswordCredential;
+
 import pl.allegro.tech.hermes.frontend.server.auth.Roles;
 
 import java.security.Principal;
@@ -61,8 +62,8 @@ public class SingleUserAwareIdentityManager implements IdentityManager {
     private record SomeUserPrincipal(String username) implements Principal {
 
         @Override
-            public String getName() {
-                return username;
-            }
+        public String getName() {
+            return username;
         }
+    }
 }

@@ -1,13 +1,14 @@
 package pl.allegro.tech.hermes.common.metric;
 
+import static pl.allegro.tech.hermes.common.metric.SubscriptionTagsFactory.subscriptionTags;
+
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.search.Search;
+
 import pl.allegro.tech.hermes.api.SubscriptionName;
 
 import java.util.Collection;
-
-import static pl.allegro.tech.hermes.common.metric.SubscriptionTagsFactory.subscriptionTags;
 
 public class MetricsFacade {
 
@@ -114,9 +115,8 @@ public class MetricsFacade {
     }
 
     public void unregisterAllMetricsRelatedTo(SubscriptionName subscription) {
-        Collection<Meter> meters = Search.in(meterRegistry)
-                .tags(subscriptionTags(subscription))
-                .meters();
+        Collection<Meter> meters =
+                Search.in(meterRegistry).tags(subscriptionTags(subscription)).meters();
         for (Meter meter : meters) {
             meterRegistry.remove(meter);
         }

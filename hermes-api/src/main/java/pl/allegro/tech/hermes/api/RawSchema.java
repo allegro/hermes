@@ -1,9 +1,9 @@
 package pl.allegro.tech.hermes.api;
 
-import java.util.Objects;
-
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.emptyToNull;
+
+import java.util.Objects;
 
 public final class RawSchema {
 

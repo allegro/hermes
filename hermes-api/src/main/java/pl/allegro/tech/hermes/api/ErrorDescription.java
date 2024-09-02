@@ -13,7 +13,8 @@ public class ErrorDescription {
     }
 
     @JsonCreator
-    public ErrorDescription(@JsonProperty("message") String message, @JsonProperty("code") ErrorCode code) {
+    public ErrorDescription(
+            @JsonProperty("message") String message, @JsonProperty("code") ErrorCode code) {
         this.message = message;
         this.code = code;
     }

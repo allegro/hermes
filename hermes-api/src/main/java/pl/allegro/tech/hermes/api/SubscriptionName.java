@@ -1,12 +1,12 @@
 package pl.allegro.tech.hermes.api;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Objects;
-
-import static com.google.common.base.Preconditions.checkArgument;
 
 public class SubscriptionName {
 
@@ -14,7 +14,8 @@ public class SubscriptionName {
     private final TopicName topicName;
 
     @JsonCreator
-    public SubscriptionName(@JsonProperty("name") String name, @JsonProperty("topicName") TopicName topicName) {
+    public SubscriptionName(
+            @JsonProperty("name") String name, @JsonProperty("topicName") TopicName topicName) {
         this.name = name;
         this.topicName = topicName;
     }
@@ -34,7 +35,10 @@ public class SubscriptionName {
 
     public static SubscriptionName fromString(String string) {
         String[] tokens = string.split("\\$");
-        checkArgument(tokens.length > 1, "Incorrect string format. Expected 'topic$subscription'. Found:'%s'", string);
+        checkArgument(
+                tokens.length > 1,
+                "Incorrect string format. Expected 'topic$subscription'. Found:'%s'",
+                string);
         return new SubscriptionName(tokens[1], TopicName.fromQualifiedName(tokens[0]));
     }
 
@@ -52,8 +56,7 @@ public class SubscriptionName {
             return false;
         }
         SubscriptionName that = (SubscriptionName) o;
-        return Objects.equals(name, that.name)
-                && Objects.equals(topicName, that.topicName);
+        return Objects.equals(name, that.name) && Objects.equals(topicName, that.topicName);
     }
 
     @Override

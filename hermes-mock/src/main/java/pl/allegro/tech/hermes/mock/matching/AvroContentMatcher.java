@@ -3,7 +3,9 @@ package pl.allegro.tech.hermes.mock.matching;
 import com.github.tomakehurst.wiremock.http.Request;
 import com.github.tomakehurst.wiremock.matching.MatchResult;
 import com.github.tomakehurst.wiremock.matching.ValueMatcher;
+
 import org.apache.avro.Schema;
+
 import pl.allegro.tech.hermes.mock.HermesMockException;
 import pl.allegro.tech.hermes.mock.HermesMockHelper;
 
@@ -16,7 +18,11 @@ class AvroContentMatcher<T> implements ValueMatcher<Request> {
     private final Class<T> clazz;
     private final HermesMockHelper hermesMockHelper;
 
-    AvroContentMatcher(HermesMockHelper hermesMockHelper, Predicate<T> predicate, Schema schema, Class<T> clazz) {
+    AvroContentMatcher(
+            HermesMockHelper hermesMockHelper,
+            Predicate<T> predicate,
+            Schema schema,
+            Class<T> clazz) {
         this.hermesMockHelper = hermesMockHelper;
         this.predicate = predicate;
         this.schema = schema;

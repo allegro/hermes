@@ -4,11 +4,14 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import jakarta.annotation.PreDestroy;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
 import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
@@ -29,17 +32,20 @@ public class TopicOwnerCache {
     private final GroupService groupService;
     private final ScheduledExecutorService scheduledExecutorService;
 
-    private Multimap<OwnerId, TopicName> cache = Multimaps.synchronizedMultimap(ArrayListMultimap.create());
+    private Multimap<OwnerId, TopicName> cache =
+            Multimaps.synchronizedMultimap(ArrayListMultimap.create());
 
-    public TopicOwnerCache(TopicRepository topicRepository, GroupService groupService,
-                           @Value("${topicOwnerCache.refreshRateInSeconds}") int refreshRateInSeconds) {
+    public TopicOwnerCache(
+            TopicRepository topicRepository,
+            GroupService groupService,
+            @Value("${topicOwnerCache.refreshRateInSeconds}") int refreshRateInSeconds) {
         this.topicRepository = topicRepository;
         this.groupService = groupService;
-        scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(
-                new ThreadFactoryBuilder()
-                        .setNameFormat("topic-owner-cache-%d")
-                        .build());
-        scheduledExecutorService.scheduleAtFixedRate(this::refillCache, 0, refreshRateInSeconds, TimeUnit.SECONDS);
+        scheduledExecutorService =
+                Executors.newSingleThreadScheduledExecutor(
+                        new ThreadFactoryBuilder().setNameFormat("topic-owner-cache-%d").build());
+        scheduledExecutorService.scheduleAtFixedRate(
+                this::refillCache, 0, refreshRateInSeconds, TimeUnit.SECONDS);
     }
 
     @PreDestroy

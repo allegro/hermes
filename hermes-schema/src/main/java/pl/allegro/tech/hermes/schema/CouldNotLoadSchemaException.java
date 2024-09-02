@@ -10,7 +10,11 @@ public class CouldNotLoadSchemaException extends SchemaException {
     }
 
     CouldNotLoadSchemaException(Topic topic, SchemaVersion version, Throwable cause) {
-        super(String.format("Schema for topic %s at version %d could not be loaded", topic.getQualifiedName(), version.value()), cause);
+        super(
+                String.format(
+                        "Schema for topic %s at version %d could not be loaded",
+                        topic.getQualifiedName(), version.value()),
+                cause);
     }
 
     @Override

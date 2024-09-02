@@ -1,7 +1,11 @@
 package pl.allegro.tech.hermes.consumers.consumer.result;
 
+import static pl.allegro.tech.hermes.api.SentMessageTrace.Builder.undeliveredMessage;
+import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
@@ -15,9 +19,6 @@ import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 import java.time.Clock;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static pl.allegro.tech.hermes.api.SentMessageTrace.Builder.undeliveredMessage;
-import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
 
 public class DefaultErrorHandler implements ErrorHandler {
 
@@ -37,13 +38,13 @@ public class DefaultErrorHandler implements ErrorHandler {
     private final HermesCounter throughputInBytes;
     private final Map<Integer, HermesCounter> httpStatusCodes = new ConcurrentHashMap<>();
 
-
-    public DefaultErrorHandler(MetricsFacade metrics,
-                               UndeliveredMessageLog undeliveredMessageLog,
-                               Clock clock,
-                               Trackers trackers,
-                               String cluster,
-                               SubscriptionName subscriptionName) {
+    public DefaultErrorHandler(
+            MetricsFacade metrics,
+            UndeliveredMessageLog undeliveredMessageLog,
+            Clock clock,
+            Trackers trackers,
+            String cluster,
+            SubscriptionName subscriptionName) {
         this.metrics = metrics;
         this.undeliveredMessageLog = undeliveredMessageLog;
         this.clock = clock;
@@ -59,7 +60,8 @@ public class DefaultErrorHandler implements ErrorHandler {
     }
 
     @Override
-    public void handleDiscarded(Message message, Subscription subscription, MessageSendingResult result) {
+    public void handleDiscarded(
+            Message message, Subscription subscription, MessageSendingResult result) {
         logResult(message, subscription, result);
 
         discarded.increment();
@@ -67,39 +69,50 @@ public class DefaultErrorHandler implements ErrorHandler {
 
         addToMessageLog(message, subscription, result);
 
-        trackers.get(subscription).logDiscarded(toMessageMetadata(message, subscription), result.getRootCause());
+        trackers.get(subscription)
+                .logDiscarded(toMessageMetadata(message, subscription), result.getRootCause());
     }
 
-    private void addToMessageLog(Message message, Subscription subscription, MessageSendingResult result) {
-        result.getLogInfo().forEach(logInfo -> undeliveredMessageLog.add(
-                undeliveredMessage()
-                        .withSubscription(subscription.getName())
-                        .withTopicName(subscription.getQualifiedTopicName())
-                        .withMessage(new String(message.getData()))
-                        .withReason(logInfo.getFailure().getMessage())
-                        .withTimestamp(clock.millis())
-                        .withPartition(message.getPartition())
-                        .withOffset(message.getOffset())
-                        .withCluster(cluster)
-                        .build()
-        ));
+    private void addToMessageLog(
+            Message message, Subscription subscription, MessageSendingResult result) {
+        result.getLogInfo()
+                .forEach(
+                        logInfo ->
+                                undeliveredMessageLog.add(
+                                        undeliveredMessage()
+                                                .withSubscription(subscription.getName())
+                                                .withTopicName(subscription.getQualifiedTopicName())
+                                                .withMessage(new String(message.getData()))
+                                                .withReason(logInfo.getFailure().getMessage())
+                                                .withTimestamp(clock.millis())
+                                                .withPartition(message.getPartition())
+                                                .withOffset(message.getOffset())
+                                                .withCluster(cluster)
+                                                .build()));
     }
 
-    private void logResult(Message message, Subscription subscription, MessageSendingResult result) {
+    private void logResult(
+            Message message, Subscription subscription, MessageSendingResult result) {
         if (result.isLoggable()) {
-            result.getLogInfo().forEach(logInfo ->
-                    logger.warn(
-                            "Abnormal delivery failure: "
-                                    + "subscription: {}; cause: {}; endpoint: {}; messageId: {}; partition: {}; offset: {}",
-                            subscription.getQualifiedName(), logInfo.getRootCause(), logInfo.getUrlString(), message.getId(),
-                            message.getPartition(), message.getOffset(), logInfo.getFailure()
-                    )
-            );
+            result.getLogInfo()
+                    .forEach(
+                            logInfo ->
+                                    logger.warn(
+                                            "Abnormal delivery failure: "
+                                                    + "subscription: {}; cause: {}; endpoint: {}; messageId: {}; partition: {}; offset: {}",
+                                            subscription.getQualifiedName(),
+                                            logInfo.getRootCause(),
+                                            logInfo.getUrlString(),
+                                            message.getId(),
+                                            message.getPartition(),
+                                            message.getOffset(),
+                                            logInfo.getFailure()));
         }
     }
 
     @Override
-    public void handleFailed(Message message, Subscription subscription, MessageSendingResult result) {
+    public void handleFailed(
+            Message message, Subscription subscription, MessageSendingResult result) {
         failures.increment();
         if (result.hasHttpAnswer()) {
             markHttpStatusCode(result.getStatusCode());
@@ -109,13 +122,20 @@ public class DefaultErrorHandler implements ErrorHandler {
             otherErrors.increment();
         }
         throughputInBytes.increment(message.getSize());
-        trackers.get(subscription).logFailed(toMessageMetadata(message, subscription), result.getRootCause(), result.getHostname());
+        trackers.get(subscription)
+                .logFailed(
+                        toMessageMetadata(message, subscription),
+                        result.getRootCause(),
+                        result.getHostname());
     }
 
     private void markHttpStatusCode(int statusCode) {
-        httpStatusCodes.computeIfAbsent(
-                statusCode,
-                integer -> metrics.subscriptions().httpAnswerCounter(subscriptionName, statusCode)
-        ).increment();
+        httpStatusCodes
+                .computeIfAbsent(
+                        statusCode,
+                        integer ->
+                                metrics.subscriptions()
+                                        .httpAnswerCounter(subscriptionName, statusCode))
+                .increment();
     }
 }

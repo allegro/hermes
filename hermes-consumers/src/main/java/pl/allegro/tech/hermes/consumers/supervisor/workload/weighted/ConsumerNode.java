@@ -1,11 +1,11 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload.weighted;
 
+import static java.util.Comparator.comparing;
+
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-
-import static java.util.Comparator.comparing;
 
 class ConsumerNode {
 

@@ -1,14 +1,14 @@
 package pl.allegro.tech.hermes.consumers.consumer.rate;
 
+import static org.apache.commons.lang3.math.Fraction.getFraction;
+
 import com.google.common.util.concurrent.AtomicDouble;
+
 import org.apache.commons.lang3.math.Fraction;
 
 import java.time.Clock;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.apache.commons.lang3.math.Fraction.getFraction;
-
 
 public class SendCounters {
 
@@ -73,7 +73,8 @@ public class SendCounters {
 
     public boolean failuresRatioExceeds(double threshold) {
         if (hasFailures()) {
-            Fraction failuresRatio = getFraction(failures.intValue(), failures.intValue() + successes.intValue());
+            Fraction failuresRatio =
+                    getFraction(failures.intValue(), failures.intValue() + successes.intValue());
             return failuresRatio.compareTo(getFraction(threshold)) > 0;
         }
         return false;
@@ -82,5 +83,4 @@ public class SendCounters {
     public double getRate() {
         return rate.get();
     }
-
 }

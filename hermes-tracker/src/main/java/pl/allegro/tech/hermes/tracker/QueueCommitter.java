@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.tracker;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.metrics.HermesTimer;
 import pl.allegro.tech.hermes.metrics.HermesTimerContext;
 
@@ -40,6 +41,6 @@ public abstract class QueueCommitter<T> implements Runnable {
         processBatch(batch);
     }
 
-    protected abstract void processBatch(List<T> batch) throws ExecutionException, InterruptedException;
-
+    protected abstract void processBatch(List<T> batch)
+            throws ExecutionException, InterruptedException;
 }

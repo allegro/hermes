@@ -1,8 +1,12 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
@@ -25,9 +29,11 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-
-public class WorkloadSupervisor implements SubscriptionCallback, TopicCallback, SubscriptionAssignmentAware, AdminOperationsCallback {
+public class WorkloadSupervisor
+        implements SubscriptionCallback,
+                TopicCallback,
+                SubscriptionAssignmentAware,
+                AdminOperationsCallback {
 
     private static final Logger logger = LoggerFactory.getLogger(WorkloadSupervisor.class);
 
@@ -42,21 +48,22 @@ public class WorkloadSupervisor implements SubscriptionCallback, TopicCallback, 
     private final ExecutorService assignmentExecutor;
     private final ScheduledExecutorService rebalanceScheduler;
 
-    public WorkloadSupervisor(ConsumersSupervisor supervisor,
-                              InternalNotificationsBus notificationsBus,
-                              SubscriptionsCache subscriptionsCache,
-                              ConsumerAssignmentCache assignmentCache,
-                              ConsumerAssignmentRegistry consumerAssignmentRegistry,
-                              ClusterAssignmentCache clusterAssignmentCache,
-                              ConsumerNodesRegistry consumersRegistry,
-                              ZookeeperAdminCache adminCache,
-                              ExecutorService assignmentExecutor,
-                              WorkBalancingParameters workBalancingParameters,
-                              String kafkaClusterName,
-                              MetricsFacade metrics,
-                              WorkloadConstraintsRepository workloadConstraintsRepository,
-                              WorkBalancer workBalancer,
-                              BalancingListener balancingListener) {
+    public WorkloadSupervisor(
+            ConsumersSupervisor supervisor,
+            InternalNotificationsBus notificationsBus,
+            SubscriptionsCache subscriptionsCache,
+            ConsumerAssignmentCache assignmentCache,
+            ConsumerAssignmentRegistry consumerAssignmentRegistry,
+            ClusterAssignmentCache clusterAssignmentCache,
+            ConsumerNodesRegistry consumersRegistry,
+            ZookeeperAdminCache adminCache,
+            ExecutorService assignmentExecutor,
+            WorkBalancingParameters workBalancingParameters,
+            String kafkaClusterName,
+            MetricsFacade metrics,
+            WorkloadConstraintsRepository workloadConstraintsRepository,
+            WorkBalancer workBalancer,
+            BalancingListener balancingListener) {
         this.supervisor = supervisor;
         this.notificationsBus = notificationsBus;
         this.subscriptionsCache = subscriptionsCache;
@@ -65,20 +72,20 @@ public class WorkloadSupervisor implements SubscriptionCallback, TopicCallback, 
         this.adminCache = adminCache;
         this.assignmentExecutor = assignmentExecutor;
         this.workBalancingParameters = workBalancingParameters;
-        this.balancingJob = new BalancingJob(
-                consumersRegistry,
-                workBalancingParameters,
-                subscriptionsCache,
-                clusterAssignmentCache,
-                consumerAssignmentRegistry,
-                workBalancer,
-                metrics,
-                kafkaClusterName,
-                workloadConstraintsRepository,
-                balancingListener
-        );
-        ThreadFactory threadFactory = new ThreadFactoryBuilder()
-                .setNameFormat("balancing-executor-%d").build();
+        this.balancingJob =
+                new BalancingJob(
+                        consumersRegistry,
+                        workBalancingParameters,
+                        subscriptionsCache,
+                        clusterAssignmentCache,
+                        consumerAssignmentRegistry,
+                        workBalancer,
+                        metrics,
+                        kafkaClusterName,
+                        workloadConstraintsRepository,
+                        balancingListener);
+        ThreadFactory threadFactory =
+                new ThreadFactoryBuilder().setNameFormat("balancing-executor-%d").build();
         this.rebalanceScheduler = Executors.newSingleThreadScheduledExecutor(threadFactory);
     }
 
@@ -86,21 +93,26 @@ public class WorkloadSupervisor implements SubscriptionCallback, TopicCallback, 
     public void onSubscriptionAssigned(SubscriptionName subscriptionName) {
         Subscription subscription = subscriptionsCache.getSubscription(subscriptionName);
         logger.info("Scheduling assignment consumer for {}", subscription.getQualifiedName());
-        assignmentExecutor.execute(() -> {
-            logger.info("Assigning consumer for {}", subscription.getQualifiedName());
-            supervisor.assignConsumerForSubscription(subscription);
-            logger.info("Consumer assigned for {}", subscription.getQualifiedName());
-        });
+        assignmentExecutor.execute(
+                () -> {
+                    logger.info("Assigning consumer for {}", subscription.getQualifiedName());
+                    supervisor.assignConsumerForSubscription(subscription);
+                    logger.info("Consumer assigned for {}", subscription.getQualifiedName());
+                });
     }
 
     @Override
     public void onAssignmentRemoved(SubscriptionName subscription) {
-        logger.info("Scheduling assignment removal consumer for {}", subscription.getQualifiedName());
-        assignmentExecutor.execute(() -> {
-            logger.info("Removing assignment from consumer for {}", subscription.getQualifiedName());
-            supervisor.deleteConsumerForSubscriptionName(subscription);
-            logger.info("Consumer removed for {}", subscription.getName());
-        });
+        logger.info(
+                "Scheduling assignment removal consumer for {}", subscription.getQualifiedName());
+        assignmentExecutor.execute(
+                () -> {
+                    logger.info(
+                            "Removing assignment from consumer for {}",
+                            subscription.getQualifiedName());
+                    supervisor.deleteConsumerForSubscriptionName(subscription);
+                    logger.info("Consumer removed for {}", subscription.getName());
+                });
     }
 
     @Override
@@ -136,8 +148,7 @@ public class WorkloadSupervisor implements SubscriptionCallback, TopicCallback, 
                     balancingJob,
                     workBalancingParameters.getRebalanceInterval().toMillis(),
                     workBalancingParameters.getRebalanceInterval().toMillis(),
-                    MILLISECONDS
-            );
+                    MILLISECONDS);
         } else {
             logger.info("Automatic workload rebalancing is disabled.");
         }

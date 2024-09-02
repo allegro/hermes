@@ -21,7 +21,8 @@ public class HermesClientBuilder {
     private Predicate<HermesResponse> retryCondition = new HermesClientBasicRetryCondition();
     private long retrySleepInMillis = 100;
     private long maxRetrySleepInMillis = 300;
-    private Supplier<ScheduledExecutorService> schedulerFactory = Executors::newSingleThreadScheduledExecutor;
+    private Supplier<ScheduledExecutorService> schedulerFactory =
+            Executors::newSingleThreadScheduledExecutor;
     private Optional<MetricsProvider> metrics = Optional.empty();
 
     public HermesClientBuilder(HermesSender sender) {
@@ -34,12 +35,22 @@ public class HermesClientBuilder {
     }
 
     public HermesClient build() {
-        HermesClient hermesClient = new HermesClient(sender, uri, defaultHeaders, retries, retryCondition,
-                retrySleepInMillis, maxRetrySleepInMillis, schedulerFactory.get());
+        HermesClient hermesClient =
+                new HermesClient(
+                        sender,
+                        uri,
+                        defaultHeaders,
+                        retries,
+                        retryCondition,
+                        retrySleepInMillis,
+                        maxRetrySleepInMillis,
+                        schedulerFactory.get());
 
-        metrics.ifPresent((metricsProvider) -> {
-            hermesClient.addMessageDeliveryListener(new MetricsMessageDeliveryListener(metricsProvider));
-        });
+        metrics.ifPresent(
+                (metricsProvider) -> {
+                    hermesClient.addMessageDeliveryListener(
+                            new MetricsMessageDeliveryListener(metricsProvider));
+                });
 
         return hermesClient;
     }

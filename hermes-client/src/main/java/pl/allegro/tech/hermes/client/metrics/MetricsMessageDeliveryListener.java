@@ -1,13 +1,13 @@
 package pl.allegro.tech.hermes.client.metrics;
 
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
+
 import pl.allegro.tech.hermes.client.HermesMessage;
 import pl.allegro.tech.hermes.client.HermesResponse;
 import pl.allegro.tech.hermes.client.MessageDeliveryListener;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 public class MetricsMessageDeliveryListener implements MessageDeliveryListener {
     private final MetricsProvider metrics;
@@ -47,7 +47,7 @@ public class MetricsMessageDeliveryListener implements MessageDeliveryListener {
     @Override
     public void onSuccessfulRetry(HermesResponse response, int attemptCount) {
         String topic = MetricsUtils.sanitizeTopic(response.getHermesMessage().getTopic());
-        metrics.counterIncrement(topic,  "retries.success");
+        metrics.counterIncrement(topic, "retries.success");
         metrics.histogramUpdate(topic, "retries.attempts", attemptCount - 1);
 
         boolean wasRetried = attemptCount > 1;

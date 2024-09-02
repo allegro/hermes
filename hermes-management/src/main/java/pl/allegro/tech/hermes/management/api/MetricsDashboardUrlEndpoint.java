@@ -1,21 +1,23 @@
 package pl.allegro.tech.hermes.management.api;
 
+import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
+
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Response;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+
 import pl.allegro.tech.hermes.api.ErrorCode;
 import pl.allegro.tech.hermes.management.domain.ManagementException;
 import pl.allegro.tech.hermes.management.domain.MetricsDashboardUrl;
 import pl.allegro.tech.hermes.management.domain.MetricsDashboardUrlService;
 
 import java.util.Optional;
-
-import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 
 @Component
 @Path("/dashboards")
@@ -37,16 +39,26 @@ public class MetricsDashboardUrlEndpoint {
     @Produces(APPLICATION_JSON)
     public Response fetchUrlForTopic(@PathParam("topic") String topic) {
         return metricsDashboardUrlService
-                .map(service -> Response.ok(new MetricsDashboardUrl(service.getUrlForTopic(topic))).build())
+                .map(
+                        service ->
+                                Response.ok(new MetricsDashboardUrl(service.getUrlForTopic(topic)))
+                                        .build())
                 .orElseThrow(MetricsDashboardUrlEndpoint.MetricsDashboardUrlAbsentException::new);
     }
 
     @GET
     @Path("/topics/{topic}/subscriptions/{subscription}")
     @Produces(APPLICATION_JSON)
-    public Response fetchUrlForSubscription(@PathParam("topic") String topic, @PathParam("subscription") String subscription) {
+    public Response fetchUrlForSubscription(
+            @PathParam("topic") String topic, @PathParam("subscription") String subscription) {
         return metricsDashboardUrlService
-                .map(service -> Response.ok(new MetricsDashboardUrl(service.getUrlForSubscription(topic, subscription))).build())
+                .map(
+                        service ->
+                                Response.ok(
+                                                new MetricsDashboardUrl(
+                                                        service.getUrlForSubscription(
+                                                                topic, subscription)))
+                                        .build())
                 .orElseThrow(MetricsDashboardUrlEndpoint.MetricsDashboardUrlAbsentException::new);
     }
 

@@ -1,9 +1,11 @@
 package pl.allegro.tech.hermes.management.infrastructure.blacklist;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.apache.curator.framework.CuratorFramework;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperBasedRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.management.domain.blacklist.NotUnblacklistedException;
@@ -11,11 +13,14 @@ import pl.allegro.tech.hermes.management.domain.blacklist.TopicBlacklistReposito
 
 import java.util.List;
 
-public class ZookeeperTopicBlacklistRepository extends ZookeeperBasedRepository implements TopicBlacklistRepository {
+public class ZookeeperTopicBlacklistRepository extends ZookeeperBasedRepository
+        implements TopicBlacklistRepository {
 
-    private static final Logger logger = LoggerFactory.getLogger(ZookeeperTopicBlacklistRepository.class);
+    private static final Logger logger =
+            LoggerFactory.getLogger(ZookeeperTopicBlacklistRepository.class);
 
-    public ZookeeperTopicBlacklistRepository(CuratorFramework zookeeper, ObjectMapper mapper, ZookeeperPaths paths) {
+    public ZookeeperTopicBlacklistRepository(
+            CuratorFramework zookeeper, ObjectMapper mapper, ZookeeperPaths paths) {
         super(zookeeper, mapper, paths);
     }
 
@@ -31,7 +36,8 @@ public class ZookeeperTopicBlacklistRepository extends ZookeeperBasedRepository 
         try {
             super.remove(paths.blacklistedTopicPath(qualifiedTopicName));
         } catch (Exception e) {
-            logger.warn("Removing topic {} from Blacklist caused an exception", qualifiedTopicName, e);
+            logger.warn(
+                    "Removing topic {} from Blacklist caused an exception", qualifiedTopicName, e);
             throw new NotUnblacklistedException(qualifiedTopicName, e);
         }
     }

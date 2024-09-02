@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.rate;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,12 +17,17 @@ public class ConsumerRateLimitSupervisor implements Runnable {
 
     private static final Logger logger = LoggerFactory.getLogger(ConsumerRateLimitSupervisor.class);
 
-    private final Set<ConsumerRateLimiter> consumerRateLimiters = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    private final Set<ConsumerRateLimiter> consumerRateLimiters =
+            Collections.newSetFromMap(new ConcurrentHashMap<>());
 
     public ConsumerRateLimitSupervisor(Duration rateLimiterSupervisorPeriod) {
-        ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("rate-limit-supervisor-%d").build();
+        ThreadFactory threadFactory =
+                new ThreadFactoryBuilder().setNameFormat("rate-limit-supervisor-%d").build();
         Executors.newSingleThreadScheduledExecutor(threadFactory)
-                .scheduleAtFixedRate(this, rateLimiterSupervisorPeriod.toSeconds(), rateLimiterSupervisorPeriod.toSeconds(),
+                .scheduleAtFixedRate(
+                        this,
+                        rateLimiterSupervisorPeriod.toSeconds(),
+                        rateLimiterSupervisorPeriod.toSeconds(),
                         TimeUnit.SECONDS);
     }
 

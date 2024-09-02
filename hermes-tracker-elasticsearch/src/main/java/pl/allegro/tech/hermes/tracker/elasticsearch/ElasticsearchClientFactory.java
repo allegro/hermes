@@ -14,8 +14,9 @@ public class ElasticsearchClientFactory {
     private final TransportClient client;
 
     public ElasticsearchClientFactory(int port, String clusterName, String... hosts) {
-        client = new PreBuiltTransportClient(
-                Settings.builder().put("cluster.name", clusterName).build());
+        client =
+                new PreBuiltTransportClient(
+                        Settings.builder().put("cluster.name", clusterName).build());
 
         for (String host : hosts) {
             try {

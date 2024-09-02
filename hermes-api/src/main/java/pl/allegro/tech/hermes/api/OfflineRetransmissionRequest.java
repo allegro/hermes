@@ -3,10 +3,13 @@ package pl.allegro.tech.hermes.api;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.api.constraints.OneSourceRetransmission;
 import pl.allegro.tech.hermes.api.jackson.InstantIsoSerializer;
 
@@ -20,21 +23,21 @@ import java.util.Optional;
 @OneSourceRetransmission
 public class OfflineRetransmissionRequest {
 
-    private static final List<DateTimeFormatter> formatters = List.of(
-            DateTimeFormatter.ISO_INSTANT,
-            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZone(ZoneId.of("UTC")),
-            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm'Z'").withZone(ZoneId.of("UTC"))
-    );
-    private static final Logger logger = LoggerFactory.getLogger(OfflineRetransmissionRequest.class);
+    private static final List<DateTimeFormatter> formatters =
+            List.of(
+                    DateTimeFormatter.ISO_INSTANT,
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
+                            .withZone(ZoneId.of("UTC")),
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm'Z'")
+                            .withZone(ZoneId.of("UTC")));
+    private static final Logger logger =
+            LoggerFactory.getLogger(OfflineRetransmissionRequest.class);
 
     private final String sourceViewPath;
     private final String sourceTopic;
-    @NotEmpty
-    private final String targetTopic;
-    @NotNull
-    private Instant startTimestamp;
-    @NotNull
-    private Instant endTimestamp;
+    @NotEmpty private final String targetTopic;
+    @NotNull private Instant startTimestamp;
+    @NotNull private Instant endTimestamp;
 
     @JsonCreator
     public OfflineRetransmissionRequest(
@@ -92,11 +95,19 @@ public class OfflineRetransmissionRequest {
     @Override
     public String toString() {
         return "OfflineRetransmissionRequest{"
-                + "sourceTopic='" + sourceTopic + '\''
-                + ", sourceViewPath='" + sourceViewPath + '\''
-                + ", targetTopic='" + targetTopic + '\''
-                + ", startTimestamp=" + startTimestamp
-                + ", endTimestamp=" + endTimestamp
+                + "sourceTopic='"
+                + sourceTopic
+                + '\''
+                + ", sourceViewPath='"
+                + sourceViewPath
+                + '\''
+                + ", targetTopic='"
+                + targetTopic
+                + '\''
+                + ", startTimestamp="
+                + startTimestamp
+                + ", endTimestamp="
+                + endTimestamp
                 + '}';
     }
 }

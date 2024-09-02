@@ -11,7 +11,8 @@ class ConsumerNodeLoad {
     private final double cpuUtilization;
     private final Map<SubscriptionName, SubscriptionLoad> loadPerSubscription;
 
-    ConsumerNodeLoad(double cpuUtilization, Map<SubscriptionName, SubscriptionLoad> loadPerSubscription) {
+    ConsumerNodeLoad(
+            double cpuUtilization, Map<SubscriptionName, SubscriptionLoad> loadPerSubscription) {
         this.cpuUtilization = cpuUtilization;
         this.loadPerSubscription = loadPerSubscription;
     }

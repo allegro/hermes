@@ -6,7 +6,9 @@ import pl.allegro.tech.hermes.common.exception.HermesException;
 
 public class TopicConstraintsAlreadyExistException extends HermesException {
     public TopicConstraintsAlreadyExistException(TopicName topicName, Throwable cause) {
-        super(String.format("Constraints for topic %s already exist.", topicName.qualifiedName()), cause);
+        super(
+                String.format("Constraints for topic %s already exist.", topicName.qualifiedName()),
+                cause);
     }
 
     @Override

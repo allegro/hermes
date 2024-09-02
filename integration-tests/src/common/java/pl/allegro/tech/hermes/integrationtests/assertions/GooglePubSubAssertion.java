@@ -1,9 +1,10 @@
 package pl.allegro.tech.hermes.integrationtests.assertions;
 
-import com.google.pubsub.v1.PubsubMessage;
-import org.assertj.core.api.AbstractAssert;
-
 import static org.assertj.core.api.Assertions.assertThat;
+
+import com.google.pubsub.v1.PubsubMessage;
+
+import org.assertj.core.api.AbstractAssert;
 
 public class GooglePubSubAssertion extends AbstractAssert<GooglePubSubAssertion, PubsubMessage> {
 

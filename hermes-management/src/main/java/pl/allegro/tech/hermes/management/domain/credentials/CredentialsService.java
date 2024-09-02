@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
 import pl.allegro.tech.hermes.domain.CredentialsRepository;
 import pl.allegro.tech.hermes.domain.NodePassword;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
@@ -20,9 +21,10 @@ public class CredentialsService {
     private final CredentialsRepository credentialsRepository;
 
     @Autowired
-    public CredentialsService(ZookeeperPaths paths,
-                              MultiDatacenterRepositoryCommandExecutor multiDcExecutor,
-                              CredentialsRepository credentialsRepository) {
+    public CredentialsService(
+            ZookeeperPaths paths,
+            MultiDatacenterRepositoryCommandExecutor multiDcExecutor,
+            CredentialsRepository credentialsRepository) {
         this.paths = paths;
         this.multiDcExecutor = multiDcExecutor;
         this.credentialsRepository = credentialsRepository;
@@ -33,6 +35,7 @@ public class CredentialsService {
     }
 
     public void overwriteAdminPassword(String password) {
-        multiDcExecutor.execute(new UpdateCredentialsRepositoryCommand(credentialsRepository, password));
+        multiDcExecutor.execute(
+                new UpdateCredentialsRepositoryCommand(credentialsRepository, password));
     }
 }

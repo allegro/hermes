@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+
 import pl.allegro.tech.hermes.common.kafka.KafkaHeaderNameParameters;
 
 @ConfigurationProperties(prefix = "consumer.kafka.header.name")
@@ -38,5 +39,4 @@ public class KafkaHeaderNameProperties implements KafkaHeaderNameParameters {
     public void setMessageId(String messageId) {
         this.messageId = messageId;
     }
-
 }

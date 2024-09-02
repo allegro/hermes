@@ -1,11 +1,12 @@
 package pl.allegro.tech.hermes.api;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.InjectableValues;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.Test;
 
 public class TopicTest {
 
@@ -29,7 +30,8 @@ public class TopicTest {
     @Test
     public void shouldDeserializeTopic() throws Exception {
         // given
-        String json = "{\"name\":\"foo.bar\", \"description\": \"description\", \"schemaIdAwareSerializationEnabled\": \"false\"}";
+        String json =
+                "{\"name\":\"foo.bar\", \"description\": \"description\", \"schemaIdAwareSerializationEnabled\": \"false\"}";
 
         // when
         Topic topic = objectMapper.readValue(json, Topic.class);
@@ -56,7 +58,8 @@ public class TopicTest {
     @Test
     public void shouldSkippedDeserializedOldSchemaVersionId() throws Exception {
         // given
-        String json = "{\"name\":\"foo.bar\", \"description\": \"description\", \"schemaVersionAwareSerializationEnabled\": false}";
+        String json =
+                "{\"name\":\"foo.bar\", \"description\": \"description\", \"schemaVersionAwareSerializationEnabled\": false}";
 
         // when
         Topic topic = objectMapper.readValue(json, Topic.class);
@@ -86,7 +89,8 @@ public class TopicTest {
     @Test
     public void shouldDeserializeFallbackToRemoteDatacenter() throws Exception {
         // given
-        String json = "{\"name\":\"foo.bar\", \"description\": \"description\", \"fallbackToRemoteDatacenterEnabled\": true}";
+        String json =
+                "{\"name\":\"foo.bar\", \"description\": \"description\", \"fallbackToRemoteDatacenterEnabled\": true}";
 
         // when
         Topic topic = objectMapper.readValue(json, Topic.class);
@@ -98,9 +102,12 @@ public class TopicTest {
     private ObjectMapper createObjectMapper(boolean fallbackToRemoteDatacenterEnabled) {
         ObjectMapper mapper = new ObjectMapper();
 
-        final InjectableValues defaultSchemaIdAwareSerializationEnabled = new InjectableValues
-            .Std().addValue(Topic.DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY, true)
-                .addValue(Topic.DEFAULT_FALLBACK_TO_REMOTE_DATACENTER_KEY, fallbackToRemoteDatacenterEnabled);
+        final InjectableValues defaultSchemaIdAwareSerializationEnabled =
+                new InjectableValues.Std()
+                        .addValue(Topic.DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY, true)
+                        .addValue(
+                                Topic.DEFAULT_FALLBACK_TO_REMOTE_DATACENTER_KEY,
+                                fallbackToRemoteDatacenterEnabled);
 
         mapper.setInjectableValues(defaultSchemaIdAwareSerializationEnabled);
         mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);

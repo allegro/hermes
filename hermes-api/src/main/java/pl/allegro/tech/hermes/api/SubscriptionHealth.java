@@ -1,5 +1,9 @@
 package pl.allegro.tech.hermes.api;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import static java.util.Collections.emptySet;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSet;
@@ -7,19 +11,19 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Objects;
 import java.util.Set;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static java.util.Collections.emptySet;
-
 public final class SubscriptionHealth {
-    public static final SubscriptionHealth HEALTHY = new SubscriptionHealth(Status.HEALTHY, emptySet());
-    public static final SubscriptionHealth NO_DATA = new SubscriptionHealth(Status.NO_DATA, emptySet());
+    public static final SubscriptionHealth HEALTHY =
+            new SubscriptionHealth(Status.HEALTHY, emptySet());
+    public static final SubscriptionHealth NO_DATA =
+            new SubscriptionHealth(Status.NO_DATA, emptySet());
 
     private final Status status;
     private final ImmutableSet<SubscriptionHealthProblem> problems;
 
     @JsonCreator
-    private SubscriptionHealth(@JsonProperty("status") Status status,
-                               @JsonProperty("problems") Set<SubscriptionHealthProblem> problems) {
+    private SubscriptionHealth(
+            @JsonProperty("status") Status status,
+            @JsonProperty("problems") Set<SubscriptionHealthProblem> problems) {
         this.status = status;
         this.problems = ImmutableSet.copyOf(problems);
     }
@@ -41,8 +45,7 @@ public final class SubscriptionHealth {
             return false;
         }
         SubscriptionHealth that = (SubscriptionHealth) o;
-        return status == that.status
-                && Objects.equals(problems, that.problems);
+        return status == that.status && Objects.equals(problems, that.problems);
     }
 
     @Override
@@ -52,10 +55,7 @@ public final class SubscriptionHealth {
 
     @Override
     public String toString() {
-        return "SubscriptionHealth{"
-                + "status=" + status
-                + ", problems=" + problems
-                + '}';
+        return "SubscriptionHealth{" + "status=" + status + ", problems=" + problems + '}';
     }
 
     public static SubscriptionHealth of(Set<SubscriptionHealthProblem> problems) {
@@ -68,6 +68,8 @@ public final class SubscriptionHealth {
     }
 
     public enum Status {
-        HEALTHY, UNHEALTHY, NO_DATA
+        HEALTHY,
+        UNHEALTHY,
+        NO_DATA
     }
 }

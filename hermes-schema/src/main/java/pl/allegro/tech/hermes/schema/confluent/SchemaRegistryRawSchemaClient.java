@@ -1,11 +1,17 @@
 package pl.allegro.tech.hermes.schema.confluent;
 
+import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
+import static jakarta.ws.rs.core.Response.Status.Family.SUCCESSFUL;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.api.RawSchema;
 import pl.allegro.tech.hermes.api.RawSchemaWithMetadata;
 import pl.allegro.tech.hermes.api.TopicName;
@@ -25,16 +31,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static jakarta.ws.rs.core.Response.Status.BAD_REQUEST;
-import static jakarta.ws.rs.core.Response.Status.Family.SUCCESSFUL;
-
 /**
- * This implementation of RawSchemaClient is compatible with Confluent Schema Registry API
- * except for the deleteAllSchemaVersions and validation endpoint which are not fully supported by the Confluent project.
+ * This implementation of RawSchemaClient is compatible with Confluent Schema Registry API except
+ * for the deleteAllSchemaVersions and validation endpoint which are not fully supported by the
+ * Confluent project.
  */
 public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
 
-    private static final Logger logger = LoggerFactory.getLogger(SchemaRegistryRawSchemaClient.class);
+    private static final Logger logger =
+            LoggerFactory.getLogger(SchemaRegistryRawSchemaClient.class);
 
     private static final String SCHEMA_REPO_CONTENT_TYPE = "application/vnd.schemaregistry.v1+json";
 
@@ -45,17 +50,24 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
     private final String deleteSchemaPathSuffix;
     private final SubjectNamingStrategy subjectNamingStrategy;
 
-    public SchemaRegistryRawSchemaClient(SchemaRepositoryInstanceResolver schemaRepositoryInstanceResolver,
-                                         ObjectMapper objectMapper,
-                                         SubjectNamingStrategy subjectNamingStrategy) {
-        this(schemaRepositoryInstanceResolver, objectMapper, false, "versions", subjectNamingStrategy);
+    public SchemaRegistryRawSchemaClient(
+            SchemaRepositoryInstanceResolver schemaRepositoryInstanceResolver,
+            ObjectMapper objectMapper,
+            SubjectNamingStrategy subjectNamingStrategy) {
+        this(
+                schemaRepositoryInstanceResolver,
+                objectMapper,
+                false,
+                "versions",
+                subjectNamingStrategy);
     }
 
-    public SchemaRegistryRawSchemaClient(SchemaRepositoryInstanceResolver schemaRepositoryInstanceResolver,
-                                         ObjectMapper objectMapper,
-                                         boolean validationEndpointEnabled,
-                                         String deleteSchemaPathSuffix,
-                                         SubjectNamingStrategy subjectNamingStrategy) {
+    public SchemaRegistryRawSchemaClient(
+            SchemaRepositoryInstanceResolver schemaRepositoryInstanceResolver,
+            ObjectMapper objectMapper,
+            boolean validationEndpointEnabled,
+            String deleteSchemaPathSuffix,
+            SubjectNamingStrategy subjectNamingStrategy) {
         this.schemaRepositoryInstanceResolver = schemaRepositoryInstanceResolver;
         this.validationEndpointEnabled = validationEndpointEnabled;
         this.deleteSchemaPathSuffix = deleteSchemaPathSuffix;
@@ -64,7 +76,8 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
     }
 
     @Override
-    public Optional<RawSchemaWithMetadata> getRawSchemaWithMetadata(TopicName topic, SchemaVersion schemaVersion) {
+    public Optional<RawSchemaWithMetadata> getRawSchemaWithMetadata(
+            TopicName topic, SchemaVersion schemaVersion) {
         String version = Integer.toString(schemaVersion.value());
         String subject = subjectNamingStrategy.apply(topic);
         Response response = getRawSchemaWithMetadataResponse(subject, version);
@@ -72,12 +85,12 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
     }
 
     @Override
-    public Optional<RawSchemaWithMetadata> getRawSchemaWithMetadata(TopicName topic, SchemaId schemaId) {
+    public Optional<RawSchemaWithMetadata> getRawSchemaWithMetadata(
+            TopicName topic, SchemaId schemaId) {
         String subject = subjectNamingStrategy.apply(topic);
         Optional<RawSchema> schema = getRawSchema(subject, schemaId);
 
-        return schema
-                .map(sc -> getRawSchemaWithMetadataResponse(subject, sc))
+        return schema.map(sc -> getRawSchemaWithMetadataResponse(subject, sc))
                 .map(response -> extractRawSchemaWithMetadata(subject, schemaId, response))
                 .map(Optional::get);
     }
@@ -91,7 +104,8 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
     }
 
     private Response getRawSchemaWithMetadataResponse(String subject, String version) {
-        return schemaRepositoryInstanceResolver.resolve(subject)
+        return schemaRepositoryInstanceResolver
+                .resolve(subject)
                 .path("subjects")
                 .path(subject)
                 .path("versions")
@@ -101,58 +115,78 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
     }
 
     private Response getRawSchemaWithMetadataResponse(String subject, RawSchema schema) {
-        return schemaRepositoryInstanceResolver.resolve(subject)
+        return schemaRepositoryInstanceResolver
+                .resolve(subject)
                 .path("subjects")
                 .path(subject)
                 .request()
                 .accept(MediaType.APPLICATION_JSON_TYPE)
-                .post(Entity.entity(SchemaRegistryRequestResponse.fromRawSchema(schema), SCHEMA_REPO_CONTENT_TYPE));
+                .post(
+                        Entity.entity(
+                                SchemaRegistryRequestResponse.fromRawSchema(schema),
+                                SCHEMA_REPO_CONTENT_TYPE));
     }
 
     public Optional<RawSchema> getRawSchema(String subject, SchemaId schemaId) {
         String idString = Integer.toString(schemaId.value());
 
-        Response response = schemaRepositoryInstanceResolver.resolve(subject)
-                .path("schemas")
-                .path("ids")
-                .path(idString)
-                .request()
-                .get();
+        Response response =
+                schemaRepositoryInstanceResolver
+                        .resolve(subject)
+                        .path("schemas")
+                        .path("ids")
+                        .path(idString)
+                        .request()
+                        .get();
 
         return extractSchema(response, subject, schemaId);
     }
 
-    private Optional<RawSchema> extractSchema(Response response, String subject, SchemaId schemaId) {
+    private Optional<RawSchema> extractSchema(
+            Response response, String subject, SchemaId schemaId) {
         switch (response.getStatusInfo().getFamily()) {
             case SUCCESSFUL:
                 logger.info("Found schema for subject {} and id {}", subject, schemaId.value());
-                SchemaRegistryRequestResponse schemaRegistryResponse = response.readEntity(SchemaRegistryRequestResponse.class);
+                SchemaRegistryRequestResponse schemaRegistryResponse =
+                        response.readEntity(SchemaRegistryRequestResponse.class);
                 return Optional.of(RawSchema.valueOf(schemaRegistryResponse.getSchema()));
             case CLIENT_ERROR:
-                logger.error("Could not find schema for subject {} and id {}, reason: {}", subject, schemaId.value(), response.getStatus());
+                logger.error(
+                        "Could not find schema for subject {} and id {}, reason: {}",
+                        subject,
+                        schemaId.value(),
+                        response.getStatus());
                 return Optional.empty();
             case SERVER_ERROR:
             default:
-                logger.error("Could not find schema for subject {} and id {}, reason: {}", subject, schemaId.value(), response.getStatus());
+                logger.error(
+                        "Could not find schema for subject {} and id {}, reason: {}",
+                        subject,
+                        schemaId.value(),
+                        response.getStatus());
                 throw new InternalSchemaRepositoryException(subject, response);
         }
     }
 
-    private Optional<RawSchemaWithMetadata> extractRawSchemaWithMetadata(String subject, String version, Response response) {
+    private Optional<RawSchemaWithMetadata> extractRawSchemaWithMetadata(
+            String subject, String version, Response response) {
         switch (response.getStatusInfo().getFamily()) {
             case SUCCESSFUL:
                 logger.info("Found schema metadata for subject {} at version {}", subject, version);
-                SchemaRegistryResponse schemaRegistryResponse = response.readEntity(SchemaRegistryResponse.class);
+                SchemaRegistryResponse schemaRegistryResponse =
+                        response.readEntity(SchemaRegistryResponse.class);
                 return Optional.of(schemaRegistryResponse.toRawSchemaWithMetadata());
             case CLIENT_ERROR:
-                logger.error("Could not find schema metadata for subject {} at version {}, reason: {}",
+                logger.error(
+                        "Could not find schema metadata for subject {} at version {}, reason: {}",
                         subject,
                         version,
                         response.getStatus());
                 return Optional.empty();
             case SERVER_ERROR:
             default:
-                logger.error("Could not find schema metadata for subject {} at version {}, reason: {}",
+                logger.error(
+                        "Could not find schema metadata for subject {} at version {}, reason: {}",
                         subject,
                         version,
                         response.getStatus());
@@ -160,19 +194,29 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
         }
     }
 
-    private Optional<RawSchemaWithMetadata> extractRawSchemaWithMetadata(String subject, SchemaId schemaId, Response response) {
+    private Optional<RawSchemaWithMetadata> extractRawSchemaWithMetadata(
+            String subject, SchemaId schemaId, Response response) {
         Integer id = schemaId.value();
         switch (response.getStatusInfo().getFamily()) {
             case SUCCESSFUL:
                 logger.info("Found schema metadata for subject {} and id {}", subject, id);
-                SchemaRegistryResponse schemaRegistryResponse = response.readEntity(SchemaRegistryResponse.class);
+                SchemaRegistryResponse schemaRegistryResponse =
+                        response.readEntity(SchemaRegistryResponse.class);
                 return Optional.of(schemaRegistryResponse.toRawSchemaWithMetadata());
             case CLIENT_ERROR:
-                logger.error("Could not find schema metadata for subject {} and id {}, reason: {}", subject, id, response.getStatus());
+                logger.error(
+                        "Could not find schema metadata for subject {} and id {}, reason: {}",
+                        subject,
+                        id,
+                        response.getStatus());
                 return Optional.empty();
             case SERVER_ERROR:
             default:
-                logger.error("Could not find schema metadata for subject {} and id {}, reason: {}", subject, id, response.getStatus());
+                logger.error(
+                        "Could not find schema metadata for subject {} and id {}, reason: {}",
+                        subject,
+                        id,
+                        response.getStatus());
                 throw new InternalSchemaRepositoryException(subject, response);
         }
     }
@@ -180,12 +224,14 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
     @Override
     public List<SchemaVersion> getVersions(TopicName topic) {
         String subject = subjectNamingStrategy.apply(topic);
-        Response response = schemaRepositoryInstanceResolver.resolve(subject)
-                .path("subjects")
-                .path(subject)
-                .path("versions")
-                .request()
-                .get();
+        Response response =
+                schemaRepositoryInstanceResolver
+                        .resolve(subject)
+                        .path("subjects")
+                        .path(subject)
+                        .path("versions")
+                        .request()
+                        .get();
         return extractSchemaVersions(subject, response);
     }
 
@@ -197,7 +243,10 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
                         .map(SchemaVersion::valueOf)
                         .collect(Collectors.toList());
             case CLIENT_ERROR:
-                logger.error("Could not find schema versions for subject {}, reason: {} {}", subject, response.getStatus(),
+                logger.error(
+                        "Could not find schema versions for subject {}, reason: {} {}",
+                        subject,
+                        response.getStatus(),
                         response.readEntity(String.class));
                 return Collections.emptyList();
             case SERVER_ERROR:
@@ -209,13 +258,18 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
     @Override
     public void registerSchema(TopicName topic, RawSchema rawSchema) {
         String subject = subjectNamingStrategy.apply(topic);
-        Response response = schemaRepositoryInstanceResolver.resolve(subject)
-                .path("subjects")
-                .path(subject)
-                .path("versions")
-                .request()
-                .accept(MediaType.APPLICATION_JSON_TYPE)
-                .post(Entity.entity(SchemaRegistryRequestResponse.fromRawSchema(rawSchema), SCHEMA_REPO_CONTENT_TYPE));
+        Response response =
+                schemaRepositoryInstanceResolver
+                        .resolve(subject)
+                        .path("subjects")
+                        .path(subject)
+                        .path("versions")
+                        .request()
+                        .accept(MediaType.APPLICATION_JSON_TYPE)
+                        .post(
+                                Entity.entity(
+                                        SchemaRegistryRequestResponse.fromRawSchema(rawSchema),
+                                        SCHEMA_REPO_CONTENT_TYPE));
         checkSchemaRegistration(subject, response);
     }
 
@@ -235,12 +289,14 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
     @Override
     public void deleteAllSchemaVersions(TopicName topic) {
         String subject = subjectNamingStrategy.apply(topic);
-        Response response = schemaRepositoryInstanceResolver.resolve(subject)
-                .path("subjects")
-                .path(subject)
-                .path(deleteSchemaPathSuffix)
-                .request()
-                .delete();
+        Response response =
+                schemaRepositoryInstanceResolver
+                        .resolve(subject)
+                        .path("subjects")
+                        .path(subject)
+                        .path(deleteSchemaPathSuffix)
+                        .request()
+                        .delete();
         checkSchemaRemoval(subject, response);
     }
 
@@ -255,7 +311,11 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
             default:
                 int statusCode = response.getStatus();
                 String responseBody = response.readEntity(String.class);
-                logger.warn("Could not remove schema of subject {}. Reason: {} {}", subject, statusCode, responseBody);
+                logger.warn(
+                        "Could not remove schema of subject {}. Reason: {} {}",
+                        subject,
+                        statusCode,
+                        responseBody);
                 throw new InternalSchemaRepositoryException(subject, statusCode, responseBody);
         }
     }
@@ -270,26 +330,36 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
     }
 
     private void checkCompatibility(String subject, RawSchema schema) {
-        Response response = schemaRepositoryInstanceResolver.resolve(subject)
-                .path("compatibility")
-                .path("subjects")
-                .path(subject)
-                .path("versions")
-                .path("latest")
-                .request()
-                .accept(MediaType.APPLICATION_JSON_TYPE)
-                .post(Entity.entity(SchemaRegistryRequestResponse.fromRawSchema(schema), SCHEMA_REPO_CONTENT_TYPE));
+        Response response =
+                schemaRepositoryInstanceResolver
+                        .resolve(subject)
+                        .path("compatibility")
+                        .path("subjects")
+                        .path(subject)
+                        .path("versions")
+                        .path("latest")
+                        .request()
+                        .accept(MediaType.APPLICATION_JSON_TYPE)
+                        .post(
+                                Entity.entity(
+                                        SchemaRegistryRequestResponse.fromRawSchema(schema),
+                                        SCHEMA_REPO_CONTENT_TYPE));
         checkSchemaCompatibilityResponse(subject, response);
     }
 
     private void checkValidation(String subject, RawSchema schema) {
-        Response response = schemaRepositoryInstanceResolver.resolve(subject)
-                .path("subjects")
-                .path(subject)
-                .path("validation")
-                .request()
-                .accept(MediaType.APPLICATION_JSON_TYPE)
-                .post(Entity.entity(SchemaRegistryRequestResponse.fromRawSchema(schema), SCHEMA_REPO_CONTENT_TYPE));
+        Response response =
+                schemaRepositoryInstanceResolver
+                        .resolve(subject)
+                        .path("subjects")
+                        .path(subject)
+                        .path("validation")
+                        .request()
+                        .accept(MediaType.APPLICATION_JSON_TYPE)
+                        .post(
+                                Entity.entity(
+                                        SchemaRegistryRequestResponse.fromRawSchema(schema),
+                                        SCHEMA_REPO_CONTENT_TYPE));
 
         checkValidationResponse(subject, response);
     }
@@ -303,11 +373,12 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
     }
 
     private void validateSuccessfulValidationResult(String subject, Response response) {
-        SchemaRegistryValidationResponse validationResponse = response.readEntity(SchemaRegistryValidationResponse.class);
+        SchemaRegistryValidationResponse validationResponse =
+                response.readEntity(SchemaRegistryValidationResponse.class);
 
         if (!validationResponse.isValid()) {
-            throw new BadSchemaRequestException(subject, BAD_REQUEST.getStatusCode(),
-                    validationResponse.getErrorsMessage());
+            throw new BadSchemaRequestException(
+                    subject, BAD_REQUEST.getStatusCode(), validationResponse.getErrorsMessage());
         }
     }
 
@@ -330,7 +401,11 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
             default:
                 int statusCode = response.getStatus();
                 String responseBody = response.readEntity(String.class);
-                logger.warn("Could not validate schema of subject {}. Reason: {} {}", subject, statusCode, responseBody);
+                logger.warn(
+                        "Could not validate schema of subject {}. Reason: {} {}",
+                        subject,
+                        statusCode,
+                        responseBody);
                 throw new InternalSchemaRepositoryException(subject, statusCode, responseBody);
         }
     }
@@ -338,15 +413,18 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
     private void validateSuccessfulCompatibilityResult(String subject, Response response) {
         String validationResultStr = response.readEntity(String.class);
         SchemaRegistryCompatibilityResponse validationResponse =
-                toSchemaRegistryValidationResponse(subject, validationResultStr, response.getStatus());
+                toSchemaRegistryValidationResponse(
+                        subject, validationResultStr, response.getStatus());
         if (!validationResponse.isCompatible()) {
             throw new BadSchemaRequestException(subject, response.getStatus(), validationResultStr);
         }
     }
 
-    private SchemaRegistryCompatibilityResponse toSchemaRegistryValidationResponse(String subject, String validationResultStr, int status) {
+    private SchemaRegistryCompatibilityResponse toSchemaRegistryValidationResponse(
+            String subject, String validationResultStr, int status) {
         try {
-            return objectMapper.readValue(validationResultStr, SchemaRegistryCompatibilityResponse.class);
+            return objectMapper.readValue(
+                    validationResultStr, SchemaRegistryCompatibilityResponse.class);
         } catch (IOException e) {
             logger.error("Could not parse schema validation response from schema registry", e);
             throw new InternalSchemaRepositoryException(subject, status, validationResultStr);

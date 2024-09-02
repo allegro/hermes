@@ -1,5 +1,7 @@
 package pl.allegro.tech.hermes.client.okhttp;
 
+import static pl.allegro.tech.hermes.client.HermesResponseBuilder.hermesResponse;
+
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
@@ -7,6 +9,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+
 import pl.allegro.tech.hermes.client.HermesMessage;
 import pl.allegro.tech.hermes.client.HermesResponse;
 import pl.allegro.tech.hermes.client.HermesSender;
@@ -14,8 +17,6 @@ import pl.allegro.tech.hermes.client.HermesSender;
 import java.io.IOException;
 import java.net.URI;
 import java.util.concurrent.CompletableFuture;
-
-import static pl.allegro.tech.hermes.client.HermesResponseBuilder.hermesResponse;
 
 public class OkHttpHermesSender implements HermesSender {
 
@@ -29,25 +30,26 @@ public class OkHttpHermesSender implements HermesSender {
     public CompletableFuture<HermesResponse> send(URI uri, HermesMessage message) {
         CompletableFuture<HermesResponse> future = new CompletableFuture<>();
 
-        RequestBody body = RequestBody.create(MediaType.parse(message.getContentType()), message.getBody());
+        RequestBody body =
+                RequestBody.create(MediaType.parse(message.getContentType()), message.getBody());
         Request.Builder builder = new Request.Builder();
         message.consumeHeaders(builder::addHeader);
-        Request request = builder
-                .post(body)
-                .url(uri.toString())
-                .build();
+        Request request = builder.post(body).url(uri.toString()).build();
 
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                future.completeExceptionally(e);
-            }
+        client.newCall(request)
+                .enqueue(
+                        new Callback() {
+                            @Override
+                            public void onFailure(Call call, IOException e) {
+                                future.completeExceptionally(e);
+                            }
 
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                future.complete(fromOkHttpResponse(message, response));
-            }
-        });
+                            @Override
+                            public void onResponse(Call call, Response response)
+                                    throws IOException {
+                                future.complete(fromOkHttpResponse(message, response));
+                            }
+                        });
 
         return future;
     }

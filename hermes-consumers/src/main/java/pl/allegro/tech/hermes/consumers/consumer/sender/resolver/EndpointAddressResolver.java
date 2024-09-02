@@ -11,12 +11,14 @@ import java.util.List;
 
 public interface EndpointAddressResolver {
 
-    default URI resolve(EndpointAddress address, Message message, EndpointAddressResolverMetadata metadata)
+    default URI resolve(
+            EndpointAddress address, Message message, EndpointAddressResolverMetadata metadata)
             throws EndpointAddressResolutionException {
         return resolve(address);
     }
 
-    default URI resolve(EndpointAddress address, MessageBatch batch, EndpointAddressResolverMetadata metadata)
+    default URI resolve(
+            EndpointAddress address, MessageBatch batch, EndpointAddressResolverMetadata metadata)
             throws EndpointAddressResolutionException {
         return resolve(address);
     }
@@ -29,7 +31,8 @@ public interface EndpointAddressResolver {
         }
     }
 
-    default List<URI> resolveAll(EndpointAddress address, Message message, EndpointAddressResolverMetadata metadata)
+    default List<URI> resolveAll(
+            EndpointAddress address, Message message, EndpointAddressResolverMetadata metadata)
             throws EndpointAddressResolutionException {
         return Collections.singletonList(resolve(address, message, metadata));
     }

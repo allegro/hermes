@@ -1,11 +1,28 @@
 package pl.allegro.tech.hermes.integrationtests.management;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.waitAtMost;
+
+import static pl.allegro.tech.hermes.api.PatchData.patchData;
+import static pl.allegro.tech.hermes.api.SubscriptionHealth.Status.NO_DATA;
+import static pl.allegro.tech.hermes.api.SubscriptionHealth.Status.UNHEALTHY;
+import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.malfunctioning;
+import static pl.allegro.tech.hermes.integrationtests.prometheus.SubscriptionMetrics.subscriptionMetrics;
+import static pl.allegro.tech.hermes.integrationtests.prometheus.TopicMetrics.topicMetrics;
+import static pl.allegro.tech.hermes.integrationtests.setup.HermesExtension.auditEvents;
+import static pl.allegro.tech.hermes.integrationtests.setup.HermesExtension.brokerOperations;
+import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
+import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscriptionWithRandomName;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
+
 import com.google.common.collect.ImmutableMap;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
+
 import pl.allegro.tech.hermes.api.ConsumerGroup;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.DeliveryType;
@@ -34,20 +51,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.waitAtMost;
-import static pl.allegro.tech.hermes.api.PatchData.patchData;
-import static pl.allegro.tech.hermes.api.SubscriptionHealth.Status.NO_DATA;
-import static pl.allegro.tech.hermes.api.SubscriptionHealth.Status.UNHEALTHY;
-import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.malfunctioning;
-import static pl.allegro.tech.hermes.integrationtests.prometheus.SubscriptionMetrics.subscriptionMetrics;
-import static pl.allegro.tech.hermes.integrationtests.prometheus.TopicMetrics.topicMetrics;
-import static pl.allegro.tech.hermes.integrationtests.setup.HermesExtension.auditEvents;
-import static pl.allegro.tech.hermes.integrationtests.setup.HermesExtension.brokerOperations;
-import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
-import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscriptionWithRandomName;
-import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
-
 public class SubscriptionManagementTest {
 
     @Order(0)
@@ -56,15 +59,17 @@ public class SubscriptionManagementTest {
 
     @Order(1)
     @RegisterExtension
-    public static final HermesExtension hermes = new HermesExtension()
-            .withPrometheus(prometheus);
+    public static final HermesExtension hermes = new HermesExtension().withPrometheus(prometheus);
 
     @RegisterExtension
     public static final TestSubscribersExtension subscribers = new TestSubscribersExtension();
 
     public static final TestMessage MESSAGE = TestMessage.of("hello", "world");
 
-    public static final PatchData PATCH_DATA = patchData().set("endpoint", EndpointAddress.of("http://localhost:7777/topics/test-topic")).build();
+    public static final PatchData PATCH_DATA =
+            patchData()
+                    .set("endpoint", EndpointAddress.of("http://localhost:7777/topics/test-topic"))
+                    .build();
 
     @AfterEach
     public void cleanup() {
@@ -73,62 +78,76 @@ public class SubscriptionManagementTest {
 
     @Test
     public void shouldEmitAuditEventWhenSubscriptionCreated() {
-        //given
+        // given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
 
-        //when
-        Subscription subscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).build());
+        // when
+        Subscription subscription =
+                hermes.initHelper()
+                        .createSubscription(subscriptionWithRandomName(topic.getName()).build());
 
-        //then
-        assertThat(
-                auditEvents.getLastReceivedRequest().getBodyAsString()
-        ).contains("CREATED", subscription.getName());
+        // then
+        assertThat(auditEvents.getLastReceivedRequest().getBodyAsString())
+                .contains("CREATED", subscription.getName());
     }
 
     @Test
     public void shouldReturnSubscription() {
-        //given
+        // given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
-        Subscription subscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).build());
+        Subscription subscription =
+                hermes.initHelper()
+                        .createSubscription(subscriptionWithRandomName(topic.getName()).build());
 
-        //when
-        Subscription fetchedSubscription = hermes.api().getSubscription(topic.getQualifiedName(), subscription.getName());
+        // when
+        Subscription fetchedSubscription =
+                hermes.api().getSubscription(topic.getQualifiedName(), subscription.getName());
 
-        //then
+        // then
         assertThat(fetchedSubscription.getName()).isEqualTo(subscription.getName());
-        assertThat(fetchedSubscription.isAutoDeleteWithTopicEnabled()).isEqualTo(subscription.isAutoDeleteWithTopicEnabled());
+        assertThat(fetchedSubscription.isAutoDeleteWithTopicEnabled())
+                .isEqualTo(subscription.isAutoDeleteWithTopicEnabled());
         assertThat(fetchedSubscription.getQualifiedTopicName()).isEqualTo(topic.getQualifiedName());
-        assertThat(fetchedSubscription.isTrackingEnabled()).isEqualTo(subscription.isTrackingEnabled());
+        assertThat(fetchedSubscription.isTrackingEnabled())
+                .isEqualTo(subscription.isTrackingEnabled());
     }
 
     @Test
     public void shouldEmitAuditEventWhenSubscriptionRemoved() {
-        //given
+        // given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
-        Subscription subscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).build());
+        Subscription subscription =
+                hermes.initHelper()
+                        .createSubscription(subscriptionWithRandomName(topic.getName()).build());
 
-        //when
+        // when
         hermes.api().deleteSubscription(topic.getQualifiedName(), subscription.getName());
 
-        //then
-        assertThat(
-                auditEvents.getLastReceivedRequest().getBodyAsString()
-        ).contains("REMOVED", subscription.getName());
+        // then
+        assertThat(auditEvents.getLastReceivedRequest().getBodyAsString())
+                .contains("REMOVED", subscription.getName());
     }
 
     @Test
     public void shouldEmitAuditEventWhenSubscriptionEndpointUpdated() {
-        //given
+        // given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
-        Subscription subscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).build());
+        Subscription subscription =
+                hermes.initHelper()
+                        .createSubscription(subscriptionWithRandomName(topic.getName()).build());
 
-        //when
-        hermes.api().updateSubscription(topic, subscription.getName(), patchData().set("endpoint", EndpointAddress.of("http://another-service")).build());
+        // when
+        hermes.api()
+                .updateSubscription(
+                        topic,
+                        subscription.getName(),
+                        patchData()
+                                .set("endpoint", EndpointAddress.of("http://another-service"))
+                                .build());
 
-        //then
-        assertThat(
-                auditEvents.getLastReceivedRequest().getBodyAsString()
-        ).contains("UPDATED", subscription.getName());
+        // then
+        assertThat(auditEvents.getLastReceivedRequest().getBodyAsString())
+                .contains("UPDATED", subscription.getName());
     }
 
     @Test
@@ -142,14 +161,17 @@ public class SubscriptionManagementTest {
 
         // then
         response.expectStatus().isCreated();
-        hermes.api().waitUntilSubscriptionActivated(topic.getQualifiedName(), subscription.getName());
+        hermes.api()
+                .waitUntilSubscriptionActivated(topic.getQualifiedName(), subscription.getName());
     }
 
     @Test
     public void shouldNotRemoveSubscriptionAfterItsRecreation() {
         // given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
-        Subscription subscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).build());
+        Subscription subscription =
+                hermes.initHelper()
+                        .createSubscription(subscriptionWithRandomName(topic.getName()).build());
 
         // when
         WebTestClient.ResponseSpec response = hermes.api().createSubscription(subscription);
@@ -158,14 +180,18 @@ public class SubscriptionManagementTest {
         response.expectStatus().isBadRequest();
 
         assertThat(
-                hermes.api().getSubscription(topic.getQualifiedName(), subscription.getName()).getName()
-        ).isEqualTo(subscription.getName());
+                        hermes.api()
+                                .getSubscription(topic.getQualifiedName(), subscription.getName())
+                                .getName())
+                .isEqualTo(subscription.getName());
     }
 
     @Test
     public void shouldNotCreateSubscriptionWithoutTopic() {
         // given
-        Subscription subscription = subscriptionWithRandomName(TopicName.fromQualifiedName("pl.group.non-existing")).build();
+        Subscription subscription =
+                subscriptionWithRandomName(TopicName.fromQualifiedName("pl.group.non-existing"))
+                        .build();
 
         // when
         WebTestClient.ResponseSpec response = hermes.api().createSubscription(subscription);
@@ -178,61 +204,87 @@ public class SubscriptionManagementTest {
     public void shouldSuspendSubscription() {
         // given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
-        Subscription subscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).build());
+        Subscription subscription =
+                hermes.initHelper()
+                        .createSubscription(subscriptionWithRandomName(topic.getName()).build());
 
         // when
-        WebTestClient.ResponseSpec response = hermes.api().suspendSubscription(topic, subscription.getName());
+        WebTestClient.ResponseSpec response =
+                hermes.api().suspendSubscription(topic, subscription.getName());
 
         // then
         response.expectStatus().isOk();
-        hermes.api().waitUntilSubscriptionSuspended(topic.getQualifiedName(), subscription.getName());
+        hermes.api()
+                .waitUntilSubscriptionSuspended(topic.getQualifiedName(), subscription.getName());
     }
 
     @Test
     public void shouldUpdateSubscriptionEndpoint() {
-        //given
+        // given
         EndpointAddress updatedEndpoint = EndpointAddress.of("http://another-service-endpoint");
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
-        Subscription subscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).build());
+        Subscription subscription =
+                hermes.initHelper()
+                        .createSubscription(subscriptionWithRandomName(topic.getName()).build());
 
         // when
-        WebTestClient.ResponseSpec response = hermes.api().updateSubscription(topic, subscription.getName(), patchData().set("endpoint", updatedEndpoint).build());
+        WebTestClient.ResponseSpec response =
+                hermes.api()
+                        .updateSubscription(
+                                topic,
+                                subscription.getName(),
+                                patchData().set("endpoint", updatedEndpoint).build());
 
         // then
         response.expectStatus().isOk();
         waitAtMost(Duration.ofSeconds(10))
-                .until(() -> hermes.api().getSubscriptionResponse(topic.getQualifiedName(), subscription.getName())
-                        .expectStatus()
-                        .is2xxSuccessful()
-                        .expectBody(Subscription.class)
-                        .returnResult().getResponseBody().getEndpoint().equals(updatedEndpoint)
-                );
+                .until(
+                        () ->
+                                hermes.api()
+                                        .getSubscriptionResponse(
+                                                topic.getQualifiedName(), subscription.getName())
+                                        .expectStatus()
+                                        .is2xxSuccessful()
+                                        .expectBody(Subscription.class)
+                                        .returnResult()
+                                        .getResponseBody()
+                                        .getEndpoint()
+                                        .equals(updatedEndpoint));
     }
 
     @Test
     public void shouldUpdateSubscriptionPolicy() {
         // given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
-        Subscription subscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).build());
-        PatchData patchData = patchData().set("subscriptionPolicy", ImmutableMap.builder()
-                .put("inflightSize", 100)
-                .put("messageBackoff", 100)
-                .put("messageTtl", 3600)
-                .put("rate", 300)
-                .put("requestTimeout", 1000)
-                .put("socketTimeout", 3000)
-                .put("retryClientErrors", false)
-                .put("sendingDelay", 1000)
-                .build()
-        ).build();
+        Subscription subscription =
+                hermes.initHelper()
+                        .createSubscription(subscriptionWithRandomName(topic.getName()).build());
+        PatchData patchData =
+                patchData()
+                        .set(
+                                "subscriptionPolicy",
+                                ImmutableMap.builder()
+                                        .put("inflightSize", 100)
+                                        .put("messageBackoff", 100)
+                                        .put("messageTtl", 3600)
+                                        .put("rate", 300)
+                                        .put("requestTimeout", 1000)
+                                        .put("socketTimeout", 3000)
+                                        .put("retryClientErrors", false)
+                                        .put("sendingDelay", 1000)
+                                        .build())
+                        .build();
 
         // when
-        WebTestClient.ResponseSpec response = hermes.api().updateSubscription(topic, subscription.getName(), patchData);
-
+        WebTestClient.ResponseSpec response =
+                hermes.api().updateSubscription(topic, subscription.getName(), patchData);
 
         // then
         response.expectStatus().isOk();
-        SubscriptionPolicy policy = hermes.api().getSubscription(topic.getQualifiedName(), subscription.getName()).getSerialSubscriptionPolicy();
+        SubscriptionPolicy policy =
+                hermes.api()
+                        .getSubscription(topic.getQualifiedName(), subscription.getName())
+                        .getSerialSubscriptionPolicy();
         assertThat(policy.getInflightSize()).isEqualTo(100);
         assertThat(policy.getMessageBackoff()).isEqualTo(100);
         assertThat(policy.getMessageTtl()).isEqualTo(3600);
@@ -247,53 +299,80 @@ public class SubscriptionManagementTest {
     public void shouldRemoveSubscription() {
         // given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
-        Subscription subscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).build());
+        Subscription subscription =
+                hermes.initHelper()
+                        .createSubscription(subscriptionWithRandomName(topic.getName()).build());
 
         // when
-        WebTestClient.ResponseSpec response = hermes.api().deleteSubscription(topic.getQualifiedName(), subscription.getName());
+        WebTestClient.ResponseSpec response =
+                hermes.api().deleteSubscription(topic.getQualifiedName(), subscription.getName());
 
         // then
         response.expectStatus().isOk();
-        hermes.api().getSubscriptionResponse(topic.getQualifiedName(), subscription.getName()).expectStatus().isBadRequest();
+        hermes.api()
+                .getSubscriptionResponse(topic.getQualifiedName(), subscription.getName())
+                .expectStatus()
+                .isBadRequest();
     }
 
     @Test
     public void shouldReturnSubscriptionsThatAreCurrentlyTrackedForGivenTopic() {
         // given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
-        Subscription trackedSubscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).withTrackingMode(TrackingMode.TRACK_ALL).build());
+        Subscription trackedSubscription =
+                hermes.initHelper()
+                        .createSubscription(
+                                subscriptionWithRandomName(topic.getName())
+                                        .withTrackingMode(TrackingMode.TRACK_ALL)
+                                        .build());
         hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).build());
 
         // when
-        WebTestClient.ResponseSpec response = hermes.api().listTrackedSubscriptions(topic.getQualifiedName());
+        WebTestClient.ResponseSpec response =
+                hermes.api().listTrackedSubscriptions(topic.getQualifiedName());
 
         // then
         response.expectStatus().isOk();
-        assertThat(response
-                .expectBody(String[].class)
-                .returnResult()
-                .getResponseBody()
-        ).containsExactly(trackedSubscription.getName());
+        assertThat(response.expectBody(String[].class).returnResult().getResponseBody())
+                .containsExactly(trackedSubscription.getName());
     }
 
     @Test
     public void shouldReturnsTrackedAndNotSuspendedSubscriptionsForGivenTopic() {
         // given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
-        Subscription trackedSubscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).withTrackingMode(TrackingMode.TRACK_ALL).build());
-        Subscription trackedSubscriptionSuspended = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).withTrackingMode(TrackingMode.TRACK_ALL).build());
+        Subscription trackedSubscription =
+                hermes.initHelper()
+                        .createSubscription(
+                                subscriptionWithRandomName(topic.getName())
+                                        .withTrackingMode(TrackingMode.TRACK_ALL)
+                                        .build());
+        Subscription trackedSubscriptionSuspended =
+                hermes.initHelper()
+                        .createSubscription(
+                                subscriptionWithRandomName(topic.getName())
+                                        .withTrackingMode(TrackingMode.TRACK_ALL)
+                                        .build());
         hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).build());
 
         hermes.api().suspendSubscription(topic, trackedSubscriptionSuspended.getName());
 
         // and
-        String query = "{\"query\": {\"trackingEnabled\": \"true\", \"state\": {\"ne\": \"SUSPENDED\"}}}";
+        String query =
+                "{\"query\": {\"trackingEnabled\": \"true\", \"state\": {\"ne\": \"SUSPENDED\"}}}";
 
         // when
-        WebTestClient.ResponseSpec response = hermes.api().querySubscriptions(topic.getQualifiedName(), query);
+        WebTestClient.ResponseSpec response =
+                hermes.api().querySubscriptions(topic.getQualifiedName(), query);
 
         // then
-        assertThat(Arrays.stream(Objects.requireNonNull(response.expectBody(String[].class).returnResult().getResponseBody())).toList())
+        assertThat(
+                        Arrays.stream(
+                                        Objects.requireNonNull(
+                                                response.expectBody(String[].class)
+                                                        .returnResult()
+                                                        .getResponseBody()))
+                                .toList())
                 .containsExactly(trackedSubscription.getName());
     }
 
@@ -302,34 +381,41 @@ public class SubscriptionManagementTest {
         // given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
 
-        Stream.of("$name", "na$me", "name$").forEach(name -> {
-            // when
-            WebTestClient.ResponseSpec response = hermes.api().createSubscription(subscription(topic, name).build());
+        Stream.of("$name", "na$me", "name$")
+                .forEach(
+                        name -> {
+                            // when
+                            WebTestClient.ResponseSpec response =
+                                    hermes.api()
+                                            .createSubscription(subscription(topic, name).build());
 
-            // then
-            response.expectStatus().isBadRequest();
-        });
+                            // then
+                            response.expectStatus().isBadRequest();
+                        });
     }
 
     @Test
     public void shouldReturnHealthyStatusForAHealthySubscription() {
         // given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
-        Subscription subscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).build());
+        Subscription subscription =
+                hermes.initHelper()
+                        .createSubscription(subscriptionWithRandomName(topic.getName()).build());
 
         // and
         prometheus.stubTopicMetrics(
                 topicMetrics(topic.getName())
                         .withDeliveryRate(100)
                         .withRate(100)
-                        .withThroughput(0).build());
-        prometheus.stubSubscriptionMetrics(
-                subscriptionMetrics(subscription.getQualifiedName())
-                        .withRate(100)
+                        .withThroughput(0)
                         .build());
+        prometheus.stubSubscriptionMetrics(
+                subscriptionMetrics(subscription.getQualifiedName()).withRate(100).build());
 
         // when
-        WebTestClient.ResponseSpec response = hermes.api().getSubscriptionHealth(topic.getQualifiedName(), subscription.getName());
+        WebTestClient.ResponseSpec response =
+                hermes.api()
+                        .getSubscriptionHealth(topic.getQualifiedName(), subscription.getName());
 
         // then
         assertThat(response.expectBody(SubscriptionHealth.class).returnResult().getResponseBody())
@@ -340,14 +426,17 @@ public class SubscriptionManagementTest {
     public void shouldReturnUnhealthyStatusWithAProblemForMalfunctioningSubscription() {
         // given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
-        Subscription subscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).build());
+        Subscription subscription =
+                hermes.initHelper()
+                        .createSubscription(subscriptionWithRandomName(topic.getName()).build());
 
         // and
         prometheus.stubTopicMetrics(
                 topicMetrics(topic.getName())
                         .withDeliveryRate(100)
                         .withRate(50)
-                        .withThroughput(0).build());
+                        .withThroughput(0)
+                        .build());
         prometheus.stubSubscriptionMetrics(
                 subscriptionMetrics(subscription.getQualifiedName())
                         .withRate(50)
@@ -355,28 +444,39 @@ public class SubscriptionManagementTest {
                         .build());
 
         // when
-        WebTestClient.ResponseSpec response = hermes.api().getSubscriptionHealth(topic.getQualifiedName(), subscription.getName());
+        WebTestClient.ResponseSpec response =
+                hermes.api()
+                        .getSubscriptionHealth(topic.getQualifiedName(), subscription.getName());
 
         // then
-        SubscriptionHealth subscriptionHealth = response.expectBody(SubscriptionHealth.class).returnResult().getResponseBody();
+        SubscriptionHealth subscriptionHealth =
+                response.expectBody(SubscriptionHealth.class).returnResult().getResponseBody();
         assertThat(subscriptionHealth.getStatus()).isEqualTo(UNHEALTHY);
-        assertThat(subscriptionHealth.getProblems()).containsOnly(malfunctioning(11, topic.getQualifiedName() + "$" + subscription.getName()));
+        assertThat(subscriptionHealth.getProblems())
+                .containsOnly(
+                        malfunctioning(
+                                11, topic.getQualifiedName() + "$" + subscription.getName()));
     }
 
     @Test
     public void shouldReturnNoDataStatusWhenPrometheusRespondsWithAnError() {
         // given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
-        Subscription subscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).build());
+        Subscription subscription =
+                hermes.initHelper()
+                        .createSubscription(subscriptionWithRandomName(topic.getName()).build());
 
         // and
         prometheus.stub500Error();
 
         // when
-        WebTestClient.ResponseSpec response = hermes.api().getSubscriptionHealth(topic.getQualifiedName(), subscription.getName());
+        WebTestClient.ResponseSpec response =
+                hermes.api()
+                        .getSubscriptionHealth(topic.getQualifiedName(), subscription.getName());
 
         // then
-        SubscriptionHealth subscriptionHealth = response.expectBody(SubscriptionHealth.class).returnResult().getResponseBody();
+        SubscriptionHealth subscriptionHealth =
+                response.expectBody(SubscriptionHealth.class).returnResult().getResponseBody();
         assertThat(subscriptionHealth.getStatus()).isEqualTo(NO_DATA);
     }
 
@@ -384,10 +484,11 @@ public class SubscriptionManagementTest {
     public void shouldNotAllowSubscriptionWithBatchDeliveryAndAvroContentType() {
         // given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
-        Subscription subscription = subscriptionWithRandomName(topic.getName())
-                .withDeliveryType(DeliveryType.BATCH)
-                .withContentType(ContentType.AVRO)
-                .build();
+        Subscription subscription =
+                subscriptionWithRandomName(topic.getName())
+                        .withDeliveryType(DeliveryType.BATCH)
+                        .withContentType(ContentType.AVRO)
+                        .build();
 
         // when
         WebTestClient.ResponseSpec response = hermes.api().createSubscription(subscription);
@@ -401,31 +502,43 @@ public class SubscriptionManagementTest {
         // given
         TestSubscriber subscriber = subscribers.createSubscriber();
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
-        Subscription subscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName(), subscriber.getEndpoint()).build());
+        Subscription subscription =
+                hermes.initHelper()
+                        .createSubscription(
+                                subscriptionWithRandomName(
+                                                topic.getName(), subscriber.getEndpoint())
+                                        .build());
         hermes.api().publishUntilStatus(topic.getQualifiedName(), MESSAGE.body(), 201);
         subscriber.waitUntilAnyMessageReceived();
 
         // when
-        WebTestClient.ResponseSpec response = hermes.api().getConsumerGroupsDescription(topic.getQualifiedName(), subscription.getName());
+        WebTestClient.ResponseSpec response =
+                hermes.api()
+                        .getConsumerGroupsDescription(
+                                topic.getQualifiedName(), subscription.getName());
 
         // then
         response.expectStatus().isOk();
-        List<ConsumerGroup> consumerGroups = response.expectBodyList(ConsumerGroup.class).returnResult().getResponseBody();
+        List<ConsumerGroup> consumerGroups =
+                response.expectBodyList(ConsumerGroup.class).returnResult().getResponseBody();
         assertThat(consumerGroups.size()).isGreaterThan(0);
         assertThat(consumerGroups)
                 .flatExtracting("members")
                 .flatExtracting("partitions")
-                .usingRecursiveFieldByFieldElementComparatorIgnoringFields("partition", "topic", "offsetMetadata", "contentType")
-                .containsOnlyOnce(new TopicPartition(-1, "any", 0, 1, "any", topic.getContentType()));
+                .usingRecursiveFieldByFieldElementComparatorIgnoringFields(
+                        "partition", "topic", "offsetMetadata", "contentType")
+                .containsOnlyOnce(
+                        new TopicPartition(-1, "any", 0, 1, "any", topic.getContentType()));
     }
 
     @Test
     public void shouldNotCreateSubscriptionNotOwnedByTheUser() {
         // given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
-        Subscription subscription = subscription(topic.getQualifiedName(), "subscription")
-                .withOwner(new OwnerId("Plaintext", "subscriptionOwner"))
-                .build();
+        Subscription subscription =
+                subscription(topic.getQualifiedName(), "subscription")
+                        .withOwner(new OwnerId("Plaintext", "subscriptionOwner"))
+                        .build();
         TestSecurityProvider.setUserIsAdmin(false);
 
         // when
@@ -434,32 +547,40 @@ public class SubscriptionManagementTest {
         // then
         response.expectStatus().isBadRequest();
         assertThat(response.expectBody(String.class).returnResult().getResponseBody())
-                .contains("Provide an owner that includes you, you would not be able to manage this subscription later");
+                .contains(
+                        "Provide an owner that includes you, you would not be able to manage this subscription later");
     }
 
     @Test
     public void shouldNotUpdateSubscriptionNotOwnedByTheUser() {
         // given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
-        Subscription subscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).build());
+        Subscription subscription =
+                hermes.initHelper()
+                        .createSubscription(subscriptionWithRandomName(topic.getName()).build());
         TestSecurityProvider.setUserIsAdmin(false);
 
         // when
-        WebTestClient.ResponseSpec response = hermes.api().updateSubscription(topic, subscription.getName(), PATCH_DATA);
+        WebTestClient.ResponseSpec response =
+                hermes.api().updateSubscription(topic, subscription.getName(), PATCH_DATA);
 
         // then
         response.expectStatus().isBadRequest();
         assertThat(response.expectBody(String.class).returnResult().getResponseBody())
-                .contains("Provide an owner that includes you, you would not be able to manage this subscription later");
+                .contains(
+                        "Provide an owner that includes you, you would not be able to manage this subscription later");
     }
 
     @Test
     public void shouldAllowAdminToBypassSubscribingRestrictions() {
         // given
-        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().withSubscribingRestricted().build());
-        Subscription subscription = subscription(topic.getQualifiedName(), "subscription")
-                .withEndpoint("http://localhost:8081/topics/test-topic")
-                .build();
+        Topic topic =
+                hermes.initHelper()
+                        .createTopic(topicWithRandomName().withSubscribingRestricted().build());
+        Subscription subscription =
+                subscription(topic.getQualifiedName(), "subscription")
+                        .withEndpoint("http://localhost:8081/topics/test-topic")
+                        .build();
         TestSecurityProvider.setUserIsAdmin(true);
 
         // when
@@ -469,7 +590,8 @@ public class SubscriptionManagementTest {
         response.expectStatus().isCreated();
 
         // when
-        WebTestClient.ResponseSpec updateResponse = hermes.api().updateSubscription(topic, subscription.getName(), PATCH_DATA);
+        WebTestClient.ResponseSpec updateResponse =
+                hermes.api().updateSubscription(topic, subscription.getName(), PATCH_DATA);
 
         // then
         updateResponse.expectStatus().isOk();
@@ -478,10 +600,13 @@ public class SubscriptionManagementTest {
     @Test
     public void shouldAllowTopicOwnerToBypassSubscribingRestrictions() {
         // given
-        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().withSubscribingRestricted().build());
-        Subscription subscription = subscription(topic.getQualifiedName(), "subscription")
-                .withEndpoint("http://localhost:8081/topics/test-topic")
-                .build();
+        Topic topic =
+                hermes.initHelper()
+                        .createTopic(topicWithRandomName().withSubscribingRestricted().build());
+        Subscription subscription =
+                subscription(topic.getQualifiedName(), "subscription")
+                        .withEndpoint("http://localhost:8081/topics/test-topic")
+                        .build();
         TestSecurityProvider.setUserIsAdmin(false);
         TestSecurityProvider.setUserAsOwner(topic.getOwner(), subscription.getOwner());
 
@@ -492,7 +617,8 @@ public class SubscriptionManagementTest {
         response.expectStatus().isCreated();
 
         // when
-        WebTestClient.ResponseSpec updateResponse = hermes.api().updateSubscription(topic, subscription.getName(), PATCH_DATA);
+        WebTestClient.ResponseSpec updateResponse =
+                hermes.api().updateSubscription(topic, subscription.getName(), PATCH_DATA);
 
         // then
         updateResponse.expectStatus().isOk();
@@ -501,11 +627,14 @@ public class SubscriptionManagementTest {
     @Test
     public void shouldAllowPrivilegedSubscriberToBypassSubscribingRestrictions() {
         // given
-        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().withSubscribingRestricted().build());
-        Subscription subscription = subscription(topic.getQualifiedName(), "subscription")
-                .withOwner(new OwnerId("Plaintext", "subscriberAllowedToAccessAnyTopic"))
-                .withEndpoint("http://localhost:8081/topics/test-topic")
-                .build();
+        Topic topic =
+                hermes.initHelper()
+                        .createTopic(topicWithRandomName().withSubscribingRestricted().build());
+        Subscription subscription =
+                subscription(topic.getQualifiedName(), "subscription")
+                        .withOwner(new OwnerId("Plaintext", "subscriberAllowedToAccessAnyTopic"))
+                        .withEndpoint("http://localhost:8081/topics/test-topic")
+                        .build();
         TestSecurityProvider.setUserIsAdmin(false);
         TestSecurityProvider.setUserAsOwner(subscription.getOwner());
 
@@ -516,7 +645,8 @@ public class SubscriptionManagementTest {
         response.expectStatus().isCreated();
 
         // when
-        WebTestClient.ResponseSpec updateResponse = hermes.api().updateSubscription(topic, subscription.getName(), PATCH_DATA);
+        WebTestClient.ResponseSpec updateResponse =
+                hermes.api().updateSubscription(topic, subscription.getName(), PATCH_DATA);
 
         // then
         updateResponse.expectStatus().isOk();
@@ -525,11 +655,15 @@ public class SubscriptionManagementTest {
     @Test
     public void shouldRespectPrivilegedSubscriberProtocolsWhileCreatingSubscription() {
         // given
-        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().withSubscribingRestricted().build());
-        Subscription subscription = subscription(topic.getQualifiedName(), "subscription")
-                .withOwner(new OwnerId("Plaintext", "subscriberAllowedToAccessAnyTopic"))
-                .withEndpoint("googlepubsub://pubsub.googleapis.com:443/projects/test-project/topics/test-topic")
-                .build();
+        Topic topic =
+                hermes.initHelper()
+                        .createTopic(topicWithRandomName().withSubscribingRestricted().build());
+        Subscription subscription =
+                subscription(topic.getQualifiedName(), "subscription")
+                        .withOwner(new OwnerId("Plaintext", "subscriberAllowedToAccessAnyTopic"))
+                        .withEndpoint(
+                                "googlepubsub://pubsub.googleapis.com:443/projects/test-project/topics/test-topic")
+                        .build();
         TestSecurityProvider.setUserIsAdmin(false);
         TestSecurityProvider.setUserAsOwner(subscription.getOwner());
 
@@ -539,43 +673,55 @@ public class SubscriptionManagementTest {
         // then
         response.expectStatus().isForbidden();
         assertThat(response.expectBody(String.class).returnResult().getResponseBody())
-                .contains("Subscribing to this topic has been restricted. Contact the topic owner to create a new subscription.");
+                .contains(
+                        "Subscribing to this topic has been restricted. Contact the topic owner to create a new subscription.");
     }
 
     @Test
     public void shouldRespectPrivilegedSubscriberProtocolsWhileUpdatingEndpoint() {
         // given
-        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().withSubscribingRestricted().build());
-        Subscription subscription = subscription(topic.getQualifiedName(), "subscription")
-                .withOwner(new OwnerId("Plaintext", "subscriberAllowedToAccessAnyTopic"))
-                .withEndpoint("http://localhost:8081/topics/test-topic")
-                .build();
+        Topic topic =
+                hermes.initHelper()
+                        .createTopic(topicWithRandomName().withSubscribingRestricted().build());
+        Subscription subscription =
+                subscription(topic.getQualifiedName(), "subscription")
+                        .withOwner(new OwnerId("Plaintext", "subscriberAllowedToAccessAnyTopic"))
+                        .withEndpoint("http://localhost:8081/topics/test-topic")
+                        .build();
         hermes.initHelper().createSubscription(subscription);
         TestSecurityProvider.setUserIsAdmin(false);
         TestSecurityProvider.setUserAsOwner(subscription.getOwner());
 
         // when
-        WebTestClient.ResponseSpec response = hermes.api().updateSubscription(
-                topic,
-                subscription.getName(),
-                patchData().set(
-                        "endpoint", EndpointAddress.of("googlepubsub://pubsub.googleapis.com:443/projects/test-project/topics/test-topic")
-                ).build()
-        );
+        WebTestClient.ResponseSpec response =
+                hermes.api()
+                        .updateSubscription(
+                                topic,
+                                subscription.getName(),
+                                patchData()
+                                        .set(
+                                                "endpoint",
+                                                EndpointAddress.of(
+                                                        "googlepubsub://pubsub.googleapis.com:443/projects/test-project/topics/test-topic"))
+                                        .build());
 
         // then
         response.expectStatus().isForbidden();
         assertThat(response.expectBody(String.class).returnResult().getResponseBody())
-                .contains("Subscribing to this topic has been restricted. Contact the topic owner to modify the endpoint of this subscription.");
+                .contains(
+                        "Subscribing to this topic has been restricted. Contact the topic owner to modify the endpoint of this subscription.");
     }
 
     @Test
     public void shouldNotAllowUnprivilegedUserToCreateSubscriptionWhenSubscribingIsRestricted() {
         // given
-        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().withSubscribingRestricted().build());
-        Subscription subscription = subscription(topic.getQualifiedName(), "subscription")
-                .withOwner(new OwnerId("Plaintext", "subscriptionOwner"))
-                .build();
+        Topic topic =
+                hermes.initHelper()
+                        .createTopic(topicWithRandomName().withSubscribingRestricted().build());
+        Subscription subscription =
+                subscription(topic.getQualifiedName(), "subscription")
+                        .withOwner(new OwnerId("Plaintext", "subscriptionOwner"))
+                        .build();
         TestSecurityProvider.setUserIsAdmin(false);
         TestSecurityProvider.setUserAsOwner(subscription.getOwner());
 
@@ -585,40 +731,48 @@ public class SubscriptionManagementTest {
         // then
         response.expectStatus().isForbidden();
         assertThat(response.expectBody(String.class).returnResult().getResponseBody())
-                .contains("Subscribing to this topic has been restricted. Contact the topic owner to create a new subscription.");
+                .contains(
+                        "Subscribing to this topic has been restricted. Contact the topic owner to create a new subscription.");
     }
 
     @Test
     public void shouldNotAllowUnprivilegedUserToUpdateEndpointWhenSubscribingIsRestricted() {
         // given
-        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().withSubscribingRestricted().build());
-        Subscription subscription = subscription(topic.getQualifiedName(), "subscription")
-                .withOwner(new OwnerId("Plaintext", "subscriptionOwner"))
-                .withEndpoint("http://localhost:8081/topics/test-topic")
-                .build();
+        Topic topic =
+                hermes.initHelper()
+                        .createTopic(topicWithRandomName().withSubscribingRestricted().build());
+        Subscription subscription =
+                subscription(topic.getQualifiedName(), "subscription")
+                        .withOwner(new OwnerId("Plaintext", "subscriptionOwner"))
+                        .withEndpoint("http://localhost:8081/topics/test-topic")
+                        .build();
         hermes.initHelper().createSubscription(subscription);
         TestSecurityProvider.setUserIsAdmin(false);
         TestSecurityProvider.setUserAsOwner(subscription.getOwner());
 
         // when
-        WebTestClient.ResponseSpec response = hermes.api().updateSubscription(topic, subscription.getName(), PATCH_DATA);
-
+        WebTestClient.ResponseSpec response =
+                hermes.api().updateSubscription(topic, subscription.getName(), PATCH_DATA);
 
         // then
         response.expectStatus().isForbidden();
         assertThat(response.expectBody(String.class).returnResult().getResponseBody())
-                .contains("Subscribing to this topic has been restricted. Contact the topic owner to modify the endpoint of this subscription.");
+                .contains(
+                        "Subscribing to this topic has been restricted. Contact the topic owner to modify the endpoint of this subscription.");
     }
 
     @Test
     public void shouldSetInflightSizeToNullByDefault() {
         // given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
-        Subscription subscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).build());
+        Subscription subscription =
+                hermes.initHelper()
+                        .createSubscription(subscriptionWithRandomName(topic.getName()).build());
         TestSecurityProvider.setUserIsAdmin(false);
 
         // when
-        Subscription response = hermes.api().getSubscription(topic.getQualifiedName(), subscription.getName());
+        Subscription response =
+                hermes.api().getSubscription(topic.getQualifiedName(), subscription.getName());
 
         // then
         assertThat(response.getSerialSubscriptionPolicy().getInflightSize()).isNull();
@@ -628,16 +782,20 @@ public class SubscriptionManagementTest {
     public void shouldReturnInflightSizeWhenSetToNonNullValue() {
         // given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
-        Subscription subscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName())
-                .withSubscriptionPolicy(
-                        SubscriptionPolicy.Builder.subscriptionPolicy()
-                                .withInflightSize(42)
-                                .build()
-                ).build());
+        Subscription subscription =
+                hermes.initHelper()
+                        .createSubscription(
+                                subscriptionWithRandomName(topic.getName())
+                                        .withSubscriptionPolicy(
+                                                SubscriptionPolicy.Builder.subscriptionPolicy()
+                                                        .withInflightSize(42)
+                                                        .build())
+                                        .build());
         TestSecurityProvider.setUserIsAdmin(false);
 
         // when
-        Subscription response = hermes.api().getSubscription(topic.getQualifiedName(), subscription.getName());
+        Subscription response =
+                hermes.api().getSubscription(topic.getQualifiedName(), subscription.getName());
 
         // then
         assertThat(response.getSerialSubscriptionPolicy().getInflightSize()).isEqualTo(42);
@@ -648,16 +806,24 @@ public class SubscriptionManagementTest {
         // given
         TestSubscriber subscriber = subscribers.createSubscriber(503);
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
-        Subscription subscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName(), subscriber.getEndpoint())
-                .withSubscriptionPolicy(SubscriptionPolicy.create(Map.of("messageTtl", 3600)))
-                .build());
-        List<String> messages = List.of(MESSAGE.body(), MESSAGE.body(), MESSAGE.body(), MESSAGE.body());
+        Subscription subscription =
+                hermes.initHelper()
+                        .createSubscription(
+                                subscriptionWithRandomName(
+                                                topic.getName(), subscriber.getEndpoint())
+                                        .withSubscriptionPolicy(
+                                                SubscriptionPolicy.create(
+                                                        Map.of("messageTtl", 3600)))
+                                        .build());
+        List<String> messages =
+                List.of(MESSAGE.body(), MESSAGE.body(), MESSAGE.body(), MESSAGE.body());
 
         // prevents from moving offsets during messages sending
-        messages.forEach(message -> {
-            hermes.api().publishUntilSuccess(topic.getQualifiedName(), message);
-            subscriber.waitUntilReceived(message);
-        });
+        messages.forEach(
+                message -> {
+                    hermes.api().publishUntilSuccess(topic.getQualifiedName(), message);
+                    subscriber.waitUntilReceived(message);
+                });
 
         assertThat(allConsumerGroupOffsetsMovedToTheEnd(subscription)).isFalse();
 
@@ -665,16 +831,27 @@ public class SubscriptionManagementTest {
 
         // when
         waitAtMost(Duration.ofSeconds(10))
-                .untilAsserted(() -> hermes.api()
-                        .moveOffsetsToTheEnd(topic.getQualifiedName(), subscription.getName()).expectStatus().isOk());
+                .untilAsserted(
+                        () ->
+                                hermes.api()
+                                        .moveOffsetsToTheEnd(
+                                                topic.getQualifiedName(), subscription.getName())
+                                        .expectStatus()
+                                        .isOk());
 
         // then
         waitAtMost(Duration.ofSeconds(10))
-                .untilAsserted(() -> assertThat(allConsumerGroupOffsetsMovedToTheEnd(subscription)).isTrue());
+                .untilAsserted(
+                        () ->
+                                assertThat(allConsumerGroupOffsetsMovedToTheEnd(subscription))
+                                        .isTrue());
     }
 
     private boolean allConsumerGroupOffsetsMovedToTheEnd(Subscription subscription) {
-        List<BrokerOperations.ConsumerGroupOffset> partitionsOffsets = brokerOperations.getTopicPartitionsOffsets(subscription.getQualifiedName());
-        return !partitionsOffsets.isEmpty() && partitionsOffsets.stream().allMatch(BrokerOperations.ConsumerGroupOffset::movedToEnd);
+        List<BrokerOperations.ConsumerGroupOffset> partitionsOffsets =
+                brokerOperations.getTopicPartitionsOffsets(subscription.getQualifiedName());
+        return !partitionsOffsets.isEmpty()
+                && partitionsOffsets.stream()
+                        .allMatch(BrokerOperations.ConsumerGroupOffset::movedToEnd);
     }
 }

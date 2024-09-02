@@ -1,5 +1,9 @@
 package pl.allegro.tech.hermes.frontend.publishing.handlers;
 
+import static pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter.QuotaInsight.globalQuotaViolation;
+import static pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter.QuotaInsight.quotaConfirmed;
+import static pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter.QuotaInsight.quotaViolation;
+
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.metrics.HermesRateMeter;
 
@@ -7,10 +11,6 @@ import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import static pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter.QuotaInsight.globalQuotaViolation;
-import static pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter.QuotaInsight.quotaConfirmed;
-import static pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter.QuotaInsight.quotaViolation;
 
 public class DynamicThroughputLimiter implements ThroughputLimiter, Runnable {
     private final long max;
@@ -24,13 +24,14 @@ public class DynamicThroughputLimiter implements ThroughputLimiter, Runnable {
 
     private final ConcurrentHashMap<TopicName, Throughput> users = new ConcurrentHashMap<>();
 
-    public DynamicThroughputLimiter(long max,
-                                    long threshold,
-                                    long desired,
-                                    double idleThreshold,
-                                    Duration checkInterval,
-                                    HermesRateMeter globalThroughput,
-                                    ScheduledExecutorService executor) {
+    public DynamicThroughputLimiter(
+            long max,
+            long threshold,
+            long desired,
+            double idleThreshold,
+            Duration checkInterval,
+            HermesRateMeter globalThroughput,
+            ScheduledExecutorService executor) {
         this.max = max;
         this.threshold = threshold;
         this.desired = desired;
@@ -55,7 +56,8 @@ public class DynamicThroughputLimiter implements ThroughputLimiter, Runnable {
 
     @Override
     public void start() {
-        executor.scheduleAtFixedRate(this, checkInterval.toSeconds(), checkInterval.toSeconds(), TimeUnit.SECONDS);
+        executor.scheduleAtFixedRate(
+                this, checkInterval.toSeconds(), checkInterval.toSeconds(), TimeUnit.SECONDS);
     }
 
     @Override
@@ -69,11 +71,12 @@ public class DynamicThroughputLimiter implements ThroughputLimiter, Runnable {
         users.entrySet().removeIf(entry -> entry.getValue().getOneMinuteRate() <= idleThreshold);
         int userCount = users.size();
         if (userCount > 0) {
-            long total = users.reduceValuesToLong(Long.MAX_VALUE, Throughput::getRoundedOneMinuteRate, 0, (Long::sum));
+            long total =
+                    users.reduceValuesToLong(
+                            Long.MAX_VALUE, Throughput::getRoundedOneMinuteRate, 0, (Long::sum));
             long mean = total / userCount;
             long desiredMean = desired / userCount;
-            users.entrySet()
-                    .stream()
+            users.entrySet().stream()
                     .filter(entry -> entry.getValue().getRoundedOneMinuteRate() >= mean)
                     .forEach(entry -> entry.getValue().max = desiredMean);
         }

@@ -1,6 +1,14 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender;
 
+import static io.netty.handler.codec.http.HttpResponseStatus.TOO_MANY_REQUESTS;
+
+import static jakarta.ws.rs.core.Response.Status.OK;
+import static jakarta.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
+
+import static java.util.stream.Collectors.joining;
+
 import org.eclipse.jetty.client.Result;
+
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.EndpointAddressResolutionException;
 
 import java.net.URI;
@@ -8,11 +16,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
-
-import static io.netty.handler.codec.http.HttpResponseStatus.TOO_MANY_REQUESTS;
-import static jakarta.ws.rs.core.Response.Status.OK;
-import static jakarta.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
-import static java.util.stream.Collectors.joining;
 
 public interface MessageSendingResult {
     String CAUSE_UNKNOWN = "unknown";
@@ -42,11 +45,13 @@ public interface MessageSendingResult {
     }
 
     static SingleMessageSendingResult retryAfter(int seconds) {
-        return new SingleMessageSendingResult(SERVICE_UNAVAILABLE.getStatusCode(), TimeUnit.SECONDS.toMillis(seconds));
+        return new SingleMessageSendingResult(
+                SERVICE_UNAVAILABLE.getStatusCode(), TimeUnit.SECONDS.toMillis(seconds));
     }
 
     static SingleMessageSendingResult tooManyRequests(int seconds) {
-        return new SingleMessageSendingResult(TOO_MANY_REQUESTS.code(), TimeUnit.SECONDS.toMillis(seconds));
+        return new SingleMessageSendingResult(
+                TOO_MANY_REQUESTS.code(), TimeUnit.SECONDS.toMillis(seconds));
     }
 
     static SingleMessageSendingResult of(Result result) {

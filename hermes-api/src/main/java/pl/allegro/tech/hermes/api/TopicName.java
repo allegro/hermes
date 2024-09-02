@@ -1,14 +1,15 @@
 package pl.allegro.tech.hermes.api;
 
+import static pl.allegro.tech.hermes.api.constraints.Names.ALLOWED_NAME_REGEX;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
+
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
 
 import java.util.Objects;
-
-import static pl.allegro.tech.hermes.api.constraints.Names.ALLOWED_NAME_REGEX;
 
 public class TopicName {
 
@@ -23,7 +24,8 @@ public class TopicName {
     private final String name;
 
     @JsonCreator
-    public TopicName(@JsonProperty("groupName") String groupName, @JsonProperty("name") String name) {
+    public TopicName(
+            @JsonProperty("groupName") String groupName, @JsonProperty("name") String name) {
         this.groupName = groupName;
         this.name = name;
     }

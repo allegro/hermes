@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.client;
 
 import pl.allegro.tech.hermes.client.metrics.MetricsMessageDeliveryListener;
 import pl.allegro.tech.hermes.client.metrics.MetricsProvider;
+
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 
@@ -23,7 +24,8 @@ public class ReactiveHermesClientBuilder {
     private long retrySleepInMillis = 100;
     private long maxRetrySleepInMillis = 300;
     private double jitterFactor = 0.5d;
-    private Supplier<Scheduler> schedulerFactory = () -> Schedulers.fromExecutor(Executors.newSingleThreadScheduledExecutor());
+    private Supplier<Scheduler> schedulerFactory =
+            () -> Schedulers.fromExecutor(Executors.newSingleThreadScheduledExecutor());
     private Optional<MetricsProvider> metrics = Optional.empty();
 
     public ReactiveHermesClientBuilder(ReactiveHermesSender sender) {
@@ -36,12 +38,23 @@ public class ReactiveHermesClientBuilder {
     }
 
     public ReactiveHermesClient build() {
-        ReactiveHermesClient hermesClient = new ReactiveHermesClient(sender, uri, defaultHeaders, retries, retryCondition,
-                retrySleepInMillis, maxRetrySleepInMillis, jitterFactor, schedulerFactory.get());
+        ReactiveHermesClient hermesClient =
+                new ReactiveHermesClient(
+                        sender,
+                        uri,
+                        defaultHeaders,
+                        retries,
+                        retryCondition,
+                        retrySleepInMillis,
+                        maxRetrySleepInMillis,
+                        jitterFactor,
+                        schedulerFactory.get());
 
-        metrics.ifPresent((metricsProvider) -> {
-            hermesClient.addMessageDeliveryListener(new MetricsMessageDeliveryListener(metricsProvider));
-        });
+        metrics.ifPresent(
+                (metricsProvider) -> {
+                    hermesClient.addMessageDeliveryListener(
+                            new MetricsMessageDeliveryListener(metricsProvider));
+                });
 
         return hermesClient;
     }
@@ -71,7 +84,8 @@ public class ReactiveHermesClientBuilder {
         return this;
     }
 
-    public ReactiveHermesClientBuilder withRetries(int retries, Predicate<HermesResponse> retryCondition) {
+    public ReactiveHermesClientBuilder withRetries(
+            int retries, Predicate<HermesResponse> retryCondition) {
         this.retryCondition = retryCondition;
         return withRetries(retries);
     }
@@ -81,7 +95,8 @@ public class ReactiveHermesClientBuilder {
         return this;
     }
 
-    public ReactiveHermesClientBuilder withRetrySleep(long retrySleepInMillis, long maxRetrySleepInMillis) {
+    public ReactiveHermesClientBuilder withRetrySleep(
+            long retrySleepInMillis, long maxRetrySleepInMillis) {
         this.retrySleepInMillis = retrySleepInMillis;
         this.maxRetrySleepInMillis = maxRetrySleepInMillis;
         return this;

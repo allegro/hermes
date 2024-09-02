@@ -9,7 +9,8 @@ public class ConsumerNodesRegistryPaths {
 
     public ConsumerNodesRegistryPaths(ZookeeperPaths zookeeperPaths, String clusterName) {
         this.zookeeperPaths = zookeeperPaths;
-        this.registryPath = zookeeperPaths.join(zookeeperPaths.basePath(), "consumers-registry", clusterName);
+        this.registryPath =
+                zookeeperPaths.join(zookeeperPaths.basePath(), "consumers-registry", clusterName);
     }
 
     public String leaderPath() {

@@ -2,8 +2,10 @@ package pl.allegro.tech.hermes.frontend.buffer.chronicle;
 
 import net.openhft.chronicle.map.ChronicleMap;
 import net.openhft.chronicle.map.ChronicleMapBuilder;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.frontend.buffer.BackupMessage;
@@ -22,7 +24,8 @@ import java.util.stream.Collectors;
 
 public class ChronicleMapMessageRepository implements MessageRepository {
 
-    private static final Logger logger = LoggerFactory.getLogger(ChronicleMapMessageRepository.class);
+    private static final Logger logger =
+            LoggerFactory.getLogger(ChronicleMapMessageRepository.class);
 
     private static final boolean SAME_BUILDER_CONFIG = false;
 
@@ -38,20 +41,23 @@ public class ChronicleMapMessageRepository implements MessageRepository {
     public ChronicleMapMessageRepository(File file, int entries, int averageMessageSize) {
         logger.info("Creating backup storage in path: {}", file.getAbsolutePath());
         try {
-            map = ChronicleMapBuilder.of(String.class, ChronicleMapEntryValue.class)
-                    .constantKeySizeBySample(MessageIdGenerator.generate())
-                    .averageValueSize(averageMessageSize)
-                    .entries(entries)
-                    .setPreShutdownAction(new LoggingMapSizePreShutdownHook())
-                    .sparseFile(true)
-                    .createOrRecoverPersistedTo(file, SAME_BUILDER_CONFIG);
+            map =
+                    ChronicleMapBuilder.of(String.class, ChronicleMapEntryValue.class)
+                            .constantKeySizeBySample(MessageIdGenerator.generate())
+                            .averageValueSize(averageMessageSize)
+                            .entries(entries)
+                            .setPreShutdownAction(new LoggingMapSizePreShutdownHook())
+                            .sparseFile(true)
+                            .createOrRecoverPersistedTo(file, SAME_BUILDER_CONFIG);
         } catch (IOException e) {
-            logger.error("Failed to load backup storage file from path {}", file.getAbsoluteFile(), e);
+            logger.error(
+                    "Failed to load backup storage file from path {}", file.getAbsoluteFile(), e);
             throw new ChronicleMapCreationException(e);
         }
     }
 
-    public ChronicleMapMessageRepository(File file, int entries, int averageMessageSize, MetricsFacade metricsFacade) {
+    public ChronicleMapMessageRepository(
+            File file, int entries, int averageMessageSize, MetricsFacade metricsFacade) {
         this(file, entries, averageMessageSize);
         metricsFacade.persistentBuffer().registerBackupStorageSizeGauge(map, Map::size);
     }
@@ -62,13 +68,21 @@ public class ChronicleMapMessageRepository implements MessageRepository {
         lock.lock();
         try {
             if (closed) {
-                throw new ChronicleMapClosedException("Backup storage is closed. Unable to add new messages.");
+                throw new ChronicleMapClosedException(
+                        "Backup storage is closed. Unable to add new messages.");
             }
-            map.put(message.getId(),
+            map.put(
+                    message.getId(),
                     new ChronicleMapEntryValue(
-                            message.getData(), message.getTimestamp(), topic.getQualifiedName(),
-                            message.getPartitionKey(), message.getCompiledSchema().map(v -> v.getVersion().value()).orElse(null),
-                            message.getCompiledSchema().map(v -> v.getId().value()).orElse(null), message.getHTTPHeaders()));
+                            message.getData(),
+                            message.getTimestamp(),
+                            topic.getQualifiedName(),
+                            message.getPartitionKey(),
+                            message.getCompiledSchema()
+                                    .map(v -> v.getVersion().value())
+                                    .orElse(null),
+                            message.getCompiledSchema().map(v -> v.getId().value()).orElse(null),
+                            message.getHTTPHeaders()));
         } finally {
             lock.unlock();
         }
@@ -81,7 +95,9 @@ public class ChronicleMapMessageRepository implements MessageRepository {
 
     @Override
     public List<BackupMessage> findAll() {
-        return map.entrySet().stream().map((e) -> toBackupMessage(e.getKey(), e.getValue())).collect(Collectors.toList());
+        return map.entrySet().stream()
+                .map((e) -> toBackupMessage(e.getKey(), e.getValue()))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -90,9 +106,15 @@ public class ChronicleMapMessageRepository implements MessageRepository {
     }
 
     private BackupMessage toBackupMessage(String id, ChronicleMapEntryValue entryValue) {
-        return new BackupMessage(id, entryValue.getData(), entryValue.getTimestamp(),
-                entryValue.getQualifiedTopicName(), entryValue.getPartitionKey(), entryValue.getSchemaVersion(),
-                entryValue.getSchemaId(), entryValue.getPropagatedHttpHeaders());
+        return new BackupMessage(
+                id,
+                entryValue.getData(),
+                entryValue.getTimestamp(),
+                entryValue.getQualifiedTopicName(),
+                entryValue.getPartitionKey(),
+                entryValue.getSchemaVersion(),
+                entryValue.getSchemaId(),
+                entryValue.getPropagatedHttpHeaders());
     }
 
     private class LoggingMapSizePreShutdownHook implements Runnable {
