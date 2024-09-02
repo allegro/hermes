@@ -25,7 +25,7 @@ invalid_files=0
 echo "Following files are formatted incorrectly:";
 # TODO: remove '--skip-reflowing-long-strings' once https://github.com/google/google-java-format/issues/566 is fixed
 for FILE in $JAVA_FILES; do
-  ./$script_name --set-exit-if-changed --skip-reflowing-long-strings "$FILE" > /dev/null
+  ./$script_name --set-exit-if-changed --skip-reflowing-long-strings --aosp "$FILE" > /dev/null
   if [ $? -ne 0 ]; then
     echo "$FILE"
     ((invalid_files++))
