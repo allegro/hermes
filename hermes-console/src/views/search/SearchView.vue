@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {onMounted, ref} from 'vue';
+  import { onMounted, ref } from 'vue';
   import { SearchFilter, useSearch } from '@/composables/search/useSearch';
   import { useI18n } from 'vue-i18n';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
