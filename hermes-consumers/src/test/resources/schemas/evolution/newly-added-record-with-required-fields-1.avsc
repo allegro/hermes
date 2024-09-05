@@ -1,0 +1,13 @@
+{
+  "name": "test",
+  "doc": "Doc",
+  "type": "record",
+  "fields": [
+    {
+      "name": "test",
+      "type":["null", "string" ],
+      "doc": "test",
+      "default": null
+    }
+  ]
+}

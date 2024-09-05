@@ -1,0 +1,11 @@
+{
+  "namespace": "pl.allegro.bigdata.avro.gcpavrotools",
+  "name": "Null",
+  "type": "record",
+  "fields": [
+    {
+      "name": "null_field",
+      "type": "null"
+    }
+  ]
+}

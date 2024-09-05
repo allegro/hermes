@@ -1,0 +1,349 @@
+{
+  "type": "record",
+  "name": "priceListChanged",
+  "namespace": "pl.allegro.offer.delivery.v1",
+  "doc": "Offer pricelist change event",
+  "fields": [
+    {
+      "name": "__metadata",
+      "type": [
+        "null",
+        {
+          "type": "map",
+          "values": "string"
+        }
+      ],
+      "doc": "Field internally used by Hermes to propagate metadata.",
+      "default": null
+    },
+    {
+      "name": "eventTime",
+      "type": "string",
+      "doc": "Event time"
+    },
+    {
+      "name": "priceList",
+      "type": {
+        "type": "record",
+        "name": "NotifyPriceList",
+        "fields": [
+          {
+            "name": "id",
+            "type": "string",
+            "doc": "id"
+          },
+          {
+            "name": "offerId",
+            "type": "string",
+            "doc": "offer id"
+          },
+          {
+            "name": "lastModified",
+            "type": "string",
+            "doc": "last modified"
+          },
+          {
+            "name": "shippingRates",
+            "type": [
+              "null",
+              {
+                "type": "record",
+                "name": "ShippingRatesRef",
+                "doc": "shipping rates reference",
+                "fields": [
+                  {
+                    "name": "id",
+                    "type": "string",
+                    "doc": "id"
+                  }
+                ]
+              }
+            ],
+            "doc": "shipping rates",
+            "default": null
+          },
+          {
+            "name": "items",
+            "type": {
+              "type": "array",
+              "items": {
+                "type": "record",
+                "name": "NotifyPriceListElement",
+                "doc": "notify price list element",
+                "fields": [
+                  {
+                    "name": "deliveryMethod",
+                    "type": {
+                      "type": "record",
+                      "name": "NotifyDeliveryMethod",
+                      "fields": [
+                        {
+                          "name": "id",
+                          "type": "string",
+                          "doc": "id"
+                        },
+                        {
+                          "name": "qeppoId",
+                          "type": [
+                            "null",
+                            "int"
+                          ],
+                          "doc": "Qeppo id",
+                          "default": null
+                        }
+                      ]
+                    },
+                    "doc": "delivery method"
+                  },
+                  {
+                    "name": "firstItemPrice",
+                    "type": {
+                      "type": "record",
+                      "name": "Money",
+                      "doc": "money",
+                      "fields": [
+                        {
+                          "name": "amount",
+                          "type": "string",
+                          "doc": "amount"
+                        },
+                        {
+                          "name": "currency",
+                          "type": "string",
+                          "doc": "currency"
+                        }
+                      ]
+                    },
+                    "doc": "first item price"
+                  },
+                  {
+                    "name": "nextItemPrice",
+                    "type": [
+                      "null",
+                      "Money"
+                    ],
+                    "doc": "next item price",
+                    "default": null
+                  },
+                  {
+                    "name": "packageSize",
+                    "type": "int",
+                    "doc": "package size"
+                  },
+                  {
+                    "name": "shippingTime",
+                    "type": [
+                      "null",
+                      {
+                        "type": "record",
+                        "name": "ShippingTime",
+                        "doc": "shipping time",
+                        "fields": [
+                          {
+                            "name": "from",
+                            "type": "string",
+                            "doc": "from"
+                          },
+                          {
+                            "name": "to",
+                            "type": "string",
+                            "doc": "to"
+                          }
+                        ]
+                      }
+                    ],
+                    "doc": "shipping time",
+                    "default": null
+                  },
+                  {
+                    "name": "maxPackageWeight",
+                    "type": [
+                      "null",
+                      {
+                        "type": "record",
+                        "name": "PackageWeight",
+                        "doc": "package weight",
+                        "fields": [
+                          {
+                            "name": "value",
+                            "type": {
+                              "type": "string",
+                              "java-class": "java.math.BigDecimal"
+                            },
+                            "doc": "value"
+                          },
+                          {
+                            "name": "unit",
+                            "type": "string",
+                            "doc": "unit"
+                          }
+                        ]
+                      }
+                    ],
+                    "doc": "max package weight",
+                    "default": null
+                  }
+                ]
+              },
+              "java-class": "java.util.List"
+            },
+            "doc": "items"
+          },
+          {
+            "name": "location",
+            "type": {
+              "type": "record",
+              "name": "PriceListLocation",
+              "doc": "price list location",
+              "fields": [
+                {
+                  "name": "city",
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "doc": "city",
+                  "default": null
+                },
+                {
+                  "name": "state",
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "doc": "state",
+                  "default": null
+                },
+                {
+                  "name": "postcode",
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "doc": "postcode",
+                  "default": null
+                },
+                {
+                  "name": "country",
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "doc": "country",
+                  "default": null
+                }
+              ]
+            },
+            "doc": "location"
+          },
+          {
+            "name": "sendingAbroad",
+            "type": "boolean",
+            "doc": "sending abroad"
+          },
+          {
+            "name": "estimatedShippingTime",
+            "type": [
+              "null",
+              "string"
+            ],
+            "doc": "estimated shipping time",
+            "default": null
+          },
+          {
+            "name": "additionalInfo",
+            "type": [
+              "null",
+              "string"
+            ],
+            "doc": "additional info",
+            "default": null
+          },
+          {
+            "name": "flags",
+            "type": {
+              "type": "record",
+              "name": "Flags",
+              "fields": [
+                {
+                  "name": "freeReturn",
+                  "type": "boolean",
+                  "doc": "free return"
+                },
+                {
+                  "name": "freeDelivery",
+                  "type": "boolean",
+                  "doc": "free delivery"
+                },
+                {
+                  "name": "useCostPerWeight",
+                  "type": "boolean",
+                  "doc": "use cost per weight"
+                },
+                {
+                  "name": "selfPickup",
+                  "type": "boolean",
+                  "doc": "self pickup"
+                }
+              ]
+            },
+            "doc": "flags"
+          },
+          {
+            "name": "shippingCost",
+            "type": {
+              "type": "record",
+              "name": "ShippingCost",
+              "doc": "shipping cost",
+              "fields": [
+                {
+                  "name": "lowest",
+                  "type": [
+                    "null",
+                    "Money"
+                  ],
+                  "doc": "lowest",
+                  "default": null
+                },
+                {
+                  "name": "freeDelivery",
+                  "type": "boolean",
+                  "doc": "free delivery"
+                }
+              ]
+            },
+            "doc": "shipping cost"
+          }
+        ]
+      },
+      "doc": "Price list"
+    },
+    {
+      "name": "updatedPaths",
+      "type": {
+        "type": "array",
+        "items": "string",
+        "java-class": "java.util.List"
+      },
+      "doc": "Updated paths"
+    },
+    {
+      "name": "cause",
+      "type": "string",
+      "doc": "cause"
+    },
+    {
+      "name": "removedMarketplaces",
+      "type": [
+        "null",
+        {
+          "type": "array",
+          "items": "string",
+          "java-class": "java.util.List"
+        }
+      ],
+      "doc": "removed marketplaces",
+      "default": null
+    }
+  ]
+}

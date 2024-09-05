@@ -5,6 +5,7 @@ import com.google.cloud.bigquery.storage.v1.ToProtoConverter;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
+import com.google.protobuf.Empty;
 import org.apache.avro.generic.GenericRecord;
 
 import java.math.BigInteger;
@@ -14,6 +15,9 @@ import java.util.Map;
 public class GoogleBigQueryAvroToProtoConverter implements ToProtoConverter<GenericRecord> {
     @Override
     public DynamicMessage convertToProtoMessage(Descriptors.Descriptor protoSchema, TableSchema tableSchema, GenericRecord inputObject, boolean ignoreUnknownFields) {
+        return convertToProtoMessage(protoSchema, inputObject);
+    }
+    public DynamicMessage convertToProtoMessage(Descriptors.Descriptor protoSchema, GenericRecord inputObject) {
         return createMessage(protoSchema, inputObject);
     }
 

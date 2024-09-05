@@ -1,0 +1,28 @@
+{
+  "name": "test",
+  "doc": "Doc",
+  "type": "record",
+  "fields": [
+    {
+      "name": "test",
+      "type":["null", "string" ],
+      "doc": "test",
+      "default": null
+    },
+    {
+      "name": "rec",
+      "doc": "record",
+      "type": {
+        "type": "record",
+        "name": "Test2",
+        "fields": [
+          {
+            "name": "test2",
+            "doc": "test2",
+            "type": "string"
+          }
+        ]
+      }
+    }
+  ]
+}

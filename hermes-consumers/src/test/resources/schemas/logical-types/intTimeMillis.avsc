@@ -1,0 +1,14 @@
+{
+  "type": "record",
+  "name": "LogicalTypes",
+  "namespace": "pl.allegro.bigdata.avro.gcpavrotools",
+  "fields": [
+    {
+      "name": "intTimeMillis",
+      "type": {
+        "type": "int",
+        "logicalType": "time-millis"
+      }
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "type": "record",
+  "name": "LogicalTypes",
+  "namespace": "pl.allegro.bigdata.avro.gcpavrotools",
+  "fields": [
+    {
+      "name": "longTimestampMicros",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-micros"
+      }
+    }
+  ]
+}

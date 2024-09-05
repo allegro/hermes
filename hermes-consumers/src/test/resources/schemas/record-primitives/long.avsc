@@ -1,0 +1,20 @@
+{
+  "namespace": "pl.allegro.bigdata.avro.gcpavrotools",
+  "name": "RecordPrimitives",
+  "type": "record",
+  "fields": [
+    {
+      "name": "long_field",
+      "type": {
+        "name": "long",
+        "type": "record",
+        "fields": [
+          {
+            "name": "long_value_field",
+            "type": "long"
+          }
+        ]
+      }
+    }
+  ]
+}

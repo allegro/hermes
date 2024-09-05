@@ -1,0 +1,19 @@
+{
+  "type": "record",
+  "name": "LogicalTypes",
+  "namespace": "pl.allegro.bigdata.avro.gcpavrotools",
+  "fields": [
+    {
+      "name": "fixedDecimal",
+      "type": {
+        "name": "Fixed",
+        "type": "fixed",
+        "logicalType": "decimal",
+        "java-class": "java.math.BigDecimal",
+        "precision": 4,
+        "scale": 2,
+        "size": 8
+      }
+    }
+  ]
+}

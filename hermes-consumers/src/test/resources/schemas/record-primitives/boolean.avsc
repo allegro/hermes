@@ -1,0 +1,20 @@
+{
+  "namespace": "pl.allegro.bigdata.avro.gcpavrotools",
+  "name": "RecordPrimitives",
+  "type": "record",
+  "fields": [
+    {
+      "name": "boolean_field",
+      "type": {
+        "name": "boolean",
+        "type": "record",
+        "fields": [
+          {
+            "name": "boolean_value_field",
+            "type": "boolean"
+          }
+        ]
+      }
+    }
+  ]
+}

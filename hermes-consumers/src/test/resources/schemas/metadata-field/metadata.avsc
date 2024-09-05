@@ -1,0 +1,16 @@
+{
+  "type": "record",
+  "name": "MetadataField",
+  "namespace": "pl.allegro.bigdata.avro.gcpavrotools",
+  "fields": [
+    {
+      "name": "__metadata",
+      "type": ["null", {
+          "type": "map",
+          "values": "string"
+      }],
+      "doc": "Field internally used by Hermes to propagate metadata.",
+      "default": null
+    }
+  ]
+}

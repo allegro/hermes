@@ -1,0 +1,14 @@
+{
+  "namespace": "pl.allegro.bigdata.avro.gcpavrotools",
+  "name": "Union",
+  "type": "record",
+  "fields": [
+    {
+      "name": "int_field",
+      "type": [
+        "int"
+      ],
+      "default": 1
+    }
+  ]
+}

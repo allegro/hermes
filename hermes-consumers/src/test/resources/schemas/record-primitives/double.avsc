@@ -1,0 +1,20 @@
+{
+  "namespace": "pl.allegro.bigdata.avro.gcpavrotools",
+  "name": "RecordPrimitives",
+  "type": "record",
+  "fields": [
+    {
+      "name": "double_field",
+      "type": {
+        "name": "double",
+        "type": "record",
+        "fields": [
+          {
+            "name": "double_value_field",
+            "type": "double"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "namespace": "pl.allegro.bigdata.avro.gcpavrotools",
+  "name": "Enum",
+  "type": "record",
+  "fields": [
+    {
+      "name": "enum_field",
+      "type": {
+        "name": "EnumTypeName",
+        "type": "enum",
+        "symbols": [
+          "S1",
+          "S2"
+        ]
+      }
+    }
+  ]
+}

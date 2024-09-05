@@ -1,0 +1,17 @@
+{
+  "namespace": "pl.allegro.bigdata.avro.gcpavrotools",
+  "name": "MapNested",
+  "type": "record",
+  "fields": [
+    {
+      "name": "map_field",
+      "type": {
+        "type": "map",
+        "values": {
+          "type": "map",
+          "values": "string"
+        }
+      }
+    }
+  ]
+}
