@@ -4,7 +4,7 @@
   "type": "record",
   "fields": [
     {
-      "name": "string_field",
+      "name": "field",
       "type": {
         "type": "map",
         "values": "string"

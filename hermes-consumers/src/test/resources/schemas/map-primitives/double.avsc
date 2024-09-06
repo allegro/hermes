@@ -4,7 +4,7 @@
   "type": "record",
   "fields": [
     {
-      "name": "double_field",
+      "name": "field",
       "type": {
         "type": "map",
         "values": "double"

@@ -37,8 +37,9 @@ public class GoogleBigQueryAvroToProtoConverter implements ToProtoConverter<Gene
                     } else {
                         for (Map.Entry<?, ?> el: ((Map<?, ?>) fieldValue).entrySet()) {
                             DynamicMessage.Builder entryBuilder = DynamicMessage.newBuilder(field.getMessageType());
+                            Descriptors.FieldDescriptor valueField = field.getMessageType().findFieldByName("value");
                             entryBuilder.setField(field.getMessageType().findFieldByName("key"), el.getKey().toString());
-                            entryBuilder.setField(field.getMessageType().findFieldByName("value"), el.getValue().toString());
+                            entryBuilder.setField(valueField, toProtobufValue(valueField, el.getValue()));
                             messageBuilder.addRepeatedField(field, entryBuilder.build());
                         }
                     }
