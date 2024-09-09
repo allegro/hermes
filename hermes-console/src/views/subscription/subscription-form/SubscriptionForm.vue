@@ -7,7 +7,6 @@
   import { useGlobalI18n } from '@/i18n';
   import { useImportSubscription } from '@/composables/subscription/use-import-subscription/useImportSubscription';
   import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
-  import { useRoles } from '@/composables/roles/use-roles/useRoles';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import SelectField from '@/components/select-field/SelectField.vue';
   import SubscriptionHeaderFilters from '@/views/subscription/subscription-form/subscription-header-filters/SubscriptionHeaderFilters.vue';
@@ -15,12 +14,14 @@
   import SubscriptionPathFiltersDebug from '@/views/subscription/subscription-form/subscription-basic-filters/SubscriptionPathFiltersDebug.vue';
   import TextField from '@/components/text-field/TextField.vue';
   import TooltipIcon from '@/components/tooltip-icon/TooltipIcon.vue';
+  import type { Role } from '@/api/role';
   import type { Subscription } from '@/api/subscription';
 
   const props = defineProps<{
     topic: string;
     subscription: Subscription | null;
     operation: 'add' | 'edit';
+    roles: Role[] | undefined;
   }>();
   const emit = defineEmits<{
     created: [subscription: string];
@@ -41,7 +42,6 @@
       ? useCreateSubscription(props.topic)
       : useEditSubscription(props.topic, props.subscription!!);
   const { importFormData } = useImportSubscription();
-  const roles = useRoles(null, null)?.roles;
   const showHighRequestTimeoutAlert = computed(
     () =>
       form.value.subscriptionPolicy.requestTimeout >=
@@ -72,7 +72,7 @@
   }
 
   async function submit() {
-    if (isFormValid.value || isAdmin(roles?.value)) {
+    if (isFormValid.value || isAdmin(props.roles)) {
       const isOperationSucceeded = await createOrUpdateSubscription();
       if (isOperationSucceeded) {
         emit('created', form.value.name);
@@ -264,6 +264,7 @@
     />
 
     <text-field
+      v-if="isAdmin(roles)"
       v-model="form.subscriptionPolicy.inflightMessagesCount"
       :rules="validators.inflightMessagesCount"
       prepend-icon="$warning"

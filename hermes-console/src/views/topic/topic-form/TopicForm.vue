@@ -7,11 +7,11 @@
   import { useGlobalI18n } from '@/i18n';
   import { useImportTopic } from '@/composables/topic/use-import-topic/useImportTopic';
   import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
-  import { useRoles } from '@/composables/roles/use-roles/useRoles';
   import AceEditor from '@/components/ace-editor/AceEditor.vue';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import SelectField from '@/components/select-field/SelectField.vue';
   import TextField from '@/components/text-field/TextField.vue';
+  import type { Role } from '@/api/role';
   import type { SelectFieldOption } from '@/components/select-field/types';
   import type { TopicWithSchema } from '@/api/topic';
 
@@ -19,6 +19,7 @@
     topic: TopicWithSchema | null;
     group: string | null;
     operation: 'add' | 'edit';
+    roles: Role[] | undefined;
   }>();
   const emit = defineEmits<{
     created: [topic: string];
@@ -51,8 +52,6 @@
     },
   ];
 
-  const roles = useRoles(null, null)?.roles;
-
   const ownerSelectorPlaceholder = computed(
     () =>
       configStore.loadedConfig.owner.sources.find(
@@ -77,7 +76,7 @@
   );
 
   const allowedContentTypes = computed(() =>
-    isAdmin(roles?.value) ? adminContentTypes : dataSources.contentTypes,
+    isAdmin(props.roles) ? adminContentTypes : dataSources.contentTypes,
   );
 
   const isAvroContentTypeSelected = computed(
@@ -97,7 +96,7 @@
   const showAvroAlert = computed(() => form.value.contentType === 'AVRO');
 
   async function submit() {
-    if (isFormValid.value || isAdmin(roles?.value)) {
+    if (isFormValid.value || isAdmin(props.roles)) {
       const isOperationSucceeded = await createOrUpdateTopic();
       if (isOperationSucceeded) {
         emit('created', form.value.name);
