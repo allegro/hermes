@@ -22,8 +22,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-import static java.util.stream.Collectors.toList;
-
 /**
  * Implementation note: this class is partially mutable and may be accessed from multiple
  * threads involved in message lifecycle, it must be thread safe.
@@ -52,6 +50,8 @@ public class Message implements FilterableMessage {
     private final Set<String> succeededUris = Sets.newHashSet();
 
     private long currentMessageBackoff = -1;
+
+    private boolean isFiltered = false;
 
     public Message(String id,
                    String topic,
@@ -122,7 +122,7 @@ public class Message implements FilterableMessage {
 
     public synchronized void incrementRetryCounter(Collection<URI> succeededUris) {
         this.retryCounter++;
-        this.succeededUris.addAll(succeededUris.stream().map(URI::toString).collect(toList()));
+        this.succeededUris.addAll(succeededUris.stream().map(URI::toString).toList());
     }
 
     public synchronized int getRetryCounter() {
@@ -204,6 +204,14 @@ public class Message implements FilterableMessage {
 
     public String getSubscription() {
         return subscription;
+    }
+
+    public synchronized boolean isFiltered() {
+        return isFiltered;
+    }
+
+    public synchronized void setFiltered(boolean filtered) {
+        isFiltered = filtered;
     }
 
     public static class Builder {
