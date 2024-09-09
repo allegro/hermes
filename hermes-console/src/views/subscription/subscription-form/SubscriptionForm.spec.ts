@@ -72,6 +72,9 @@ describe('SubscriptionForm', () => {
       getAllByText('subscriptionForm.fields.inflightMessageTTL.label')[0],
     ).toBeVisible();
     expect(
+      getAllByText('subscriptionForm.fields.inflightMessagesCount.label')[0],
+    ).toBeVisible();
+    expect(
       getAllByText('subscriptionForm.fields.retryOn4xx.label')[0],
     ).toBeVisible();
     expect(

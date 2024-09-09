@@ -263,6 +263,17 @@
       :suffix="$t('subscriptionForm.fields.inflightMessageTTL.suffix')"
     />
 
+    <text-field
+      v-model="form.subscriptionPolicy.inflightMessagesCount"
+      :rules="validators.inflightMessagesCount"
+      prepend-icon="$warning"
+      type="number"
+      :label="$t('subscriptionForm.fields.inflightMessagesCount.label')"
+      :placeholder="
+        $t('subscriptionForm.fields.inflightMessagesCount.placeholder')
+      "
+    />
+
     <v-divider />
 
     <v-switch

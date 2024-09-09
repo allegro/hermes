@@ -64,6 +64,11 @@ const messages = {
         'Time when message can be resent to endpoint after failed sending attempts',
       suffix: 'seconds',
     },
+    inflightMessagesCount: {
+      label: 'Inflight messages count',
+      placeholder:
+        'How many messages can be in inflight state at the same time',
+    },
     retryOn4xx: {
       label: 'Retry on http 4xx status',
     },
@@ -120,7 +125,7 @@ const messages = {
     },
     adminForm: {
       title: 'Warning: Admin form enabled.',
-      text: 'New fields in the form have been revealed (they are highlighted). The form will be submitted regardless of the validation of the fields.',
+      text: 'New fields in the form have been revealed (they are are followed by a warning sign). The form will be submitted regardless of the validation of the fields.',
     },
   },
   actions: {

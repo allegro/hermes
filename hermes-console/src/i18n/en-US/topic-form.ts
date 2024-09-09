@@ -58,7 +58,7 @@ const messages = {
     },
     adminForm: {
       title: 'Warning: Admin form enabled.',
-      text: 'New fields in the form have been revealed (they are highlighted). The form will be submitted regardless of the validation of the fields.',
+      text: 'New fields in the form have been revealed (they are followed by a warning sign). The form will be submitted regardless of the validation of the fields.',
     },
   },
   info: {
