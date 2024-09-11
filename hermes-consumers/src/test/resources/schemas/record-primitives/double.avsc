@@ -4,13 +4,13 @@
   "type": "record",
   "fields": [
     {
-      "name": "double_field",
+      "name": "field",
       "type": {
         "name": "double",
         "type": "record",
         "fields": [
           {
-            "name": "double_value_field",
+            "name": "value_field",
             "type": "double"
           }
         ]

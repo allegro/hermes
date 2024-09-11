@@ -4,13 +4,13 @@
   "type": "record",
   "fields": [
     {
-      "name": "bytes_field",
+      "name": "field",
       "type": {
         "name": "bytes",
         "type": "record",
         "fields": [
           {
-            "name": "bytes_value_field",
+            "name": "value_field",
             "type": "bytes"
           }
         ]

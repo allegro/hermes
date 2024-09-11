@@ -4,13 +4,13 @@
   "type": "record",
   "fields": [
     {
-      "name": "boolean_field",
+      "name": "field",
       "type": {
         "name": "boolean",
         "type": "record",
         "fields": [
           {
-            "name": "boolean_value_field",
+            "name": "value_field",
             "type": "boolean"
           }
         ]

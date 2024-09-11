@@ -4,13 +4,13 @@
   "type": "record",
   "fields": [
     {
-      "name": "float_field",
+      "name": "field",
       "type": {
         "name": "float",
         "type": "record",
         "fields": [
           {
-            "name": "float_value_field",
+            "name": "value_field",
             "type": "float"
           }
         ]

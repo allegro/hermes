@@ -4,13 +4,13 @@
   "type": "record",
   "fields": [
     {
-      "name": "long_field",
+      "name": "field",
       "type": {
         "name": "long",
         "type": "record",
         "fields": [
           {
-            "name": "long_value_field",
+            "name": "value_field",
             "type": "long"
           }
         ]

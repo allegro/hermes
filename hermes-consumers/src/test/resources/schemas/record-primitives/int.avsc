@@ -4,13 +4,13 @@
   "type": "record",
   "fields": [
     {
-      "name": "int_field",
+      "name": "field",
       "type": {
         "name": "int",
         "type": "record",
         "fields": [
           {
-            "name": "int_value_field",
+            "name": "value_field",
             "type": "int"
           }
         ]

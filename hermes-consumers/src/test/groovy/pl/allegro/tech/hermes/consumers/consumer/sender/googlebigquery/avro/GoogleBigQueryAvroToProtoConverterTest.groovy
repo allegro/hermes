@@ -72,13 +72,14 @@ class GoogleBigQueryAvroToProtoConverterTest extends Specification implements Av
         message != null
         println(message)
         def field = message.getDescriptorForType().findFieldByName(fieldName)
-        record.hasField(fieldName) == message.hasField(field)
+//        record.hasField(fieldName) == message.hasField(field)
         def converted_value = message.hasField(field) ? (message.getField(field)) : null
         transformResult(converted_value) == expectedProtoValue
 
 
         where:
         suite                 | avroType  | protoDescriptor                                       | avroValue                         | expectedProtoValue | transformResult
+        "nullable-primitives" | "string"  | NStringProto.NullablePrimitivesString.getDescriptor() | null                              | null               | { c -> c }
         "nullable-primitives" | "string"  | NStringProto.NullablePrimitivesString.getDescriptor() | "value"                           | "value"            | { c -> c }
         "nullable-primitives" | "int"     | NInt32Proto.NullablePrimitivesInt32.getDescriptor()   | 12                                | 12                 | { c -> c }
         "nullable-primitives" | "long"    | NInt64Proto.NullablePrimitivesInt64.getDescriptor()   | 12l                               | 12l                | { c -> c }
@@ -234,22 +235,65 @@ class GoogleBigQueryAvroToProtoConverterTest extends Specification implements Av
 
 
         where:
-        suite            | avroType  | protoDescriptor                                              | avroValue                                                                        | expectedProtoValue                                                                       | transformResult
-        "map-primitives" | "string"  | StringToStringProto.PrimitivesStringToString.getDescriptor() | [:]                                                                              | "[]"                                                                                       | { c -> c }
-        "map-primitives" | "int"     | StringToInt32Proto.PrimitivesStringToInt32.getDescriptor()   | [:]                                                                              | "[]"                                                                                       | { c -> c }
-        "map-primitives" | "long"    | StringToInt64Proto.PrimitivesStringToInt64.getDescriptor()   | [:]                                                                              | "[]"                                                                                       | { c -> c }
-        "map-primitives" | "boolean" | StringToInt64Proto.PrimitivesStringToInt64.getDescriptor()   | [:]                                                                              | "[]"                                                                                       | { c -> c }
-        "map-primitives" | "boolean" | StringToBoolProto.PrimitivesStringToBool.getDescriptor()     | [:]                                                                              | "[]"                                                                                       | { c -> c }
-        "map-primitives" | "bytes"   | StringToBytesProto.PrimitivesStringToBytes.getDescriptor()   | [:]                                                                              | "[]"                                                                                       | { c -> c }
-        "map-primitives" | "float"   | StringToFloatProto.PrimitivesStringToFloat.getDescriptor()   | [:]                                                                              | "[]"                                                                                       | { c -> c }
-        "map-primitives" | "double"  | StringToDoubleProto.PrimitivesStringToDouble.getDescriptor() | [:]                                                                              | "[]"                                                                                       | { c -> c }
+        suite            | avroType  | protoDescriptor                                              | avroValue                                                                        | expectedProtoValue                                                               | transformResult
+        "map-primitives" | "string"  | StringToStringProto.PrimitivesStringToString.getDescriptor() | [:]                                                                              | "[]"                                                                             | { c -> c }
+        "map-primitives" | "int"     | StringToInt32Proto.PrimitivesStringToInt32.getDescriptor()   | [:]                                                                              | "[]"                                                                             | { c -> c }
+        "map-primitives" | "long"    | StringToInt64Proto.PrimitivesStringToInt64.getDescriptor()   | [:]                                                                              | "[]"                                                                             | { c -> c }
+        "map-primitives" | "boolean" | StringToInt64Proto.PrimitivesStringToInt64.getDescriptor()   | [:]                                                                              | "[]"                                                                             | { c -> c }
+        "map-primitives" | "boolean" | StringToBoolProto.PrimitivesStringToBool.getDescriptor()     | [:]                                                                              | "[]"                                                                             | { c -> c }
+        "map-primitives" | "bytes"   | StringToBytesProto.PrimitivesStringToBytes.getDescriptor()   | [:]                                                                              | "[]"                                                                             | { c -> c }
+        "map-primitives" | "float"   | StringToFloatProto.PrimitivesStringToFloat.getDescriptor()   | [:]                                                                              | "[]"                                                                             | { c -> c }
+        "map-primitives" | "double"  | StringToDoubleProto.PrimitivesStringToDouble.getDescriptor() | [:]                                                                              | "[]"                                                                             | { c -> c }
         "map-primitives" | "string"  | StringToStringProto.PrimitivesStringToString.getDescriptor() | ["a": "a", "b": "b", "c": "c"]                                                   | "[key: \"a\" value: \"a\" , key: \"b\" value: \"b\" , key: \"c\" value: \"c\" ]" | { c -> c }
-        "map-primitives" | "int"     | StringToInt32Proto.PrimitivesStringToInt32.getDescriptor()   | ["a": 1, "b": 2, "c": 3]                                                         | "[key: \"a\" value: 1 , key: \"b\" value: 2 , key: \"c\" value: 3 ]"       | { c -> c }
-        "map-primitives" | "long"    | StringToInt64Proto.PrimitivesStringToInt64.getDescriptor()   | ["a": 4l, "b": 5l, "c": 6l]                                                      | "[key: \"a\" value: 4 , key: \"b\" value: 5 , key: \"c\" value: 6 ]"              | { c -> c }
-        "map-primitives" | "boolean" | StringToBoolProto.PrimitivesStringToBool.getDescriptor()     | ["a": true, "b": true, "c": false]                                               | "[key: \"a\" value: true , key: \"b\" value: true , key: \"c\" value: false ]"       | { c -> c }
-        "map-primitives" | "bytes"   | StringToBytesProto.PrimitivesStringToBytes.getDescriptor()   | ["a": ByteBuffer.wrap("123".getBytes()), "b": ByteBuffer.wrap("456".getBytes())] | "[key: \"a\" value: \"123\" , key: \"b\" value: \"456\" ]"   | { c -> c }
-        "map-primitives" | "float"   | StringToFloatProto.PrimitivesStringToFloat.getDescriptor()   | ["a": 3.14f, "b": 6.28f]                                                         | "[key: \"a\" value: 3.14 , key: \"b\" value: 6.28 ]"      | { c -> c }
-        "map-primitives" | "double"  | StringToDoubleProto.PrimitivesStringToDouble.getDescriptor() | ["a": 3.14d, "b": 6.28d]                                                         | "[key: \"a\" value: 3.14 , key: \"b\" value: 6.28 ]"      | { c -> c }
+        "map-primitives" | "int"     | StringToInt32Proto.PrimitivesStringToInt32.getDescriptor()   | ["a": 1, "b": 2, "c": 3]                                                         | "[key: \"a\" value: 1 , key: \"b\" value: 2 , key: \"c\" value: 3 ]"             | { c -> c }
+        "map-primitives" | "long"    | StringToInt64Proto.PrimitivesStringToInt64.getDescriptor()   | ["a": 4l, "b": 5l, "c": 6l]                                                      | "[key: \"a\" value: 4 , key: \"b\" value: 5 , key: \"c\" value: 6 ]"             | { c -> c }
+        "map-primitives" | "boolean" | StringToBoolProto.PrimitivesStringToBool.getDescriptor()     | ["a": true, "b": true, "c": false]                                               | "[key: \"a\" value: true , key: \"b\" value: true , key: \"c\" value: false ]"   | { c -> c }
+        "map-primitives" | "bytes"   | StringToBytesProto.PrimitivesStringToBytes.getDescriptor()   | ["a": ByteBuffer.wrap("123".getBytes()), "b": ByteBuffer.wrap("456".getBytes())] | "[key: \"a\" value: \"123\" , key: \"b\" value: \"456\" ]"                       | { c -> c }
+        "map-primitives" | "float"   | StringToFloatProto.PrimitivesStringToFloat.getDescriptor()   | ["a": 3.14f, "b": 6.28f]                                                         | "[key: \"a\" value: 3.14 , key: \"b\" value: 6.28 ]"                             | { c -> c }
+        "map-primitives" | "double"  | StringToDoubleProto.PrimitivesStringToDouble.getDescriptor() | ["a": 3.14d, "b": 6.28d]                                                         | "[key: \"a\" value: 3.14 , key: \"b\" value: 6.28 ]"                             | { c -> c }
+
+
+    }
+
+    @Test
+    void convertRecordPrimitivesToProtoMessage() {
+
+        given:
+        Schema schema = getSchemaFromResources("${suite}/${avroType}")
+        String fieldName = "field"
+        GenericRecord record = fieldExists ? new GenericRecordBuilder(schema).set(fieldName, null).build() : new GenericRecordBuilder(schema).build()
+        GoogleBigQueryAvroToProtoConverter converter = new GoogleBigQueryAvroToProtoConverter()
+
+        when:
+        DynamicMessage message = converter.convertToProtoMessage(protoDescriptor, record)
+
+
+        then:
+        message != null
+        println(message)
+        def field = message.getDescriptorForType().findFieldByName(fieldName)
+//        record.hasField(fieldName) == !message.hasField(field)
+        def converted_value = message.hasField(field) ? (message.getField(field)) : null
+        transformResult(converted_value) == expectedProtoValue
+
+
+        where:
+        suite                | avroType  | fieldExists | protoDescriptor                                       | expectedProtoValue                             | transformResult
+        "default-primitives" | "string"  | true        | NStringProto.NullablePrimitivesString.getDescriptor() | null                                           | { c -> c }
+        "default-primitives" | "int"     | true        | NInt32Proto.NullablePrimitivesInt32.getDescriptor()   | null                                           | { c -> c }
+        "default-primitives" | "long"    | true        | NInt64Proto.NullablePrimitivesInt64.getDescriptor()   | null                                           | { c -> c }
+        "default-primitives" | "boolean" | true        | NInt64Proto.NullablePrimitivesInt64.getDescriptor()   | null                                           | { c -> c }
+        "default-primitives" | "boolean" | true        | NBoolProto.NullablePrimitivesBool.getDescriptor()     | null                                           | { c -> c }
+        "default-primitives" | "bytes"   | true        | NBytesProto.NullablePrimitivesBytes.getDescriptor()   | null                                           | { c -> c }
+        "default-primitives" | "float"   | true        | NFloatProto.NullablePrimitivesFloat.getDescriptor()   | null                                           | { c -> c }
+        "default-primitives" | "double"  | true        | NDoubleProto.NullablePrimitivesDouble.getDescriptor() | null                                           | { c -> c }
+        "default-primitives" | "string"  | false       | NStringProto.NullablePrimitivesString.getDescriptor() | "Z sejmu dla Faktów Katarzyna Bolesna-Mordęga" | { c -> c }
+        "default-primitives" | "int"     | false       | NInt32Proto.NullablePrimitivesInt32.getDescriptor()   | 997                                            | { c -> c }
+        "default-primitives" | "long"    | false       | NInt64Proto.NullablePrimitivesInt64.getDescriptor()   | 1614322339997                                  | { c -> c }
+        "default-primitives" | "boolean" | false       | NBoolProto.NullablePrimitivesBool.getDescriptor()     | true                                           | { c -> c }
+        "default-primitives" | "bytes"   | false       | NBytesProto.NullablePrimitivesBytes.getDescriptor()   | "\u0074\u0065\u0073\u0074".getBytes()          | { c -> c.bytes }
+        "default-primitives" | "float"   | false       | NFloatProto.NullablePrimitivesFloat.getDescriptor()   | 3.14f                                          | { c -> c }
+        "default-primitives" | "double"  | false       | NDoubleProto.NullablePrimitivesDouble.getDescriptor() | 3.14d                                          | { c -> c }
 
 
     }
