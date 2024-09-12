@@ -1,12 +1,12 @@
 <script setup lang="ts">
-  import { computed } from 'vue';
+import {computed, watch} from 'vue';
   import { isAdmin, isAny } from '@/utils/roles-util';
   import { ref } from 'vue';
   import { useDialog } from '@/composables/dialog/use-dialog/useDialog';
   import { useGroups } from '@/composables/groups/use-groups/useGroups';
   import { useI18n } from 'vue-i18n';
   import { useRoles } from '@/composables/roles/use-roles/useRoles';
-  import { useRouter } from 'vue-router';
+import {useRoute, useRouter} from 'vue-router';
   import ConfirmationDialog from '@/components/confirmation-dialog/ConfirmationDialog.vue';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import GroupTopicsListing from '@/views/group-topics/group-topics-listing/GroupTopicsListing.vue';
@@ -14,13 +14,14 @@
   import TopicForm from '@/views/topic/topic-form/TopicForm.vue';
 
   const router = useRouter();
+  const route = useRoute();
   const params = router.currentRoute.value.params as Record<string, string>;
   const { groupId } = params;
   const { t } = useI18n();
 
   const { groups, loading, error, removeGroup } = useGroups();
 
-  const filter = ref<string>();
+  const filter = ref<string>(route.query.q as string || '');
 
   const roles = useRoles(null, null).roles;
 
@@ -75,6 +76,12 @@
       href: `/ui/groups/${groupId}`,
     },
   ];
+
+  const updateQueryParams = () => {
+    router.push({ query: { ...route.query, q: filter.value } } );
+  };
+
+  watch(filter, updateQueryParams);
 </script>
 
 <template>
@@ -161,6 +168,7 @@
           density="compact"
           v-model="filter"
           prepend-inner-icon="mdi-magnify"
+          type="search"
         />
       </v-col>
     </v-row>
