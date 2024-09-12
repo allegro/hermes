@@ -3,5 +3,5 @@
     <Description>Search Hermes Topics</Description>
     <InputEncoding>UTF-8</InputEncoding>
     <Image width="16" height="16" type="image/x-icon">/favicon.ico</Image>
-    <Url type="text/html" method="get" template="/search?q={searchTerms}&amp;ref=opensearch"/>
+    <Url type="text/html" method="get" template="/ui/groups?q={searchTerms}&amp;ref=opensearch"/>
 </OpenSearchDescription>
