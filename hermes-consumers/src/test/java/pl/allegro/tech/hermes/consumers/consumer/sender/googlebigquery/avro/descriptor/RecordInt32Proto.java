@@ -17,6 +17,21 @@ public final class RecordInt32Proto {
   public interface RecordPrimitivesInt32OrBuilder extends
       // @@protoc_insertion_point(interface_extends:pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordPrimitivesInt32)
       com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>.pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordPrimitivesInt32.Field field = 1;</code>
+     * @return Whether the field field is set.
+     */
+    boolean hasField();
+    /**
+     * <code>.pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordPrimitivesInt32.Field field = 1;</code>
+     * @return The field.
+     */
+    pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field getField();
+    /**
+     * <code>.pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordPrimitivesInt32.Field field = 1;</code>
+     */
+    pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.FieldOrBuilder getFieldOrBuilder();
   }
   /**
    * Protobuf type {@code pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordPrimitivesInt32}
@@ -63,6 +78,19 @@ public final class RecordInt32Proto {
             case 0:
               done = true;
               break;
+            case 10: {
+              pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field.Builder subBuilder = null;
+              if (field_ != null) {
+                subBuilder = field_.toBuilder();
+              }
+              field_ = input.readMessage(pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(field_);
+                field_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
             default: {
               if (!parseUnknownField(
                   input, unknownFields, extensionRegistry, tag)) {
@@ -97,8 +125,8 @@ public final class RecordInt32Proto {
               pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.class, pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Builder.class);
     }
 
-    public interface fieldOrBuilder extends
-        // @@protoc_insertion_point(interface_extends:pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordPrimitivesInt32.field)
+    public interface FieldOrBuilder extends
+        // @@protoc_insertion_point(interface_extends:pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordPrimitivesInt32.Field)
         com.google.protobuf.MessageOrBuilder {
 
       /**
@@ -108,25 +136,25 @@ public final class RecordInt32Proto {
       int getValueField();
     }
     /**
-     * Protobuf type {@code pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordPrimitivesInt32.field}
+     * Protobuf type {@code pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordPrimitivesInt32.Field}
      */
-    public static final class field extends
+    public static final class Field extends
         com.google.protobuf.GeneratedMessageV3 implements
-        // @@protoc_insertion_point(message_implements:pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordPrimitivesInt32.field)
-        fieldOrBuilder {
+        // @@protoc_insertion_point(message_implements:pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordPrimitivesInt32.Field)
+        FieldOrBuilder {
     private static final long serialVersionUID = 0L;
-      // Use field.newBuilder() to construct.
-      private field(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      // Use Field.newBuilder() to construct.
+      private Field(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
         super(builder);
       }
-      private field() {
+      private Field() {
       }
 
       @java.lang.Override
       @SuppressWarnings({"unused"})
       protected java.lang.Object newInstance(
           UnusedPrivateParameter unused) {
-        return new field();
+        return new Field();
       }
 
       @java.lang.Override
@@ -134,7 +162,7 @@ public final class RecordInt32Proto {
       getUnknownFields() {
         return this.unknownFields;
       }
-      private field(
+      private Field(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
@@ -180,15 +208,15 @@ public final class RecordInt32Proto {
       }
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.internal_static_pl_allegro_tech_hermes_consumers_consumer_sender_googlebigquery_avro_descriptor_RecordPrimitivesInt32_field_descriptor;
+        return pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.internal_static_pl_allegro_tech_hermes_consumers_consumer_sender_googlebigquery_avro_descriptor_RecordPrimitivesInt32_Field_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.internal_static_pl_allegro_tech_hermes_consumers_consumer_sender_googlebigquery_avro_descriptor_RecordPrimitivesInt32_field_fieldAccessorTable
+        return pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.internal_static_pl_allegro_tech_hermes_consumers_consumer_sender_googlebigquery_avro_descriptor_RecordPrimitivesInt32_Field_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.field.class, pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.field.Builder.class);
+                pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field.class, pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field.Builder.class);
       }
 
       public static final int VALUE_FIELD_FIELD_NUMBER = 1;
@@ -242,10 +270,10 @@ public final class RecordInt32Proto {
         if (obj == this) {
          return true;
         }
-        if (!(obj instanceof pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.field)) {
+        if (!(obj instanceof pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field)) {
           return super.equals(obj);
         }
-        pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.field other = (pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.field) obj;
+        pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field other = (pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field) obj;
 
         if (getValueField()
             != other.getValueField()) return false;
@@ -267,69 +295,69 @@ public final class RecordInt32Proto {
         return hash;
       }
 
-      public static pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.field parseFrom(
+      public static pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field parseFrom(
           java.nio.ByteBuffer data)
           throws com.google.protobuf.InvalidProtocolBufferException {
         return PARSER.parseFrom(data);
       }
-      public static pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.field parseFrom(
+      public static pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field parseFrom(
           java.nio.ByteBuffer data,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
         return PARSER.parseFrom(data, extensionRegistry);
       }
-      public static pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.field parseFrom(
+      public static pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field parseFrom(
           com.google.protobuf.ByteString data)
           throws com.google.protobuf.InvalidProtocolBufferException {
         return PARSER.parseFrom(data);
       }
-      public static pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.field parseFrom(
+      public static pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field parseFrom(
           com.google.protobuf.ByteString data,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
         return PARSER.parseFrom(data, extensionRegistry);
       }
-      public static pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.field parseFrom(byte[] data)
+      public static pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field parseFrom(byte[] data)
           throws com.google.protobuf.InvalidProtocolBufferException {
         return PARSER.parseFrom(data);
       }
-      public static pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.field parseFrom(
+      public static pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field parseFrom(
           byte[] data,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
         return PARSER.parseFrom(data, extensionRegistry);
       }
-      public static pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.field parseFrom(java.io.InputStream input)
+      public static pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field parseFrom(java.io.InputStream input)
           throws java.io.IOException {
         return com.google.protobuf.GeneratedMessageV3
             .parseWithIOException(PARSER, input);
       }
-      public static pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.field parseFrom(
+      public static pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field parseFrom(
           java.io.InputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
         return com.google.protobuf.GeneratedMessageV3
             .parseWithIOException(PARSER, input, extensionRegistry);
       }
-      public static pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.field parseDelimitedFrom(java.io.InputStream input)
+      public static pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field parseDelimitedFrom(java.io.InputStream input)
           throws java.io.IOException {
         return com.google.protobuf.GeneratedMessageV3
             .parseDelimitedWithIOException(PARSER, input);
       }
-      public static pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.field parseDelimitedFrom(
+      public static pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field parseDelimitedFrom(
           java.io.InputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
         return com.google.protobuf.GeneratedMessageV3
             .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
       }
-      public static pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.field parseFrom(
+      public static pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field parseFrom(
           com.google.protobuf.CodedInputStream input)
           throws java.io.IOException {
         return com.google.protobuf.GeneratedMessageV3
             .parseWithIOException(PARSER, input);
       }
-      public static pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.field parseFrom(
+      public static pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field parseFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
@@ -342,7 +370,7 @@ public final class RecordInt32Proto {
       public static Builder newBuilder() {
         return DEFAULT_INSTANCE.toBuilder();
       }
-      public static Builder newBuilder(pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.field prototype) {
+      public static Builder newBuilder(pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field prototype) {
         return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
       }
       @java.lang.Override
@@ -358,26 +386,26 @@ public final class RecordInt32Proto {
         return builder;
       }
       /**
-       * Protobuf type {@code pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordPrimitivesInt32.field}
+       * Protobuf type {@code pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordPrimitivesInt32.Field}
        */
       public static final class Builder extends
           com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-          // @@protoc_insertion_point(builder_implements:pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordPrimitivesInt32.field)
-          pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.fieldOrBuilder {
+          // @@protoc_insertion_point(builder_implements:pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordPrimitivesInt32.Field)
+          pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.FieldOrBuilder {
         public static final com.google.protobuf.Descriptors.Descriptor
             getDescriptor() {
-          return pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.internal_static_pl_allegro_tech_hermes_consumers_consumer_sender_googlebigquery_avro_descriptor_RecordPrimitivesInt32_field_descriptor;
+          return pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.internal_static_pl_allegro_tech_hermes_consumers_consumer_sender_googlebigquery_avro_descriptor_RecordPrimitivesInt32_Field_descriptor;
         }
 
         @java.lang.Override
         protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
             internalGetFieldAccessorTable() {
-          return pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.internal_static_pl_allegro_tech_hermes_consumers_consumer_sender_googlebigquery_avro_descriptor_RecordPrimitivesInt32_field_fieldAccessorTable
+          return pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.internal_static_pl_allegro_tech_hermes_consumers_consumer_sender_googlebigquery_avro_descriptor_RecordPrimitivesInt32_Field_fieldAccessorTable
               .ensureFieldAccessorsInitialized(
-                  pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.field.class, pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.field.Builder.class);
+                  pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field.class, pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field.Builder.class);
         }
 
-        // Construct using pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.field.newBuilder()
+        // Construct using pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field.newBuilder()
         private Builder() {
           maybeForceBuilderInitialization();
         }
@@ -403,17 +431,17 @@ public final class RecordInt32Proto {
         @java.lang.Override
         public com.google.protobuf.Descriptors.Descriptor
             getDescriptorForType() {
-          return pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.internal_static_pl_allegro_tech_hermes_consumers_consumer_sender_googlebigquery_avro_descriptor_RecordPrimitivesInt32_field_descriptor;
+          return pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.internal_static_pl_allegro_tech_hermes_consumers_consumer_sender_googlebigquery_avro_descriptor_RecordPrimitivesInt32_Field_descriptor;
         }
 
         @java.lang.Override
-        public pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.field getDefaultInstanceForType() {
-          return pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.field.getDefaultInstance();
+        public pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field getDefaultInstanceForType() {
+          return pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field.getDefaultInstance();
         }
 
         @java.lang.Override
-        public pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.field build() {
-          pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.field result = buildPartial();
+        public pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field build() {
+          pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field result = buildPartial();
           if (!result.isInitialized()) {
             throw newUninitializedMessageException(result);
           }
@@ -421,8 +449,8 @@ public final class RecordInt32Proto {
         }
 
         @java.lang.Override
-        public pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.field buildPartial() {
-          pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.field result = new pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.field(this);
+        public pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field buildPartial() {
+          pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field result = new pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field(this);
           result.valueField_ = valueField_;
           onBuilt();
           return result;
@@ -462,16 +490,16 @@ public final class RecordInt32Proto {
         }
         @java.lang.Override
         public Builder mergeFrom(com.google.protobuf.Message other) {
-          if (other instanceof pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.field) {
-            return mergeFrom((pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.field)other);
+          if (other instanceof pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field) {
+            return mergeFrom((pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field)other);
           } else {
             super.mergeFrom(other);
             return this;
           }
         }
 
-        public Builder mergeFrom(pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.field other) {
-          if (other == pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.field.getDefaultInstance()) return this;
+        public Builder mergeFrom(pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field other) {
+          if (other == pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field.getDefaultInstance()) return this;
           if (other.getValueField() != 0) {
             setValueField(other.getValueField());
           }
@@ -490,11 +518,11 @@ public final class RecordInt32Proto {
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws java.io.IOException {
-          pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.field parsedMessage = null;
+          pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field parsedMessage = null;
           try {
             parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
           } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            parsedMessage = (pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.field) e.getUnfinishedMessage();
+            parsedMessage = (pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field) e.getUnfinishedMessage();
             throw e.unwrapIOException();
           } finally {
             if (parsedMessage != null) {
@@ -547,44 +575,70 @@ public final class RecordInt32Proto {
         }
 
 
-        // @@protoc_insertion_point(builder_scope:pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordPrimitivesInt32.field)
+        // @@protoc_insertion_point(builder_scope:pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordPrimitivesInt32.Field)
       }
 
-      // @@protoc_insertion_point(class_scope:pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordPrimitivesInt32.field)
-      private static final pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.field DEFAULT_INSTANCE;
+      // @@protoc_insertion_point(class_scope:pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordPrimitivesInt32.Field)
+      private static final pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field DEFAULT_INSTANCE;
       static {
-        DEFAULT_INSTANCE = new pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.field();
+        DEFAULT_INSTANCE = new pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field();
       }
 
-      public static pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.field getDefaultInstance() {
+      public static pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field getDefaultInstance() {
         return DEFAULT_INSTANCE;
       }
 
-      private static final com.google.protobuf.Parser<field>
-          PARSER = new com.google.protobuf.AbstractParser<field>() {
+      private static final com.google.protobuf.Parser<Field>
+          PARSER = new com.google.protobuf.AbstractParser<Field>() {
         @java.lang.Override
-        public field parsePartialFrom(
+        public Field parsePartialFrom(
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new field(input, extensionRegistry);
+          return new Field(input, extensionRegistry);
         }
       };
 
-      public static com.google.protobuf.Parser<field> parser() {
+      public static com.google.protobuf.Parser<Field> parser() {
         return PARSER;
       }
 
       @java.lang.Override
-      public com.google.protobuf.Parser<field> getParserForType() {
+      public com.google.protobuf.Parser<Field> getParserForType() {
         return PARSER;
       }
 
       @java.lang.Override
-      public pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.field getDefaultInstanceForType() {
+      public pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field getDefaultInstanceForType() {
         return DEFAULT_INSTANCE;
       }
 
+    }
+
+    public static final int FIELD_FIELD_NUMBER = 1;
+    private pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field field_;
+    /**
+     * <code>.pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordPrimitivesInt32.Field field = 1;</code>
+     * @return Whether the field field is set.
+     */
+    @java.lang.Override
+    public boolean hasField() {
+      return field_ != null;
+    }
+    /**
+     * <code>.pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordPrimitivesInt32.Field field = 1;</code>
+     * @return The field.
+     */
+    @java.lang.Override
+    public pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field getField() {
+      return field_ == null ? pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field.getDefaultInstance() : field_;
+    }
+    /**
+     * <code>.pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordPrimitivesInt32.Field field = 1;</code>
+     */
+    @java.lang.Override
+    public pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.FieldOrBuilder getFieldOrBuilder() {
+      return getField();
     }
 
     private byte memoizedIsInitialized = -1;
@@ -601,6 +655,9 @@ public final class RecordInt32Proto {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
+      if (field_ != null) {
+        output.writeMessage(1, getField());
+      }
       unknownFields.writeTo(output);
     }
 
@@ -610,6 +667,10 @@ public final class RecordInt32Proto {
       if (size != -1) return size;
 
       size = 0;
+      if (field_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, getField());
+      }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
@@ -625,6 +686,11 @@ public final class RecordInt32Proto {
       }
       pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32 other = (pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32) obj;
 
+      if (hasField() != other.hasField()) return false;
+      if (hasField()) {
+        if (!getField()
+            .equals(other.getField())) return false;
+      }
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
@@ -636,6 +702,10 @@ public final class RecordInt32Proto {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
+      if (hasField()) {
+        hash = (37 * hash) + FIELD_FIELD_NUMBER;
+        hash = (53 * hash) + getField().hashCode();
+      }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -769,6 +839,12 @@ public final class RecordInt32Proto {
       @java.lang.Override
       public Builder clear() {
         super.clear();
+        if (fieldBuilder_ == null) {
+          field_ = null;
+        } else {
+          field_ = null;
+          fieldBuilder_ = null;
+        }
         return this;
       }
 
@@ -795,6 +871,11 @@ public final class RecordInt32Proto {
       @java.lang.Override
       public pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32 buildPartial() {
         pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32 result = new pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32(this);
+        if (fieldBuilder_ == null) {
+          result.field_ = field_;
+        } else {
+          result.field_ = fieldBuilder_.build();
+        }
         onBuilt();
         return result;
       }
@@ -843,6 +924,9 @@ public final class RecordInt32Proto {
 
       public Builder mergeFrom(pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32 other) {
         if (other == pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.getDefaultInstance()) return this;
+        if (other.hasField()) {
+          mergeField(other.getField());
+        }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
@@ -870,6 +954,125 @@ public final class RecordInt32Proto {
           }
         }
         return this;
+      }
+
+      private pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field field_;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field, pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field.Builder, pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.FieldOrBuilder> fieldBuilder_;
+      /**
+       * <code>.pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordPrimitivesInt32.Field field = 1;</code>
+       * @return Whether the field field is set.
+       */
+      public boolean hasField() {
+        return fieldBuilder_ != null || field_ != null;
+      }
+      /**
+       * <code>.pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordPrimitivesInt32.Field field = 1;</code>
+       * @return The field.
+       */
+      public pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field getField() {
+        if (fieldBuilder_ == null) {
+          return field_ == null ? pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field.getDefaultInstance() : field_;
+        } else {
+          return fieldBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>.pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordPrimitivesInt32.Field field = 1;</code>
+       */
+      public Builder setField(pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field value) {
+        if (fieldBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          field_ = value;
+          onChanged();
+        } else {
+          fieldBuilder_.setMessage(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>.pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordPrimitivesInt32.Field field = 1;</code>
+       */
+      public Builder setField(
+          pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field.Builder builderForValue) {
+        if (fieldBuilder_ == null) {
+          field_ = builderForValue.build();
+          onChanged();
+        } else {
+          fieldBuilder_.setMessage(builderForValue.build());
+        }
+
+        return this;
+      }
+      /**
+       * <code>.pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordPrimitivesInt32.Field field = 1;</code>
+       */
+      public Builder mergeField(pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field value) {
+        if (fieldBuilder_ == null) {
+          if (field_ != null) {
+            field_ =
+              pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field.newBuilder(field_).mergeFrom(value).buildPartial();
+          } else {
+            field_ = value;
+          }
+          onChanged();
+        } else {
+          fieldBuilder_.mergeFrom(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>.pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordPrimitivesInt32.Field field = 1;</code>
+       */
+      public Builder clearField() {
+        if (fieldBuilder_ == null) {
+          field_ = null;
+          onChanged();
+        } else {
+          field_ = null;
+          fieldBuilder_ = null;
+        }
+
+        return this;
+      }
+      /**
+       * <code>.pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordPrimitivesInt32.Field field = 1;</code>
+       */
+      public pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field.Builder getFieldBuilder() {
+        
+        onChanged();
+        return getFieldFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>.pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordPrimitivesInt32.Field field = 1;</code>
+       */
+      public pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.FieldOrBuilder getFieldOrBuilder() {
+        if (fieldBuilder_ != null) {
+          return fieldBuilder_.getMessageOrBuilder();
+        } else {
+          return field_ == null ?
+              pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field.getDefaultInstance() : field_;
+        }
+      }
+      /**
+       * <code>.pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordPrimitivesInt32.Field field = 1;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field, pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field.Builder, pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.FieldOrBuilder> 
+          getFieldFieldBuilder() {
+        if (fieldBuilder_ == null) {
+          fieldBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field, pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.Field.Builder, pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.descriptor.RecordInt32Proto.RecordPrimitivesInt32.FieldOrBuilder>(
+                  getField(),
+                  getParentForChildren(),
+                  isClean());
+          field_ = null;
+        }
+        return fieldBuilder_;
       }
       @java.lang.Override
       public final Builder setUnknownFields(
@@ -930,10 +1133,10 @@ public final class RecordInt32Proto {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_pl_allegro_tech_hermes_consumers_consumer_sender_googlebigquery_avro_descriptor_RecordPrimitivesInt32_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_pl_allegro_tech_hermes_consumers_consumer_sender_googlebigquery_avro_descriptor_RecordPrimitivesInt32_field_descriptor;
+    internal_static_pl_allegro_tech_hermes_consumers_consumer_sender_googlebigquery_avro_descriptor_RecordPrimitivesInt32_Field_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_pl_allegro_tech_hermes_consumers_consumer_sender_googlebigquery_avro_descriptor_RecordPrimitivesInt32_field_fieldAccessorTable;
+      internal_static_pl_allegro_tech_hermes_consumers_consumer_sender_googlebigquery_avro_descriptor_RecordPrimitivesInt32_Field_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -946,8 +1149,12 @@ public final class RecordInt32Proto {
       "\n1schemas/primitives-records/RecordInt32" +
       "Proto.proto\022Opl.allegro.tech.hermes.cons" +
       "umers.consumer.sender.googlebigquery.avr" +
-      "o.descriptor\"5\n\025RecordPrimitivesInt32\032\034\n" +
-      "\005field\022\023\n\013value_field\030\001 \001(\005b\006proto3"
+      "o.descriptor\"\262\001\n\025RecordPrimitivesInt32\022{" +
+      "\n\005field\030\001 \001(\0132l.pl.allegro.tech.hermes.c" +
+      "onsumers.consumer.sender.googlebigquery." +
+      "avro.descriptor.RecordPrimitivesInt32.Fi" +
+      "eld\032\034\n\005Field\022\023\n\013value_field\030\001 \001(\005b\006proto" +
+      "3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -958,12 +1165,12 @@ public final class RecordInt32Proto {
     internal_static_pl_allegro_tech_hermes_consumers_consumer_sender_googlebigquery_avro_descriptor_RecordPrimitivesInt32_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_pl_allegro_tech_hermes_consumers_consumer_sender_googlebigquery_avro_descriptor_RecordPrimitivesInt32_descriptor,
-        new java.lang.String[] { });
-    internal_static_pl_allegro_tech_hermes_consumers_consumer_sender_googlebigquery_avro_descriptor_RecordPrimitivesInt32_field_descriptor =
+        new java.lang.String[] { "Field", });
+    internal_static_pl_allegro_tech_hermes_consumers_consumer_sender_googlebigquery_avro_descriptor_RecordPrimitivesInt32_Field_descriptor =
       internal_static_pl_allegro_tech_hermes_consumers_consumer_sender_googlebigquery_avro_descriptor_RecordPrimitivesInt32_descriptor.getNestedTypes().get(0);
-    internal_static_pl_allegro_tech_hermes_consumers_consumer_sender_googlebigquery_avro_descriptor_RecordPrimitivesInt32_field_fieldAccessorTable = new
+    internal_static_pl_allegro_tech_hermes_consumers_consumer_sender_googlebigquery_avro_descriptor_RecordPrimitivesInt32_Field_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_pl_allegro_tech_hermes_consumers_consumer_sender_googlebigquery_avro_descriptor_RecordPrimitivesInt32_field_descriptor,
+        internal_static_pl_allegro_tech_hermes_consumers_consumer_sender_googlebigquery_avro_descriptor_RecordPrimitivesInt32_Field_descriptor,
         new java.lang.String[] { "ValueField", });
   }
 

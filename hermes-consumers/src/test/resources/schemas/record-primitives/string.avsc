@@ -4,13 +4,13 @@
   "type": "record",
   "fields": [
     {
-      "name": "string_field",
+      "name": "field",
       "type": {
         "name": "string",
         "type": "record",
         "fields": [
           {
-            "name": "string_value_field",
+            "name": "value_field",
             "type": "string"
           }
         ]

@@ -6,7 +6,7 @@
     {
       "name": "field",
       "type": {
-        "name": "int",
+        "name": "string",
         "type": "record",
         "fields": [
           {

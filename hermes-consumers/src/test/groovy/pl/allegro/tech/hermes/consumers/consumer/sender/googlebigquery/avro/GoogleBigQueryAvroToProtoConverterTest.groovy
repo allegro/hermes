@@ -55,6 +55,77 @@ class GoogleBigQueryAvroToProtoConverterTest extends Specification implements Av
 
     }
 
+    void convertPrimitivesToProtoMessageWithCasting() {
+
+        given:
+        Schema schema = getSchemaFromResources("${suite}/${avroType}")
+        String fieldName = "field"
+        GenericRecord record = new GenericRecordBuilder(schema).set(fieldName, avroValue).build()
+        GoogleBigQueryAvroToProtoConverter converter = new GoogleBigQueryAvroToProtoConverter()
+
+        when:
+        DynamicMessage message = converter.convertToProtoMessage(protoDescriptor, record)
+
+
+        then:
+        message != null
+        println(message)
+        def field = message.getDescriptorForType().findFieldByName(fieldName)
+        def converted_value = message.getField(field)
+        if (field.getDefaultValue() != avroValue) {
+            record.hasField(fieldName) == message.hasField(field)
+        }
+        transformResult(converted_value) == expectedProtoValue
+
+
+        where:
+        suite        | avroType  | protoDescriptor                              | avroValue | expectedProtoValue | transformResult
+        "primitives" | "string"  | StringProto.PrimitivesString.getDescriptor() | "value"   | "value"            | { c -> c }
+        "primitives" | "string"  | StringProto.PrimitivesString.getDescriptor() | 12        | "12"               | { c -> c }
+        "primitives" | "string"  | StringProto.PrimitivesString.getDescriptor() | 12l       | "12"               | { c -> c }
+        "primitives" | "string"  | StringProto.PrimitivesString.getDescriptor() | 12f       | "12.0"             | { c -> c }
+        "primitives" | "string"  | StringProto.PrimitivesString.getDescriptor() | 12d       | "12.0"             | { c -> c }
+
+        "primitives" | "int"     | Int32Proto.PrimitivesInt32.getDescriptor()   | 12        | 12                 | { c -> c }
+        "primitives" | "long"    | Int32Proto.PrimitivesInt32.getDescriptor()   | 12l       | 12                 | { c -> c }
+        "primitives" | "float"   | Int32Proto.PrimitivesInt32.getDescriptor()   | 12f       | 12                 | { c -> c }
+        "primitives" | "double"  | Int32Proto.PrimitivesInt32.getDescriptor()   | 12d       | 12                 | { c -> c }
+        "primitives" | "string"  | Int32Proto.PrimitivesInt32.getDescriptor()   | "12"      | 12                 | { c -> c }
+        "primitives" | "boolean" | Int32Proto.PrimitivesInt32.getDescriptor()   | true      | 1                  | { c -> c }
+        "primitives" | "boolean" | Int32Proto.PrimitivesInt32.getDescriptor()   | false     | 0                  | { c -> c }
+//
+        "primitives" | "int"     | Int64Proto.PrimitivesInt64.getDescriptor()   | 12        | 12l                | { c -> c }
+        "primitives" | "long"    | Int64Proto.PrimitivesInt64.getDescriptor()   | 12l       | 12l                | { c -> c }
+        "primitives" | "float"   | Int64Proto.PrimitivesInt64.getDescriptor()   | 12f       | 12l                | { c -> c }
+        "primitives" | "double"  | Int64Proto.PrimitivesInt64.getDescriptor()   | 12d       | 12l                | { c -> c }
+        "primitives" | "string"  | Int64Proto.PrimitivesInt64.getDescriptor()   | "12.0"    | 12l                | { c -> c }
+        "primitives" | "boolean" | Int64Proto.PrimitivesInt64.getDescriptor()   | true      | 1l                 | { c -> c }
+        "primitives" | "boolean" | Int64Proto.PrimitivesInt64.getDescriptor()   | false     | 0l                 | { c -> c }
+
+        "primitives" | "int"     | FloatProto.PrimitivesFloat.getDescriptor()   | 12        | 12.0f              | { c -> c }
+        "primitives" | "long"    | FloatProto.PrimitivesFloat.getDescriptor()   | 12l       | 12.0f              | { c -> c }
+        "primitives" | "float"   | FloatProto.PrimitivesFloat.getDescriptor()   | 12.234f   | 12.234f            | { c -> c }
+        "primitives" | "double"  | FloatProto.PrimitivesFloat.getDescriptor()   | 12.234d   | 12.234f            | { c -> c }
+        "primitives" | "string"  | FloatProto.PrimitivesFloat.getDescriptor()   | "12.234"  | 12.234f            | { c -> c }
+        "primitives" | "boolean" | FloatProto.PrimitivesFloat.getDescriptor()   | true      | 1f                 | { c -> c }
+        "primitives" | "boolean" | FloatProto.PrimitivesFloat.getDescriptor()   | false     | 0f                 | { c -> c }
+
+        "primitives" | "int"     | DoubleProto.PrimitivesDouble.getDescriptor() | 12        | 12.0d              | { c -> c }
+        "primitives" | "long"    | DoubleProto.PrimitivesDouble.getDescriptor() | 12l       | 12.0d              | { c -> c }
+        "primitives" | "float"   | DoubleProto.PrimitivesDouble.getDescriptor() | 12.5f     | 12.5d              | { c -> c }
+        "primitives" | "double"  | DoubleProto.PrimitivesDouble.getDescriptor() | 12.234d   | 12.234d            | { c -> c }
+        "primitives" | "string"  | DoubleProto.PrimitivesDouble.getDescriptor() | "12.234"  | 12.234d            | { c -> c }
+        "primitives" | "boolean" | DoubleProto.PrimitivesDouble.getDescriptor() | true      | 1d                 | { c -> c }
+        "primitives" | "boolean" | DoubleProto.PrimitivesDouble.getDescriptor() | false     | 0d                 | { c -> c }
+
+        "primitives" | "boolean" | BoolProto.PrimitivesBool.getDescriptor()     | true      | true               | { c -> c }
+        "primitives" | "boolean" | BoolProto.PrimitivesBool.getDescriptor()     | false     | false              | { c -> c }
+        "primitives" | "string"  | BoolProto.PrimitivesBool.getDescriptor()     | "true"    | true               | { c -> c }
+        "primitives" | "string"  | BoolProto.PrimitivesBool.getDescriptor()     | "false"   | false              | { c -> c }
+        "primitives" | "boolean" | BoolProto.PrimitivesBool.getDescriptor()     | 1         | true               | { c -> c }
+        "primitives" | "boolean" | BoolProto.PrimitivesBool.getDescriptor()     | 0         | false              | { c -> c }
+    }
+
     @Test
     void convertNullablePrimitivesToProtoMessage() {
 
@@ -79,6 +150,7 @@ class GoogleBigQueryAvroToProtoConverterTest extends Specification implements Av
 
         where:
         suite                 | avroType  | protoDescriptor                                       | avroValue                         | expectedProtoValue | transformResult
+        "nullable-primitives" | "long"    | NInt64Proto.NullablePrimitivesInt64.getDescriptor()   | 12                                | 12l                | { c -> c }
         "nullable-primitives" | "string"  | NStringProto.NullablePrimitivesString.getDescriptor() | null                              | null               | { c -> c }
         "nullable-primitives" | "string"  | NStringProto.NullablePrimitivesString.getDescriptor() | "value"                           | "value"            | { c -> c }
         "nullable-primitives" | "int"     | NInt32Proto.NullablePrimitivesInt32.getDescriptor()   | 12                                | 12                 | { c -> c }
@@ -261,7 +333,12 @@ class GoogleBigQueryAvroToProtoConverterTest extends Specification implements Av
         given:
         Schema schema = getSchemaFromResources("${suite}/${avroType}")
         String fieldName = "field"
-        GenericRecord record = fieldExists ? new GenericRecordBuilder(schema).set(fieldName, null).build() : new GenericRecordBuilder(schema).build()
+        String valueFieldName = "value_field"
+//        GenericRecord record = fieldExists ? new GenericRecordBuilder(schema).set(fieldName, null).build() : new GenericRecordBuilder(schema).build()
+        GenericRecord record = new GenericRecordBuilder(schema).set(
+                fieldName,
+                new GenericRecordBuilder(schema.getField(fieldName).schema()).set(valueFieldName, avroValue).build()
+        ).build()
         GoogleBigQueryAvroToProtoConverter converter = new GoogleBigQueryAvroToProtoConverter()
 
         when:
@@ -272,28 +349,22 @@ class GoogleBigQueryAvroToProtoConverterTest extends Specification implements Av
         message != null
         println(message)
         def field = message.getDescriptorForType().findFieldByName(fieldName)
-//        record.hasField(fieldName) == !message.hasField(field)
-        def converted_value = message.hasField(field) ? (message.getField(field)) : null
-        transformResult(converted_value) == expectedProtoValue
+        def convertedFieldValue = message.getField(field).toString().replace("\\", "").replace("\n", "")
+        def expectedRecord = "value_field: ${expectedProtoValue}".replace("\\", "").replace("\n", "")
+//        record.hasField(fieldName) == !message.hasField(field)def converted_value = message.hasField(field) ? (message.getField(field)) : null
+        expectedRecord == convertedFieldValue
 
 
         where:
-        suite                | avroType  | fieldExists | protoDescriptor                                       | expectedProtoValue                             | transformResult
-        "default-primitives" | "string"  | true        | NStringProto.NullablePrimitivesString.getDescriptor() | null                                           | { c -> c }
-        "default-primitives" | "int"     | true        | NInt32Proto.NullablePrimitivesInt32.getDescriptor()   | null                                           | { c -> c }
-        "default-primitives" | "long"    | true        | NInt64Proto.NullablePrimitivesInt64.getDescriptor()   | null                                           | { c -> c }
-        "default-primitives" | "boolean" | true        | NInt64Proto.NullablePrimitivesInt64.getDescriptor()   | null                                           | { c -> c }
-        "default-primitives" | "boolean" | true        | NBoolProto.NullablePrimitivesBool.getDescriptor()     | null                                           | { c -> c }
-        "default-primitives" | "bytes"   | true        | NBytesProto.NullablePrimitivesBytes.getDescriptor()   | null                                           | { c -> c }
-        "default-primitives" | "float"   | true        | NFloatProto.NullablePrimitivesFloat.getDescriptor()   | null                                           | { c -> c }
-        "default-primitives" | "double"  | true        | NDoubleProto.NullablePrimitivesDouble.getDescriptor() | null                                           | { c -> c }
-        "default-primitives" | "string"  | false       | NStringProto.NullablePrimitivesString.getDescriptor() | "Z sejmu dla Faktów Katarzyna Bolesna-Mordęga" | { c -> c }
-        "default-primitives" | "int"     | false       | NInt32Proto.NullablePrimitivesInt32.getDescriptor()   | 997                                            | { c -> c }
-        "default-primitives" | "long"    | false       | NInt64Proto.NullablePrimitivesInt64.getDescriptor()   | 1614322339997                                  | { c -> c }
-        "default-primitives" | "boolean" | false       | NBoolProto.NullablePrimitivesBool.getDescriptor()     | true                                           | { c -> c }
-        "default-primitives" | "bytes"   | false       | NBytesProto.NullablePrimitivesBytes.getDescriptor()   | "\u0074\u0065\u0073\u0074".getBytes()          | { c -> c.bytes }
-        "default-primitives" | "float"   | false       | NFloatProto.NullablePrimitivesFloat.getDescriptor()   | 3.14f                                          | { c -> c }
-        "default-primitives" | "double"  | false       | NDoubleProto.NullablePrimitivesDouble.getDescriptor() | 3.14d                                          | { c -> c }
+        suite               | avroType  | protoDescriptor                                          | avroValue                         | expectedProtoValue | transformResult
+        "record-primitives" | "string"  | RecordStringProto.RecordPrimitivesString.getDescriptor() | "value"                           | "\"value\""        | { c -> c }
+        "record-primitives" | "int"     | RecordInt32Proto.RecordPrimitivesInt32.getDescriptor()   | 12                                | 12                 | { c -> c }
+        "record-primitives" | "long"    | RecordInt64Proto.RecordPrimitivesInt64.getDescriptor()   | 12l                               | 12l                | { c -> c }
+        "record-primitives" | "boolean" | RecordInt64Proto.RecordPrimitivesInt64.getDescriptor()   | 12l                               | 12l                | { c -> c }
+/*-->*/ "record-primitives" | "boolean" | RecordBoolProto.RecordPrimitivesBool.getDescriptor()     | true                              | true               | { c -> c }
+        "record-primitives" | "bytes"   | RecordBytesProto.RecordPrimitivesBytes.getDescriptor()   | ByteBuffer.wrap("123".getBytes()) | "\"123\""              | { c -> new String(c.bytes) }
+        "record-primitives" | "float"   | RecordFloatProto.RecordPrimitivesFloat.getDescriptor()   | 1.234f                            | 1.234f             | { c -> c }
+        "record-primitives" | "double"  | RecordDoubleProto.RecordPrimitivesDouble.getDescriptor() | 1.234d                            | 1.234d             | { c -> c }
 
 
     }
