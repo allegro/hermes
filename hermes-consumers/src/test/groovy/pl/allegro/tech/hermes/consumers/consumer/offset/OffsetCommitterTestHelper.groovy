@@ -1,10 +1,8 @@
 package pl.allegro.tech.hermes.consumers.consumer.offset
 
-import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageCommitter
+class OffsetCommitterTestHelper {
 
-class MockMessageCommitter implements MessageCommitter {
-
-    private final List<OffsetsToCommit> recordedValues = []
+    private final List<Set<SubscriptionPartitionOffset>> recordedValues = []
 
     private int iteration = -1
 
@@ -13,11 +11,8 @@ class MockMessageCommitter implements MessageCommitter {
     }
 
     boolean wereCommitted(int iteration, SubscriptionPartitionOffset... expectedOffsets) {
-        OffsetsToCommit offsetsToCommit = recordedValues[iteration - 1]
         Set<SubscriptionPartitionOffset> allOffsets = [] as Set
-        offsetsToCommit.subscriptionNames().each { subscription ->
-            allOffsets.addAll(offsetsToCommit.batchFor(subscription))
-        }
+        recordedValues[iteration - 1].each {allOffsets.add(it)}
 
         Set<SubscriptionPartitionOffset> expectedOffsetsSet = [] as Set
         expectedOffsets.each { expectedOffsetsSet.add(it) }
@@ -25,9 +20,8 @@ class MockMessageCommitter implements MessageCommitter {
         allOffsets == expectedOffsetsSet
     }
 
-    @Override
-    void commitOffsets(OffsetsToCommit offsetsToCommit) {
-        recordedValues.add(offsetsToCommit)
+    void markCommittedOffsets(Set<SubscriptionPartitionOffset> subscriptionPartitionOffsets) {
+        recordedValues.add(subscriptionPartitionOffsets)
         iteration++
     }
 }

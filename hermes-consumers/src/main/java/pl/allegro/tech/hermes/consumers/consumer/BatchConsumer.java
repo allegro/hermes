@@ -18,7 +18,7 @@ import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatchReceiver;
 import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatchingResult;
 import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResolver;
 import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
-import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
+import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartition;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 import pl.allegro.tech.hermes.consumers.consumer.rate.BatchConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
@@ -29,6 +29,11 @@ import pl.allegro.tech.hermes.metrics.HermesTimerContext;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -49,9 +54,9 @@ public class BatchConsumer implements Consumer {
     private final CompositeMessageContentWrapper compositeMessageContentWrapper;
     private final Trackers trackers;
     private final SubscriptionLoadRecorder loadRecorder;
+    private final Duration commitPeriod;
 
     private Topic topic;
-    private final OffsetQueue offsetQueue;
     private Subscription subscription;
 
     private volatile boolean consuming = true;
@@ -60,10 +65,13 @@ public class BatchConsumer implements Consumer {
     private final BatchConsumerMetrics metrics;
     private MessageBatchReceiver receiver;
 
+    private final Map<SubscriptionPartition, Long> maxPendingOffsets = new HashMap<>();
+
+    private Instant lastCommitTime;
+
     public BatchConsumer(ReceiverFactory messageReceiverFactory,
                          MessageBatchSender sender,
                          MessageBatchFactory batchFactory,
-                         OffsetQueue offsetQueue,
                          MessageConverterResolver messageConverterResolver,
                          CompositeMessageContentWrapper compositeMessageContentWrapper,
                          MetricsFacade metricsFacade,
@@ -71,11 +79,11 @@ public class BatchConsumer implements Consumer {
                          Subscription subscription,
                          Topic topic,
                          boolean useTopicMessageSize,
-                         SubscriptionLoadRecorder loadRecorder) {
+                         SubscriptionLoadRecorder loadRecorder,
+                         Duration commitPeriod) {
         this.messageReceiverFactory = messageReceiverFactory;
         this.sender = sender;
         this.batchFactory = batchFactory;
-        this.offsetQueue = offsetQueue;
         this.subscription = subscription;
         this.useTopicMessageSize = useTopicMessageSize;
         this.loadRecorder = loadRecorder;
@@ -85,6 +93,8 @@ public class BatchConsumer implements Consumer {
         this.compositeMessageContentWrapper = compositeMessageContentWrapper;
         this.topic = topic;
         this.trackers = trackers;
+        this.commitPeriod = commitPeriod;
+        this.lastCommitTime = Instant.now();
     }
 
     @Override
@@ -94,17 +104,17 @@ public class BatchConsumer implements Consumer {
             logger.debug("Trying to create new batch [subscription={}].", subscription.getQualifiedName());
 
             signalsInterrupt.run();
+            commitIfReady();
 
             MessageBatchingResult result = receiver.next(subscription, signalsInterrupt);
             inflight = of(result.getBatch());
 
             inflight.ifPresent(batch -> {
                 logger.debug("Delivering batch [subscription={}].", subscription.getQualifiedName());
-                offerInflightOffsets(batch);
 
                 deliver(signalsInterrupt, batch, createRetryer(batch, subscription.getBatchSubscriptionPolicy()));
 
-                offerCommittedOffsets(batch);
+                offerProcessedOffsets(batch);
                 logger.debug("Finished delivering batch [subscription={}]", subscription.getQualifiedName());
             });
 
@@ -118,12 +128,35 @@ public class BatchConsumer implements Consumer {
         }
     }
 
-    private void offerInflightOffsets(MessageBatch batch) {
-        batch.getPartitionOffsets().forEach(offsetQueue::offerInflightOffset);
+    private void commitIfReady() {
+        if (isReadyToCommit()) {
+            Set<SubscriptionPartitionOffset> offsetsToCommit = new HashSet<>();
+
+            for (Map.Entry<SubscriptionPartition, Long> entry : maxPendingOffsets.entrySet()) {
+                offsetsToCommit.add(new SubscriptionPartitionOffset(entry.getKey(), entry.getValue()));
+            }
+
+            if (!offsetsToCommit.isEmpty()) {
+                commit(offsetsToCommit);
+            }
+            lastCommitTime = Instant.now();
+        }
     }
 
-    private void offerCommittedOffsets(MessageBatch batch) {
-        batch.getPartitionOffsets().forEach(offsetQueue::offerCommittedOffset);
+    private boolean isReadyToCommit() {
+        return Duration.between(lastCommitTime, Instant.now()).toMillis() > commitPeriod.toMillis();
+    }
+
+    private void offerProcessedOffsets(MessageBatch batch) {
+        for (SubscriptionPartitionOffset offset : batch.getPartitionOffsets()) {
+            putOffset(offset);
+        }
+    }
+
+    private void putOffset(SubscriptionPartitionOffset offset) {
+        maxPendingOffsets.compute(offset.getSubscriptionPartition(), (subscriptionPartition, maxOffset) ->
+                maxOffset == null ? offset.getOffset() : Math.max(maxOffset, offset.getOffset())
+        );
     }
 
     @Override
@@ -135,7 +168,8 @@ public class BatchConsumer implements Consumer {
                 subscription,
                 new BatchConsumerRateLimiter(),
                 loadRecorder,
-                metricsFacade
+                metricsFacade,
+                this::putOffset
         );
 
         logger.debug("Consumer: preparing batch receiver for subscription {}", subscription.getQualifiedName());
@@ -166,6 +200,7 @@ public class BatchConsumer implements Consumer {
     @Override
     public void updateSubscription(Subscription subscription) {
         this.subscription = subscription;
+        receiver.updateSubscription(subscription);
     }
 
     @Override

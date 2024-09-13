@@ -22,7 +22,7 @@ public class CreateOAuthProviderRepositoryCommand extends RepositoryCommand<OAut
     }
 
     @Override
-    public void rollback(DatacenterBoundRepositoryHolder<OAuthProviderRepository> holder) {
+    public void rollback(DatacenterBoundRepositoryHolder<OAuthProviderRepository> holder, Exception exception) {
         holder.getRepository().removeOAuthProvider(provider.getName());
     }
 

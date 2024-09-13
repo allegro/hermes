@@ -12,12 +12,14 @@ import pl.allegro.tech.hermes.api.TopicName;
 
 import java.time.Duration;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+import static pl.allegro.tech.hermes.management.infrastructure.prometheus.PrometheusClient.forSubscription;
+import static pl.allegro.tech.hermes.management.infrastructure.prometheus.PrometheusClient.forSubscriptionStatusCode;
+import static pl.allegro.tech.hermes.management.infrastructure.prometheus.PrometheusClient.forTopic;
 
 public class PrometheusExtension implements AfterEachCallback, BeforeAllCallback, ExtensionContext.Store.CloseableResource {
 
@@ -47,19 +49,31 @@ public class PrometheusExtension implements AfterEachCallback, BeforeAllCallback
         return "http://localhost:" + wiremock.port();
     }
 
+    @SuppressWarnings("checkstyle:VariableDeclarationUsageDistance")
     public void stubSubscriptionMetrics(SubscriptionMetrics metrics) {
-        SubscriptionName name = metrics.name();
-        String query = """
-                sum by (__name__, group, topic, subscription, status_code) (
-                  irate(
-                    {__name__=~'hermes_consumers_subscription_delivered_total|hermes_consumers_subscription_timeouts_total|hermes_consumers_subscription_retries_total|hermes_consumers_subscription_throughput_bytes_total|hermes_consumers_subscription_other_errors_total|hermes_consumers_subscription_batches_total|hermes_consumers_subscription_http_status_codes_total', group='%s', topic='%s', subscription='%s', }[1m]
-                  ) keep_metric_names
-                )
-                """
-                .formatted(name.getTopicName().getGroupName(), name.getTopicName().getName(), name.getName())
-                .lines()
-                .map(String::stripLeading)
-                .collect(Collectors.joining());
+        SubscriptionName subName = metrics.name();
+        String deliveredQuery = forSubscription("hermes_consumers_subscription_delivered_total", subName, "");
+        String timeoutsQuery = forSubscription("hermes_consumers_subscription_timeouts_total", subName, "");
+        String retriesQuery = forSubscription("hermes_consumers_subscription_retries_total", subName, "");
+        String throughputQuery = forSubscription("hermes_consumers_subscription_throughput_bytes_total", subName, "");
+        String errorsQuery = forSubscription("hermes_consumers_subscription_other_errors_total", subName, "");
+        String batchesQuery = forSubscription("hermes_consumers_subscription_batches_total", subName, "");
+        String statusCodes2xxQuery = forSubscriptionStatusCode("hermes_consumers_subscription_http_status_codes_total", subName, "2.*", "");
+        String statusCodes4xxQuery = forSubscriptionStatusCode("hermes_consumers_subscription_http_status_codes_total", subName, "4.*", "");
+        String statusCodes5xxQuery = forSubscriptionStatusCode("hermes_consumers_subscription_http_status_codes_total", subName, "5.*", "");
+
+        stub(deliveredQuery, metrics.toPrometheusRateResponse());
+        stub(timeoutsQuery, metrics.toPrometheusDefaultResponse());
+        stub(retriesQuery, metrics.toPrometheusDefaultResponse());
+        stub(throughputQuery, metrics.toPrometheusThroughputResponse());
+        stub(errorsQuery, metrics.toPrometheusDefaultResponse());
+        stub(batchesQuery, metrics.toPrometheusDefaultResponse());
+        stub(statusCodes2xxQuery, metrics.toPrometheusStatusCodesResponse());
+        stub(statusCodes4xxQuery, metrics.toPrometheusStatusCodesResponse());
+        stub(statusCodes5xxQuery, metrics.toPrometheusStatusCodesResponse());
+    }
+
+    private void stub(String query, PrometheusResponse response) {
         wiremock.addStubMapping(
                 get(urlPathEqualTo("/api/v1/query"))
                         .withQueryParam("query", equalTo(query))
@@ -67,36 +81,21 @@ public class PrometheusExtension implements AfterEachCallback, BeforeAllCallback
                                 aResponse()
                                         .withStatus(200)
                                         .withHeader("Content-Type", "application/json")
-                                        .withBody(writeValueAsString(metrics.toPrometheusResponse()))
+                                        .withBody(writeValueAsString(response))
                         )
                         .build()
         );
     }
 
     public void stubTopicMetrics(TopicMetrics metrics) {
-        TopicName name = metrics.name();
-        String query = """
-                sum by (__name__, group, topic) (
-                  irate(
-                    {__name__=~'hermes_frontend_topic_requests_total|hermes_consumers_subscription_delivered_total|hermes_frontend_topic_throughput_bytes_total', group='%s', topic='%s', }[1m]
-                  ) keep_metric_names
-                )
-                """
-                .formatted(name.getGroupName(), name.getName())
-                .lines()
-                .map(String::stripLeading)
-                .collect(Collectors.joining());
-        wiremock.addStubMapping(
-                get(urlPathEqualTo("/api/v1/query"))
-                        .withQueryParam("query", equalTo(query))
-                        .willReturn(
-                                aResponse()
-                                        .withStatus(200)
-                                        .withHeader("Content-Type", "application/json")
-                                        .withBody(writeValueAsString(metrics.toPrometheusResponse()))
-                        )
-                        .build()
-        );
+        TopicName topicName = metrics.name();
+        String requestsQuery = forTopic("hermes_frontend_topic_requests_total", topicName, "");
+        String deliveredQuery = forTopic("hermes_consumers_subscription_delivered_total", topicName, "");
+        String throughputQuery = forTopic("hermes_frontend_topic_throughput_bytes_total", topicName, "");
+
+        stub(requestsQuery, metrics.toPrometheusRequestsResponse());
+        stub(deliveredQuery, metrics.toDeliveredResponse());
+        stub(throughputQuery, metrics.toPrometheusThroughputResponse());
     }
 
     public void stubDelay(Duration duration) {

@@ -23,7 +23,7 @@ public class RetransmitCommand extends RepositoryCommand<AdminTool> {
     }
 
     @Override
-    public void rollback(DatacenterBoundRepositoryHolder<AdminTool> holder) {
+    public void rollback(DatacenterBoundRepositoryHolder<AdminTool> holder, Exception exception) {
 
     }
 

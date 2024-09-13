@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import jakarta.annotation.PreDestroy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.InconsistentGroup;
@@ -11,10 +13,13 @@ import pl.allegro.tech.hermes.api.InconsistentMetadata;
 import pl.allegro.tech.hermes.api.InconsistentSubscription;
 import pl.allegro.tech.hermes.api.InconsistentTopic;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.domain.group.GroupNotExistsException;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
+import pl.allegro.tech.hermes.domain.subscription.SubscriptionNotExistsException;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicNotExistsException;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
@@ -27,10 +32,16 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static java.util.Collections.emptyList;
@@ -39,15 +50,20 @@ import static java.util.stream.Collectors.toSet;
 
 @Component
 public class DcConsistencyService {
+    private static final Logger logger = LoggerFactory.getLogger(DcConsistencyService.class);
+
     private final ExecutorService executor;
+    private final ScheduledExecutorService scheduler;
     private final List<DatacenterBoundRepositoryHolder<GroupRepository>> groupRepositories;
     private final List<DatacenterBoundRepositoryHolder<TopicRepository>> topicRepositories;
     private final List<DatacenterBoundRepositoryHolder<SubscriptionRepository>> subscriptionRepositories;
     private final ObjectMapper objectMapper;
+    private final AtomicBoolean isStorageConsistent = new AtomicBoolean(true);
 
     public DcConsistencyService(RepositoryManager repositoryManager,
                                 ObjectMapper objectMapper,
-                                ConsistencyCheckerProperties properties) {
+                                ConsistencyCheckerProperties properties,
+                                MetricsFacade metricsFacade) {
         this.groupRepositories = repositoryManager.getRepositories(GroupRepository.class);
         this.topicRepositories = repositoryManager.getRepositories(TopicRepository.class);
         this.subscriptionRepositories = repositoryManager.getRepositories(SubscriptionRepository.class);
@@ -58,11 +74,33 @@ public class DcConsistencyService {
                         .setNameFormat("consistency-checker-%d")
                         .build()
         );
+        this.scheduler = Executors.newSingleThreadScheduledExecutor(
+                new ThreadFactoryBuilder()
+                        .setNameFormat("consistency-checker-scheduler-%d")
+                        .build()
+        );
+        if (properties.isPeriodicCheckEnabled()) {
+            scheduler.scheduleAtFixedRate(this::reportConsistency,
+                    properties.getInitialRefreshDelay().getSeconds(),
+                    properties.getRefreshInterval().getSeconds(),
+                    TimeUnit.SECONDS);
+            metricsFacade.consistency().registerStorageConsistencyGauge(isStorageConsistent, isConsistent -> isConsistent.get() ? 1 : 0);
+        }
     }
 
     @PreDestroy
     public void stop() {
         executor.shutdown();
+        scheduler.shutdown();
+    }
+
+    private void reportConsistency() {
+        long start = System.currentTimeMillis();
+        Set<String> groups = listAllGroupNames();
+        List<InconsistentGroup> inconsistentGroups = listInconsistentGroups(groups);
+        long durationSeconds = (System.currentTimeMillis() - start) / 1000;
+        logger.info("Consistency check finished in {}s, number of inconsistent groups: {}", durationSeconds, inconsistentGroups.size());
+        isStorageConsistent.set(inconsistentGroups.isEmpty());
     }
 
     public List<InconsistentGroup> listInconsistentGroups(Set<String> groupNames) {
@@ -75,6 +113,81 @@ public class DcConsistencyService {
             }
         }
         return inconsistentGroups;
+    }
+
+    public void syncGroup(String groupName, String primaryDatacenter) {
+        sync(groupRepositories, primaryDatacenter,
+                repo -> repo.groupExists(groupName),
+                repo -> {
+                    try {
+                        return Optional.of(repo.getGroupDetails(groupName));
+                    } catch (GroupNotExistsException ignored) {
+                        return Optional.empty();
+                    }
+                },
+                GroupRepository::createGroup,
+                GroupRepository::updateGroup,
+                repo -> repo.removeGroup(groupName)
+        );
+    }
+
+    public void syncTopic(TopicName topicName, String primaryDatacenter) {
+        sync(topicRepositories, primaryDatacenter,
+                repo -> repo.topicExists(topicName),
+                repo -> {
+                    try {
+                        return Optional.of(repo.getTopicDetails(topicName));
+                    } catch (TopicNotExistsException ignored) {
+                        return Optional.empty();
+                    }
+                },
+                TopicRepository::createTopic,
+                TopicRepository::updateTopic,
+                repo -> repo.removeTopic(topicName)
+        );
+    }
+
+    public void syncSubscription(SubscriptionName subscriptionName, String primaryDatacenter) {
+        sync(subscriptionRepositories, primaryDatacenter,
+                repo -> repo.subscriptionExists(subscriptionName.getTopicName(), subscriptionName.getName()),
+                repo -> {
+                    try {
+                        return Optional.of(repo.getSubscriptionDetails(subscriptionName));
+                    } catch (SubscriptionNotExistsException ignored) {
+                        return Optional.empty();
+                    }
+                },
+                SubscriptionRepository::createSubscription,
+                SubscriptionRepository::updateSubscription,
+                repo -> repo.removeSubscription(subscriptionName.getTopicName(), subscriptionName.getName())
+        );
+    }
+
+    private <R, S> void sync(List<DatacenterBoundRepositoryHolder<R>> repositories,
+                             String sourceOfTruthDatacenter,
+                             Function<R, Boolean> exists,
+                             Function<R, Optional<S>> get,
+                             BiConsumer<R, S> create,
+                             BiConsumer<R, S> update,
+                             Consumer<R> delete
+    ) {
+        var request = partition(repositories, sourceOfTruthDatacenter);
+        var primaryRepository = request.primaryHolder.getRepository();
+        Optional<S> primary = get.apply(primaryRepository);
+        var primaryPresent = primary.isPresent();
+
+        for (var holder : request.replicaHolders) {
+            var repository = holder.getRepository();
+            var replicaPresent = exists.apply(repository);
+
+            if (primaryPresent && replicaPresent) {
+                update.accept(repository, primary.get());
+            } else if (primaryPresent) {
+                create.accept(repository, primary.get());
+            } else if (replicaPresent) {
+                delete.accept(repository);
+            }
+        }
     }
 
     private List<MetadataCopies> listCopiesOfGroups(Set<String> groupNames) {
@@ -207,5 +320,27 @@ public class DcConsistencyService {
         } catch (Exception e) {
             throw new ConsistencyCheckingException("Fetching metadata failed", e);
         }
+    }
+
+    private record DatacenterRepositoryHolderSyncRequest<R>(
+            DatacenterBoundRepositoryHolder<R> primaryHolder,
+            List<DatacenterBoundRepositoryHolder<R>> replicaHolders
+    ) {
+    }
+
+    private <R> DatacenterRepositoryHolderSyncRequest<R> partition(List<DatacenterBoundRepositoryHolder<R>> repositoryHolders, String primaryDatacenter) {
+        List<DatacenterBoundRepositoryHolder<R>> replicas = new ArrayList<>();
+        DatacenterBoundRepositoryHolder<R> primary = null;
+        for (DatacenterBoundRepositoryHolder<R> repositoryHolder : repositoryHolders) {
+            if (repositoryHolder.getDatacenterName().equals(primaryDatacenter)) {
+                primary = repositoryHolder;
+            } else {
+                replicas.add(repositoryHolder);
+            }
+        }
+        if (primary == null) {
+            throw new SynchronizationException("Source of truth datacenter not found: " + primaryDatacenter);
+        }
+        return new DatacenterRepositoryHolderSyncRequest<>(primary, replicas);
     }
 }

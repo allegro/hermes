@@ -13,7 +13,7 @@ import pl.allegro.tech.hermes.consumers.consumer.idletime.ExponentiallyGrowingId
 import pl.allegro.tech.hermes.consumers.consumer.idletime.IdleTimeCalculator;
 import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
 import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignmentState;
-import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
+import pl.allegro.tech.hermes.consumers.consumer.offset.PendingOffsetsAppender;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
@@ -60,7 +60,6 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
     private final KafkaConsumerParameters kafkaConsumerParameters;
     private final KafkaConsumerRecordToMessageConverterFactory messageConverterFactory;
     private final MetricsFacade metricsFacade;
-    private final OffsetQueue offsetQueue;
     private final KafkaNamesMapper kafkaNamesMapper;
     private final FilterChainFactory filterChainFactory;
     private final Trackers trackers;
@@ -72,7 +71,6 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
                                        KafkaParameters kafkaParameters,
                                        KafkaConsumerRecordToMessageConverterFactory messageConverterFactory,
                                        MetricsFacade metricsFacade,
-                                       OffsetQueue offsetQueue,
                                        KafkaNamesMapper kafkaNamesMapper,
                                        FilterChainFactory filterChainFactory,
                                        Trackers trackers,
@@ -83,7 +81,6 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
         this.kafkaParameters = kafkaParameters;
         this.messageConverterFactory = messageConverterFactory;
         this.metricsFacade = metricsFacade;
-        this.offsetQueue = offsetQueue;
         this.kafkaNamesMapper = kafkaNamesMapper;
         this.filterChainFactory = filterChainFactory;
         this.trackers = trackers;
@@ -95,7 +92,8 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
                                                  Subscription subscription,
                                                  ConsumerRateLimiter consumerRateLimiter,
                                                  SubscriptionLoadRecorder loadReporter,
-                                                 MetricsFacade metrics) {
+                                                 MetricsFacade metrics,
+                                                 PendingOffsetsAppender pendingOffsetsAppender) {
 
         MessageReceiver receiver = createKafkaSingleThreadedMessageReceiver(topic, subscription, loadReporter);
 
@@ -104,7 +102,7 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
         }
 
         if (consumerReceiverParameters.isFilteringEnabled()) {
-            receiver = createFilteringMessageReceiver(receiver, consumerRateLimiter, subscription, metrics);
+            receiver = createFilteringMessageReceiver(receiver, consumerRateLimiter, subscription, metrics, pendingOffsetsAppender);
         }
 
         return receiver;
@@ -140,11 +138,12 @@ public class KafkaMessageReceiverFactory implements ReceiverFactory {
     private MessageReceiver createFilteringMessageReceiver(MessageReceiver receiver,
                                                            ConsumerRateLimiter consumerRateLimiter,
                                                            Subscription subscription,
-                                                           MetricsFacade metrics) {
+                                                           MetricsFacade metrics,
+                                                           PendingOffsetsAppender pendingOffsetsAppender) {
         boolean filteringRateLimitEnabled = consumerReceiverParameters.isFilteringRateLimiterEnabled();
         FilteredMessageHandler filteredMessageHandler = new FilteredMessageHandler(
-                offsetQueue,
                 filteringRateLimitEnabled ? consumerRateLimiter : null,
+                pendingOffsetsAppender,
                 trackers,
                 metrics,
                 subscription.getQualifiedName()

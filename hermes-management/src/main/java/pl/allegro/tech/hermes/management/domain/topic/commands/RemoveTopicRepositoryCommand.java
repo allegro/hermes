@@ -22,7 +22,7 @@ public class RemoveTopicRepositoryCommand extends RepositoryCommand<TopicReposit
     }
 
     @Override
-    public void rollback(DatacenterBoundRepositoryHolder<TopicRepository> holder) {
+    public void rollback(DatacenterBoundRepositoryHolder<TopicRepository> holder, Exception exception) {
         /*
         We don't want to do a rollback due to possible race conditions with creating a topic on Kafka.
         It increases the probability of discrepancies between Kafka and Zookeeper: topic exists in Kafka,

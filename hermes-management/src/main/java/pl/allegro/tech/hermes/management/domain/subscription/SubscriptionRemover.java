@@ -43,9 +43,11 @@ public class SubscriptionRemover {
 
     public void removeSubscriptionRelatedToTopic(Topic topic, RequestUser removedBy) {
         List<Subscription> subscriptions = subscriptionRepository.listSubscriptions(topic.getName());
-
         ensureSubscriptionsHaveAutoRemove(subscriptions, topic.getName());
+        logger.info("Removing subscriptions of topic: {}, subscriptions: {}", topic.getName(), subscriptions);
+        long start = System.currentTimeMillis();
         subscriptions.forEach(sub -> removeSubscription(topic.getName(), sub.getName(), removedBy));
+        logger.info("Removed subscriptions of topic: {} in {} ms", topic.getName(), System.currentTimeMillis() - start);
     }
 
 

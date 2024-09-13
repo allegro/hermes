@@ -26,7 +26,7 @@ public class RemoveOAuthProviderRepositoryCommand extends RepositoryCommand<OAut
     }
 
     @Override
-    public void rollback(DatacenterBoundRepositoryHolder<OAuthProviderRepository> holder) {
+    public void rollback(DatacenterBoundRepositoryHolder<OAuthProviderRepository> holder, Exception exception) {
         holder.getRepository().createOAuthProvider(backup);
     }
 

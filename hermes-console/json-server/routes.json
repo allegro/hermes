@@ -3,6 +3,7 @@
   "/consistency/groups": "/consistencyGroups",
   "/consistency/inconsistencies/groups?groupNames=pl.allegro.public.offer*": "/inconsistentGroups",
   "/consistency/inconsistencies/groups?groupNames=pl.allegro.public.group2*": "/inconsistentGroups2",
+  "/consistency/inconsistencies/groups?groupNames=pl.allegro.public.group": "/inconsistentGroups3",
   "/groups": "/groups",
   "/owners/sources/Service%20Catalog/:id": "/topicsOwners/:id",
   "/readiness/datacenters": "/readinessDatacenters",

@@ -47,6 +47,12 @@ const en_US = {
     confirmText: "Type 'prod' to confirm action.",
   },
   consistency: {
+    sync: {
+      header: 'Sync datacenters',
+      explanation:
+        'Pick DC which contains correct data. Data from that DC will be propagated to other DCs.',
+      cta: 'Correct data is in DC:',
+    },
     connectionError: {
       title: 'Connection error',
       text: 'Could not fetch information about consistency',
@@ -706,6 +712,12 @@ const en_US = {
       delete: {
         success: 'Topic {topic} successfully deleted',
         failure: "Couldn't delete topic {topic}",
+      },
+    },
+    consistency: {
+      sync: {
+        success: 'Synchronization of {group} succeeded',
+        failure: 'Synchronization of {group} failed',
       },
     },
     subscription: {

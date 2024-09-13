@@ -7,30 +7,46 @@ import java.util.List;
 public record TopicMetrics(TopicName name, int rate, int deliveryRate, int throughput) {
 
     private static final String TIMESTAMP = "1396860420";
-    private static final String TOPIC_REQUESTS_TOTAL = "hermes_frontend_topic_requests_total";
-    private static final String TOPIC_DELIVERED_TOTAL = "hermes_consumers_subscription_delivered_total";
-    private static final String TOPIC_THROUGHPUT_TOTAL = "hermes_frontend_topic_throughput_bytes_total";
 
     public static TopicMetricsBuilder topicMetrics(TopicName name) {
         return new TopicMetricsBuilder(name);
     }
 
-    PrometheusResponse toPrometheusResponse() {
+    PrometheusResponse toPrometheusRequestsResponse() {
         return new PrometheusResponse(
                 "success",
                 new PrometheusResponse.Data(
                         "vector",
                         List.of(
                                 new PrometheusResponse.Result(
-                                        new PrometheusResponse.MetricName(TOPIC_REQUESTS_TOTAL, null),
                                         List.of(TIMESTAMP, String.valueOf(rate))
-                                ),
+                                )
+                        )
+                )
+        );
+    }
+
+    PrometheusResponse toDeliveredResponse() {
+        return new PrometheusResponse(
+                "success",
+                new PrometheusResponse.Data(
+                        "vector",
+                        List.of(
                                 new PrometheusResponse.Result(
-                                        new PrometheusResponse.MetricName(TOPIC_DELIVERED_TOTAL, null),
                                         List.of(TIMESTAMP, String.valueOf(deliveryRate))
-                                ),
+                                )
+                        )
+                )
+        );
+    }
+
+    PrometheusResponse toPrometheusThroughputResponse() {
+        return new PrometheusResponse(
+                "success",
+                new PrometheusResponse.Data(
+                        "vector",
+                        List.of(
                                 new PrometheusResponse.Result(
-                                        new PrometheusResponse.MetricName(TOPIC_THROUGHPUT_TOTAL, null),
                                         List.of(TIMESTAMP, String.valueOf(throughput))
                                 )
                         )

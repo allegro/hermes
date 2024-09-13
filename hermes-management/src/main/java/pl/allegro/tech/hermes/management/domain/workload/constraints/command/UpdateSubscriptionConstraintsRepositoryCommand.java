@@ -28,7 +28,7 @@ public class UpdateSubscriptionConstraintsRepositoryCommand extends RepositoryCo
     }
 
     @Override
-    public void rollback(DatacenterBoundRepositoryHolder<WorkloadConstraintsRepository> holder) {
+    public void rollback(DatacenterBoundRepositoryHolder<WorkloadConstraintsRepository> holder, Exception exception) {
         if (backup != null) {
             holder.getRepository().updateConstraints(subscriptionName, backup);
         }

@@ -181,11 +181,11 @@ Hermes supports a remote datacenter fallback mechanism for [multi datacenter dep
 
 Fallback is configured on per topic basis, using a `fallbackToRemoteDatacenterEnabled` property:
 
-```http request
+```http
 PUT /topics/my.group.my-topic
 
 {
-  "fallbackToRemoteDatacenterEnabled": true,
+  "fallbackToRemoteDatacenterEnabled": true
 }
 ```
 

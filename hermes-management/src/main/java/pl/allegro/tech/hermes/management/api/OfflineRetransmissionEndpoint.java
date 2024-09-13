@@ -17,7 +17,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.OfflineRetransmissionRequest;
 import pl.allegro.tech.hermes.api.OfflineRetransmissionTask;
-import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.management.api.auth.ManagementRights;
@@ -25,6 +24,7 @@ import pl.allegro.tech.hermes.management.domain.PermissionDeniedException;
 import pl.allegro.tech.hermes.management.domain.retransmit.OfflineRetransmissionService;
 
 import java.util.List;
+import java.util.Optional;
 
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 
@@ -36,6 +36,7 @@ public class OfflineRetransmissionEndpoint {
     private final OfflineRetransmissionService retransmissionService;
     private final RetransmissionPermissions permissions;
     private final OfflineRetransmissionAuditor auditor;
+    private final Logger logger = LoggerFactory.getLogger(OfflineRetransmissionEndpoint.class);
 
     public OfflineRetransmissionEndpoint(OfflineRetransmissionService retransmissionService,
                                          TopicRepository topicRepository, ManagementRights managementRights) {
@@ -47,9 +48,10 @@ public class OfflineRetransmissionEndpoint {
     @POST
     @Consumes(APPLICATION_JSON)
     public Response createRetransmissionTask(@Valid OfflineRetransmissionRequest request, @Context ContainerRequestContext requestContext) {
+        logger.info("Offline retransmission request: {}", request);
         retransmissionService.validateRequest(request);
-        permissions.ensurePermissionsToBothTopics(request, requestContext);
-        OfflineRetransmissionTask task = retransmissionService.createTask(request);
+        permissions.ensurePermissions(request, requestContext);
+        var task = retransmissionService.createTask(request);
         auditor.auditRetransmissionCreation(request, requestContext, task);
         return Response.status(Response.Status.CREATED).build();
     }
@@ -68,23 +70,29 @@ public class OfflineRetransmissionEndpoint {
     }
 
     private static class RetransmissionPermissions {
+        private final Logger logger = LoggerFactory.getLogger(RetransmissionPermissions.class);
         private final TopicRepository topicRepository;
         private final ManagementRights managementRights;
-
 
         private RetransmissionPermissions(TopicRepository topicRepository, ManagementRights managementRights) {
             this.topicRepository = topicRepository;
             this.managementRights = managementRights;
         }
 
-        private void ensurePermissionsToBothTopics(OfflineRetransmissionRequest request, ContainerRequestContext requestContext) {
-            Topic sourceTopic = topicRepository.getTopicDetails(TopicName.fromQualifiedName(request.getSourceTopic()));
-            Topic targetTopic = topicRepository.getTopicDetails(TopicName.fromQualifiedName(request.getTargetTopic()));
-            boolean hasPermissions = managementRights.isUserAllowedToManageTopic(sourceTopic, requestContext)
-                    && managementRights.isUserAllowedToManageTopic(targetTopic, requestContext);
+        private void ensurePermissions(OfflineRetransmissionRequest request, ContainerRequestContext requestContext) {
+            var targetTopic = topicRepository.getTopicDetails(TopicName.fromQualifiedName(request.getTargetTopic()));
+            var hasPermissions = validateSourceTopic(request.getSourceTopic(), requestContext) && managementRights.isUserAllowedToManageTopic(targetTopic, requestContext);
             if (!hasPermissions) {
+                logger.info("User {} has no permissions to make offline retransmission {}", requestContext.getSecurityContext().getUserPrincipal(), request);
                 throw new PermissionDeniedException("User needs permissions to source and target topics.");
             }
+        }
+
+        private boolean validateSourceTopic(Optional<String> sourceTopic, ContainerRequestContext requestContext) {
+            return sourceTopic.isEmpty() || managementRights.isUserAllowedToManageTopic(
+                    topicRepository.getTopicDetails(TopicName.fromQualifiedName(sourceTopic.get())),
+                    requestContext
+            );
         }
     }
 

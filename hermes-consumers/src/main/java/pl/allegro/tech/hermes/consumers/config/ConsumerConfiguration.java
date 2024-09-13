@@ -18,7 +18,6 @@ import pl.allegro.tech.hermes.consumers.consumer.converter.NoOperationMessageCon
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.MessageBodyInterpolator;
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.UriInterpolator;
 import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignmentState;
-import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimitSupervisor;
 import pl.allegro.tech.hermes.consumers.consumer.rate.calculator.OutputRateCalculatorFactory;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRatePathSerializer;
@@ -108,12 +107,6 @@ public class ConsumerConfiguration {
                 metrics,
                 clock
         );
-    }
-
-    @Bean
-    public OffsetQueue offsetQueue(MetricsFacade metrics,
-                                   CommitOffsetProperties commitOffsetProperties) {
-        return new OffsetQueue(metrics, commitOffsetProperties.getQueuesSize());
     }
 
     @Bean

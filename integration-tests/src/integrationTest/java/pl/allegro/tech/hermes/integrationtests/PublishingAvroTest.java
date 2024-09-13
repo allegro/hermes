@@ -36,7 +36,6 @@ import static pl.allegro.tech.hermes.api.ContentType.JSON;
 import static pl.allegro.tech.hermes.api.PatchData.patchData;
 import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
 import static pl.allegro.tech.hermes.client.HermesMessage.hermesMessage;
-import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.COMMIT;
 import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.UPDATE_SUBSCRIPTION;
 import static pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader.load;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
@@ -63,8 +62,8 @@ public class PublishingAvroTest {
     public void shouldPublishAvroAndConsumeJsonMessage() {
         // given
         TopicWithSchema topicWithSchema = topicWithSchema(topicWithRandomName()
-                        .withContentType(AVRO)
-                        .build(), user.getSchemaAsString());
+                .withContentType(AVRO)
+                .build(), user.getSchemaAsString());
         Topic topic = hermes.initHelper().createTopicWithSchema(topicWithSchema);
 
         TestSubscriber subscriber = subscribers.createSubscriber();
@@ -378,7 +377,7 @@ public class PublishingAvroTest {
         TestSubscriber subscriber = subscribers.createSubscriber();
         hermes.initHelper().createSubscription(subscription(topic.getQualifiedName(),
                 "subscription", subscriber.getEndpoint())
-                        .withContentType(AVRO)
+                .withContentType(AVRO)
                 .build());
 
         hermes.api().ensureSchemaSaved(topic.getQualifiedName(), false, load("/schema/user_v2.avsc").toString());
@@ -489,7 +488,7 @@ public class PublishingAvroTest {
         subscriber.waitUntilReceived(beforeMigrationMessage.body());
         subscriber.reset();
 
-        waitUntilConsumerCommitsOffset(topic, "subscription");
+        hermes.api().waitUntilConsumerCommitsOffset(topic.getQualifiedName(), "subscription");
 
         PatchData patch = patchData()
                 .set("contentType", ContentType.AVRO)
@@ -544,15 +543,6 @@ public class PublishingAvroTest {
             logger.info("Expecting {} subscription endpoint address. Actual {}", expected, actual);
             return expected.equals(actual);
         });
-    }
-
-    private void waitUntilConsumerCommitsOffset(Topic topic, String subscription) {
-        long currentTime = clock.millis();
-        waitAtMost(adjust(Duration.ofMinutes(1))).until(() ->
-        hermes.api().getRunningSubscriptionsStatus().stream()
-                .filter(sub -> sub.getQualifiedName().equals(topic.getQualifiedName() + "$" + subscription))
-                .anyMatch(sub -> sub.getSignalTimesheet().getOrDefault(COMMIT, 0L) > currentTime));
-
     }
 
     private void waitUntilConsumersUpdateSubscription(final long currentTime, Topic topic, String subscription) {

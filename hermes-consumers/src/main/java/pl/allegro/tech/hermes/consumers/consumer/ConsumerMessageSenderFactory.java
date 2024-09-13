@@ -5,8 +5,7 @@ import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
 import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
-import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
-import pl.allegro.tech.hermes.consumers.consumer.rate.InflightsPool;
+import pl.allegro.tech.hermes.consumers.consumer.offset.PendingOffsets;
 import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.result.DefaultErrorHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.DefaultSuccessHandler;
@@ -57,19 +56,17 @@ public class ConsumerMessageSenderFactory {
 
     public ConsumerMessageSender create(Subscription subscription,
                                         SerialConsumerRateLimiter consumerRateLimiter,
-                                        OffsetQueue offsetQueue,
-                                        InflightsPool inflight,
+                                        PendingOffsets pendingOffsets,
                                         SubscriptionLoadRecorder subscriptionLoadRecorder,
                                         MetricsFacade metrics) {
 
         List<SuccessHandler> successHandlers = Arrays.asList(
                 consumerAuthorizationHandler,
-                new DefaultSuccessHandler(offsetQueue, metrics, trackers, subscription.getQualifiedName()));
+                new DefaultSuccessHandler(metrics, trackers, subscription.getQualifiedName()));
 
         List<ErrorHandler> errorHandlers = Arrays.asList(
                 consumerAuthorizationHandler,
                 new DefaultErrorHandler(
-                        offsetQueue,
                         metrics,
                         undeliveredMessageLog,
                         clock,
@@ -85,7 +82,7 @@ public class ConsumerMessageSenderFactory {
                 errorHandlers,
                 consumerRateLimiter,
                 rateLimiterReportingExecutor,
-                inflight,
+                pendingOffsets,
                 metrics,
                 senderAsyncTimeoutMs,
                 futureAsyncTimeout,

@@ -1,5 +1,7 @@
 package pl.allegro.tech.hermes.management.domain.topic.schema;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.RawSchema;
@@ -23,6 +25,8 @@ public class SchemaService {
     private final RawSchemaClient rawSchemaClient;
     private final SchemaValidatorProvider validatorProvider;
     private final TopicProperties topicProperties;
+
+    private static final Logger logger = LoggerFactory.getLogger(SchemaService.class);
 
     @Autowired
     public SchemaService(RawSchemaClient rawSchemaClient,
@@ -68,7 +72,10 @@ public class SchemaService {
         if (!topicProperties.isRemoveSchema()) {
             throw new SchemaRemovalDisabledException();
         }
+        logger.info("Removing all schema versions for topic: {}", qualifiedTopicName);
+        long start = System.currentTimeMillis();
         rawSchemaClient.deleteAllSchemaVersions(fromQualifiedName(qualifiedTopicName));
+        logger.info("Removed all schema versions for topic: {} in {} ms", qualifiedTopicName, System.currentTimeMillis() - start);
     }
 
     public void validateSchema(Topic topic, String schema) {

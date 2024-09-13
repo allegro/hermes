@@ -7,7 +7,6 @@ import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
-import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.metrics.HermesCounter;
 import pl.allegro.tech.hermes.metrics.HermesHistogram;
@@ -19,13 +18,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static pl.allegro.tech.hermes.api.SentMessageTrace.Builder.undeliveredMessage;
 import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
-import static pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset.subscriptionPartitionOffset;
 
 public class DefaultErrorHandler implements ErrorHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultErrorHandler.class);
 
-    private final OffsetQueue offsetQueue;
     private final MetricsFacade metrics;
     private final UndeliveredMessageLog undeliveredMessageLog;
     private final Clock clock;
@@ -41,14 +38,12 @@ public class DefaultErrorHandler implements ErrorHandler {
     private final Map<Integer, HermesCounter> httpStatusCodes = new ConcurrentHashMap<>();
 
 
-    public DefaultErrorHandler(OffsetQueue offsetQueue,
-                               MetricsFacade metrics,
+    public DefaultErrorHandler(MetricsFacade metrics,
                                UndeliveredMessageLog undeliveredMessageLog,
                                Clock clock,
                                Trackers trackers,
                                String cluster,
                                SubscriptionName subscriptionName) {
-        this.offsetQueue = offsetQueue;
         this.metrics = metrics;
         this.undeliveredMessageLog = undeliveredMessageLog;
         this.clock = clock;
@@ -66,9 +61,6 @@ public class DefaultErrorHandler implements ErrorHandler {
     @Override
     public void handleDiscarded(Message message, Subscription subscription, MessageSendingResult result) {
         logResult(message, subscription, result);
-
-        offsetQueue.offerCommittedOffset(subscriptionPartitionOffset(subscription.getQualifiedName(),
-                message.getPartitionOffset(), message.getPartitionAssignmentTerm()));
 
         discarded.increment();
         inflightTime.record(System.currentTimeMillis() - message.getReadingTimestamp());

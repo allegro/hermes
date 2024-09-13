@@ -15,7 +15,6 @@ import java.time.ZoneId
 
 import static pl.allegro.tech.hermes.api.SubscriptionName.fromString
 import static pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset.subscriptionPartitionOffset
-import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.COMMIT
 import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.RETRANSMIT
 import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.START
 import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.STOP
@@ -91,7 +90,6 @@ class SignalsFilterTest extends Specification {
         signalType          | firstSignalPayload             | secondSignalPayload
         UPDATE_TOPIC        | 'first-update'                 | 'second-update'
         UPDATE_SUBSCRIPTION | 'first-update'                 | 'second-update'
-        COMMIT              | [offset(1, 10), offset(2, 11)] | [offset(1, 11)]
         RETRANSMIT          | null                           | null
     }
 

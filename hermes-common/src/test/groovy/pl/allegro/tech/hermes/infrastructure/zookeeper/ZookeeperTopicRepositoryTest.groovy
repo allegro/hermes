@@ -185,17 +185,16 @@ class ZookeeperTopicRepositoryTest extends IntegrationTest {
         !repository.topicExists(new TopicName(GROUP, 'remove'))
     }
 
-    def "should remove topic with metrics but without subscriptions"() {
+    def "should remove topic with metrics and without preview"() {
         given:
         def topicName = "topicWithMetrics"
 
         repository.createTopic(topic(GROUP, topicName).build())
         wait.untilTopicCreated(GROUP, topicName)
 
-        def path = pathsCompiler.compile(BASE_ZOOKEEPER_PATH + ZookeeperCounterStorage.SUBSCRIPTION_DELIVERED, pathContext()
+        def path = pathsCompiler.compile(BASE_ZOOKEEPER_PATH + ZookeeperCounterStorage.TOPIC_VOLUME_COUNTER, pathContext()
                 .withGroup(GROUP)
                 .withTopic(topicName)
-                .withSubscription("sample")
                 .build())
         zookeeper().create().creatingParentsIfNeeded().forPath(path, '1'.bytes)
         wait.untilZookeeperPathIsCreated(path)
@@ -205,6 +204,29 @@ class ZookeeperTopicRepositoryTest extends IntegrationTest {
 
         then:
         !repository.topicExists(new TopicName(GROUP, topicName))
+    }
+
+    def "should remove topic with metrics and preview"() {
+        given: "a topic"
+        Topic topic = topic(GROUP, "topicWithMetricsAndPreview").build()
+        repository.createTopic(topic)
+        wait.untilTopicCreated(GROUP, topic.getName().getName())
+
+        and: "volume metric in zk for that topic"
+        String metricPath = paths.topicMetricPath(topic.getName(), "volume")
+        zookeeper().create().creatingParentsIfNeeded().forPath(metricPath, '1'.bytes)
+        wait.untilZookeeperPathIsCreated(metricPath)
+
+        and: "preview in zk for that topic"
+        String previewPath = paths.topicPreviewPath(topic.getName())
+        zookeeper().create().creatingParentsIfNeeded().forPath(previewPath , '1'.bytes)
+        wait.untilZookeeperPathIsCreated(previewPath)
+
+        when:
+        repository.removeTopic(topic.getName())
+
+        then:
+        !repository.topicExists(topic.getName())
     }
 
     def "should not throw exception on malformed topic when reading list of all topics"() {

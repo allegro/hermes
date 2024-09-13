@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
 
-import static java.util.stream.Collectors.toList;
 import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.START;
 import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.STOP;
 
@@ -110,7 +109,7 @@ public class ConsumerProcessSupervisor implements Runnable {
     private void restartUnhealthy() {
         runningConsumerProcesses.stream()
                 .filter(process -> !process.getConsumerProcess().isHealthy())
-                .collect(toList())
+                .toList()
                 .forEach(process -> {
                     logger.info("Lost contact with consumer {} (last seen {}ms ago). Attempting to kill this process and spawn new one.",
                             process.getConsumerProcess(), process.getConsumerProcess().lastSeen());
@@ -144,7 +143,6 @@ public class ConsumerProcessSupervisor implements Runnable {
                 break;
             case UPDATE_TOPIC:
             case RETRANSMIT:
-            case COMMIT:
                 forRunningConsumerProcess(signal, runningProcess -> runningProcess.getConsumerProcess().accept(signal));
                 break;
             case STOP:

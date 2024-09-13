@@ -12,9 +12,9 @@ Option                                         | Description                    
 {modulePrefix}.metrics.prometheus.step         | The step size to use in computing windowed statistics | 60s
 {modulePrefix}.metrics.prometheus.descriptions | If meter descriptions should be sent to Prometheus    | true
 
-In order to be able to access basic metrics via Management API, it needs to be configured to reach VictoriaMetrics API:
+In order to be able to access basic metrics via Management API, it needs to be configured to reach Prometheus API:
 
 Option                                    | Description                                   | Default value
 ------------------------------------------|-----------------------------------------------| -------------
 prometheus.client.enabled                 | Should fetch external metrics from Prometheus | true
-prometheus.client.externalMonitoringUrl   | URI to VictoriaMetrics HTTP API               | http://localhost:18090
+prometheus.client.externalMonitoringUrl   | URI to Prometheus HTTP API                    | http://localhost:18090
