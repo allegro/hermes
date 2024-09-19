@@ -6,6 +6,7 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.Metric;
 import org.apache.kafka.common.MetricName;
+import org.apache.kafka.common.Node;
 import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.errors.InterruptException;
@@ -117,7 +118,8 @@ public class KafkaMessageSender<K, V> {
                         .filter(p -> p.partition() == recordMetadata.partition())
                         .findFirst();
 
-                return partitionInfo.map(partition -> partition.leader().host())
+                return partitionInfo.flatMap(partition -> Optional.ofNullable(partition.leader()))
+                        .map(Node::host)
                         .map(ProduceMetadata::new)
                         .orElse(ProduceMetadata.empty());
             } catch (InterruptException e) {
