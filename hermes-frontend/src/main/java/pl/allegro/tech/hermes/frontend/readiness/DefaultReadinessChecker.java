@@ -1,6 +1,8 @@
 package pl.allegro.tech.hermes.frontend.readiness;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.frontend.producer.BrokerTopicAvailabilityChecker;
 
 import java.time.Duration;
@@ -20,6 +22,8 @@ public class DefaultReadinessChecker implements ReadinessChecker {
 
     private volatile boolean ready = false;
 
+    private static final Logger logger = LoggerFactory.getLogger(DefaultReadinessChecker.class);
+
     public DefaultReadinessChecker(BrokerTopicAvailabilityChecker brokerTopicAvailabilityChecker,
                                    AdminReadinessService adminReadinessService,
                                    boolean enabled,
@@ -33,6 +37,8 @@ public class DefaultReadinessChecker implements ReadinessChecker {
         ThreadFactory threadFactory = new ThreadFactoryBuilder()
                 .setNameFormat("ReadinessChecker-%d").build();
         this.scheduler = Executors.newSingleThreadScheduledExecutor(threadFactory);
+
+        logger.info("Default readiness checker enabled: {}, readiness check based on topic metadata enabled: {}", enabled, topicsCheckEnabled);
     }
 
     @Override
@@ -69,6 +75,7 @@ public class DefaultReadinessChecker implements ReadinessChecker {
                 ready = true;
             } else if (topicsCheckEnabled) {
                 allTopicsAvailable = brokerTopicAvailabilityChecker.areAllTopicsAvailable();
+                logger.info("All topics available: {}, setting ready to: {}", allTopicsAvailable, ready);
                 ready = allTopicsAvailable;
             } else {
                 allTopicsAvailable = true;
