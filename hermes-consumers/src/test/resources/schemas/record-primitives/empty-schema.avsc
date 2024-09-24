@@ -1,7 +1,0 @@
-{
-  "namespace": "pl.allegro.bigdata.avro.gcpavrotools",
-  "name": "RecordPrimitives",
-  "type": "record",
-  "fields": [
-  ]
-}
