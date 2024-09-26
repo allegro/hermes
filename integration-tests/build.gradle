@@ -3,6 +3,13 @@ repositories {
     maven { url 'https://repository.jboss.org/nexus/content/groups/public' }
 }
 
+configurations {
+    agent {
+        canBeResolved = true
+        canBeConsumed = true
+    }
+}
+
 dependencies {
     testImplementation project(':hermes-common')
     testImplementation project(':hermes-test-helper')
@@ -23,6 +30,13 @@ dependencies {
     testImplementation(group: 'org.hornetq', name: 'hornetq-jms-server', version: '2.4.1.Final') {
         exclude module: 'hornetq-native'
     }
+
+    // Import allure-bom to ensure correct versions of all the dependencies are used
+    testImplementation(platform("io.qameta.allure:allure-bom:$versions.allure"))
+    // Add necessary Allure dependencies to dependencies section
+    testImplementation("io.qameta.allure:allure-junit5")
+
+    agent "org.aspectj:aspectjweaver:1.9.21"
 
     testImplementation group: 'org.assertj', name: 'assertj-core', version: versions.assertj
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: versions.junit_jupiter
@@ -61,6 +75,8 @@ def registerIntegrationTestTask(String name, SourceSet common) {
         if (project.hasProperty("confluentImagesTag")) {
             args += "-DconfluentImagesTag=${project.property("confluentImagesTag")}"
         }
+
+        args += "-javaagent:${configurations.agent.singleFile}"
 
         args += chronicleMapJvmArgs
 

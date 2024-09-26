@@ -69,7 +69,8 @@ allprojects {
             junit_jupiter     : '5.10.2',
             testcontainers    : '1.19.8',
             spring            : '3.2.4',
-            assertj           : '3.25.3'
+            assertj           : '3.25.3',
+            allure            : '2.24.0'
     ]
 
     repositories {
@@ -79,6 +80,15 @@ allprojects {
     dependencies {
         implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.4'
         implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.14.0'
+
+        // Allure Spock adapter
+        testImplementation(platform("io.qameta.allure:allure-bom:${versions.allure}"))
+        testImplementation("io.qameta.allure:allure-spock2")
+        testImplementation("io.qameta.allure:allure-junit-platform")
+
+        // Spock framework
+        testImplementation(platform("org.spockframework:spock-bom:${versions.spock}"))
+        testImplementation("org.spockframework:spock-core")
 
         testImplementation group: 'junit', name: 'junit', version: '4.11'
         testImplementation group: 'com.tngtech.java', name: 'junit-dataprovider', version: '1.10.0'
