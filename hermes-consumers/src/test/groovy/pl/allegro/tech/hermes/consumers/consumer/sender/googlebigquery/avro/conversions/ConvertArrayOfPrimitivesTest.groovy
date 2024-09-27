@@ -25,7 +25,7 @@ import spock.lang.Specification
 
 import java.nio.ByteBuffer
 
-class ConvertArrayOfPrimitivesTest  extends Specification implements AvroTrait {
+class ConvertArrayOfPrimitivesTest extends Specification implements AvroTrait {
 
     @Test
     void 'should convert array primitive types'() {
@@ -90,14 +90,14 @@ class ConvertArrayOfPrimitivesTest  extends Specification implements AvroTrait {
 
         where:
         suite            | avroType  | protoDescriptor                                              | avroValue                                                                        | expectedProtoValue                                                               | transformResult
-        "map-primitives" | "string"  | StringToStringProto.PrimitivesStringToString.getDescriptor() | [:] | "[]" | { c -> c }
-        "map-primitives" | "int"     | StringToInt32Proto.PrimitivesStringToInt32.getDescriptor()   | [:] | "[]" | { c -> c }
-        "map-primitives" | "long"    | StringToInt64Proto.PrimitivesStringToInt64.getDescriptor()   | [:] | "[]" | { c -> c }
+        "map-primitives" | "string"  | StringToStringProto.PrimitivesStringToString.getDescriptor() | [:]                                                                              | "[]"                                                                             | { c -> c }
+        "map-primitives" | "int"     | StringToInt32Proto.PrimitivesStringToInt32.getDescriptor()   | [:]                                                                              | "[]"                                                                             | { c -> c }
+        "map-primitives" | "long"    | StringToInt64Proto.PrimitivesStringToInt64.getDescriptor()   | [:]                                                                              | "[]"                                                                             | { c -> c }
         "map-primitives" | "boolean" | StringToInt64Proto.PrimitivesStringToInt64.getDescriptor()   | [:]                                                                              | "[]"                                                                             | { c -> c }
-        "map-primitives" | "boolean" | StringToBoolProto.PrimitivesStringToBool.getDescriptor()     | [:] | "[]" | { c -> c }
-        "map-primitives" | "bytes"   | StringToBytesProto.PrimitivesStringToBytes.getDescriptor()   | [:] | "[]" | { c -> c }
-        "map-primitives" | "float"   | StringToFloatProto.PrimitivesStringToFloat.getDescriptor()   | [:] | "[]" | { c -> c }
-        "map-primitives" | "double"  | StringToDoubleProto.PrimitivesStringToDouble.getDescriptor() | [:] | "[]" | { c -> c }
+        "map-primitives" | "boolean" | StringToBoolProto.PrimitivesStringToBool.getDescriptor()     | [:]                                                                              | "[]"                                                                             | { c -> c }
+        "map-primitives" | "bytes"   | StringToBytesProto.PrimitivesStringToBytes.getDescriptor()   | [:]                                                                              | "[]"                                                                             | { c -> c }
+        "map-primitives" | "float"   | StringToFloatProto.PrimitivesStringToFloat.getDescriptor()   | [:]                                                                              | "[]"                                                                             | { c -> c }
+        "map-primitives" | "double"  | StringToDoubleProto.PrimitivesStringToDouble.getDescriptor() | [:]                                                                              | "[]"                                                                             | { c -> c }
         "map-primitives" | "string"  | StringToStringProto.PrimitivesStringToString.getDescriptor() | ["a": "a", "b": "b", "c": "c"]                                                   | "[key: \"a\" value: \"a\" , key: \"b\" value: \"b\" , key: \"c\" value: \"c\" ]" | { c -> c }
         "map-primitives" | "int"     | StringToInt32Proto.PrimitivesStringToInt32.getDescriptor()   | ["a": 1, "b": 2, "c": 3]                                                         | "[key: \"a\" value: 1 , key: \"b\" value: 2 , key: \"c\" value: 3 ]"             | { c -> c }
         "map-primitives" | "long"    | StringToInt64Proto.PrimitivesStringToInt64.getDescriptor()   | ["a": 4l, "b": 5l, "c": 6l]                                                      | "[key: \"a\" value: 4 , key: \"b\" value: 5 , key: \"c\" value: 6 ]"             | { c -> c }

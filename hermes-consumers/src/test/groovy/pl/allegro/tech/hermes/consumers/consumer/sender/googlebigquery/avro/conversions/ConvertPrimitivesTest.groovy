@@ -25,7 +25,7 @@ import spock.lang.Specification
 
 import java.nio.ByteBuffer
 
-class ConvertPrimitivesTest extends Specification  implements AvroTrait{
+class ConvertPrimitivesTest extends Specification implements AvroTrait {
     @Test
     void 'should convert primitive types'() {
 
@@ -114,18 +114,18 @@ class ConvertPrimitivesTest extends Specification  implements AvroTrait{
         def field = message.getDescriptorForType().findFieldByName(fieldName)
         record.hasField(fieldName) == !message.hasField(field)
         def converted_value = message.hasField(field) ? (message.getField(field)) : null
-        transformResult(converted_value) == expectedProtoValue
+        converted_value == expectedProtoValue
 
 
         where:
-        suite                 | avroType  | protoDescriptor                                       | avroValue | expectedProtoValue | transformResult
-        "nullable-primitives" | "string"  | NStringProto.NullablePrimitivesString.getDescriptor() | null      | null               | { c -> c }
-        "nullable-primitives" | "int"     | NInt32Proto.NullablePrimitivesInt32.getDescriptor()   | null      | null               | { c -> c }
-        "nullable-primitives" | "long"    | NInt64Proto.NullablePrimitivesInt64.getDescriptor()   | null      | null               | { c -> c }
-        "nullable-primitives" | "boolean" | NInt64Proto.NullablePrimitivesInt64.getDescriptor()   | null      | null               | { c -> c }
-        "nullable-primitives" | "bytes"   | NBytesProto.NullablePrimitivesBytes.getDescriptor()   | null      | null               | { c -> c }
-        "nullable-primitives" | "float"   | NFloatProto.NullablePrimitivesFloat.getDescriptor()   | null      | null               | { c -> c }
-        "nullable-primitives" | "double"  | NDoubleProto.NullablePrimitivesDouble.getDescriptor() | null      | null               | { c -> c }
+        suite                 | avroType  | protoDescriptor                                       | avroValue | expectedProtoValue
+        "nullable-primitives" | "string"  | NStringProto.NullablePrimitivesString.getDescriptor() | null      | null
+        "nullable-primitives" | "int"     | NInt32Proto.NullablePrimitivesInt32.getDescriptor()   | null      | null
+        "nullable-primitives" | "long"    | NInt64Proto.NullablePrimitivesInt64.getDescriptor()   | null      | null
+        "nullable-primitives" | "boolean" | NInt64Proto.NullablePrimitivesInt64.getDescriptor()   | null      | null
+        "nullable-primitives" | "bytes"   | NBytesProto.NullablePrimitivesBytes.getDescriptor()   | null      | null
+        "nullable-primitives" | "float"   | NFloatProto.NullablePrimitivesFloat.getDescriptor()   | null      | null
+        "nullable-primitives" | "double"  | NDoubleProto.NullablePrimitivesDouble.getDescriptor() | null      | null
 
 
     }
@@ -171,7 +171,6 @@ class ConvertPrimitivesTest extends Specification  implements AvroTrait{
 
 
     }
-
 
 
 }

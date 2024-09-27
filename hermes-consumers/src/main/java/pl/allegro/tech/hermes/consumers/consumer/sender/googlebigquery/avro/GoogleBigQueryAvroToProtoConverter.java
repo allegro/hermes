@@ -54,32 +54,6 @@ public class GoogleBigQueryAvroToProtoConverter implements ToProtoConverter<Gene
         }
     }
 
-    private Integer toInteger(Object object) {
-        if (object instanceof Number) {
-            return ((Number) object).intValue();
-        } else if (object instanceof String) {
-            return Integer.parseInt((String) object);
-        } else if (object instanceof Boolean) {
-            return (Boolean) object ? 1 : 0;
-        } else {
-            return (int) object;
-        }
-
-    }
-
-    private Long toLong(Object object) {
-        if (object instanceof Number) {
-            return ((Number) object).longValue();
-        } else if (object instanceof String) {
-            return Long.parseLong((String) object);
-        } else if (object instanceof Boolean) {
-            return (Boolean) object ? 1l : 0l;
-        } else {
-            return (long) object;
-        }
-
-    }
-
 
     private <T extends Number> T toNumber(Object object, Class<T> clazz) {
         if (object instanceof Number) {
@@ -127,7 +101,7 @@ public class GoogleBigQueryAvroToProtoConverter implements ToProtoConverter<Gene
                 if (value instanceof Boolean) {
                     return value;
                 } else if (value instanceof Number) {
-                    return ((Number) value).intValue() > 0;
+                    return ((Number) value).intValue() != 0;
                 } else
                     return Boolean.parseBoolean(value.toString());
 
