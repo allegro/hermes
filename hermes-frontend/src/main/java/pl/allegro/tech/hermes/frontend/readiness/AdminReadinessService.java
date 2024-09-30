@@ -45,6 +45,7 @@ public class AdminReadinessService implements NodeCacheListener {
 
     public void start() {
         refreshAdminReady();
+        logger.info("Initial readiness per datacenter: {}", readinessPerDatacenter);
     }
 
     public void stop() {
@@ -58,6 +59,7 @@ public class AdminReadinessService implements NodeCacheListener {
     @Override
     public void nodeChanged() {
         refreshAdminReady();
+        logger.info("Readiness per datacenter changed to: {}", readinessPerDatacenter);
     }
 
     private void refreshAdminReady() {

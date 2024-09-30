@@ -7,11 +7,35 @@ on:
     branches: [ master ]
 
 jobs:
+  console:
+    name: ci-console
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./hermes-console
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Run linter
+        run: yarn && yarn lint
+      - name: Run frontend tests
+        run: yarn test:unit
+      - name: Upload artifact
+        if: always() && github.ref == 'refs/heads/master'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-console
+          path: ./hermes-console/allure-results
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         tasks: [
+          # Add/remove task in Allure Report job also
           {alias: "unitTests", name: "check"},
           {alias: "integrationTests", name: "integrationTest"},
           {alias: "slowIntegrationTests", name: "slowIntegrationTest"},
@@ -47,3 +71,61 @@ jobs:
         with:
           paths: '**/build/test-results/**/TEST-*.xml'
           show: fail, skip
+      - name: Upload artifact
+        if: always() && github.ref == 'refs/heads/master' && matrix.tasks.alias != 'benchmark'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.tasks.alias }}
+          path: build/allure-results
+
+  allureReport:
+    if: always() && github.ref == 'refs/heads/master'
+    name: Generate Allure Report
+    needs: [ build, console ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact unitTests
+        uses: actions/download-artifact@v4
+        if: always()
+        with:
+          name: unitTests
+          path: allure-results
+      - name: Download artifact integrationTests
+        uses: actions/download-artifact@v4
+        if: always()
+        with:
+          name: integrationTests
+          path: allure-results
+      - name: Download artifact slowIntegrationTests
+        uses: actions/download-artifact@v4
+        if: always()
+        with:
+          name: slowIntegrationTests
+          path: allure-results
+      - name: Download artifact ci-console
+        uses: actions/download-artifact@v4
+        if: always()
+        with:
+          name: ci-console
+          path: allure-results
+      - name: Load test report history
+        uses: actions/checkout@v4
+        if: always()
+        continue-on-error: true
+        with:
+          ref: gh-pages
+          path: gh-pages
+      - name: Build test report
+        uses: simple-elf/allure-report-action@v1.9
+        if: always()
+        with:
+          gh_pages: gh-pages
+          allure_history: allure-history
+          allure_results: allure-results
+      - name: Publish test report
+        uses: peaceiris/actions-gh-pages@v4
+        if: always()
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: allure-history
