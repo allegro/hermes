@@ -116,6 +116,7 @@
         <v-col md="2" cols="12">
           <v-select
             v-model="selectedSearchCollection"
+            label="collection"
             :items="searchCollections"
             variant="outlined"
           ></v-select>
@@ -123,6 +124,7 @@
         <v-col md="2" cols="12">
           <v-select
             v-model="selectedSearchFilter"
+            label="filter"
             :items="searchFilters"
             variant="outlined"
           ></v-select>
