@@ -180,7 +180,8 @@ public class BatchConsumer implements Consumer {
                 compositeMessageContentWrapper,
                 topic,
                 trackers,
-                loadRecorder
+                loadRecorder,
+                this::commitIfReady
         );
         metrics.initialize();
     }

@@ -42,6 +42,7 @@ public class MessageBatchReceiver {
     private final Topic topic;
     private final SubscriptionLoadRecorder loadRecorder;
     private boolean receiving = true;
+    private final Runnable commitIfReady;
 
     public MessageBatchReceiver(MessageReceiver receiver,
                                 MessageBatchFactory batchFactory,
@@ -49,7 +50,8 @@ public class MessageBatchReceiver {
                                 CompositeMessageContentWrapper compositeMessageContentWrapper,
                                 Topic topic,
                                 Trackers trackers,
-                                SubscriptionLoadRecorder loadRecorder) {
+                                SubscriptionLoadRecorder loadRecorder,
+                                Runnable commitIfReady) {
         this.receiver = receiver;
         this.batchFactory = batchFactory;
         this.messageConverterResolver = messageConverterResolver;
@@ -58,6 +60,7 @@ public class MessageBatchReceiver {
         this.trackers = trackers;
         this.loadRecorder = loadRecorder;
         this.inflight = new ArrayDeque<>(1);
+        this.commitIfReady = commitIfReady;
     }
 
     public MessageBatchingResult next(Subscription subscription, Runnable signalsInterrupt) {
@@ -74,6 +77,7 @@ public class MessageBatchReceiver {
         while (isReceiving() && !batch.isReadyForDelivery() && !Thread.currentThread().isInterrupted()) {
             loadRecorder.recordSingleOperation();
             signalsInterrupt.run();
+            commitIfReady.run();
             Optional<Message> maybeMessage = inflight.isEmpty()
                     ? readAndTransform(subscription, batch.getId())
                     : Optional.ofNullable(inflight.poll());
