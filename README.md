@@ -34,11 +34,20 @@ Following steps are required for optimal dev experience in IJ:
 
 Each save should automatically trigger reformat.
 
-If you want to debug the CLI check:
+If you want to debug the CLI check on macOS:
 
 ```shell
 wget https://github.com/google/google-java-format/releases/download/v1.23.0/google-java-format_darwin-arm64
 chmod a+x google-java-format_darwin-arm64
 chmod a+x .github/scripts/check-google-java-format.sh
 ./.github/scripts/check-google-java-format.sh                                                                                                                     
+```
+
+or if you are on Linux:
+
+```shell
+wget https://github.com/google/google-java-format/releases/download/v1.23.0/google-java-format_linux-x86-64
+chmod a+x google-java-format_linux-x86-64
+chmod a+x .github/scripts/check-google-java-format.sh
+./.github/scripts/check-google-java-format.sh        
 ```
