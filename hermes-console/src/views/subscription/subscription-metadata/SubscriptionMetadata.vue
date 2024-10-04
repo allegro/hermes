@@ -78,6 +78,7 @@
               operation="edit"
               :subscription="subscription"
               :topic="subscription.topicName"
+              :roles="roles"
               @created="refreshPage"
               @cancel="hideSubscriptionForm"
             />

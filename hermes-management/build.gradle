@@ -1,7 +1,7 @@
 plugins {
     id 'java-library'
     id 'application'
-    id "com.github.node-gradle.node" version "2.2.4"
+    id "com.github.node-gradle.node" version "7.0.2"
 }
 
 mainClassName = 'pl.allegro.tech.hermes.management.HermesManagement'
@@ -51,9 +51,9 @@ node {
     version = '20.4.0'
     distBaseUrl = 'https://nodejs.org/dist'
     download = true
-    workDir = file("${project.buildDir}/nodejs")
-    npmWorkDir = file("${project.buildDir}/npm")
-    nodeModulesDir = file("${project.rootDir}/hermes-console")
+    workDir.set(file("${project.buildDir}/nodejs"))
+    npmWorkDir.set(file("${project.buildDir}/npm"))
+    nodeProjectDir.set(file("${project.rootDir}/hermes-console"))
 }
 
 yarnSetup.dependsOn(nodeSetup)

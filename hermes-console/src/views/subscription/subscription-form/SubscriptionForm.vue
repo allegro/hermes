@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import { computed, ref } from 'vue';
+  import { isAdmin } from '@/utils/roles-util';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import { useCreateSubscription } from '@/composables/subscription/use-create-subscription/useCreateSubscription';
   import { useEditSubscription } from '@/composables/subscription/use-edit-subscription/useEditSubscription';
@@ -13,12 +14,14 @@
   import SubscriptionPathFiltersDebug from '@/views/subscription/subscription-form/subscription-basic-filters/SubscriptionPathFiltersDebug.vue';
   import TextField from '@/components/text-field/TextField.vue';
   import TooltipIcon from '@/components/tooltip-icon/TooltipIcon.vue';
+  import type { Role } from '@/api/role';
   import type { Subscription } from '@/api/subscription';
 
   const props = defineProps<{
     topic: string;
     subscription: Subscription | null;
     operation: 'add' | 'edit';
+    roles: Role[] | undefined;
   }>();
   const emit = defineEmits<{
     created: [subscription: string];
@@ -69,7 +72,7 @@
   }
 
   async function submit() {
-    if (isFormValid.value) {
+    if (isFormValid.value || isAdmin(props.roles)) {
       const isOperationSucceeded = await createOrUpdateSubscription();
       if (isOperationSucceeded) {
         emit('created', form.value.name);
@@ -85,6 +88,13 @@
 </script>
 
 <template>
+  <console-alert
+    v-if="isAdmin(roles)"
+    :title="$t('subscriptionForm.warnings.adminForm.title')"
+    :text="$t('subscriptionForm.warnings.adminForm.text')"
+    type="warning"
+    class="mb-4"
+  />
   <v-file-input
     v-if="operation === 'add'"
     :label="$t('subscriptionForm.actions.import')"
@@ -251,6 +261,18 @@
         $t('subscriptionForm.fields.inflightMessageTTL.placeholder')
       "
       :suffix="$t('subscriptionForm.fields.inflightMessageTTL.suffix')"
+    />
+
+    <text-field
+      v-if="isAdmin(roles)"
+      v-model="form.subscriptionPolicy.inflightMessagesCount"
+      :rules="validators.inflightMessagesCount"
+      prepend-icon="$warning"
+      type="number"
+      :label="$t('subscriptionForm.fields.inflightMessagesCount.label')"
+      :placeholder="
+        $t('subscriptionForm.fields.inflightMessagesCount.placeholder')
+      "
     />
 
     <v-divider />
