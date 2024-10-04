@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import { computed, ref } from 'vue';
+  import { isAdmin } from '@/utils/roles-util';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import { useCreateTopic } from '@/composables/topic/use-create-topic/useCreateTopic';
   import { useEditTopic } from '@/composables/topic/use-edit-topic/useEditTopic';
@@ -10,12 +11,15 @@
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import SelectField from '@/components/select-field/SelectField.vue';
   import TextField from '@/components/text-field/TextField.vue';
-  import type { TopicWithSchema } from '@/api/Topic';
+  import type { Role } from '@/api/role';
+  import type { SelectFieldOption } from '@/components/select-field/types';
+  import type { TopicWithSchema } from '@/api/topic';
 
   const props = defineProps<{
     topic: TopicWithSchema | null;
     group: string | null;
     operation: 'add' | 'edit';
+    roles: Role[] | undefined;
   }>();
   const emit = defineEmits<{
     created: [topic: string];
@@ -37,6 +41,17 @@
       : useEditTopic(props.topic!!);
   const { importFormData } = useImportTopic();
 
+  const adminContentTypes: SelectFieldOption[] = [
+    {
+      title: 'AVRO',
+      value: 'AVRO',
+    },
+    {
+      title: 'JSON',
+      value: 'JSON',
+    },
+  ];
+
   const ownerSelectorPlaceholder = computed(
     () =>
       configStore.loadedConfig.owner.sources.find(
@@ -53,6 +68,16 @@
   }
 
   const isAuthorizationSelected = computed(() => form.value.auth.enabled);
+
+  const durationValidator = computed(() =>
+    form.value.retentionTime.retentionUnit === 'DAYS'
+      ? validators.retentionTimeDurationDays
+      : validators.retentionTimeDurationHours,
+  );
+
+  const allowedContentTypes = computed(() =>
+    isAdmin(props.roles) ? adminContentTypes : dataSources.contentTypes,
+  );
 
   const isAvroContentTypeSelected = computed(
     () => form.value.contentType === 'AVRO',
@@ -71,7 +96,7 @@
   const showAvroAlert = computed(() => form.value.contentType === 'AVRO');
 
   async function submit() {
-    if (isFormValid.value) {
+    if (isFormValid.value || isAdmin(props.roles)) {
       const isOperationSucceeded = await createOrUpdateTopic();
       if (isOperationSucceeded) {
         emit('created', form.value.name);
@@ -87,6 +112,13 @@
 </script>
 
 <template>
+  <console-alert
+    v-if="isAdmin(roles)"
+    :title="$t('topicForm.warnings.adminForm.title')"
+    :text="$t('topicForm.warnings.adminForm.text')"
+    type="warning"
+    class="mb-4"
+  />
   <v-file-input
     v-if="operation === 'add'"
     :label="$t('topicForm.actions.import')"
@@ -213,7 +245,7 @@
 
     <text-field
       v-model.number="form.retentionTime.duration"
-      :rules="validators.retentionTimeDuration"
+      :rules="durationValidator"
       type="number"
       :label="$t('topicForm.fields.retentionTime.duration')"
     />
@@ -238,7 +270,7 @@
     <select-field
       v-model="form.contentType"
       :label="$t('topicForm.fields.contentType')"
-      :items="dataSources.contentTypes"
+      :items="allowedContentTypes"
     />
 
     <text-field
@@ -280,7 +312,6 @@
     />
 
     <v-divider />
-
     <!--      text not in i18n because of a problem with escaping characters-->
     <console-alert
       style="white-space: pre"

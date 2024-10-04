@@ -128,6 +128,7 @@ export interface SerialSubscriptionPolicyJson {
   backoffMultiplier: number;
   messageBackoff: number;
   messageTtl: number;
+  inflightSize: number;
   rate: number;
   requestTimeout: number;
   sendingDelay: number;

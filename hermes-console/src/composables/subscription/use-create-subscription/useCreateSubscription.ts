@@ -126,6 +126,7 @@ function initializeForm(
       inflightMessageTTL:
         loadedConfig.value.subscription.defaults.subscriptionPolicy
           .messageTtl || 3600,
+      inflightMessagesCount: null,
       retryBackoff: 1000,
       retryBackoffMultiplier: 1.0,
       backoffMaxIntervalInSec: 600,
