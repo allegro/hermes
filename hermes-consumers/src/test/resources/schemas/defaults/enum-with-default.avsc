@@ -1,0 +1,19 @@
+{
+  "namespace": "pl.allegro.bigdata.avro.gcpavrotools",
+  "name": "Primitives",
+  "type": "record",
+  "fields": [
+    {
+      "name": "enum_field",
+      "type": {
+        "type": "enum",
+        "name": "TestEnum",
+        "symbols": [
+          "TEST1",
+          "TEST2"
+        ]
+      },
+      "default": "TEST1"
+    }
+  ]
+}
