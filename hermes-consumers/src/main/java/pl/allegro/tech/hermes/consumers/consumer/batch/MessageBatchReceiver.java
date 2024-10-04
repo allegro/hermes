@@ -77,6 +77,8 @@ public class MessageBatchReceiver {
         while (isReceiving() && !batch.isReadyForDelivery() && !Thread.currentThread().isInterrupted()) {
             loadRecorder.recordSingleOperation();
             signalsInterrupt.run();
+            // We need a commit function call here to prevent cases where it takes a long time to create a batch and messages are filtered at the same time.
+            // Otherwise, this would lead to ever-increasing lag despite the processing and filtering of current messages.
             commitIfReady.run();
             Optional<Message> maybeMessage = inflight.isEmpty()
                     ? readAndTransform(subscription, batch.getId())
