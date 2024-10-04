@@ -139,6 +139,7 @@ public class BatchConsumer implements Consumer {
             if (!offsetsToCommit.isEmpty()) {
                 commit(offsetsToCommit);
             }
+            maxPendingOffsets.clear();
             lastCommitTime = Instant.now();
         }
     }
