@@ -91,6 +91,7 @@
               operation="edit"
               :topic="topic"
               :group="null"
+              :roles="roles"
               @created="refreshPage"
               @cancel="hideTopicForm"
             />

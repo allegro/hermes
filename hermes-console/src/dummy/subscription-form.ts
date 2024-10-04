@@ -18,6 +18,7 @@ export const dummySubscriptionForm = {
   subscriptionPolicy: {
     rateLimit: null,
     inflightMessageTTL: 3600,
+    inflightMessagesCount: null,
     retryBackoff: 1000,
     retryBackoffMultiplier: 1.0,
     backoffMaxIntervalInSec: 600,
@@ -59,6 +60,7 @@ export const dummySubscriptionFormValidator = {
   requestTimeout: [required(), min(0), max(10000)],
   sendingDelay: [required(), min(0), max(5000)],
   inflightMessageTTL: [required(), min(0), max(7200)],
+  inflightMessagesCount: [min(1)],
   retryBackoff: [required(), min(0), max(1000000)],
   retryBackoffMultiplier: [required(), min(1), max(10)],
   backoffMaxIntervalInSec: [required(), min(1), max(600)],
@@ -143,6 +145,7 @@ export const dummyInitializedSubscriptionForm = {
     inflightMessageTTL:
       dummyAppConfig.subscription.defaults.subscriptionPolicy.messageTtl ||
       3600,
+    inflightMessagesCount: null,
     retryBackoff: 1000,
     retryBackoffMultiplier: 1.0,
     backoffMaxIntervalInSec: 600,
@@ -183,6 +186,7 @@ export const dummyInitializedEditSubscriptionForm = {
   subscriptionPolicy: {
     rateLimit: dummySubscription.subscriptionPolicy.rate,
     inflightMessageTTL: dummySubscription.subscriptionPolicy.messageTtl,
+    inflightMessagesCount: dummySubscription.subscriptionPolicy.inflightSize,
     retryBackoff: dummySubscription.subscriptionPolicy.messageBackoff,
     retryBackoffMultiplier:
       dummySubscription.subscriptionPolicy.backoffMultiplier,
