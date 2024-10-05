@@ -16,13 +16,16 @@ import pl.allegro.tech.hermes.consumers.config.GooglePubSubSenderProperties;
 @EnableConfigurationProperties(GooglePubSubSenderProperties.class)
 public class GoogleTransportChannelProviderConfiguration {
 
-    @Bean
-    @Primary
-    @Profile("integration")
-    public TransportChannelProvider integrationTransportChannelProvider(GooglePubSubSenderProperties googlePubSubSenderProperties) {
-        final ManagedChannel channel = ManagedChannelBuilder.forTarget(
-                        googlePubSubSenderProperties.getTransportChannelProviderAddress())
-                .usePlaintext().build();
-        return FixedTransportChannelProvider.create(GrpcTransportChannel.create(channel));
-    }
+  @Bean
+  @Primary
+  @Profile("integration")
+  public TransportChannelProvider integrationTransportChannelProvider(
+      GooglePubSubSenderProperties googlePubSubSenderProperties) {
+    final ManagedChannel channel =
+        ManagedChannelBuilder.forTarget(
+                googlePubSubSenderProperties.getTransportChannelProviderAddress())
+            .usePlaintext()
+            .build();
+    return FixedTransportChannelProvider.create(GrpcTransportChannel.create(channel));
+  }
 }

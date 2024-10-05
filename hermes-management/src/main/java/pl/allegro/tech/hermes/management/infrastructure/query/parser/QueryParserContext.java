@@ -1,17 +1,16 @@
 package pl.allegro.tech.hermes.management.infrastructure.query.parser;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import pl.allegro.tech.hermes.management.infrastructure.query.matcher.Matcher;
-
 import java.util.List;
+import pl.allegro.tech.hermes.management.infrastructure.query.matcher.Matcher;
 
 public interface QueryParserContext {
 
-    Matcher parseNode(JsonNode node);
+  Matcher parseNode(JsonNode node);
 
-    List<Matcher> parseArrayNodes(JsonNode node);
+  List<Matcher> parseArrayNodes(JsonNode node);
 
-    Object parseValue(JsonNode node);
+  Object parseValue(JsonNode node);
 
-    Object[] parseArrayValue(JsonNode node);
+  Object[] parseArrayValue(JsonNode node);
 }

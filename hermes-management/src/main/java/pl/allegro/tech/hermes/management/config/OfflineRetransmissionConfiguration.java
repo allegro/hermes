@@ -11,18 +11,21 @@ import pl.allegro.tech.hermes.management.domain.retransmit.OfflineRetransmission
 
 @Configuration
 public class OfflineRetransmissionConfiguration {
-    @Bean
-    @Qualifier("dcAwareOfflineRetransmissionRepository")
-    OfflineRetransmissionRepository dcAwareOfflineRetransmissionRepository(
-            MultiDatacenterRepositoryCommandExecutor commandExecutor,
-            @Qualifier("zookeeperOfflineRetransmissionRepository") OfflineRetransmissionRepository offlineRetransmissionRepository) {
-        return new DcAwareOfflineRetransmissionRepository(commandExecutor, offlineRetransmissionRepository);
-    }
+  @Bean
+  @Qualifier("dcAwareOfflineRetransmissionRepository")
+  OfflineRetransmissionRepository dcAwareOfflineRetransmissionRepository(
+      MultiDatacenterRepositoryCommandExecutor commandExecutor,
+      @Qualifier("zookeeperOfflineRetransmissionRepository")
+          OfflineRetransmissionRepository offlineRetransmissionRepository) {
+    return new DcAwareOfflineRetransmissionRepository(
+        commandExecutor, offlineRetransmissionRepository);
+  }
 
-    @Bean
-    OfflineRetransmissionService offlineRetransmissionService(
-            @Qualifier("dcAwareOfflineRetransmissionRepository") OfflineRetransmissionRepository taskRepository,
-            TopicRepository topicRepository) {
-        return new OfflineRetransmissionService(taskRepository, topicRepository);
-    }
+  @Bean
+  OfflineRetransmissionService offlineRetransmissionService(
+      @Qualifier("dcAwareOfflineRetransmissionRepository")
+          OfflineRetransmissionRepository taskRepository,
+      TopicRepository topicRepository) {
+    return new OfflineRetransmissionService(taskRepository, topicRepository);
+  }
 }

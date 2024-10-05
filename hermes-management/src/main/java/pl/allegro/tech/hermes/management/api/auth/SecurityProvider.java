@@ -6,28 +6,27 @@ import pl.allegro.tech.hermes.api.OwnerId;
 
 public interface SecurityProvider {
 
-    HermesSecurity security(ContainerRequestContext requestContext);
+  HermesSecurity security(ContainerRequestContext requestContext);
 
-    class HermesSecurity {
-        private final SecurityContext securityContext;
-        private final OwnershipResolver ownershipResolver;
+  class HermesSecurity {
+    private final SecurityContext securityContext;
+    private final OwnershipResolver ownershipResolver;
 
-        public HermesSecurity(SecurityContext securityContext, OwnershipResolver ownershipResolver) {
-            this.securityContext = securityContext;
-            this.ownershipResolver = ownershipResolver;
-        }
-
-        public SecurityContext getSecurityContext() {
-            return securityContext;
-        }
-
-        public OwnershipResolver getOwnershipResolver() {
-            return ownershipResolver;
-        }
+    public HermesSecurity(SecurityContext securityContext, OwnershipResolver ownershipResolver) {
+      this.securityContext = securityContext;
+      this.ownershipResolver = ownershipResolver;
     }
 
-    interface OwnershipResolver {
-        boolean isUserAnOwner(OwnerId owner);
+    public SecurityContext getSecurityContext() {
+      return securityContext;
     }
 
+    public OwnershipResolver getOwnershipResolver() {
+      return ownershipResolver;
+    }
+  }
+
+  interface OwnershipResolver {
+    boolean isUserAnOwner(OwnerId owner);
+  }
 }

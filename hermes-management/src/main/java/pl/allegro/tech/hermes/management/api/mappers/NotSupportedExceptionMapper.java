@@ -8,13 +8,13 @@ import pl.allegro.tech.hermes.api.ErrorCode;
 @Provider
 public class NotSupportedExceptionMapper extends AbstractExceptionMapper<NotSupportedException> {
 
-    @Override
-    Response.Status httpStatus() {
-        return Response.Status.UNSUPPORTED_MEDIA_TYPE;
-    }
+  @Override
+  Response.Status httpStatus() {
+    return Response.Status.UNSUPPORTED_MEDIA_TYPE;
+  }
 
-    @Override
-    ErrorCode errorCode() {
-        return ErrorCode.VALIDATION_ERROR;
-    }
+  @Override
+  ErrorCode errorCode() {
+    return ErrorCode.VALIDATION_ERROR;
+  }
 }

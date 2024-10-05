@@ -12,15 +12,14 @@ import pl.allegro.tech.hermes.api.ErrorDescription;
 @Provider
 public class RuntimeExceptionMapper implements ExceptionMapper<RuntimeException> {
 
-    private final Logger logger = LoggerFactory.getLogger(RuntimeExceptionMapper.class);
+  private final Logger logger = LoggerFactory.getLogger(RuntimeExceptionMapper.class);
 
-    @Override
-    public Response toResponse(RuntimeException exception) {
-        logger.warn("Caught unmapped exception: {}", exception.getClass().getSimpleName(), exception);
-        return Response
-                .status(Response.Status.INTERNAL_SERVER_ERROR)
-                .type(MediaType.APPLICATION_JSON_TYPE)
-                .entity(new ErrorDescription(exception.getMessage(), ErrorCode.OTHER))
-                .build();
-    }
+  @Override
+  public Response toResponse(RuntimeException exception) {
+    logger.warn("Caught unmapped exception: {}", exception.getClass().getSimpleName(), exception);
+    return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+        .type(MediaType.APPLICATION_JSON_TYPE)
+        .entity(new ErrorDescription(exception.getMessage(), ErrorCode.OTHER))
+        .build();
+  }
 }

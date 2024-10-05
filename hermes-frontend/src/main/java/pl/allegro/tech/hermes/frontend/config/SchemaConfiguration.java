@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.jakarta.rs.json.JacksonJsonProvider;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
+import java.net.URI;
 import org.apache.avro.Schema;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
@@ -23,69 +24,80 @@ import pl.allegro.tech.hermes.schema.SchemaVersionsRepository;
 import pl.allegro.tech.hermes.schema.resolver.DefaultSchemaRepositoryInstanceResolver;
 import pl.allegro.tech.hermes.schema.resolver.SchemaRepositoryInstanceResolver;
 
-import java.net.URI;
-
 @Configuration
-@EnableConfigurationProperties({
-        SchemaProperties.class,
-        KafkaClustersProperties.class
-})
+@EnableConfigurationProperties({SchemaProperties.class, KafkaClustersProperties.class})
 public class SchemaConfiguration {
 
-    @Bean
-    public SchemaRepository schemaRepository(SchemaVersionsRepository schemaVersionsRepository,
-                                             CompiledSchemaRepository<Schema> compiledAvroSchemaRepository) {
-        return new SchemaRepositoryFactory(schemaVersionsRepository, compiledAvroSchemaRepository).provide();
-    }
+  @Bean
+  public SchemaRepository schemaRepository(
+      SchemaVersionsRepository schemaVersionsRepository,
+      CompiledSchemaRepository<Schema> compiledAvroSchemaRepository) {
+    return new SchemaRepositoryFactory(schemaVersionsRepository, compiledAvroSchemaRepository)
+        .provide();
+  }
 
-    @Bean
-    public CompiledSchemaRepository<Schema> avroCompiledSchemaRepository(RawSchemaClient rawSchemaClient,
-                                                                         SchemaProperties schemaProperties) {
-        return new AvroCompiledSchemaRepositoryFactory(
-                rawSchemaClient, schemaProperties.getCache().getCompiledMaximumSize(),
-                schemaProperties.getCache().getCompiledExpireAfterAccess(), schemaProperties.getCache().isEnabled()
-        ).provide();
-    }
+  @Bean
+  public CompiledSchemaRepository<Schema> avroCompiledSchemaRepository(
+      RawSchemaClient rawSchemaClient, SchemaProperties schemaProperties) {
+    return new AvroCompiledSchemaRepositoryFactory(
+            rawSchemaClient,
+            schemaProperties.getCache().getCompiledMaximumSize(),
+            schemaProperties.getCache().getCompiledExpireAfterAccess(),
+            schemaProperties.getCache().isEnabled())
+        .provide();
+  }
 
-    @Bean
-    public RawSchemaClient rawSchemaClient(KafkaClustersProperties kafkaClustersProperties,
-                                           MetricsFacade metricsFacade,
-                                           ObjectMapper objectMapper,
-                                           SchemaRepositoryInstanceResolver resolver,
-                                           SchemaProperties schemaProperties) {
-        return new RawSchemaClientFactory(
-                kafkaClustersProperties.getNamespace(),
-                kafkaClustersProperties.getNamespaceSeparator(),
-                metricsFacade,
-                objectMapper,
-                resolver,
-                schemaProperties.getRepository().isSubjectSuffixEnabled(),
-                schemaProperties.getRepository().isSubjectNamespaceEnabled()
-        ).provide();
-    }
+  @Bean
+  public RawSchemaClient rawSchemaClient(
+      KafkaClustersProperties kafkaClustersProperties,
+      MetricsFacade metricsFacade,
+      ObjectMapper objectMapper,
+      SchemaRepositoryInstanceResolver resolver,
+      SchemaProperties schemaProperties) {
+    return new RawSchemaClientFactory(
+            kafkaClustersProperties.getNamespace(),
+            kafkaClustersProperties.getNamespaceSeparator(),
+            metricsFacade,
+            objectMapper,
+            resolver,
+            schemaProperties.getRepository().isSubjectSuffixEnabled(),
+            schemaProperties.getRepository().isSubjectNamespaceEnabled())
+        .provide();
+  }
 
-    @Bean
-    public SchemaRepositoryInstanceResolver schemaRepositoryInstanceResolver(SchemaProperties schemaProperties, Client client) {
-        URI schemaRepositoryServerUri = URI.create(schemaProperties.getRepository().getServerUrl());
-        return new DefaultSchemaRepositoryInstanceResolver(client, schemaRepositoryServerUri);
-    }
+  @Bean
+  public SchemaRepositoryInstanceResolver schemaRepositoryInstanceResolver(
+      SchemaProperties schemaProperties, Client client) {
+    URI schemaRepositoryServerUri = URI.create(schemaProperties.getRepository().getServerUrl());
+    return new DefaultSchemaRepositoryInstanceResolver(client, schemaRepositoryServerUri);
+  }
 
-    @Bean
-    public Client schemaRepositoryClient(ObjectMapper mapper, SchemaProperties schemaProperties) {
-        ClientConfig config = new ClientConfig()
-                .property(ClientProperties.READ_TIMEOUT, (int) schemaProperties.getRepository().getHttpReadTimeout().toMillis())
-                .property(ClientProperties.CONNECT_TIMEOUT, (int) schemaProperties.getRepository().getHttpConnectTimeout().toMillis())
-                .register(new JacksonJsonProvider(mapper));
+  @Bean
+  public Client schemaRepositoryClient(ObjectMapper mapper, SchemaProperties schemaProperties) {
+    ClientConfig config =
+        new ClientConfig()
+            .property(
+                ClientProperties.READ_TIMEOUT,
+                (int) schemaProperties.getRepository().getHttpReadTimeout().toMillis())
+            .property(
+                ClientProperties.CONNECT_TIMEOUT,
+                (int) schemaProperties.getRepository().getHttpConnectTimeout().toMillis())
+            .register(new JacksonJsonProvider(mapper));
 
-        return ClientBuilder.newClient(config);
-    }
+    return ClientBuilder.newClient(config);
+  }
 
-    @Bean
-    public SchemaVersionsRepository schemaVersionsRepositoryFactory(RawSchemaClient rawSchemaClient,
-                                                                    SchemaProperties schemaProperties,
-                                                                    InternalNotificationsBus notificationsBus,
-                                                                    CompiledSchemaRepository<?> compiledSchemaRepository) {
-        return new SchemaVersionsRepositoryFactory(rawSchemaClient, schemaProperties.getCache(), notificationsBus, compiledSchemaRepository)
-                .provide();
-    }
+  @Bean
+  public SchemaVersionsRepository schemaVersionsRepositoryFactory(
+      RawSchemaClient rawSchemaClient,
+      SchemaProperties schemaProperties,
+      InternalNotificationsBus notificationsBus,
+      CompiledSchemaRepository<?> compiledSchemaRepository) {
+    return new SchemaVersionsRepositoryFactory(
+            rawSchemaClient,
+            schemaProperties.getCache(),
+            notificationsBus,
+            compiledSchemaRepository)
+        .provide();
+  }
 }

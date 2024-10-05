@@ -6,5 +6,5 @@ import pl.allegro.tech.hermes.domain.group.GroupRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 
 public interface ZookeeperGroupRepositoryFactory {
-    GroupRepository create(CuratorFramework zookeeper, ObjectMapper mapper, ZookeeperPaths paths);
+  GroupRepository create(CuratorFramework zookeeper, ObjectMapper mapper, ZookeeperPaths paths);
 }

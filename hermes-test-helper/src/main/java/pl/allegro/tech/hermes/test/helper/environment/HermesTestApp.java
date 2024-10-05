@@ -2,13 +2,13 @@ package pl.allegro.tech.hermes.test.helper.environment;
 
 public interface HermesTestApp {
 
-    HermesTestApp start();
+  HermesTestApp start();
 
-    void stop();
+  void stop();
 
-    boolean shouldBeRestarted();
+  boolean shouldBeRestarted();
 
-    void restoreDefaultSettings();
+  void restoreDefaultSettings();
 
-    int getPort();
+  int getPort();
 }

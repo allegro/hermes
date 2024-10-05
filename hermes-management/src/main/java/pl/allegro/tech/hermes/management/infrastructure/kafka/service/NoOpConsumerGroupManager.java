@@ -5,8 +5,8 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.management.domain.subscription.ConsumerGroupManager;
 
 public class NoOpConsumerGroupManager implements ConsumerGroupManager {
-    @Override
-    public void createConsumerGroup(Topic topic, Subscription subscription) {
-        // no operation
-    }
+  @Override
+  public void createConsumerGroup(Topic topic, Subscription subscription) {
+    // no operation
+  }
 }

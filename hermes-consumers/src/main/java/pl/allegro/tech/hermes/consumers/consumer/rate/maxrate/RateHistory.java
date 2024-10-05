@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer.rate.maxrate;
 
 import com.google.common.base.Preconditions;
-
 import java.beans.ConstructorProperties;
 import java.util.Arrays;
 import java.util.Collections;
@@ -11,54 +10,52 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public final class RateHistory {
-    private final List<Double> rates;
+  private final List<Double> rates;
 
-    @ConstructorProperties({"rates"})
-    public RateHistory(List<Double> rates) {
-        this.rates = rates;
-    }
+  @ConstructorProperties({"rates"})
+  public RateHistory(List<Double> rates) {
+    this.rates = rates;
+  }
 
-    static RateHistory updatedRates(RateHistory history, double newRate, int limit) {
-        Preconditions.checkArgument(limit > 0);
-        List<Double> rates = Stream.concat(
-                Stream.of(newRate), history.getRates().stream().limit(limit - 1)).collect(Collectors.toList());
-        return new RateHistory(rates);
-    }
+  static RateHistory updatedRates(RateHistory history, double newRate, int limit) {
+    Preconditions.checkArgument(limit > 0);
+    List<Double> rates =
+        Stream.concat(Stream.of(newRate), history.getRates().stream().limit(limit - 1))
+            .collect(Collectors.toList());
+    return new RateHistory(rates);
+  }
 
-    static RateHistory create(double rate) {
-        return new RateHistory(Arrays.asList(rate));
-    }
+  static RateHistory create(double rate) {
+    return new RateHistory(Arrays.asList(rate));
+  }
 
-    static RateHistory empty() {
-        return new RateHistory(Collections.emptyList());
-    }
+  static RateHistory empty() {
+    return new RateHistory(Collections.emptyList());
+  }
 
-    public List<Double> getRates() {
-        return rates;
-    }
+  public List<Double> getRates() {
+    return rates;
+  }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        RateHistory that = (RateHistory) o;
-        return Objects.equals(rates, that.rates);
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
     }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    RateHistory that = (RateHistory) o;
+    return Objects.equals(rates, that.rates);
+  }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(rates);
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hash(rates);
+  }
 
-    @Override
-    public String toString() {
-        return "RateHistory{"
-                + "rates="
-                + rates
-                + '}';
-    }
+  @Override
+  public String toString() {
+    return "RateHistory{" + "rates=" + rates + '}';
+  }
 }

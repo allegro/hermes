@@ -4,5 +4,5 @@ import pl.allegro.tech.hermes.api.SubscriptionName;
 
 public interface SubscriptionIdProvider {
 
-    SubscriptionId getSubscriptionId(SubscriptionName name);
+  SubscriptionId getSubscriptionId(SubscriptionName name);
 }

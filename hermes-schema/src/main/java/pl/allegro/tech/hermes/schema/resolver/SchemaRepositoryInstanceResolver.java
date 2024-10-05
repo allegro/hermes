@@ -4,5 +4,5 @@ import jakarta.ws.rs.client.WebTarget;
 
 public interface SchemaRepositoryInstanceResolver {
 
-    WebTarget resolve(String subject);
+  WebTarget resolve(String subject);
 }

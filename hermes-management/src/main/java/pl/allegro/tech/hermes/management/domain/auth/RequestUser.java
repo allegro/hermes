@@ -4,9 +4,9 @@ import pl.allegro.tech.hermes.api.OwnerId;
 
 public interface RequestUser {
 
-    String getUsername();
+  String getUsername();
 
-    boolean isAdmin();
+  boolean isAdmin();
 
-    boolean isOwner(OwnerId ownerId);
+  boolean isOwner(OwnerId ownerId);
 }

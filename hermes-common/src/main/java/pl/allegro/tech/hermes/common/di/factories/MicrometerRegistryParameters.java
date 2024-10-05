@@ -4,9 +4,9 @@ import java.time.Duration;
 import java.util.List;
 
 public interface MicrometerRegistryParameters {
-    List<Double> getPercentiles();
+  List<Double> getPercentiles();
 
-    boolean zookeeperReporterEnabled();
+  boolean zookeeperReporterEnabled();
 
-    Duration zookeeperReportPeriod();
+  Duration zookeeperReportPeriod();
 }

@@ -17,30 +17,32 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 @EnableConfigurationProperties({ReadinessCheckProperties.class})
 public class ReadinessConfiguration {
 
-    @Bean
-    public DefaultReadinessChecker readinessChecker(ReadinessCheckProperties readinessCheckProperties,
-                                                    @Named("localDatacenterBrokerProducer") BrokerTopicAvailabilityChecker brokerTopicAvailabilityChecker,
-                                                    AdminReadinessService adminReadinessService) {
-        return new DefaultReadinessChecker(
-                brokerTopicAvailabilityChecker,
-                adminReadinessService,
-                readinessCheckProperties.isEnabled(),
-                readinessCheckProperties.isKafkaCheckEnabled(),
-                readinessCheckProperties.getInterval()
-        );
-    }
+  @Bean
+  public DefaultReadinessChecker readinessChecker(
+      ReadinessCheckProperties readinessCheckProperties,
+      @Named("localDatacenterBrokerProducer")
+          BrokerTopicAvailabilityChecker brokerTopicAvailabilityChecker,
+      AdminReadinessService adminReadinessService) {
+    return new DefaultReadinessChecker(
+        brokerTopicAvailabilityChecker,
+        adminReadinessService,
+        readinessCheckProperties.isEnabled(),
+        readinessCheckProperties.isKafkaCheckEnabled(),
+        readinessCheckProperties.getInterval());
+  }
 
-    @Bean(initMethod = "start", destroyMethod = "stop")
-    public AdminReadinessService adminReadinessService(ObjectMapper mapper,
-                                                       CuratorFramework zookeeper,
-                                                       ZookeeperPaths paths,
-                                                       DatacenterNameProvider datacenterNameProvider) {
-        String localDatacenterName = datacenterNameProvider.getDatacenterName();
-        return new AdminReadinessService(mapper, zookeeper, paths, localDatacenterName);
-    }
+  @Bean(initMethod = "start", destroyMethod = "stop")
+  public AdminReadinessService adminReadinessService(
+      ObjectMapper mapper,
+      CuratorFramework zookeeper,
+      ZookeeperPaths paths,
+      DatacenterNameProvider datacenterNameProvider) {
+    String localDatacenterName = datacenterNameProvider.getDatacenterName();
+    return new AdminReadinessService(mapper, zookeeper, paths, localDatacenterName);
+  }
 
-    @Bean(initMethod = "startup")
-    public HealthCheckService healthCheckService() {
-        return new HealthCheckService();
-    }
+  @Bean(initMethod = "startup")
+  public HealthCheckService healthCheckService() {
+    return new HealthCheckService();
+  }
 }

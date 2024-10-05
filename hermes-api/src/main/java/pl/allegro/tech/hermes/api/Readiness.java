@@ -6,16 +6,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 
 public class Readiness {
-    @NotNull
-    private final boolean isReady;
+  @NotNull private final boolean isReady;
 
-    @JsonCreator
-    public Readiness(@JsonProperty("isReady") boolean isReady) {
-        this.isReady = isReady;
-    }
+  @JsonCreator
+  public Readiness(@JsonProperty("isReady") boolean isReady) {
+    this.isReady = isReady;
+  }
 
-    @JsonGetter("isReady")
-    public boolean isReady() {
-        return isReady;
-    }
+  @JsonGetter("isReady")
+  public boolean isReady() {
+    return isReady;
+  }
 }

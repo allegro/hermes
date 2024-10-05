@@ -4,7 +4,7 @@ import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 
 public interface BrokerTopicAvailabilityChecker {
 
-    boolean areAllTopicsAvailable();
+  boolean areAllTopicsAvailable();
 
-    boolean isTopicAvailable(CachedTopic cachedTopic);
+  boolean isTopicAvailable(CachedTopic cachedTopic);
 }

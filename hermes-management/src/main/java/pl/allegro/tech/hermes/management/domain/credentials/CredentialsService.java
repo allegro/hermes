@@ -13,26 +13,28 @@ import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryComm
 @Component
 public class CredentialsService {
 
-    private static final Logger logger = LoggerFactory.getLogger(CredentialsService.class);
+  private static final Logger logger = LoggerFactory.getLogger(CredentialsService.class);
 
-    private final ZookeeperPaths paths;
-    private final MultiDatacenterRepositoryCommandExecutor multiDcExecutor;
-    private final CredentialsRepository credentialsRepository;
+  private final ZookeeperPaths paths;
+  private final MultiDatacenterRepositoryCommandExecutor multiDcExecutor;
+  private final CredentialsRepository credentialsRepository;
 
-    @Autowired
-    public CredentialsService(ZookeeperPaths paths,
-                              MultiDatacenterRepositoryCommandExecutor multiDcExecutor,
-                              CredentialsRepository credentialsRepository) {
-        this.paths = paths;
-        this.multiDcExecutor = multiDcExecutor;
-        this.credentialsRepository = credentialsRepository;
-    }
+  @Autowired
+  public CredentialsService(
+      ZookeeperPaths paths,
+      MultiDatacenterRepositoryCommandExecutor multiDcExecutor,
+      CredentialsRepository credentialsRepository) {
+    this.paths = paths;
+    this.multiDcExecutor = multiDcExecutor;
+    this.credentialsRepository = credentialsRepository;
+  }
 
-    public NodePassword readAdminPassword() {
-        return credentialsRepository.readAdminPassword();
-    }
+  public NodePassword readAdminPassword() {
+    return credentialsRepository.readAdminPassword();
+  }
 
-    public void overwriteAdminPassword(String password) {
-        multiDcExecutor.execute(new UpdateCredentialsRepositoryCommand(credentialsRepository, password));
-    }
+  public void overwriteAdminPassword(String password) {
+    multiDcExecutor.execute(
+        new UpdateCredentialsRepositoryCommand(credentialsRepository, password));
+  }
 }

@@ -1,5 +1,12 @@
 package pl.allegro.tech.hermes.tracker.elasticsearch;
 
+import static pl.allegro.tech.embeddedelasticsearch.PopularProperties.CLUSTER_NAME;
+import static pl.allegro.tech.embeddedelasticsearch.PopularProperties.HTTP_PORT;
+import static pl.allegro.tech.embeddedelasticsearch.PopularProperties.TRANSPORT_TCP_PORT;
+
+import java.net.InetAddress;
+import java.nio.file.Files;
+import java.util.concurrent.TimeUnit;
 import org.elasticsearch.client.AdminClient;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.cluster.metadata.IndexMetaData;
@@ -11,74 +18,78 @@ import org.junit.rules.ExternalResource;
 import pl.allegro.tech.embeddedelasticsearch.EmbeddedElastic;
 import pl.allegro.tech.hermes.test.helper.util.Ports;
 
-import java.net.InetAddress;
-import java.nio.file.Files;
-import java.util.concurrent.TimeUnit;
-
-import static pl.allegro.tech.embeddedelasticsearch.PopularProperties.CLUSTER_NAME;
-import static pl.allegro.tech.embeddedelasticsearch.PopularProperties.HTTP_PORT;
-import static pl.allegro.tech.embeddedelasticsearch.PopularProperties.TRANSPORT_TCP_PORT;
-
 public class ElasticsearchResource extends ExternalResource implements LogSchemaAware {
 
-    private static final String ELASTIC_VERSION = "6.1.4";
-    private static final String CLUSTER_NAME_VALUE = "myTestCluster";
+  private static final String ELASTIC_VERSION = "6.1.4";
+  private static final String CLUSTER_NAME_VALUE = "myTestCluster";
 
-    private final EmbeddedElastic embeddedElastic;
-    private Client client;
+  private final EmbeddedElastic embeddedElastic;
+  private Client client;
 
-    public ElasticsearchResource() {
-        int port = Ports.nextAvailable();
-        int httpPort = Ports.nextAvailable();
+  public ElasticsearchResource() {
+    int port = Ports.nextAvailable();
+    int httpPort = Ports.nextAvailable();
 
-        try {
-            embeddedElastic = EmbeddedElastic.builder()
-                    .withElasticVersion(ELASTIC_VERSION)
-                    .withSetting(TRANSPORT_TCP_PORT, port)
-                    .withSetting(HTTP_PORT, httpPort)
-                    .withSetting(CLUSTER_NAME, CLUSTER_NAME_VALUE)
-                    // embedded elastic search runs with "UseConcMarkSweepGC" which is invalid in Java 17
-                    .withEsJavaOpts("-Xms128m -Xmx512m -XX:+IgnoreUnrecognizedVMOptions")
-                    .withStartTimeout(1, TimeUnit.MINUTES)
-                    .withCleanInstallationDirectoryOnStop(true)
-                    .withInstallationDirectory(Files.createTempDirectory("elasticsearch-installation-" + port).toFile())
-                    .build();
+    try {
+      embeddedElastic =
+          EmbeddedElastic.builder()
+              .withElasticVersion(ELASTIC_VERSION)
+              .withSetting(TRANSPORT_TCP_PORT, port)
+              .withSetting(HTTP_PORT, httpPort)
+              .withSetting(CLUSTER_NAME, CLUSTER_NAME_VALUE)
+              // embedded elastic search runs with "UseConcMarkSweepGC" which is invalid in Java 17
+              .withEsJavaOpts("-Xms128m -Xmx512m -XX:+IgnoreUnrecognizedVMOptions")
+              .withStartTimeout(1, TimeUnit.MINUTES)
+              .withCleanInstallationDirectoryOnStop(true)
+              .withInstallationDirectory(
+                  Files.createTempDirectory("elasticsearch-installation-" + port).toFile())
+              .build();
 
-        } catch (Exception e) {
-            throw new RuntimeException("Unchecked exception", e);
-        }
+    } catch (Exception e) {
+      throw new RuntimeException("Unchecked exception", e);
     }
+  }
 
-    @Override
-    public void before() throws Throwable {
-        embeddedElastic.start();
+  @Override
+  public void before() throws Throwable {
+    embeddedElastic.start();
 
-        client = new PreBuiltTransportClient(Settings.builder().put(CLUSTER_NAME, CLUSTER_NAME_VALUE).build())
-                .addTransportAddress(
-                        new TransportAddress(InetAddress.getByName("localhost"), embeddedElastic.getTransportTcpPort()));
-    }
+    client =
+        new PreBuiltTransportClient(
+                Settings.builder().put(CLUSTER_NAME, CLUSTER_NAME_VALUE).build())
+            .addTransportAddress(
+                new TransportAddress(
+                    InetAddress.getByName("localhost"), embeddedElastic.getTransportTcpPort()));
+  }
 
-    @Override
-    public void after() {
-        embeddedElastic.stop();
-        client.close();
-    }
+  @Override
+  public void after() {
+    embeddedElastic.stop();
+    client.close();
+  }
 
-    public Client client() {
-        return client;
-    }
+  public Client client() {
+    return client;
+  }
 
-    public AdminClient adminClient() {
-        return client.admin();
-    }
+  public AdminClient adminClient() {
+    return client.admin();
+  }
 
-    public ImmutableOpenMap<String, IndexMetaData> getIndices() {
-        return client.admin().cluster().prepareState().execute().actionGet().getState().getMetaData().getIndices();
-    }
+  public ImmutableOpenMap<String, IndexMetaData> getIndices() {
+    return client
+        .admin()
+        .cluster()
+        .prepareState()
+        .execute()
+        .actionGet()
+        .getState()
+        .getMetaData()
+        .getIndices();
+  }
 
-    public void cleanStructures() {
-        embeddedElastic.deleteIndices();
-        embeddedElastic.deleteTemplates();
-    }
-
+  public void cleanStructures() {
+    embeddedElastic.deleteIndices();
+    embeddedElastic.deleteTemplates();
+  }
 }

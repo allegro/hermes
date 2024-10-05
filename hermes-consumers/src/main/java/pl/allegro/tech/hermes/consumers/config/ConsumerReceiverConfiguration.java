@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.consumers.config;
 
+import java.time.Clock;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,67 +20,70 @@ import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
-import java.time.Clock;
-
 @Configuration
 @EnableConfigurationProperties({
-        ConsumerReceiverProperties.class,
-        KafkaConsumerProperties.class,
-        KafkaClustersProperties.class,
-        CommonConsumerProperties.class,
-        KafkaHeaderNameProperties.class,
-        ConsumerHTTPHeadersPropagationAsKafkaHeadersProperties.class
+  ConsumerReceiverProperties.class,
+  KafkaConsumerProperties.class,
+  KafkaClustersProperties.class,
+  CommonConsumerProperties.class,
+  KafkaHeaderNameProperties.class,
+  ConsumerHTTPHeadersPropagationAsKafkaHeadersProperties.class
 })
 public class ConsumerReceiverConfiguration {
 
-    @Bean
-    public ReceiverFactory kafkaMessageReceiverFactory(CommonConsumerProperties commonConsumerProperties,
-                                                       ConsumerReceiverProperties consumerReceiverProperties,
-                                                       KafkaConsumerProperties kafkaConsumerProperties,
-                                                       KafkaClustersProperties kafkaClustersProperties,
-                                                       KafkaConsumerRecordToMessageConverterFactory messageConverterFactory,
-                                                       MetricsFacade metrics,
-                                                       KafkaNamesMapper kafkaNamesMapper,
-                                                       FilterChainFactory filterChainFactory,
-                                                       Trackers trackers,
-                                                       ConsumerPartitionAssignmentState consumerPartitionAssignmentState,
-                                                       DatacenterNameProvider datacenterNameProvider) {
-        KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
+  @Bean
+  public ReceiverFactory kafkaMessageReceiverFactory(
+      CommonConsumerProperties commonConsumerProperties,
+      ConsumerReceiverProperties consumerReceiverProperties,
+      KafkaConsumerProperties kafkaConsumerProperties,
+      KafkaClustersProperties kafkaClustersProperties,
+      KafkaConsumerRecordToMessageConverterFactory messageConverterFactory,
+      MetricsFacade metrics,
+      KafkaNamesMapper kafkaNamesMapper,
+      FilterChainFactory filterChainFactory,
+      Trackers trackers,
+      ConsumerPartitionAssignmentState consumerPartitionAssignmentState,
+      DatacenterNameProvider datacenterNameProvider) {
+    KafkaProperties kafkaProperties =
+        kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
 
+    return new KafkaMessageReceiverFactory(
+        commonConsumerProperties,
+        consumerReceiverProperties,
+        kafkaConsumerProperties,
+        kafkaProperties,
+        messageConverterFactory,
+        metrics,
+        kafkaNamesMapper,
+        filterChainFactory,
+        trackers,
+        consumerPartitionAssignmentState);
+  }
 
-        return new KafkaMessageReceiverFactory(
-                commonConsumerProperties,
-                consumerReceiverProperties,
-                kafkaConsumerProperties,
-                kafkaProperties,
-                messageConverterFactory,
-                metrics,
-                kafkaNamesMapper,
-                filterChainFactory,
-                trackers,
-                consumerPartitionAssignmentState
-        );
-    }
+  @Bean
+  public KafkaConsumerRecordToMessageConverterFactory kafkaMessageConverterFactory(
+      MessageContentReaderFactory messageContentReaderFactory,
+      KafkaHeaderExtractor kafkaHeaderExtractor,
+      Clock clock) {
+    return new KafkaConsumerRecordToMessageConverterFactory(
+        messageContentReaderFactory, kafkaHeaderExtractor, clock);
+  }
 
-    @Bean
-    public KafkaConsumerRecordToMessageConverterFactory kafkaMessageConverterFactory(
-            MessageContentReaderFactory messageContentReaderFactory,
-            KafkaHeaderExtractor kafkaHeaderExtractor,
-            Clock clock) {
-        return new KafkaConsumerRecordToMessageConverterFactory(messageContentReaderFactory, kafkaHeaderExtractor, clock);
-    }
+  @Bean
+  public MessageContentReaderFactory messageContentReaderFactory(
+      CompositeMessageContentWrapper compositeMessageContentWrapper,
+      KafkaHeaderExtractor kafkaHeaderExtractor,
+      SchemaRepository schemaRepository) {
+    return new BasicMessageContentReaderFactory(
+        compositeMessageContentWrapper, kafkaHeaderExtractor, schemaRepository);
+  }
 
-    @Bean
-    public MessageContentReaderFactory messageContentReaderFactory(CompositeMessageContentWrapper compositeMessageContentWrapper,
-                                                                   KafkaHeaderExtractor kafkaHeaderExtractor,
-                                                                   SchemaRepository schemaRepository) {
-        return new BasicMessageContentReaderFactory(compositeMessageContentWrapper, kafkaHeaderExtractor, schemaRepository);
-    }
-
-    @Bean
-    public KafkaHeaderExtractor kafkaHeaderExtractor(
-        KafkaHeaderNameProperties kafkaHeaderNameProperties,
-        HTTPHeadersPropagationAsKafkaHeadersProperties httpHeadersPropagationAsKafkaHeadersProperties) {
-        return new KafkaHeaderExtractor(kafkaHeaderNameProperties, httpHeadersPropagationAsKafkaHeadersProperties);
-    }
+  @Bean
+  public KafkaHeaderExtractor kafkaHeaderExtractor(
+      KafkaHeaderNameProperties kafkaHeaderNameProperties,
+      HTTPHeadersPropagationAsKafkaHeadersProperties
+          httpHeadersPropagationAsKafkaHeadersProperties) {
+    return new KafkaHeaderExtractor(
+        kafkaHeaderNameProperties, httpHeadersPropagationAsKafkaHeadersProperties);
+  }
 }

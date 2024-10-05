@@ -5,19 +5,19 @@ import org.apache.commons.jxpath.JXPathContext;
 
 public class JXPathAttribute implements ObjectAttribute {
 
-    private final Object target;
+  private final Object target;
 
-    private final String path;
+  private final String path;
 
-    public JXPathAttribute(Object target, String path) {
-        this.target = target;
-        this.path = path.replace('.', '/');
-    }
+  public JXPathAttribute(Object target, String path) {
+    this.target = target;
+    this.path = path.replace('.', '/');
+  }
 
-    @Override
-    public Object value() {
-        JXPathContext context = JXPathContext.newContext(target);
-        context.setFunctions(new FunctionLibrary());
-        return context.getValue(path);
-    }
+  @Override
+  public Object value() {
+    JXPathContext context = JXPathContext.newContext(target);
+    context.setFunctions(new FunctionLibrary());
+    return context.getValue(path);
+  }
 }

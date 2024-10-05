@@ -11,29 +11,28 @@ import pl.allegro.tech.hermes.frontend.server.auth.AuthenticationConfiguration;
 @Configuration
 public class AuthConfiguration {
 
-    @Value("${auth.username}")
-    private String username;
+  @Value("${auth.username}")
+  private String username;
 
-    @Value("${auth.password}")
-    private String password;
+  @Value("${auth.password}")
+  private String password;
 
-    @Bean
-    @Profile("authRequired")
-    public AuthenticationConfiguration requiredAuthenticationConfiguration() {
-        return getAuthConfig(true);
-    }
+  @Bean
+  @Profile("authRequired")
+  public AuthenticationConfiguration requiredAuthenticationConfiguration() {
+    return getAuthConfig(true);
+  }
 
-    @Bean
-    @Profile("authNonRequired")
-    public AuthenticationConfiguration notRequiredAuthenticationConfiguration() {
-        return getAuthConfig(false);
-    }
+  @Bean
+  @Profile("authNonRequired")
+  public AuthenticationConfiguration notRequiredAuthenticationConfiguration() {
+    return getAuthConfig(false);
+  }
 
-    private AuthenticationConfiguration getAuthConfig(boolean isAuthenticationRequired) {
-        return new AuthenticationConfiguration(
-                exchange -> isAuthenticationRequired,
-                Lists.newArrayList(new BasicAuthenticationMechanism("basicAuthRealm")),
-                new SingleUserAwareIdentityManager(username, password)
-        );
-    }
+  private AuthenticationConfiguration getAuthConfig(boolean isAuthenticationRequired) {
+    return new AuthenticationConfiguration(
+        exchange -> isAuthenticationRequired,
+        Lists.newArrayList(new BasicAuthenticationMechanism("basicAuthRealm")),
+        new SingleUserAwareIdentityManager(username, password));
+  }
 }

@@ -12,17 +12,16 @@ import pl.allegro.tech.hermes.management.api.auth.SecurityProvider;
 @EnableConfigurationProperties(JerseyProperties.class)
 public class EndpointConfiguration {
 
-    @Autowired
-    private JerseyProperties jerseyProperties;
+  @Autowired private JerseyProperties jerseyProperties;
 
-    @Bean
-    JerseyResourceConfig resourceConfig() {
-        return new JerseyResourceConfig(jerseyProperties);
-    }
+  @Bean
+  JerseyResourceConfig resourceConfig() {
+    return new JerseyResourceConfig(jerseyProperties);
+  }
 
-    @Bean
-    @ConditionalOnMissingBean(SecurityProvider.class)
-    SecurityProvider authorization() {
-        return new AllowAllSecurityProvider();
-    }
+  @Bean
+  @ConditionalOnMissingBean(SecurityProvider.class)
+  SecurityProvider authorization() {
+    return new AllowAllSecurityProvider();
+  }
 }

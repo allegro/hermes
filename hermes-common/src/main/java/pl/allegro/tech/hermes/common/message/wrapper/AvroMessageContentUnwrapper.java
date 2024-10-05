@@ -5,7 +5,8 @@ import pl.allegro.tech.hermes.api.Topic;
 
 interface AvroMessageContentUnwrapper {
 
-    AvroMessageContentUnwrapperResult unwrap(byte[] data, Topic topic, @Nullable Integer headerId, @Nullable Integer headerVersion);
+  AvroMessageContentUnwrapperResult unwrap(
+      byte[] data, Topic topic, @Nullable Integer headerId, @Nullable Integer headerVersion);
 
-    boolean isApplicable(byte[] data, Topic topic, Integer schemaId, Integer schemaVersion);
+  boolean isApplicable(byte[] data, Topic topic, Integer schemaId, Integer schemaVersion);
 }

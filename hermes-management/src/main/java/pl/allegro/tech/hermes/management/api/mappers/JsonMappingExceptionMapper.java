@@ -8,13 +8,13 @@ import pl.allegro.tech.hermes.api.ErrorCode;
 @Provider
 public class JsonMappingExceptionMapper extends AbstractExceptionMapper<JsonMappingException> {
 
-    @Override
-    Response.Status httpStatus() {
-        return Response.Status.BAD_REQUEST;
-    }
+  @Override
+  Response.Status httpStatus() {
+    return Response.Status.BAD_REQUEST;
+  }
 
-    @Override
-    ErrorCode errorCode() {
-        return ErrorCode.FORMAT_ERROR;
-    }
+  @Override
+  ErrorCode errorCode() {
+    return ErrorCode.FORMAT_ERROR;
+  }
 }
