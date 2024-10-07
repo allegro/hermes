@@ -119,6 +119,44 @@ public class BatchDeliveryTest {
     }
 
     @Test
+    public void shouldCommitFilteredMessagesForBatch() {
+        // given
+        TestSubscriber subscriber = subscribers.createSubscriber();
+        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
+        final Subscription subscription = hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName(), subscriber.getEndpoint())
+                .withSubscriptionPolicy(buildBatchPolicy()
+                        .withBatchSize(10)
+                        .withBatchTime(Integer.MAX_VALUE)
+                        .withBatchVolume(1024)
+                        .build())
+                .withFilter(MESSAGE_NAME_FILTER)
+                .build());
+
+        // when
+        hermes.api().publishUntilSuccess(topic.getQualifiedName(), ALICE.asJson());
+        hermes.api().publishUntilSuccess(topic.getQualifiedName(), ALICE.asJson());
+        hermes.api().publishUntilSuccess(topic.getQualifiedName(), ALICE.asJson());
+
+        // then
+        waitAtMost(Duration.ofSeconds(10)).untilAsserted(() ->
+                hermes.api().getConsumersMetrics()
+                        .expectStatus()
+                        .isOk()
+                        .expectBody(String.class)
+                        .value((body) -> assertThatMetrics(body)
+                                .contains("hermes_consumers_subscription_filtered_out_total")
+                                .withLabels(
+                                        "group", topic.getName().getGroupName(),
+                                        "subscription", subscription.getName(),
+                                        "topic", topic.getName().getName()
+                                )
+                                .withValue(3.0)
+                        )
+        );
+        hermes.api().waitUntilConsumerCommitsOffset(topic.getQualifiedName(), subscription.getName());
+    }
+
+    @Test
     public void shouldDeliverBatchInGivenTimePeriod() {
         // given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());

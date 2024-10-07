@@ -139,6 +139,7 @@ public class BatchConsumer implements Consumer {
             if (!offsetsToCommit.isEmpty()) {
                 commit(offsetsToCommit);
             }
+            maxPendingOffsets.clear();
             lastCommitTime = Instant.now();
         }
     }
@@ -180,7 +181,8 @@ public class BatchConsumer implements Consumer {
                 compositeMessageContentWrapper,
                 topic,
                 trackers,
-                loadRecorder
+                loadRecorder,
+                this::commitIfReady
         );
         metrics.initialize();
     }
