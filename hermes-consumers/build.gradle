@@ -31,6 +31,7 @@ dependencies {
     }
     api group: 'com.google.cloud', name: 'google-cloud-pubsub', version: '1.128.1'
     api group: 'org.apache.httpcomponents.core5', name: 'httpcore5', version: '5.2.4'
+    api(group: 'com.google.cloud', name: 'google-cloud-bigquery', version: '2.27.0')
 
     testImplementation project(':hermes-test-helper')
     testImplementation group: 'org.apache.curator', name: 'curator-test', version: versions.curator
@@ -39,6 +40,10 @@ dependencies {
     testImplementation project(':hermes-common')
 
     testImplementation(group: 'org.awaitility', name: 'awaitility-groovy', version: '4.2.1')
+    testImplementation(group: 'com.jayway.awaitility', name: 'awaitility', version: '1.6.1') {
+        exclude group: 'com.jayway.jsonpath', module: 'json-path'
+    }
+
     testImplementation group: 'tech.allegro.schema.json2avro', name: 'converter', version: versions.json2avro
 
     testImplementation group: 'org.spockframework', name: 'spock-core', version: versions.spock

@@ -17,6 +17,10 @@ public class SingleRecipientMessageSenderAdapter implements MessageSender {
         this.adaptee = adaptee;
     }
 
+    public CompletableFutureAwareMessageSender getAdaptee() {
+        return adaptee;
+    }
+
     @Override
     public CompletableFuture<MessageSendingResult> send(Message message) {
         return resilientMessageSender.send(
