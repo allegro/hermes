@@ -64,6 +64,11 @@ const messages = {
         'Time when message can be resent to endpoint after failed sending attempts',
       suffix: 'seconds',
     },
+    inflightMessagesCount: {
+      label: 'Inflight messages count',
+      placeholder:
+        'How many messages can be in inflight state at the same time',
+    },
     retryOn4xx: {
       label: 'Retry on http 4xx status',
     },
@@ -117,6 +122,10 @@ const messages = {
     trackingMode: {
       title: 'Warning: Tracking all messages enabled',
       text: 'Please chose this option only when necessary. Mainly this is for debugging problems with subscription. Remember to disable this mode after the problem is solved.',
+    },
+    adminForm: {
+      title: 'Warning: Admin form enabled.',
+      text: 'New fields in the form have been revealed (they are followed by a warning sign). The form will be submitted regardless of the validation of the fields.',
     },
   },
   actions: {

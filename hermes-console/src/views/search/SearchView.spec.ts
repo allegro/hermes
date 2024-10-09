@@ -1,9 +1,13 @@
 import { computed, ref } from 'vue';
+import { createPinia, setActivePinia } from 'pinia';
+import { createTestingPiniaWithState } from '@/dummy/store';
 import { dummySubscription } from '@/dummy/subscription';
 import { dummyTopic } from '@/dummy/topic';
 import { expect } from 'vitest';
+import { fireEvent, waitFor } from '@testing-library/vue';
 import { render } from '@/utils/test-utils';
 import { useSearch } from '@/composables/search/useSearch';
+import router from '@/router';
 import SearchView from '@/views/search/SearchView.vue';
 import type { UseSearch } from '@/composables/search/useSearch';
 
@@ -21,6 +25,11 @@ const useSearchStub: UseSearch = {
 };
 
 describe('SearchView', () => {
+  beforeEach(() => {
+    vi.mocked(useSearch).mockReturnValue(useSearchStub);
+    setActivePinia(createPinia());
+  });
+
   it('should render subscriptions table when subscriptions are present', () => {
     // given
     vi.mocked(useSearch).mockReturnValueOnce({
@@ -109,5 +118,39 @@ describe('SearchView', () => {
     expect(vi.mocked(useSearch)).toHaveBeenCalledOnce();
     expect(queryByText('search.connectionError.title')).not.toBeInTheDocument();
     expect(queryByText('search.connectionError.text')).not.toBeInTheDocument();
+  });
+
+  it('should modify form inputs based on passed query parameters', async () => {
+    await router.push({
+      path: '/ui/search',
+      query: { collection: 'topics', filter: 'name', pattern: 'test' },
+    });
+
+    const { getByLabelText } = render(SearchView, {
+      testPinia: createTestingPiniaWithState(),
+      global: { plugins: [router] },
+    });
+
+    expect(getByLabelText('collection').value).toBe('topics');
+    expect(getByLabelText('filter').value).toBe('name');
+    expect(getByLabelText('regex pattern').value).toBe('test');
+  });
+
+  it('should update query parameters in URL when form inputs are modified', async () => {
+    const { getByLabelText, getByRole } = render(SearchView, {
+      testPinia: createTestingPiniaWithState(),
+      global: { plugins: [router] },
+    });
+
+    await fireEvent.update(getByLabelText('regex pattern'), 'newPattern');
+    await fireEvent.click(getByRole('button'));
+
+    await waitFor(() => {
+      expect(router.currentRoute.value.query).toEqual({
+        collection: 'subscriptions',
+        filter: 'endpoint',
+        pattern: 'newPattern',
+      });
+    });
   });
 });

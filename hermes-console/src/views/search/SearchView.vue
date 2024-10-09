@@ -1,5 +1,6 @@
 <script setup lang="ts">
-  import { ref } from 'vue';
+  import { onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router';
+  import { onMounted, ref } from 'vue';
   import { SearchFilter, useSearch } from '@/composables/search/useSearch';
   import { useI18n } from 'vue-i18n';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
@@ -8,21 +9,40 @@
   import TopicSearchResults from '@/views/search/topic-search-results/TopicSearchResults.vue';
 
   const { t } = useI18n();
+  const route = useRoute();
+  const router = useRouter();
 
+  const searchCollectionValues = ['subscriptions', 'topics'];
   const searchCollections = [
-    { title: t('search.collection.subscriptions'), value: 'subscriptions' },
-    { title: t('search.collection.topics'), value: 'topics' },
+    {
+      title: t('search.collection.subscriptions'),
+      value: searchCollectionValues[0],
+    },
+    { title: t('search.collection.topics'), value: searchCollectionValues[1] },
   ];
-  const selectedSearchCollection = ref(searchCollections[0].value);
+  const selectedSearchCollection = ref(
+    searchCollectionValues.includes(route.query.collection)
+      ? route.query.collection
+      : searchCollectionValues[0],
+  );
 
+  const searchFilterValues = [
+    SearchFilter.ENDPOINT,
+    SearchFilter.NAME,
+    SearchFilter.OWNER,
+  ];
   const searchFilters = [
-    { title: t('search.filter.endpoint'), value: SearchFilter.ENDPOINT },
-    { title: t('search.filter.name'), value: SearchFilter.NAME },
-    { title: t('search.filter.owner'), value: SearchFilter.OWNER },
+    { title: t('search.filter.endpoint'), value: searchFilterValues[0] },
+    { title: t('search.filter.name'), value: searchFilterValues[1] },
+    { title: t('search.filter.owner'), value: searchFilterValues[2] },
   ];
-  const selectedSearchFilter = ref(searchFilters[0].value);
+  const selectedSearchFilter = ref(
+    searchFilterValues.includes(route.query.filter)
+      ? route.query.filter
+      : searchFilterValues[0],
+  );
 
-  const searchPattern = ref('');
+  const searchPattern = ref(route.query.pattern || '');
 
   const {
     topics,
@@ -32,6 +52,16 @@
     loading,
     error,
   } = useSearch();
+
+  function updateQueryParams() {
+    router.push({
+      query: {
+        collection: selectedSearchCollection.value,
+        filter: selectedSearchFilter.value,
+        pattern: searchPattern.value,
+      },
+    });
+  }
 
   function search() {
     if (selectedSearchCollection.value === 'topics') {
@@ -44,6 +74,30 @@
       throw Error(`Unknown search filter: ${selectedSearchCollection.value}`);
     }
   }
+
+  function searchAndUpdateQueryParams() {
+    updateQueryParams();
+    search();
+  }
+
+  onBeforeRouteUpdate((to) => {
+    selectedSearchCollection.value = searchCollectionValues.includes(
+      to.query.collection,
+    )
+      ? to.query.collection
+      : searchCollectionValues[0];
+    selectedSearchFilter.value = searchFilterValues.includes(to.query.filter)
+      ? to.query.filter
+      : searchFilterValues[0];
+    searchPattern.value = to.query.pattern || '';
+    search();
+  });
+
+  onMounted(() => {
+    if (route.query.collection || route.query.filter || route.query.pattern) {
+      search();
+    }
+  });
 </script>
 
 <template>
@@ -57,11 +111,12 @@
     <v-row>
       <p class="text-h3 mt-16">Search</p>
     </v-row>
-    <v-form @submit.prevent="search">
+    <v-form @submit.prevent="searchAndUpdateQueryParams">
       <v-row class="mt-8">
         <v-col md="2" cols="12">
           <v-select
             v-model="selectedSearchCollection"
+            label="collection"
             :items="searchCollections"
             variant="outlined"
           ></v-select>
@@ -69,6 +124,7 @@
         <v-col md="2" cols="12">
           <v-select
             v-model="selectedSearchFilter"
+            label="filter"
             :items="searchFilters"
             variant="outlined"
           ></v-select>

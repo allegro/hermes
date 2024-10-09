@@ -98,6 +98,7 @@
                   operation="add"
                   :subscription="null"
                   :topic="props.topicName"
+                  :roles="roles"
                   @created="pushToSubscription"
                   @cancel="hideSubscriptionForm"
                 />

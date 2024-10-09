@@ -42,6 +42,7 @@ public class MessageBatchReceiver {
     private final Topic topic;
     private final SubscriptionLoadRecorder loadRecorder;
     private boolean receiving = true;
+    private final Runnable commitIfReady;
 
     public MessageBatchReceiver(MessageReceiver receiver,
                                 MessageBatchFactory batchFactory,
@@ -49,7 +50,8 @@ public class MessageBatchReceiver {
                                 CompositeMessageContentWrapper compositeMessageContentWrapper,
                                 Topic topic,
                                 Trackers trackers,
-                                SubscriptionLoadRecorder loadRecorder) {
+                                SubscriptionLoadRecorder loadRecorder,
+                                Runnable commitIfReady) {
         this.receiver = receiver;
         this.batchFactory = batchFactory;
         this.messageConverterResolver = messageConverterResolver;
@@ -58,6 +60,7 @@ public class MessageBatchReceiver {
         this.trackers = trackers;
         this.loadRecorder = loadRecorder;
         this.inflight = new ArrayDeque<>(1);
+        this.commitIfReady = commitIfReady;
     }
 
     public MessageBatchingResult next(Subscription subscription, Runnable signalsInterrupt) {
@@ -74,6 +77,9 @@ public class MessageBatchReceiver {
         while (isReceiving() && !batch.isReadyForDelivery() && !Thread.currentThread().isInterrupted()) {
             loadRecorder.recordSingleOperation();
             signalsInterrupt.run();
+            // We need a commit function call here to prevent cases where it takes a long time to create a batch and messages are filtered at the same time.
+            // Otherwise, this would lead to ever-increasing lag despite the processing and filtering of current messages.
+            commitIfReady.run();
             Optional<Message> maybeMessage = inflight.isEmpty()
                     ? readAndTransform(subscription, batch.getId())
                     : Optional.ofNullable(inflight.poll());
@@ -109,12 +115,14 @@ public class MessageBatchReceiver {
         if (maybeMessage.isPresent()) {
             Message message = maybeMessage.get();
 
-            Message transformed = messageConverterResolver.converterFor(message, subscription).convert(message, topic);
-            transformed = message().fromMessage(transformed).withData(wrap(subscription, transformed)).build();
+            if (!message.isFiltered()) {
+                Message transformed = messageConverterResolver.converterFor(message, subscription).convert(message, topic);
+                transformed = message().fromMessage(transformed).withData(wrap(subscription, transformed)).build();
 
-            trackers.get(subscription).logInflight(toMessageMetadata(transformed, subscription, batchId));
+                trackers.get(subscription).logInflight(toMessageMetadata(transformed, subscription, batchId));
 
-            return Optional.of(transformed);
+                return Optional.of(transformed);
+            }
         }
         return Optional.empty();
     }

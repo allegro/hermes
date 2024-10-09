@@ -56,6 +56,10 @@ const messages = {
       title: 'Warning: Tracking all messages enabled',
       text: 'Please chose this option only when necessary. Mainly this is for debugging problems with subscription. Remember to disable this mode after the problem is solved.',
     },
+    adminForm: {
+      title: 'Warning: Admin form enabled.',
+      text: 'New fields in the form have been revealed (they are followed by a warning sign). The form will be submitted regardless of the validation of the fields.',
+    },
   },
   info: {
     avro: {

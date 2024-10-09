@@ -258,6 +258,69 @@ public class MetricsTest {
     }
 
     @Test
+    public void shouldNotIncreaseInflightForFilteredSubscription() {
+        // given
+        TestSubscriber subscriber = subscribers.createSubscriber(503);
+        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
+        final Subscription subscription = hermes.initHelper().createSubscription(
+                subscription(topic, "subscription")
+                        .withEndpoint(subscriber.getEndpoint())
+                        .withSubscriptionPolicy(
+                                subscriptionPolicy()
+                                        .withMessageTtl(3600)
+                                        .withInflightSize(1)
+                                        .build()
+                        )
+                        .withFilter(filterMatchingHeaderByPattern("Trace-Id", "^vte.*"))
+                        .build()
+        );
+        TestMessage unfiltered = TestMessage.of("msg", "unfiltered");
+        TestMessage filtered = TestMessage.of("msg", "filtered");
+
+        // when
+        hermes.api().publishUntilSuccess(topic.getQualifiedName(), filtered.body(), header("Trace-Id", "otherTraceId"));
+        hermes.api().publishUntilSuccess(topic.getQualifiedName(), filtered.body(), header("Trace-Id", "otherTraceId"));
+
+        // then
+        waitAtMost(Duration.ofSeconds(10)).untilAsserted(() ->
+                hermes.api().getConsumersMetrics()
+                        .expectStatus()
+                        .isOk()
+                        .expectBody(String.class)
+                        .value((body) -> assertThatMetrics(body)
+                                .contains("hermes_consumers_subscription_inflight")
+                                .withLabels(
+                                        "group", topic.getName().getGroupName(),
+                                        "subscription", subscription.getName(),
+                                        "topic", topic.getName().getName()
+                                )
+                                .withValue(0.0)
+                        )
+        );
+
+        // when
+        hermes.api().publishUntilSuccess(topic.getQualifiedName(), unfiltered.body(), header("Trace-Id", "vte12"));
+        hermes.api().publishUntilSuccess(topic.getQualifiedName(), unfiltered.body(), header("Trace-Id", "vte12"));
+
+        // then
+        waitAtMost(Duration.ofSeconds(10)).untilAsserted(() ->
+                hermes.api().getConsumersMetrics()
+                        .expectStatus()
+                        .isOk()
+                        .expectBody(String.class)
+                        .value((body) -> assertThatMetrics(body)
+                                .contains("hermes_consumers_subscription_inflight")
+                                .withLabels(
+                                        "group", topic.getName().getGroupName(),
+                                        "subscription", subscription.getName(),
+                                        "topic", topic.getName().getName()
+                                )
+                                .withValue(1.0)
+                        )
+        );
+    }
+
+    @Test
     public void shouldReportMetricsForSuccessfulBatchDelivery() {
         // given
         TestSubscriber subscriber = subscribers.createSubscriber();

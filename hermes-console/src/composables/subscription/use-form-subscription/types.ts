@@ -38,6 +38,7 @@ export interface SubscriptionForm {
 export interface FormSubscriptionPolicy {
   rateLimit: number | null;
   inflightMessageTTL: number;
+  inflightMessagesCount: number | null;
   retryBackoff: number;
   sendingDelay: number;
   retryBackoffMultiplier: number;
@@ -69,6 +70,7 @@ export interface FormValidators {
   requestTimeout: FieldValidator<number>[];
   sendingDelay: FieldValidator<number>[];
   inflightMessageTTL: FieldValidator<number>[];
+  inflightMessagesCount: FieldValidator<number>[];
   retryBackoff: FieldValidator<number>[];
   retryBackoffMultiplier: FieldValidator<number>[];
   backoffMaxIntervalInSec: FieldValidator<number>[];
