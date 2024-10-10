@@ -10,7 +10,6 @@ import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
 import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
-import pl.allegro.tech.hermes.frontend.blacklist.BlacklistZookeeperNotifyingCache;
 import pl.allegro.tech.hermes.frontend.buffer.BackupMessagesLoader;
 import pl.allegro.tech.hermes.frontend.buffer.PersistentBufferExtension;
 import pl.allegro.tech.hermes.frontend.cache.topic.NotificationBasedTopicsCache;
@@ -43,10 +42,9 @@ public class FrontendConfiguration {
                                                     TopicRepository topicRepository,
                                                     MetricsFacade metricsFacade,
                                                     ThroughputRegistry throughputRegistry,
-                                                    KafkaNamesMapper kafkaNamesMapper,
-                                                    BlacklistZookeeperNotifyingCache blacklistZookeeperNotifyingCache) {
+                                                    KafkaNamesMapper kafkaNamesMapper) {
 
-        return new NotificationBasedTopicsCache(internalNotificationsBus, blacklistZookeeperNotifyingCache,
+        return new NotificationBasedTopicsCache(internalNotificationsBus,
                 groupRepository, topicRepository, metricsFacade, throughputRegistry, kafkaNamesMapper);
     }
 
@@ -77,12 +75,6 @@ public class FrontendConfiguration {
                                                                MetricsFacade metricsFacade) {
         return new PersistentBufferExtension(localMessageStorageProperties, clock, listeners, backupMessagesLoader,
                 metricsFacade);
-    }
-
-    @Bean(initMethod = "startup")
-    public BlacklistZookeeperNotifyingCache blacklistZookeeperNotifyingCache(CuratorFramework curator,
-                                                                             ZookeeperPaths zookeeperPaths) {
-        return new BlacklistZookeeperNotifyingCache(curator, zookeeperPaths);
     }
 
     @Bean

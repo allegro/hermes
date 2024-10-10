@@ -147,21 +147,6 @@ public class TopicManagementTest {
     }
 
     @Test
-    public void shouldUnblacklistTopicWhileDeleting() {
-        // given
-        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
-        hermes.api().blacklistTopic(topic.getQualifiedName());
-
-        // when
-        WebTestClient.ResponseSpec response = hermes.api().deleteTopic(topic.getQualifiedName());
-
-        // then
-        response.expectStatus().isOk();
-        waitAtMost(Duration.ofSeconds(10)).untilAsserted(() -> assertThat(getGroupTopicsList(topic.getName().getGroupName())).isEmpty());
-        assertThat(hermes.api().isTopicBlacklisted(topic.getQualifiedName()).isBlacklisted()).isFalse();
-    }
-
-    @Test
     public void shouldNotAllowOnDeletingTopicWithSubscriptions() {
         // given
         Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
