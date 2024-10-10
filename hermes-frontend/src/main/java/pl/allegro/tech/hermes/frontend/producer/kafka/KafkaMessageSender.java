@@ -19,6 +19,7 @@ import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 import pl.allegro.tech.hermes.frontend.producer.BrokerLatencyReporter;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import pl.allegro.tech.hermes.frontend.publishing.metadata.ProduceMetadata;
+import pl.allegro.tech.hermes.metrics.HermesTimer;
 import pl.allegro.tech.hermes.metrics.HermesTimerContext;
 
 import java.util.Collections;
@@ -41,17 +42,20 @@ public class KafkaMessageSender<K, V> {
     private final MetricsFacade metricsFacade;
     private final String datacenter;
     private final ScheduledExecutorService chaosScheduler;
+    private final HermesTimer sendTimer;
 
     KafkaMessageSender(Producer<K, V> kafkaProducer,
                        BrokerLatencyReporter brokerLatencyReporter,
                        MetricsFacade metricsFacade,
                        String datacenter,
-                       ScheduledExecutorService chaosScheduler) {
+                       ScheduledExecutorService chaosScheduler,
+                       String senderName) {
         this.producer = kafkaProducer;
         this.brokerLatencyReporter = brokerLatencyReporter;
         this.metricsFacade = metricsFacade;
         this.datacenter = datacenter;
         this.chaosScheduler = chaosScheduler;
+        this.sendTimer = metricsFacade.producer().sendLatency(senderName, datacenter);
     }
 
     public String getDatacenter() {
@@ -88,9 +92,10 @@ public class KafkaMessageSender<K, V> {
                      Callback callback) {
         HermesTimerContext timer = cachedTopic.startBrokerLatencyTimer();
         Callback meteredCallback = new MeteredCallback(timer, message, cachedTopic, callback);
-        try {
+        try (HermesTimerContext ignored = sendTimer.time()) {
             producer.send(producerRecord, meteredCallback);
         } catch (Exception e) {
+            logger.debug("Error while sending message to Kafka.", e);
             callback.onCompletion(exceptionalRecordMetadata(cachedTopic), e);
         }
     }
