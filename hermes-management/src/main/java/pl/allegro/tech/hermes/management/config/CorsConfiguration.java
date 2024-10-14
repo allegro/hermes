@@ -5,6 +5,4 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @EnableConfigurationProperties(CorsProperties.class)
-public class CorsConfiguration {
-
-}
+public class CorsConfiguration {}

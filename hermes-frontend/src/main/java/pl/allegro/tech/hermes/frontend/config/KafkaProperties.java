@@ -1,71 +1,69 @@
 package pl.allegro.tech.hermes.frontend.config;
 
+import java.time.Duration;
 import pl.allegro.tech.hermes.common.config.KafkaAuthenticationProperties;
 import pl.allegro.tech.hermes.common.kafka.KafkaParameters;
 
-import java.time.Duration;
-
 public class KafkaProperties implements KafkaParameters {
 
-    private KafkaAuthenticationProperties authentication = new KafkaAuthenticationProperties();
+  private KafkaAuthenticationProperties authentication = new KafkaAuthenticationProperties();
 
-    private String datacenter = "dc";
+  private String datacenter = "dc";
 
-    private String brokerList = "localhost:9092";
+  private String brokerList = "localhost:9092";
 
-    private Duration adminRequestTimeout = Duration.ofMinutes(5);
+  private Duration adminRequestTimeout = Duration.ofMinutes(5);
 
-    @Deprecated
-    public void setAuthorization(KafkaAuthenticationProperties authorization) {
-        this.authentication = authorization;
-    }
+  @Deprecated
+  public void setAuthorization(KafkaAuthenticationProperties authorization) {
+    this.authentication = authorization;
+  }
 
-    public void setAuthentication(KafkaAuthenticationProperties authorization) {
-        this.authentication = authorization;
-    }
+  public void setAuthentication(KafkaAuthenticationProperties authorization) {
+    this.authentication = authorization;
+  }
 
-    public String getDatacenter() {
-        return datacenter;
-    }
+  public String getDatacenter() {
+    return datacenter;
+  }
 
-    public void setDatacenter(String datacenter) {
-        this.datacenter = datacenter;
-    }
+  public void setDatacenter(String datacenter) {
+    this.datacenter = datacenter;
+  }
 
-    @Override
-    public boolean isAuthenticationEnabled() {
-        return authentication.isEnabled();
-    }
+  @Override
+  public boolean isAuthenticationEnabled() {
+    return authentication.isEnabled();
+  }
 
-    @Override
-    public String getAuthenticationMechanism() {
-        return authentication.getMechanism();
-    }
+  @Override
+  public String getAuthenticationMechanism() {
+    return authentication.getMechanism();
+  }
 
-    @Override
-    public String getAuthenticationProtocol() {
-        return authentication.getProtocol();
-    }
+  @Override
+  public String getAuthenticationProtocol() {
+    return authentication.getProtocol();
+  }
 
-    public String getBrokerList() {
-        return brokerList;
-    }
+  public String getBrokerList() {
+    return brokerList;
+  }
 
-    public void setBrokerList(String brokerList) {
-        this.brokerList = brokerList;
-    }
+  public void setBrokerList(String brokerList) {
+    this.brokerList = brokerList;
+  }
 
-    public Duration getAdminRequestTimeout() {
-        return adminRequestTimeout;
-    }
+  public Duration getAdminRequestTimeout() {
+    return adminRequestTimeout;
+  }
 
-    public void setAdminRequestTimeout(Duration adminRequestTimeout) {
-        this.adminRequestTimeout = adminRequestTimeout;
-    }
+  public void setAdminRequestTimeout(Duration adminRequestTimeout) {
+    this.adminRequestTimeout = adminRequestTimeout;
+  }
 
-
-    @Override
-    public String getJaasConfig() {
-        return authentication.getJaasConfig();
-    }
+  @Override
+  public String getJaasConfig() {
+    return authentication.getJaasConfig();
+  }
 }

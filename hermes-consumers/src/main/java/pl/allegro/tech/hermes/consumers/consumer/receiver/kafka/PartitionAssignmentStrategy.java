@@ -6,17 +6,17 @@ import org.apache.kafka.clients.consumer.RangeAssignor;
 import org.apache.kafka.clients.consumer.StickyAssignor;
 
 public enum PartitionAssignmentStrategy {
-    RANGE(RangeAssignor.class),
-    STICKY(StickyAssignor.class),
-    COOPERATIVE(CooperativeStickyAssignor.class);
+  RANGE(RangeAssignor.class),
+  STICKY(StickyAssignor.class),
+  COOPERATIVE(CooperativeStickyAssignor.class);
 
-    private final Class<? extends ConsumerPartitionAssignor> assignorClass;
+  private final Class<? extends ConsumerPartitionAssignor> assignorClass;
 
-    PartitionAssignmentStrategy(Class<? extends ConsumerPartitionAssignor> assignorClass) {
-        this.assignorClass = assignorClass;
-    }
+  PartitionAssignmentStrategy(Class<? extends ConsumerPartitionAssignor> assignorClass) {
+    this.assignorClass = assignorClass;
+  }
 
-    Class<? extends ConsumerPartitionAssignor> getAssignorClass() {
-        return assignorClass;
-    }
+  Class<? extends ConsumerPartitionAssignor> getAssignorClass() {
+    return assignorClass;
+  }
 }

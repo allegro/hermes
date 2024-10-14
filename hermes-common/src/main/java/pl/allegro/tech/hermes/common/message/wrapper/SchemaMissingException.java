@@ -6,13 +6,12 @@ import pl.allegro.tech.hermes.common.exception.HermesException;
 
 public class SchemaMissingException extends HermesException {
 
-    SchemaMissingException(Topic topic) {
-        super("Schema for topic " + topic.getQualifiedName() + " was not available");
-    }
+  SchemaMissingException(Topic topic) {
+    super("Schema for topic " + topic.getQualifiedName() + " was not available");
+  }
 
-    @Override
-    public ErrorCode getCode() {
-        return ErrorCode.SCHEMA_COULD_NOT_BE_LOADED;
-    }
-
+  @Override
+  public ErrorCode getCode() {
+    return ErrorCode.SCHEMA_COULD_NOT_BE_LOADED;
+  }
 }

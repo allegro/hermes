@@ -5,13 +5,13 @@ import java.util.concurrent.TimeUnit;
 
 public interface MetricsProvider {
 
-    String prefix = "hermes-client.";
+  String prefix = "hermes-client.";
 
-    void counterIncrement(String topic, String key);
+  void counterIncrement(String topic, String key);
 
-    void counterIncrement(String topic, String key, Map<String, String> tags);
+  void counterIncrement(String topic, String key, Map<String, String> tags);
 
-    void timerRecord(String topic, String key, long duration, TimeUnit unit);
+  void timerRecord(String topic, String key, long duration, TimeUnit unit);
 
-    void histogramUpdate(String topic, String key, int value);
+  void histogramUpdate(String topic, String key, int value);
 }
