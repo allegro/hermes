@@ -51,3 +51,9 @@ chmod a+x google-java-format_linux-x86-64
 chmod a+x .github/scripts/check-google-java-format.sh
 ./.github/scripts/check-google-java-format.sh        
 ```
+
+You can also run the following command to fix formatting for the whole project:
+
+```shell
+./.github/scripts/check-google-java-format.sh --fix
+```
