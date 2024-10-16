@@ -5,6 +5,7 @@ export interface ConstraintsConfig {
 
 export interface Constraint {
   consumersNumber: number;
+  reason: string;
 }
 
 export interface SubscriptionConstraint {
