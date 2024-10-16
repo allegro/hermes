@@ -45,7 +45,8 @@ Creating workload constraints for topic:
 {
   "topicName": "pl.allegro.test.HugeTrafficTopic",
   "constraints": {
-    "consumersNumber": 5
+    "consumersNumber": 5,
+    "reason": "Topic tuning reason"
   }
 }
 ```
@@ -59,7 +60,8 @@ Creating workload constraints for subscriptions:
 {
   "subscriptionName": "pl.allegro.test.HugeTrafficTopic$nonCriticalSubscription",
   "constraints": {
-    "consumersNumber": 1
+    "consumersNumber": 1,
+    "reason": "Subscription tuning reason"
   }
 }
 ```
@@ -71,12 +73,14 @@ Getting all defined workload constraints:
 {
   "topicConstraints": {
     "pl.allegro.test.HugeTrafficTopic": {
-      "consumersNumber": 5
+      "consumersNumber": 5,
+      "reason": "Topic tuning reason"
     }
   },
   "subscriptionConstraints": {
     "pl.allegro.test.HugeTrafficTopic$nonCriticalSubscription": {
-      "consumersNumber": 1
+      "consumersNumber": 1,
+      "reason": "Subscription tuning reason"
     }
   }
 }
