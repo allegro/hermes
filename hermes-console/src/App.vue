@@ -4,6 +4,7 @@
   import AppNotificationProvider from '@/components/app-notification/AppNotificationProvider.vue';
   import ConsoleFooter from '@/components/console-footer/ConsoleFooter.vue';
   import ConsoleHeader from '@/components/console-header/ConsoleHeader.vue';
+  import NavigationDrawer from '@/components/navigation-drawer/NavigationDrawer.vue';
 
   const configStore = useAppConfigStore();
   configStore.loadConfig();
@@ -13,7 +14,7 @@
   <v-app class="fill-height">
     <div v-if="configStore.loadedConfig">
       <console-header />
-
+      <navigation-drawer v-if="$route.name !== 'home'" />
       <v-main class="main">
         <app-notification-provider>
           <router-view />
