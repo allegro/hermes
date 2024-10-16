@@ -5,18 +5,18 @@ import jakarta.validation.Validator
 import org.hibernate.validator.internal.engine.ConstraintViolationImpl
 import spock.lang.Specification
 
-class SubscriptionConstraintsValidationTest extends Specification {
+class TopicConstraintsValidationTest extends Specification {
     private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator()
 
     def "consumers number has to be greater than zero"() {
         given:
-        def subscriptionConstraints = new SubscriptionConstraints(
-            "group.topic\$subscription",
+        def topicConstraints = new TopicConstraints(
+            "group.topic",
             new Constraints(consumersNumber, "Some reason")
         )
 
         when:
-        Set<ConstraintViolationImpl<SubscriptionConstraints>> violations = validator.validate(subscriptionConstraints)
+        Set<ConstraintViolationImpl<TopicConstraints>> violations = validator.validate(topicConstraints)
 
         then:
         violations.propertyPath*.toString() == ["constraints.consumersNumber"]
@@ -28,13 +28,13 @@ class SubscriptionConstraintsValidationTest extends Specification {
 
     def "reason message length has to be max 1024"() {
         given:
-        def subscriptionConstraints = new SubscriptionConstraints(
-            "group.topic\$subscription",
+        def topicConstraints = new TopicConstraints(
+            "group.topic",
             new Constraints(1, reason)
         )
 
         when:
-        Set<ConstraintViolationImpl<SubscriptionConstraints>> violations = validator.validate(subscriptionConstraints)
+        Set<ConstraintViolationImpl<TopicConstraints>> violations = validator.validate(topicConstraints)
 
         then:
         violations.propertyPath*.toString() == ["constraints.reason"]
@@ -50,13 +50,13 @@ class SubscriptionConstraintsValidationTest extends Specification {
 
     def "there shouldn't be any violations for valid inputs"() {
         given:
-        def subscriptionConstraints = new SubscriptionConstraints(
-            "group.topic\$subscription",
+        def TopicConstraints = new TopicConstraints(
+            "group.topic",
             new Constraints(consumersNumber, reason)
         )
 
         when:
-        Set<ConstraintViolationImpl<SubscriptionConstraints>> violations = validator.validate(subscriptionConstraints)
+        Set<ConstraintViolationImpl<TopicConstraints>> violations = validator.validate(TopicConstraints)
 
         then:
         violations.isEmpty()
