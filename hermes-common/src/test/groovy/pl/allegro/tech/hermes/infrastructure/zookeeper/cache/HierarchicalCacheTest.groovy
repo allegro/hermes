@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.infrastructure.zookeeper.cache
 
-import org.awaitility.Awaitility
 import pl.allegro.tech.hermes.test.IntegrationTest
 
 import java.time.Duration
@@ -42,10 +41,10 @@ class HierarchicalCacheTest extends IntegrationTest {
         cache.start()
 
         when:
-        zookeeper().inTransaction()
-                .create().forPath('/hierarchicalCacheTest/groups/groupA', 'groupA'.bytes)
-                .and().create().forPath('/hierarchicalCacheTest/groups/groupA/topics')
-                .and().commit()
+        zookeeper().transaction().forOperations(
+                zookeeper().transactionOp().create().forPath('/hierarchicalCacheTest/groups/groupA', 'groupA'.bytes),
+                zookeeper().transactionOp().create().forPath('/hierarchicalCacheTest/groups/groupA/topics')
+        )
 
         then:
         await().atMost(Duration.ofSeconds(5)).until({
@@ -53,10 +52,10 @@ class HierarchicalCacheTest extends IntegrationTest {
         })
 
         when:
-        zookeeper().inTransaction()
-                .create().forPath('/hierarchicalCacheTest/groups/groupA/topics/topicA', 'topicA'.bytes)
-                .and().create().forPath('/hierarchicalCacheTest/groups/groupA/topics/topicA/subscriptions')
-                .and().commit()
+        zookeeper().transaction().forOperations(
+                zookeeper().transactionOp().create().forPath('/hierarchicalCacheTest/groups/groupA/topics/topicA', 'topicA'.bytes),
+                zookeeper().transactionOp().create().forPath('/hierarchicalCacheTest/groups/groupA/topics/topicA/subscriptions')
+        )
 
         then:
         await().atMost(Duration.ofSeconds(5)).until({
@@ -77,13 +76,13 @@ class HierarchicalCacheTest extends IntegrationTest {
 
     def "should call callbacks for all entities created before cache started"() {
         given:
-        zookeeper().inTransaction()
-                .create().forPath('/hierarchicalCacheTest/groups/groupB', 'groupB'.bytes)
-                .and().create().forPath('/hierarchicalCacheTest/groups/groupB/topics')
-                .and().create().forPath('/hierarchicalCacheTest/groups/groupB/topics/topicB', 'topicB'.bytes)
-                .and().create().forPath('/hierarchicalCacheTest/groups/groupB/topics/topicB/subscriptions')
-                .and().create().forPath('/hierarchicalCacheTest/groups/groupB/topics/topicB/subscriptions/subB', 'subB'.bytes)
-                .and().commit()
+        zookeeper().transaction().forOperations(
+                zookeeper().transactionOp().create().forPath('/hierarchicalCacheTest/groups/groupB', 'groupB'.bytes),
+                zookeeper().transactionOp().create().forPath('/hierarchicalCacheTest/groups/groupB/topics'),
+                zookeeper().transactionOp().create().forPath('/hierarchicalCacheTest/groups/groupB/topics/topicB', 'topicB'.bytes),
+                zookeeper().transactionOp().create().forPath('/hierarchicalCacheTest/groups/groupB/topics/topicB/subscriptions'),
+                zookeeper().transactionOp().create().forPath('/hierarchicalCacheTest/groups/groupB/topics/topicB/subscriptions/subB', 'subB'.bytes)
+        )
 
         when:
         cache.start()
