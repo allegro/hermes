@@ -1,6 +1,7 @@
 export interface AvroSchema {
   type: Type;
   name: string;
+  namespace?: string;
   doc: string;
   fields?: Field[];
   default?: DefaultTypes;
