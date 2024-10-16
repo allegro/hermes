@@ -41,16 +41,20 @@ class ZookeeperWorkloadConstraintsRepositoryTest extends IntegrationTest {
 
     def "should return constraints from cache"() {
         given:
-        setupNode('/hermes/consumers-workload-constraints/group.topic', new Constraints(1))
-        setupNode('/hermes/consumers-workload-constraints/group.topic$sub', new Constraints(3))
+        setupNode('/hermes/consumers-workload-constraints/group.topic', new Constraints(1, "Some reason"))
+        setupNode('/hermes/consumers-workload-constraints/group.topic$sub', new Constraints(3, "Some other reason"))
         ensureCacheWasUpdated(2)
 
         when:
         def constraints = repository.getConsumersWorkloadConstraints()
 
         then:
-        constraints.topicConstraints.get(TopicName.fromQualifiedName('group.topic')).consumersNumber == 1
-        constraints.subscriptionConstraints.get(SubscriptionName.fromString('group.topic$sub')).consumersNumber == 3
+        def topicConstraints = constraints.topicConstraints.get(TopicName.fromQualifiedName('group.topic'))
+        topicConstraints.consumersNumber == 1
+        topicConstraints.reason == "Some reason"
+        def subscriptionConstraints = constraints.subscriptionConstraints.get(SubscriptionName.fromString('group.topic$sub'))
+        subscriptionConstraints.consumersNumber == 3
+        subscriptionConstraints.reason == "Some other reason"
     }
 
     def "should create constraints for topic"() {
@@ -58,11 +62,11 @@ class ZookeeperWorkloadConstraintsRepositoryTest extends IntegrationTest {
         def topic = TopicName.fromQualifiedName('group.topic')
 
         when:
-        repository.createConstraints(topic, new Constraints(1))
+        repository.createConstraints(topic, new Constraints(1, "Some reason"))
         wait.untilWorkloadConstraintsCreated(topic)
 
         then:
-        assertNodeContainsData('/hermes/consumers-workload-constraints/group.topic', new Constraints(1))
+        assertNodeContainsData('/hermes/consumers-workload-constraints/group.topic', new Constraints(1, "Some reason"))
     }
 
     def "should throw exception if topic node already exist"() {
@@ -70,9 +74,9 @@ class ZookeeperWorkloadConstraintsRepositoryTest extends IntegrationTest {
         def topic = TopicName.fromQualifiedName('group.topic')
 
         when:
-        repository.createConstraints(topic, new Constraints(1))
+        repository.createConstraints(topic, new Constraints(1, "Some reason"))
         wait.untilWorkloadConstraintsCreated(topic)
-        repository.createConstraints(topic, new Constraints(1))
+        repository.createConstraints(topic, new Constraints(2, "Some other reason"))
 
         then:
         def e = thrown(TopicConstraintsAlreadyExistException)
@@ -85,11 +89,11 @@ class ZookeeperWorkloadConstraintsRepositoryTest extends IntegrationTest {
         def subscription = SubscriptionName.fromString('group.topic$sub')
 
         when:
-        repository.createConstraints(subscription, new Constraints(1))
+        repository.createConstraints(subscription, new Constraints(1, "Some reason"))
         wait.untilWorkloadConstraintsCreated(subscription)
 
         then:
-        assertNodeContainsData('/hermes/consumers-workload-constraints/group.topic$sub', new Constraints(1))
+        assertNodeContainsData('/hermes/consumers-workload-constraints/group.topic$sub', new Constraints(1, "Some reason"))
     }
 
     def "should throw exception if subscription node already exist"() {
@@ -97,9 +101,9 @@ class ZookeeperWorkloadConstraintsRepositoryTest extends IntegrationTest {
         def subscription = SubscriptionName.fromString('group.topic$sub')
 
         when:
-        repository.createConstraints(subscription, new Constraints(1))
+        repository.createConstraints(subscription, new Constraints(1, "Some reason"))
         wait.untilWorkloadConstraintsCreated(subscription)
-        repository.createConstraints(subscription, new Constraints(1))
+        repository.createConstraints(subscription, new Constraints(2, "Some other reason"))
 
         then:
         def e = thrown(SubscriptionConstraintsAlreadyExistException)
@@ -109,14 +113,14 @@ class ZookeeperWorkloadConstraintsRepositoryTest extends IntegrationTest {
 
     def "should update topic constraints"() {
         given:
-        setupNode('/hermes/consumers-workload-constraints/group.topic', new Constraints(1))
+        setupNode('/hermes/consumers-workload-constraints/group.topic', new Constraints(1, "Some reason"))
         ensureCacheWasUpdated(1)
 
         when:
-        repository.updateConstraints(TopicName.fromQualifiedName('group.topic'), new Constraints(2))
+        repository.updateConstraints(TopicName.fromQualifiedName('group.topic'), new Constraints(2, "Some other reason"))
 
         then:
-        assertNodeContainsData('/hermes/consumers-workload-constraints/group.topic', new Constraints(2))
+        assertNodeContainsData('/hermes/consumers-workload-constraints/group.topic', new Constraints(2, "Some other reason"))
     }
 
     def "should throw exception if topic node does not exist on update"() {
@@ -124,7 +128,7 @@ class ZookeeperWorkloadConstraintsRepositoryTest extends IntegrationTest {
         def topic = TopicName.fromQualifiedName('group.topic')
 
         when:
-        repository.updateConstraints(topic, new Constraints(1))
+        repository.updateConstraints(topic, new Constraints(1,"Some reason"))
 
         then:
         def e = thrown(TopicConstraintsDoNotExistException)
@@ -134,19 +138,19 @@ class ZookeeperWorkloadConstraintsRepositoryTest extends IntegrationTest {
 
     def "should update subscription constraints"() {
         given:
-        setupNode('/hermes/consumers-workload-constraints/group.topic$sub', new Constraints(1))
+        setupNode('/hermes/consumers-workload-constraints/group.topic$sub', new Constraints(1, "Some reason"))
         ensureCacheWasUpdated(1)
 
         when:
-        repository.updateConstraints(SubscriptionName.fromString('group.topic$sub'), new Constraints(2))
+        repository.updateConstraints(SubscriptionName.fromString('group.topic$sub'), new Constraints(2, "Some other reason"))
 
         then:
-        assertNodeContainsData('/hermes/consumers-workload-constraints/group.topic$sub', new Constraints(2))
+        assertNodeContainsData('/hermes/consumers-workload-constraints/group.topic$sub', new Constraints(2, "Some other reason"))
     }
 
     def "should throw exception if subscription node does not exist on update"() {
         when:
-        repository.updateConstraints(SubscriptionName.fromString('group.topic$sub'), new Constraints(1))
+        repository.updateConstraints(SubscriptionName.fromString('group.topic$sub'), new Constraints(1, "Some reason"))
 
         then:
         def e = thrown(SubscriptionConstraintsDoNotExistException)
@@ -156,7 +160,7 @@ class ZookeeperWorkloadConstraintsRepositoryTest extends IntegrationTest {
 
     def "should delete topic constraints"() {
         given:
-        setupNode('/hermes/consumers-workload-constraints/group.topic', new Constraints(1))
+        setupNode('/hermes/consumers-workload-constraints/group.topic', new Constraints(1, "Some reason"))
         ensureCacheWasUpdated(1)
 
         when:
@@ -168,7 +172,7 @@ class ZookeeperWorkloadConstraintsRepositoryTest extends IntegrationTest {
 
     def "should delete subscription constraints"() {
         given:
-        setupNode('/hermes/consumers-workload-constraints/group.topic$sub', new Constraints(1))
+        setupNode('/hermes/consumers-workload-constraints/group.topic$sub', new Constraints(1, "Some reason"))
         ensureCacheWasUpdated(1)
 
         when:
@@ -188,7 +192,7 @@ class ZookeeperWorkloadConstraintsRepositoryTest extends IntegrationTest {
 
     def "should return true if topic constraints exist"() {
         given:
-        setupNode('/hermes/consumers-workload-constraints/group.topic', new Constraints(1))
+        setupNode('/hermes/consumers-workload-constraints/group.topic', new Constraints(1, "Some reason"))
         ensureCacheWasUpdated(1)
 
         expect:
@@ -202,7 +206,7 @@ class ZookeeperWorkloadConstraintsRepositoryTest extends IntegrationTest {
 
     def "should return true if subscription constraints exist"() {
         given:
-        setupNode('/hermes/consumers-workload-constraints/group.topic$sub', new Constraints(1))
+        setupNode('/hermes/consumers-workload-constraints/group.topic$sub', new Constraints(1, "Some reason"))
         ensureCacheWasUpdated(1)
 
         expect:

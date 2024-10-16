@@ -4,6 +4,7 @@ export const dummyConstraints: ConstraintsConfig = {
   topicConstraints: {
     'pl.group.Topic1': {
       consumersNumber: 2,
+      reason: 'Some reason',
     },
     'pl.group.Topic2': {
       consumersNumber: 4,

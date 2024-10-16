@@ -67,6 +67,9 @@ describe('CreateConstraintForm', () => {
     await wrapper
       .findComponent('[data-testid="createConstraintConsumersNumberInput"]')
       .setValue('10');
+    await wrapper
+      .findComponent('[data-testid="createConstraintReasonInput"]')
+      .setValue('Some test reason');
     await wrapper.find('[data-testid="createConstraintSave"]').trigger('click');
 
     // then
@@ -78,6 +81,7 @@ describe('CreateConstraintForm', () => {
         'pl.allegro.public.group.DummyEvent',
         {
           consumersNumber: '10',
+          reason: 'Some test reason',
         },
       ]);
     });
@@ -101,6 +105,9 @@ describe('CreateConstraintForm', () => {
     await wrapper
       .findComponent('[data-testid="createConstraintConsumersNumberInput"]')
       .setValue('3');
+    await wrapper
+      .findComponent('[data-testid="createConstraintReasonInput"]')
+      .setValue('Some test reason');
     await wrapper.find('[data-testid="createConstraintSave"]').trigger('click');
 
     // then
@@ -112,6 +119,7 @@ describe('CreateConstraintForm', () => {
         'pl.allegro.public.group.DummyEvent$foobar-service',
         {
           consumersNumber: '3',
+          reason: 'Some test reason',
         },
       ]);
     });

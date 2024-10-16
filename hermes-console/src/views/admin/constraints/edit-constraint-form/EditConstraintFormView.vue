@@ -17,9 +17,13 @@
   }>();
 
   const consumersNumber: Ref<number> = ref(props.constraint.consumersNumber);
+  const reason: Ref<number> = ref(props.constraint.reason);
 
   const onUpdated = () => {
-    const constraint: Constraint = { consumersNumber: consumersNumber.value };
+    const constraint: Constraint = {
+      consumersNumber: consumersNumber.value,
+      reason: reason.value,
+    };
     emit('update', props.resourceId, constraint);
   };
 
@@ -40,6 +44,15 @@
           type="number"
           v-model="consumersNumber"
           data-testid="editConstraintConsumersNumberInput"
+        >
+        </v-text-field>
+      </v-card-item>
+      <v-card-item>
+        <v-text-field
+          :label="$t('constraints.editForm.reason')"
+          type="text"
+          v-model="reason"
+          data-testid="editConstraintReasonInput"
         >
         </v-text-field>
       </v-card-item>
