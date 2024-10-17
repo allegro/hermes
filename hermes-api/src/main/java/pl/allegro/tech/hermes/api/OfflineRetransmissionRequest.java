@@ -4,19 +4,23 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Optional;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.constraints.OneSourceRetransmission;
-import pl.allegro.tech.hermes.api.jackson.InstantIsoSerializer;
+import pl.allegro.tech.hermes.api.constraints.TimeRangeAbsentForViewRetransmission;
+import pl.allegro.tech.hermes.api.constraints.ProperTimeRangePresentForTopicRetransmission;
+import pl.allegro.tech.hermes.api.jackson.OptionalInstantIsoSerializer;
 
 @OneSourceRetransmission
+@TimeRangeAbsentForViewRetransmission
+@ProperTimeRangePresentForTopicRetransmission
 public class OfflineRetransmissionRequest {
 
   private static final List<DateTimeFormatter> formatters =
@@ -29,8 +33,8 @@ public class OfflineRetransmissionRequest {
   private final String sourceViewPath;
   private final String sourceTopic;
   @NotEmpty private final String targetTopic;
-  @NotNull private Instant startTimestamp;
-  @NotNull private Instant endTimestamp;
+  @Nullable private final Instant startTimestamp;
+  @Nullable private final Instant endTimestamp;
 
   @JsonCreator
   public OfflineRetransmissionRequest(
@@ -75,14 +79,14 @@ public class OfflineRetransmissionRequest {
     return targetTopic;
   }
 
-  @JsonSerialize(using = InstantIsoSerializer.class)
-  public Instant getStartTimestamp() {
-    return startTimestamp;
+  @JsonSerialize(using = OptionalInstantIsoSerializer.class)
+  public Optional<Instant> getStartTimestamp() {
+    return Optional.ofNullable(startTimestamp);
   }
 
-  @JsonSerialize(using = InstantIsoSerializer.class)
-  public Instant getEndTimestamp() {
-    return endTimestamp;
+  @JsonSerialize(using = OptionalInstantIsoSerializer.class)
+  public Optional<Instant> getEndTimestamp() {
+    return Optional.ofNullable(endTimestamp);
   }
 
   @Override
