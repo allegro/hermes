@@ -1,5 +1,10 @@
 package pl.allegro.tech.hermes.integrationtests.management;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
+
+import java.time.Instant;
+import java.util.List;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -12,12 +17,6 @@ import pl.allegro.tech.hermes.api.OfflineRetransmissionTask;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesExtension;
 import pl.allegro.tech.hermes.management.TestSecurityProvider;
-
-import java.time.Instant;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
 
 public class OfflineRetransmissionManagementTest {
 
@@ -67,7 +66,8 @@ public class OfflineRetransmissionManagementTest {
     var targetTopic = hermes.initHelper().createTopic(topicWithRandomName().build());
 
     // when
-    var request = createSampleViewRetransmissionRequest("testViewPath", targetTopic.getQualifiedName());
+    var request =
+        createSampleViewRetransmissionRequest("testViewPath", targetTopic.getQualifiedName());
     var response = hermes.api().createOfflineRetransmissionTask(request);
     var now = Instant.now();
 
