@@ -14,8 +14,8 @@ import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.constraints.OneSourceRetransmission;
-import pl.allegro.tech.hermes.api.constraints.TimeRangeAbsentForViewRetransmission;
 import pl.allegro.tech.hermes.api.constraints.ProperTimeRangePresentForTopicRetransmission;
+import pl.allegro.tech.hermes.api.constraints.TimeRangeAbsentForViewRetransmission;
 import pl.allegro.tech.hermes.api.jackson.OptionalInstantIsoSerializer;
 
 @OneSourceRetransmission
