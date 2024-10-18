@@ -26,7 +26,6 @@ public class OfflineRetransmissionService {
     TopicName targetTopicName = TopicName.fromQualifiedName(request.getTargetTopic());
 
     ensureTopicsExist(sourceTopicName, targetTopicName);
-    ensureTimeRangeIsProper(request);
     ensureTopicIsNotStoredOffline(targetTopicName);
   }
 
@@ -56,14 +55,6 @@ public class OfflineRetransmissionService {
 
     if (!topicRepository.topicExists(targetTopicName)) {
       throw new OfflineRetransmissionValidationException("Target topic does not exist");
-    }
-  }
-
-  private void ensureTimeRangeIsProper(OfflineRetransmissionRequest request) {
-    if (request.getStartTimestamp().isAfter(request.getEndTimestamp())
-        || request.getStartTimestamp().equals(request.getEndTimestamp())) {
-      throw new OfflineRetransmissionValidationException(
-          "End timestamp must be greater than start timestamp");
     }
   }
 
