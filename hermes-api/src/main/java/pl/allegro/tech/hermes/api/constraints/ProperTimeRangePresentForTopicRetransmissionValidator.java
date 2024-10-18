@@ -17,7 +17,7 @@ public class ProperTimeRangePresentForTopicRetransmissionValidator
     var endTimestamp = offlineRetransmissionRequest.getEndTimestamp();
 
     if (sourceTopic.isEmpty()) {
-      // skip validation for topic table retransmission
+      // skip validation for view retransmission
       return true;
     }
     if (startTimestamp.isEmpty() || endTimestamp.isEmpty()) {
