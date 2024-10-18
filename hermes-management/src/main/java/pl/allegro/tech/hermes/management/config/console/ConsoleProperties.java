@@ -348,8 +348,10 @@ public class ConsoleProperties {
     private Set<String> allowedTopicLabels = Collections.emptySet();
     private List<RetentionUnit> retentionUnits =
         Lists.newArrayList(new RetentionUnit("DAYS", "DAYS"));
-    private boolean offlineRetransmissionEnabled = false;
+    private boolean offlineRetransmissionEnabled = true;
     private String offlineRetransmissionDescription = "Offline retransmission";
+    private String offlineRetransmissionFromViewDocsUrl =
+        "https://appengine.allegrogroup.com/en/latest/communication_messaging/hermes/offline_retransmission/";
 
     public boolean isMessagePreviewEnabled() {
       return messagePreviewEnabled;
@@ -461,6 +463,15 @@ public class ConsoleProperties {
 
     public void setOfflineRetransmissionDescription(String offlineRetransmissionDescription) {
       this.offlineRetransmissionDescription = offlineRetransmissionDescription;
+    }
+
+    public String getOfflineRetransmissionFromViewDocsUrl() {
+      return offlineRetransmissionFromViewDocsUrl;
+    }
+
+    public void setOfflineRetransmissionFromViewDocsUrl(
+        String offlineRetransmissionFromViewDocsUrl) {
+      this.offlineRetransmissionFromViewDocsUrl = offlineRetransmissionFromViewDocsUrl;
     }
   }
 

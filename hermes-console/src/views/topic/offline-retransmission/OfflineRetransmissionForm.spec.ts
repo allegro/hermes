@@ -1,4 +1,6 @@
+import { createTestingPinia } from '@pinia/testing';
 import { describe } from 'vitest';
+import { dummyAppConfig } from '@/dummy/app-config';
 import { renderWithEmits } from '@/utils/test-utils';
 import { waitFor } from '@testing-library/vue';
 import OfflineRetransmissionForm from '@/views/topic/offline-retransmission/OfflineRetransmissionForm.vue';
@@ -6,7 +8,10 @@ import OfflineRetransmissionForm from '@/views/topic/offline-retransmission/Offl
 describe('OfflineRetransmissionForm', () => {
   it('should emit a cancel event when user clicks cancel button', async () => {
     // given
-    const wrapper = renderWithEmits(OfflineRetransmissionForm, {});
+    const wrapper = renderWithEmits(
+      OfflineRetransmissionForm,
+      createInitialState(),
+    );
 
     // when
     await wrapper
@@ -22,7 +27,10 @@ describe('OfflineRetransmissionForm', () => {
 
   it('should emit a retransmit event when user clicks retransmit button', async () => {
     // given
-    const wrapper = renderWithEmits(OfflineRetransmissionForm, {});
+    const wrapper = renderWithEmits(
+      OfflineRetransmissionForm,
+      createInitialState(),
+    );
 
     // when
     await wrapper
@@ -55,3 +63,21 @@ describe('OfflineRetransmissionForm', () => {
     });
   });
 });
+
+function createInitialState() {
+  return {
+    testPinia: createTestingPinia({
+      initialState: {
+        appConfig: {
+          appConfig: {
+            ...dummyAppConfig,
+          },
+          loading: false,
+          error: {
+            loadConfig: null,
+          },
+        },
+      },
+    }),
+  };
+}
