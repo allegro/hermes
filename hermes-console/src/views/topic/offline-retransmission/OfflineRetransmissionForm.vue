@@ -36,7 +36,6 @@
             configStore.loadedConfig.topic.offlineRetransmissionFromViewDocsUrl
           "
         >
-          <v-icon></v-icon>
           {{ $t('offlineRetransmission.titleRetransmissionFromView') }}</v-btn
         >
       </v-card-title>
