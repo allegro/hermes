@@ -16,7 +16,7 @@ public class TimeRangeAbsentForViewRetransmissionValidator
     var startTimestamp = offlineRetransmissionRequest.getStartTimestamp();
     var endTimestamp = offlineRetransmissionRequest.getEndTimestamp();
 
-    return sourceViewPath.isEmpty() // skip validation for view retransmission
+    return sourceViewPath.isEmpty() // skip validation for non-view retransmission
         || (startTimestamp.isEmpty() && endTimestamp.isEmpty());
   }
 }
