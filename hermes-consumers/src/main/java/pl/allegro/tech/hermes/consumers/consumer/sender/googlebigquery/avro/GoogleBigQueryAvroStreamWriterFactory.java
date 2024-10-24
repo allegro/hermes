@@ -8,6 +8,7 @@ import com.google.auth.Credentials;
 import com.google.cloud.bigquery.storage.v1.BigQueryWriteClient;
 import com.google.cloud.bigquery.storage.v1.BigQueryWriteSettings;
 import com.google.cloud.bigquery.storage.v1.SchemaAwareStreamWriter;
+import com.google.cloud.bigquery.storage.v1.ToProtoConverter;
 import com.google.protobuf.Descriptors;
 import org.apache.avro.generic.GenericRecord;
 import org.slf4j.Logger;
@@ -26,11 +27,11 @@ public class GoogleBigQueryAvroStreamWriterFactory implements GoogleBigQueryStre
 
     private final Credentials credentials;
     private final BigQueryWriteClient writeClient;
-    private final GoogleBigQueryAvroToProtoConverter avroToProtoConverter;
+    private final ToProtoConverter<GenericRecord> avroToProtoConverter;
 
     public GoogleBigQueryAvroStreamWriterFactory(CredentialsProvider credentialsProvider,
                                                  BigQueryWriteSettings writeSettings,
-                                                 GoogleBigQueryAvroToProtoConverter avroToProtoConverter) throws IOException {
+                                                 ToProtoConverter<GenericRecord> avroToProtoConverter) throws IOException {
         this.credentials = credentialsProvider.getCredentials();
         this.writeClient = BigQueryWriteClient.create(writeSettings);
         this.avroToProtoConverter = avroToProtoConverter;
