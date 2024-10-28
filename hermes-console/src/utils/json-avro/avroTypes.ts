@@ -1,4 +1,4 @@
-export const recordType = ['record'];
+export const complexTypes = ['record'];
 export const iterableTypes = ['map', 'array'];
 export const primitiveTypes = [
   'null',
@@ -11,7 +11,11 @@ export const primitiveTypes = [
   'boolean',
   'enum',
 ];
-export const knownTypes = [...primitiveTypes, ...recordType, ...iterableTypes];
+export const knownTypes = [
+  ...primitiveTypes,
+  ...complexTypes,
+  ...iterableTypes,
+];
 
 export type AvroObject = any;
 
@@ -24,21 +28,21 @@ export const isValidAvroField = (object: AvroObject): boolean =>
   !propertyExists(object, 'name') ||
   object['name'] === '__metadata';
 
-export function isRootRecord(object: any) {
+export function isRootRecord(object: AvroObject) {
   return object.type === 'record';
 }
 
-export function isNonNullableRecord(object: any) {
+export function isNonNullableRecord(object: AvroObject) {
   return object.type.type === 'record';
 }
 
-export function isNonNullableArrayRecord(object: any) {
+export function isNonNullableArrayRecord(object: AvroObject) {
   return (
     object.type.type === 'array' && Array.isArray(object.type.items.fields)
   );
 }
 
-export function isNullableRecord(object: any) {
+export function isNullableRecord(object: AvroObject) {
   return (
     Array.isArray(object.type) &&
     object.type.find(
@@ -47,14 +51,14 @@ export function isNullableRecord(object: any) {
   );
 }
 
-export function isNullablePrimitive(object: any) {
+export function isNullablePrimitive(object: AvroObject) {
   return (
     Array.isArray(object.type) &&
-    object.type.every((v: any) => primitiveTypes.includes(v))
+    object.type.every((v: AvroObject) => primitiveTypes.includes(v))
   );
 }
 
-export function isNonNullableArrayPrimitive(object: any) {
+export function isNonNullableArrayPrimitive(object: AvroObject) {
   return (
     !Array.isArray(object.type) &&
     object.type.type === 'array' &&
@@ -62,33 +66,37 @@ export function isNonNullableArrayPrimitive(object: any) {
   );
 }
 
-export function isNullableArrayComplex(object: any) {
+export function isNullableArrayComplex(object: AvroObject) {
   return (
     Array.isArray(object.type) &&
-    object.type.find((t: any) => t !== 'null').type === 'array' &&
-    recordType.includes(object.type.find((t: any) => t !== 'null').items.type)
-  );
-}
-
-export function isNullableArrayPrimitiveItems(object: any) {
-  return (
-    Array.isArray(object.type) &&
-    object.type.find((t: any) => t !== 'null').type === 'array' &&
-    primitiveTypes.includes(
-      object.type.find((t: any) => t !== 'null').items.type,
+    object.type.find((t: AvroObject) => t !== 'null').type === 'array' &&
+    complexTypes.includes(
+      object.type.find((t: AvroObject) => t !== 'null').items.type,
     )
   );
 }
 
-export function isNullableArrayPrimitiveSimple(object: any) {
+export function isNullableArrayPrimitiveItems(object: AvroObject) {
   return (
     Array.isArray(object.type) &&
-    object.type.find((t: any) => t !== 'null').type === 'array' &&
-    primitiveTypes.includes(object.type.find((t: any) => t !== 'null').items)
+    object.type.find((t: AvroObject) => t !== 'null').type === 'array' &&
+    primitiveTypes.includes(
+      object.type.find((t: AvroObject) => t !== 'null').items.type,
+    )
   );
 }
 
-export function isNonNullableCustomType(object: any) {
+export function isNullableArrayPrimitiveSimple(object: AvroObject) {
+  return (
+    Array.isArray(object.type) &&
+    object.type.find((t: AvroObject) => t !== 'null').type === 'array' &&
+    primitiveTypes.includes(
+      object.type.find((t: AvroObject) => t !== 'null').items,
+    )
+  );
+}
+
+export function isNonNullableCustomType(object: AvroObject) {
   return (
     !Array.isArray(object.type) &&
     object.type.type != null &&
@@ -96,14 +104,14 @@ export function isNonNullableCustomType(object: any) {
   );
 }
 
-export function isNullableCustomType(object: any) {
+export function isNullableCustomType(object: AvroObject) {
   return (
     Array.isArray(object.type) &&
-    !knownTypes.includes(object.type.find((t: any) => t != 'null'))
+    !knownTypes.includes(object.type.find((t: AvroObject) => t != 'null'))
   );
 }
 
-export function isNonNullablePrimitive(object: any) {
+export function isNonNullablePrimitive(object: AvroObject) {
   return (
     primitiveTypes.includes(object.type) ||
     (object.type.type != null && primitiveTypes.includes(object.type.type))
