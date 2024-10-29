@@ -5,31 +5,31 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "authorization")
 public class StorageAuthorizationProperties {
 
-    private String scheme;
-    private String user;
-    private String password;
+  private String scheme;
+  private String user;
+  private String password;
 
-    public String getScheme() {
-        return scheme;
-    }
+  public String getScheme() {
+    return scheme;
+  }
 
-    public void setScheme(String scheme) {
-        this.scheme = scheme;
-    }
+  public void setScheme(String scheme) {
+    this.scheme = scheme;
+  }
 
-    public String getUser() {
-        return user;
-    }
+  public String getUser() {
+    return user;
+  }
 
-    public void setUser(String user) {
-        this.user = user;
-    }
+  public void setUser(String user) {
+    this.user = user;
+  }
 
-    public String getPassword() {
-        return password;
-    }
+  public String getPassword() {
+    return password;
+  }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+  public void setPassword(String password) {
+    this.password = password;
+  }
 }

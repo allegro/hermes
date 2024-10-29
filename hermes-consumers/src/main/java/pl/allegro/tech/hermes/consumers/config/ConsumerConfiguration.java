@@ -1,5 +1,7 @@
 package pl.allegro.tech.hermes.consumers.config;
 
+import java.time.Clock;
+import java.util.List;
 import org.apache.curator.framework.CuratorFramework;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -18,7 +20,6 @@ import pl.allegro.tech.hermes.consumers.consumer.converter.NoOperationMessageCon
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.MessageBodyInterpolator;
 import pl.allegro.tech.hermes.consumers.consumer.interpolation.UriInterpolator;
 import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignmentState;
-import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimitSupervisor;
 import pl.allegro.tech.hermes.consumers.consumer.rate.calculator.OutputRateCalculatorFactory;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRatePathSerializer;
@@ -37,158 +38,154 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.tracker.consumers.LogRepository;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
-import java.time.Clock;
-import java.util.List;
-
 @Configuration
 @EnableConfigurationProperties({
-        CommitOffsetProperties.class,
-        SenderAsyncTimeoutProperties.class,
-        RateProperties.class,
-        BatchProperties.class,
-        KafkaClustersProperties.class,
-        WorkloadProperties.class,
-        MaxRateProperties.class
+  CommitOffsetProperties.class,
+  SenderAsyncTimeoutProperties.class,
+  RateProperties.class,
+  BatchProperties.class,
+  KafkaClustersProperties.class,
+  WorkloadProperties.class,
+  MaxRateProperties.class
 })
 public class ConsumerConfiguration {
 
-    @Bean
-    public MaxRatePathSerializer maxRatePathSerializer() {
-        return new MaxRatePathSerializer();
-    }
+  @Bean
+  public MaxRatePathSerializer maxRatePathSerializer() {
+    return new MaxRatePathSerializer();
+  }
 
-    @Bean
-    public NoOperationMessageConverter noOperationMessageConverter() {
-        return new NoOperationMessageConverter();
-    }
+  @Bean
+  public NoOperationMessageConverter noOperationMessageConverter() {
+    return new NoOperationMessageConverter();
+  }
 
-    @Bean
-    public ConsumerPartitionAssignmentState consumerPartitionAssignmentState() {
-        return new ConsumerPartitionAssignmentState();
-    }
+  @Bean
+  public ConsumerPartitionAssignmentState consumerPartitionAssignmentState() {
+    return new ConsumerPartitionAssignmentState();
+  }
 
-    @Bean
-    public MaxRateRegistry maxRateRegistry(MaxRateProperties maxRateProperties,
-                                           KafkaClustersProperties kafkaClustersProperties,
-                                           WorkloadProperties workloadProperties,
-                                           CuratorFramework curator,
-                                           ZookeeperPaths zookeeperPaths,
-                                           SubscriptionIds subscriptionIds,
-                                           ConsumerAssignmentCache assignmentCache,
-                                           ClusterAssignmentCache clusterAssignmentCache,
-                                           DatacenterNameProvider datacenterNameProvider) {
-        KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
-        return new MaxRateRegistry(
-                maxRateProperties.getRegistryBinaryEncoder().getHistoryBufferSizeBytes(),
-                maxRateProperties.getRegistryBinaryEncoder().getMaxRateBufferSizeBytes(),
-                workloadProperties.getNodeId(),
-                kafkaProperties.getClusterName(),
-                clusterAssignmentCache,
-                assignmentCache,
-                curator,
-                zookeeperPaths,
-                subscriptionIds
-        );
-    }
+  @Bean
+  public MaxRateRegistry maxRateRegistry(
+      MaxRateProperties maxRateProperties,
+      KafkaClustersProperties kafkaClustersProperties,
+      WorkloadProperties workloadProperties,
+      CuratorFramework curator,
+      ZookeeperPaths zookeeperPaths,
+      SubscriptionIds subscriptionIds,
+      ConsumerAssignmentCache assignmentCache,
+      ClusterAssignmentCache clusterAssignmentCache,
+      DatacenterNameProvider datacenterNameProvider) {
+    KafkaProperties kafkaProperties =
+        kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
+    return new MaxRateRegistry(
+        maxRateProperties.getRegistryBinaryEncoder().getHistoryBufferSizeBytes(),
+        maxRateProperties.getRegistryBinaryEncoder().getMaxRateBufferSizeBytes(),
+        workloadProperties.getNodeId(),
+        kafkaProperties.getClusterName(),
+        clusterAssignmentCache,
+        assignmentCache,
+        curator,
+        zookeeperPaths,
+        subscriptionIds);
+  }
 
-    @Bean(initMethod = "start", destroyMethod = "stop")
-    public MaxRateSupervisor maxRateSupervisor(MaxRateProperties maxRateProperties,
-                                               ClusterAssignmentCache clusterAssignmentCache,
-                                               MaxRateRegistry maxRateRegistry,
-                                               ConsumerNodesRegistry consumerNodesRegistry,
-                                               SubscriptionsCache subscriptionsCache,
-                                               MetricsFacade metrics,
-                                               Clock clock) {
-        return new MaxRateSupervisor(
-                maxRateProperties,
-                clusterAssignmentCache,
-                maxRateRegistry,
-                consumerNodesRegistry,
-                subscriptionsCache,
-                metrics,
-                clock
-        );
-    }
+  @Bean(initMethod = "start", destroyMethod = "stop")
+  public MaxRateSupervisor maxRateSupervisor(
+      MaxRateProperties maxRateProperties,
+      ClusterAssignmentCache clusterAssignmentCache,
+      MaxRateRegistry maxRateRegistry,
+      ConsumerNodesRegistry consumerNodesRegistry,
+      SubscriptionsCache subscriptionsCache,
+      MetricsFacade metrics,
+      Clock clock) {
+    return new MaxRateSupervisor(
+        maxRateProperties,
+        clusterAssignmentCache,
+        maxRateRegistry,
+        consumerNodesRegistry,
+        subscriptionsCache,
+        metrics,
+        clock);
+  }
 
-    @Bean
-    public OffsetQueue offsetQueue(MetricsFacade metrics,
-                                   CommitOffsetProperties commitOffsetProperties) {
-        return new OffsetQueue(metrics, commitOffsetProperties.getQueuesSize());
-    }
+  @Bean
+  public ConsumerRateLimitSupervisor consumerRateLimitSupervisor(RateProperties rateProperties) {
+    return new ConsumerRateLimitSupervisor(rateProperties.getLimiterSupervisorPeriod());
+  }
 
-    @Bean
-    public ConsumerRateLimitSupervisor consumerRateLimitSupervisor(RateProperties rateProperties) {
-        return new ConsumerRateLimitSupervisor(rateProperties.getLimiterSupervisorPeriod());
-    }
+  @Bean
+  public MaxRateProviderFactory maxRateProviderFactory(
+      MaxRateProperties maxRateProperties,
+      MaxRateRegistry maxRateRegistry,
+      MaxRateSupervisor maxRateSupervisor,
+      WorkloadProperties workloadProperties) {
+    return new MaxRateProviderFactory(
+        maxRateProperties, workloadProperties.getNodeId(), maxRateRegistry, maxRateSupervisor);
+  }
 
-    @Bean
-    public MaxRateProviderFactory maxRateProviderFactory(MaxRateProperties maxRateProperties,
-                                                         MaxRateRegistry maxRateRegistry,
-                                                         MaxRateSupervisor maxRateSupervisor,
-                                                         WorkloadProperties workloadProperties) {
-        return new MaxRateProviderFactory(maxRateProperties, workloadProperties.getNodeId(), maxRateRegistry, maxRateSupervisor);
-    }
+  @Bean
+  public AvroToJsonMessageConverter avroToJsonMessageConverter() {
+    return new AvroToJsonMessageConverter();
+  }
 
-    @Bean
-    public AvroToJsonMessageConverter avroToJsonMessageConverter() {
-        return new AvroToJsonMessageConverter();
-    }
+  @Bean
+  public OutputRateCalculatorFactory outputRateCalculatorFactory(
+      RateProperties rateProperties, MaxRateProviderFactory maxRateProviderFactory) {
+    return new OutputRateCalculatorFactory(rateProperties, maxRateProviderFactory);
+  }
 
-    @Bean
-    public OutputRateCalculatorFactory outputRateCalculatorFactory(RateProperties rateProperties,
-                                                                   MaxRateProviderFactory maxRateProviderFactory) {
-        return new OutputRateCalculatorFactory(rateProperties, maxRateProviderFactory);
-    }
+  @Bean
+  public MessageBatchFactory messageBatchFactory(
+      MetricsFacade metrics, Clock clock, BatchProperties batchProperties) {
+    return new ByteBufferMessageBatchFactory(
+        batchProperties.getPoolableSize(), batchProperties.getMaxPoolSize(), clock, metrics);
+  }
 
-    @Bean
-    public MessageBatchFactory messageBatchFactory(MetricsFacade metrics,
-                                                   Clock clock,
-                                                   BatchProperties batchProperties) {
-        return new ByteBufferMessageBatchFactory(batchProperties.getPoolableSize(), batchProperties.getMaxPoolSize(), clock, metrics);
-    }
+  @Bean
+  public MessageConverterResolver defaultMessageConverterResolver(
+      AvroToJsonMessageConverter avroToJsonMessageConverter,
+      NoOperationMessageConverter noOperationMessageConverter) {
+    return new DefaultMessageConverterResolver(
+        avroToJsonMessageConverter, noOperationMessageConverter);
+  }
 
-    @Bean
-    public MessageConverterResolver defaultMessageConverterResolver(AvroToJsonMessageConverter avroToJsonMessageConverter,
-                                                                    NoOperationMessageConverter noOperationMessageConverter) {
-        return new DefaultMessageConverterResolver(avroToJsonMessageConverter, noOperationMessageConverter);
-    }
+  @Bean
+  public ConsumerMessageSenderFactory consumerMessageSenderFactory(
+      KafkaClustersProperties kafkaClustersProperties,
+      MessageSenderFactory messageSenderFactory,
+      Trackers trackers,
+      FutureAsyncTimeout futureAsyncTimeout,
+      UndeliveredMessageLog undeliveredMessageLog,
+      Clock clock,
+      InstrumentedExecutorServiceFactory instrumentedExecutorServiceFactory,
+      ConsumerAuthorizationHandler consumerAuthorizationHandler,
+      SenderAsyncTimeoutProperties senderAsyncTimeoutProperties,
+      RateProperties rateProperties,
+      DatacenterNameProvider datacenterNameProvider) {
+    KafkaProperties kafkaProperties =
+        kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
+    return new ConsumerMessageSenderFactory(
+        kafkaProperties.getClusterName(),
+        messageSenderFactory,
+        trackers,
+        futureAsyncTimeout,
+        undeliveredMessageLog,
+        clock,
+        instrumentedExecutorServiceFactory,
+        consumerAuthorizationHandler,
+        senderAsyncTimeoutProperties.getMilliseconds(),
+        rateProperties.getLimiterReportingThreadPoolSize(),
+        rateProperties.isLimiterReportingThreadMonitoringEnabled());
+  }
 
+  @Bean
+  public UriInterpolator messageBodyInterpolator() {
+    return new MessageBodyInterpolator();
+  }
 
-
-    @Bean
-    public ConsumerMessageSenderFactory consumerMessageSenderFactory(KafkaClustersProperties kafkaClustersProperties,
-                                                                     MessageSenderFactory messageSenderFactory,
-                                                                     Trackers trackers,
-                                                                     FutureAsyncTimeout futureAsyncTimeout,
-                                                                     UndeliveredMessageLog undeliveredMessageLog, Clock clock,
-                                                                     InstrumentedExecutorServiceFactory instrumentedExecutorServiceFactory,
-                                                                     ConsumerAuthorizationHandler consumerAuthorizationHandler,
-                                                                     SenderAsyncTimeoutProperties senderAsyncTimeoutProperties,
-                                                                     RateProperties rateProperties,
-                                                                     DatacenterNameProvider datacenterNameProvider) {
-        KafkaProperties kafkaProperties = kafkaClustersProperties.toKafkaProperties(datacenterNameProvider);
-        return new ConsumerMessageSenderFactory(
-                kafkaProperties.getClusterName(),
-                messageSenderFactory,
-                trackers,
-                futureAsyncTimeout,
-                undeliveredMessageLog,
-                clock,
-                instrumentedExecutorServiceFactory,
-                consumerAuthorizationHandler,
-                senderAsyncTimeoutProperties.getMilliseconds(),
-                rateProperties.getLimiterReportingThreadPoolSize(),
-                rateProperties.isLimiterReportingThreadMonitoringEnabled()
-        );
-    }
-
-    @Bean
-    public UriInterpolator messageBodyInterpolator() {
-        return new MessageBodyInterpolator();
-    }
-
-    @Bean(destroyMethod = "close")
-    public Trackers trackers(List<LogRepository> repositories) {
-        return new Trackers(repositories);
-    }
+  @Bean(destroyMethod = "close")
+  public Trackers trackers(List<LogRepository> repositories) {
+    return new Trackers(repositories);
+  }
 }

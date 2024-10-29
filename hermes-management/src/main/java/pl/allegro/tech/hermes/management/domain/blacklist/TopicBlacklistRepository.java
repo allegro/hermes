@@ -4,11 +4,11 @@ import java.util.List;
 
 public interface TopicBlacklistRepository {
 
-    void add(String qualifiedTopicName);
+  void add(String qualifiedTopicName);
 
-    void remove(String qualifiedTopicName);
+  void remove(String qualifiedTopicName);
 
-    boolean isBlacklisted(String qualifiedTopicName);
+  boolean isBlacklisted(String qualifiedTopicName);
 
-    List<String> list();
+  List<String> list();
 }

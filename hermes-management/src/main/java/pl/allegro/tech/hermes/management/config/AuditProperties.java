@@ -5,13 +5,13 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "audit")
 class AuditProperties {
 
-    private String eventUrl = null;
+  private String eventUrl = null;
 
-    public String getEventUrl() {
-        return eventUrl;
-    }
+  public String getEventUrl() {
+    return eventUrl;
+  }
 
-    public void setEventUrl(String eventUrl) {
-        this.eventUrl = eventUrl;
-    }
+  public void setEventUrl(String eventUrl) {
+    this.eventUrl = eventUrl;
+  }
 }

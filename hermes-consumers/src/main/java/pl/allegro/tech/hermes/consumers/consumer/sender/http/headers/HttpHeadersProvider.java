@@ -5,6 +5,5 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpRequestData;
 
 public interface HttpHeadersProvider {
 
-    HttpRequestHeaders getHeaders(Message message, HttpRequestData requestData);
-
+  HttpRequestHeaders getHeaders(Message message, HttpRequestData requestData);
 }

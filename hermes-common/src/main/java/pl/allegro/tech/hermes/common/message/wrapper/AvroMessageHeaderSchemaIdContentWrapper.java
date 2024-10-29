@@ -12,47 +12,55 @@ import pl.allegro.tech.hermes.schema.SchemaRepository;
 
 public class AvroMessageHeaderSchemaIdContentWrapper implements AvroMessageContentUnwrapper {
 
-    private static final Logger logger = LoggerFactory.getLogger(AvroMessageHeaderSchemaIdContentWrapper.class);
+  private static final Logger logger =
+      LoggerFactory.getLogger(AvroMessageHeaderSchemaIdContentWrapper.class);
 
-    private final SchemaRepository schemaRepository;
-    private final AvroMessageContentWrapper avroMessageContentWrapper;
+  private final SchemaRepository schemaRepository;
+  private final AvroMessageContentWrapper avroMessageContentWrapper;
 
-    private final HermesCounter deserializationWithErrorsUsingHeaderSchemaId;
-    private final HermesCounter deserializationUsingHeaderSchemaId;
-    private final boolean schemaIdHeaderEnabled;
+  private final HermesCounter deserializationWithErrorsUsingHeaderSchemaId;
+  private final HermesCounter deserializationUsingHeaderSchemaId;
+  private final boolean schemaIdHeaderEnabled;
 
-    public AvroMessageHeaderSchemaIdContentWrapper(SchemaRepository schemaRepository,
-                                                   AvroMessageContentWrapper avroMessageContentWrapper,
-                                                   MetricsFacade metrics,
-                                                   boolean schemaIdHeaderEnabled) {
-        this.schemaRepository = schemaRepository;
-        this.avroMessageContentWrapper = avroMessageContentWrapper;
+  public AvroMessageHeaderSchemaIdContentWrapper(
+      SchemaRepository schemaRepository,
+      AvroMessageContentWrapper avroMessageContentWrapper,
+      MetricsFacade metrics,
+      boolean schemaIdHeaderEnabled) {
+    this.schemaRepository = schemaRepository;
+    this.avroMessageContentWrapper = avroMessageContentWrapper;
 
-        this.deserializationWithErrorsUsingHeaderSchemaId = metrics.deserialization().errorsForHeaderSchemaId();
-        this.deserializationUsingHeaderSchemaId = metrics.deserialization().usingHeaderSchemaId();
-        this.schemaIdHeaderEnabled = schemaIdHeaderEnabled;
+    this.deserializationWithErrorsUsingHeaderSchemaId =
+        metrics.deserialization().errorsForHeaderSchemaId();
+    this.deserializationUsingHeaderSchemaId = metrics.deserialization().usingHeaderSchemaId();
+    this.schemaIdHeaderEnabled = schemaIdHeaderEnabled;
+  }
+
+  @Override
+  public AvroMessageContentUnwrapperResult unwrap(
+      byte[] data, Topic topic, Integer schemaId, Integer schemaVersion) {
+    try {
+      deserializationUsingHeaderSchemaId.increment();
+      CompiledSchema<Schema> avroSchema =
+          schemaRepository.getAvroSchema(topic, SchemaId.valueOf(schemaId));
+
+      return AvroMessageContentUnwrapperResult.success(
+          avroMessageContentWrapper.unwrapContent(data, avroSchema));
+    } catch (Exception ex) {
+      logger.warn(
+          "Could not unwrap content for topic [{}] using schema id provided in header [{}] - falling back",
+          topic.getQualifiedName(),
+          schemaVersion,
+          ex);
+
+      deserializationWithErrorsUsingHeaderSchemaId.increment();
+
+      return AvroMessageContentUnwrapperResult.failure();
     }
+  }
 
-    @Override
-    public AvroMessageContentUnwrapperResult unwrap(byte[] data, Topic topic, Integer schemaId, Integer schemaVersion) {
-        try {
-            deserializationUsingHeaderSchemaId.increment();
-            CompiledSchema<Schema> avroSchema = schemaRepository.getAvroSchema(topic, SchemaId.valueOf(schemaId));
-
-            return AvroMessageContentUnwrapperResult.success(avroMessageContentWrapper.unwrapContent(data, avroSchema));
-        } catch (Exception ex) {
-            logger.warn(
-                    "Could not unwrap content for topic [{}] using schema id provided in header [{}] - falling back",
-                    topic.getQualifiedName(), schemaVersion, ex);
-
-            deserializationWithErrorsUsingHeaderSchemaId.increment();
-
-            return AvroMessageContentUnwrapperResult.failure();
-        }
-    }
-
-    @Override
-    public boolean isApplicable(byte[] data, Topic topic, Integer schemaId, Integer schemaVersion) {
-        return schemaIdHeaderEnabled && schemaId != null;
-    }
+  @Override
+  public boolean isApplicable(byte[] data, Topic topic, Integer schemaId, Integer schemaVersion) {
+    return schemaIdHeaderEnabled && schemaId != null;
+  }
 }

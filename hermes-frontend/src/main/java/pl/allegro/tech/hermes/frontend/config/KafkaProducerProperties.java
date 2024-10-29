@@ -1,153 +1,173 @@
 package pl.allegro.tech.hermes.frontend.config;
 
+import java.time.Duration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.frontend.producer.kafka.KafkaProducerParameters;
-
-import java.time.Duration;
 
 @ConfigurationProperties(prefix = "frontend.kafka.producer")
 public class KafkaProducerProperties implements KafkaProducerParameters {
 
-    private Duration maxBlock = Duration.ofMillis(500);
+  private Duration maxBlock = Duration.ofMillis(500);
 
-    private Duration metadataMaxAge = Duration.ofMinutes(5);
+  private Duration metadataMaxAge = Duration.ofMinutes(5);
 
-    private String compressionCodec = "none";
+  private String compressionCodec = "none";
 
-    private int retries = Integer.MAX_VALUE;
+  private int retries = Integer.MAX_VALUE;
 
-    private Duration retryBackoff = Duration.ofMillis(256);
+  private Duration retryBackoff = Duration.ofMillis(256);
 
-    private Duration requestTimeout = Duration.ofMinutes(30);
+  private Duration requestTimeout = Duration.ofMinutes(30);
 
-    private int batchSize = 16 * 1024;
+  private Duration deliveryTimeout = Duration.ofMinutes(30);
 
-    private int tcpSendBuffer = 128 * 1024;
+  private int batchSize = 16 * 1024;
 
-    private int maxRequestSize = 1024 * 1024;
+  private int tcpSendBuffer = 128 * 1024;
 
-    private Duration linger = Duration.ofMillis(0);
+  private int maxRequestSize = 1024 * 1024;
 
-    private Duration metricsSampleWindow = Duration.ofSeconds(30);
+  private Duration linger = Duration.ofMillis(0);
 
-    private int maxInflightRequestsPerConnection = 5;
+  private Duration metricsSampleWindow = Duration.ofSeconds(30);
 
-    private boolean reportNodeMetricsEnabled = false;
+  private int maxInflightRequestsPerConnection = 5;
 
-    @Override
-    public Duration getMaxBlock() {
-        return maxBlock;
-    }
+  private boolean reportNodeMetricsEnabled = false;
 
-    public void setMaxBlock(Duration maxBlock) {
-        this.maxBlock = maxBlock;
-    }
+  private boolean idempotenceEnabled = false;
 
-    @Override
-    public Duration getMetadataMaxAge() {
-        return metadataMaxAge;
-    }
+  @Override
+  public Duration getMaxBlock() {
+    return maxBlock;
+  }
 
-    public void setMetadataMaxAge(Duration metadataMaxAge) {
-        this.metadataMaxAge = metadataMaxAge;
-    }
+  public void setMaxBlock(Duration maxBlock) {
+    this.maxBlock = maxBlock;
+  }
 
-    @Override
-    public String getCompressionCodec() {
-        return compressionCodec;
-    }
+  @Override
+  public Duration getMetadataMaxAge() {
+    return metadataMaxAge;
+  }
 
-    public void setCompressionCodec(String compressionCodec) {
-        this.compressionCodec = compressionCodec;
-    }
+  public void setMetadataMaxAge(Duration metadataMaxAge) {
+    this.metadataMaxAge = metadataMaxAge;
+  }
 
-    @Override
-    public int getRetries() {
-        return retries;
-    }
+  @Override
+  public String getCompressionCodec() {
+    return compressionCodec;
+  }
 
-    public void setRetries(int retries) {
-        this.retries = retries;
-    }
+  public void setCompressionCodec(String compressionCodec) {
+    this.compressionCodec = compressionCodec;
+  }
 
-    @Override
-    public Duration getRetryBackoff() {
-        return retryBackoff;
-    }
+  @Override
+  public int getRetries() {
+    return retries;
+  }
 
-    public void setRetryBackoff(Duration retryBackoff) {
-        this.retryBackoff = retryBackoff;
-    }
+  public void setRetries(int retries) {
+    this.retries = retries;
+  }
 
-    @Override
-    public Duration getRequestTimeout() {
-        return requestTimeout;
-    }
+  @Override
+  public Duration getRetryBackoff() {
+    return retryBackoff;
+  }
 
-    public void setRequestTimeout(Duration requestTimeout) {
-        this.requestTimeout = requestTimeout;
-    }
+  public void setRetryBackoff(Duration retryBackoff) {
+    this.retryBackoff = retryBackoff;
+  }
 
-    @Override
-    public int getBatchSize() {
-        return batchSize;
-    }
+  @Override
+  public Duration getRequestTimeout() {
+    return requestTimeout;
+  }
 
-    public void setBatchSize(int batchSize) {
-        this.batchSize = batchSize;
-    }
+  public void setRequestTimeout(Duration requestTimeout) {
+    this.requestTimeout = requestTimeout;
+  }
 
-    @Override
-    public int getTcpSendBuffer() {
-        return tcpSendBuffer;
-    }
+  @Override
+  public int getBatchSize() {
+    return batchSize;
+  }
 
-    public void setTcpSendBuffer(int tcpSendBuffer) {
-        this.tcpSendBuffer = tcpSendBuffer;
-    }
+  public void setBatchSize(int batchSize) {
+    this.batchSize = batchSize;
+  }
 
-    @Override
-    public int getMaxRequestSize() {
-        return maxRequestSize;
-    }
+  @Override
+  public int getTcpSendBuffer() {
+    return tcpSendBuffer;
+  }
 
-    public void setMaxRequestSize(int maxRequestSize) {
-        this.maxRequestSize = maxRequestSize;
-    }
+  public void setTcpSendBuffer(int tcpSendBuffer) {
+    this.tcpSendBuffer = tcpSendBuffer;
+  }
 
-    @Override
-    public Duration getLinger() {
-        return linger;
-    }
+  @Override
+  public int getMaxRequestSize() {
+    return maxRequestSize;
+  }
 
-    public void setLinger(Duration linger) {
-        this.linger = linger;
-    }
+  public void setMaxRequestSize(int maxRequestSize) {
+    this.maxRequestSize = maxRequestSize;
+  }
 
-    @Override
-    public Duration getMetricsSampleWindow() {
-        return metricsSampleWindow;
-    }
+  @Override
+  public Duration getLinger() {
+    return linger;
+  }
 
-    public void setMetricsSampleWindow(Duration metricsSampleWindow) {
-        this.metricsSampleWindow = metricsSampleWindow;
-    }
+  public void setLinger(Duration linger) {
+    this.linger = linger;
+  }
 
-    @Override
-    public int getMaxInflightRequestsPerConnection() {
-        return maxInflightRequestsPerConnection;
-    }
+  @Override
+  public Duration getMetricsSampleWindow() {
+    return metricsSampleWindow;
+  }
 
-    public void setMaxInflightRequestsPerConnection(int maxInflightRequestsPerConnection) {
-        this.maxInflightRequestsPerConnection = maxInflightRequestsPerConnection;
-    }
+  public void setMetricsSampleWindow(Duration metricsSampleWindow) {
+    this.metricsSampleWindow = metricsSampleWindow;
+  }
 
-    @Override
-    public boolean isReportNodeMetricsEnabled() {
-        return reportNodeMetricsEnabled;
-    }
+  @Override
+  public int getMaxInflightRequestsPerConnection() {
+    return maxInflightRequestsPerConnection;
+  }
 
-    public void setReportNodeMetricsEnabled(boolean reportNodeMetricsEnabled) {
-        this.reportNodeMetricsEnabled = reportNodeMetricsEnabled;
-    }
+  public void setMaxInflightRequestsPerConnection(int maxInflightRequestsPerConnection) {
+    this.maxInflightRequestsPerConnection = maxInflightRequestsPerConnection;
+  }
+
+  @Override
+  public boolean isReportNodeMetricsEnabled() {
+    return reportNodeMetricsEnabled;
+  }
+
+  public void setReportNodeMetricsEnabled(boolean reportNodeMetricsEnabled) {
+    this.reportNodeMetricsEnabled = reportNodeMetricsEnabled;
+  }
+
+  @Override
+  public Duration getDeliveryTimeout() {
+    return deliveryTimeout;
+  }
+
+  public void setDeliveryTimeout(Duration deliveryTimeout) {
+    this.deliveryTimeout = deliveryTimeout;
+  }
+
+  public boolean isIdempotenceEnabled() {
+    return idempotenceEnabled;
+  }
+
+  public void setIdempotenceEnabled(boolean idempotenceEnabled) {
+    this.idempotenceEnabled = idempotenceEnabled;
+  }
 }

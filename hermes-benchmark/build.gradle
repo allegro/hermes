@@ -1,5 +1,5 @@
 plugins {
-    id 'me.champeau.jmh' version '0.6.8'
+    id 'me.champeau.jmh' version '0.7.2'
 }
 
 configurations {
@@ -26,10 +26,9 @@ jmh {
 }
 
 dependencies {
-    jmh group: 'org.openjdk.jmh', name: 'jmh-core', version: '1.12'
-    jmh group: 'org.openjdk.jmh', name: 'jmh-generator-annprocess', version: '1.12'
-    jmh group: 'org.apache.httpcomponents', name: 'httpasyncclient', version: '4.1.1'
-    jmh group: 'org.spf4j', name: 'spf4j-jmh', version: '8.0.3'
+    jmh group: 'org.openjdk.jmh', name: 'jmh-core', version: '1.37'
+    jmh group: 'org.openjdk.jmh', name: 'jmh-generator-annprocess', version: '1.37'
+    jmh group: 'org.apache.httpcomponents', name: 'httpasyncclient', version: '4.1.5'
     jmh project(':hermes-frontend')
     jmh project(':hermes-test-helper')
     jmh project(':hermes-common')

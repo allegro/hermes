@@ -5,34 +5,36 @@ import pl.allegro.tech.hermes.domain.oauth.OAuthProviderRepository;
 import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryCommand;
 
-public class CreateOAuthProviderRepositoryCommand extends RepositoryCommand<OAuthProviderRepository> {
+public class CreateOAuthProviderRepositoryCommand
+    extends RepositoryCommand<OAuthProviderRepository> {
 
-    private final OAuthProvider provider;
+  private final OAuthProvider provider;
 
-    public CreateOAuthProviderRepositoryCommand(OAuthProvider provider) {
-        this.provider = provider;
-    }
+  public CreateOAuthProviderRepositoryCommand(OAuthProvider provider) {
+    this.provider = provider;
+  }
 
-    @Override
-    public void backup(DatacenterBoundRepositoryHolder<OAuthProviderRepository> holder) {}
+  @Override
+  public void backup(DatacenterBoundRepositoryHolder<OAuthProviderRepository> holder) {}
 
-    @Override
-    public void execute(DatacenterBoundRepositoryHolder<OAuthProviderRepository> holder) {
-        holder.getRepository().createOAuthProvider(provider);
-    }
+  @Override
+  public void execute(DatacenterBoundRepositoryHolder<OAuthProviderRepository> holder) {
+    holder.getRepository().createOAuthProvider(provider);
+  }
 
-    @Override
-    public void rollback(DatacenterBoundRepositoryHolder<OAuthProviderRepository> holder) {
-        holder.getRepository().removeOAuthProvider(provider.getName());
-    }
+  @Override
+  public void rollback(
+      DatacenterBoundRepositoryHolder<OAuthProviderRepository> holder, Exception exception) {
+    holder.getRepository().removeOAuthProvider(provider.getName());
+  }
 
-    @Override
-    public Class<OAuthProviderRepository> getRepositoryType() {
-        return OAuthProviderRepository.class;
-    }
+  @Override
+  public Class<OAuthProviderRepository> getRepositoryType() {
+    return OAuthProviderRepository.class;
+  }
 
-    @Override
-    public String toString() {
-        return "CreateOAuthProvider(" + provider.getName() + ")";
-    }
+  @Override
+  public String toString() {
+    return "CreateOAuthProvider(" + provider.getName() + ")";
+  }
 }

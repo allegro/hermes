@@ -6,22 +6,24 @@ import pl.allegro.tech.hermes.management.domain.console.ConsoleConfigurationRepo
 
 public class HttpConsoleConfigurationRepository implements ConsoleConfigurationRepository {
 
-    private String configuration;
+  private String configuration;
 
-    public HttpConsoleConfigurationRepository(ConsoleConfigProperties properties, RestTemplate restTemplate) {
-        configuration = loadConfiguration(properties.getLocation(), restTemplate);
-    }
+  public HttpConsoleConfigurationRepository(
+      ConsoleConfigProperties properties, RestTemplate restTemplate) {
+    configuration = loadConfiguration(properties.getLocation(), restTemplate);
+  }
 
-    @Override
-    public String getConfiguration() {
-        return configuration;
-    }
+  @Override
+  public String getConfiguration() {
+    return configuration;
+  }
 
-    private String loadConfiguration(String location, RestTemplate restTemplate) {
-        try {
-            return restTemplate.getForObject(location, String.class);
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Error reading Hermes Console configuration from " + location, e);
-        }
+  private String loadConfiguration(String location, RestTemplate restTemplate) {
+    try {
+      return restTemplate.getForObject(location, String.class);
+    } catch (Exception e) {
+      throw new IllegalArgumentException(
+          "Error reading Hermes Console configuration from " + location, e);
     }
+  }
 }

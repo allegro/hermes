@@ -21,14 +21,12 @@ class PathsCompilerTest extends Specification {
         def pathContext = pathContext().withGroup("group")
                 .withTopic("topic")
                 .withSubscription("subscription")
-                .withPartition(0)
-                .withHttpCode(201)
                 .build()
 
         when:
-        def compiled = pathsCompiler.compile("hermes.$GROUP.$TOPIC.$SUBSCRIPTION.$PARTITION.$HTTP_CODE", pathContext)
+        def compiled = pathsCompiler.compile("hermes.$GROUP.$TOPIC.$SUBSCRIPTION", pathContext)
 
         then:
-        compiled == "hermes.group.topic.subscription.0.201"
+        compiled == "hermes.group.topic.subscription"
     }
 }

@@ -17,11 +17,6 @@ kafka:
       connectionTimeout: 3000
       bootstrapKafkaServer: kafka:29092
 
-graphite:
-  client:
-    enabled: true
-    externalMonitoringUrl: graphite:8082
-
 server:
   port: 8090
 
@@ -58,6 +53,10 @@ schema.repository:
   type: schema_registry
   serverUrl: http://schema-registry:8081
   validationEnabled: true
+
+prometheus:
+  client:
+    enabled: true
 
 console:
   configurationLocation: console/config-local.json

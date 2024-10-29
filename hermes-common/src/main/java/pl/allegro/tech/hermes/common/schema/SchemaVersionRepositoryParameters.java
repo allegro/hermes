@@ -4,11 +4,11 @@ import java.time.Duration;
 
 public interface SchemaVersionRepositoryParameters {
 
-    boolean isCacheEnabled();
+  boolean isCacheEnabled();
 
-    Duration getRefreshAfterWrite();
+  Duration getRefreshAfterWrite();
 
-    Duration getExpireAfterWrite();
+  Duration getExpireAfterWrite();
 
-    int getReloadThreadPoolSize();
+  int getReloadThreadPoolSize();
 }

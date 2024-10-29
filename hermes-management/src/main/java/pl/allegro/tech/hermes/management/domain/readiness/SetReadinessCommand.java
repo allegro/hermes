@@ -1,48 +1,36 @@
 package pl.allegro.tech.hermes.management.domain.readiness;
 
+import java.util.List;
 import pl.allegro.tech.hermes.api.DatacenterReadiness;
-import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryCommand;
 
-public class SetReadinessCommand extends RepositoryCommand<ReadinessRepository> {
-    private final DatacenterReadiness readiness;
+public class SetReadinessCommand extends RepositoryCommand<DatacenterReadinessRepository> {
+  private final List<DatacenterReadiness> readiness;
 
-    public SetReadinessCommand(DatacenterReadiness readiness) {
-        this.readiness = readiness;
-    }
+  public SetReadinessCommand(List<DatacenterReadiness> readiness) {
+    this.readiness = readiness;
+  }
 
-    @Override
-    public void backup(DatacenterBoundRepositoryHolder<ReadinessRepository> holder) { }
+  @Override
+  public void backup(DatacenterBoundRepositoryHolder<DatacenterReadinessRepository> holder) {}
 
-    @Override
-    public void execute(DatacenterBoundRepositoryHolder<ReadinessRepository> holder) {
-        if (holder.getDatacenterName().equals(readiness.getDatacenter())) {
-            holder.getRepository().setReadiness(isReady());
-        }
-    }
+  @Override
+  public void execute(DatacenterBoundRepositoryHolder<DatacenterReadinessRepository> holder) {
+    holder.getRepository().setReadiness(readiness);
+  }
 
-    private boolean isReady() {
-        switch (readiness.getStatus()) {
-            case READY:
-                return true;
-            case NOT_READY:
-                return false;
-            default:
-                throw new InternalProcessingException("Invalid readiness status: " + readiness.getStatus());
-        }
-    }
+  @Override
+  public void rollback(
+      DatacenterBoundRepositoryHolder<DatacenterReadinessRepository> holder, Exception exception) {}
 
-    @Override
-    public void rollback(DatacenterBoundRepositoryHolder<ReadinessRepository> holder) { }
+  @Override
+  public Class<DatacenterReadinessRepository> getRepositoryType() {
+    return DatacenterReadinessRepository.class;
+  }
 
-    @Override
-    public Class<ReadinessRepository> getRepositoryType() {
-        return ReadinessRepository.class;
-    }
-
-    @Override
-    public String toString() {
-        return "SetReadinessCommand(" + readiness.toString() + ")";
-    }
+  @Override
+  public String toString() {
+    return "SetReadinessCommand(" + readiness.toString() + ")";
+  }
 }

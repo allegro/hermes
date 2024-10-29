@@ -5,38 +5,40 @@ import pl.allegro.tech.hermes.domain.oauth.OAuthProviderRepository;
 import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryCommand;
 
-public class UpdateOAuthProviderRepositoryCommand extends RepositoryCommand<OAuthProviderRepository> {
+public class UpdateOAuthProviderRepositoryCommand
+    extends RepositoryCommand<OAuthProviderRepository> {
 
-    private final OAuthProvider provider;
+  private final OAuthProvider provider;
 
-    private OAuthProvider backup;
+  private OAuthProvider backup;
 
-    public UpdateOAuthProviderRepositoryCommand(OAuthProvider provider) {
-        this.provider = provider;
-    }
+  public UpdateOAuthProviderRepositoryCommand(OAuthProvider provider) {
+    this.provider = provider;
+  }
 
-    @Override
-    public void backup(DatacenterBoundRepositoryHolder<OAuthProviderRepository> holder) {
-        backup = holder.getRepository().getOAuthProviderDetails(provider.getName());
-    }
+  @Override
+  public void backup(DatacenterBoundRepositoryHolder<OAuthProviderRepository> holder) {
+    backup = holder.getRepository().getOAuthProviderDetails(provider.getName());
+  }
 
-    @Override
-    public void execute(DatacenterBoundRepositoryHolder<OAuthProviderRepository> holder) {
-        holder.getRepository().updateOAuthProvider(provider);
-    }
+  @Override
+  public void execute(DatacenterBoundRepositoryHolder<OAuthProviderRepository> holder) {
+    holder.getRepository().updateOAuthProvider(provider);
+  }
 
-    @Override
-    public void rollback(DatacenterBoundRepositoryHolder<OAuthProviderRepository> holder) {
-        holder.getRepository().updateOAuthProvider(backup);
-    }
+  @Override
+  public void rollback(
+      DatacenterBoundRepositoryHolder<OAuthProviderRepository> holder, Exception exception) {
+    holder.getRepository().updateOAuthProvider(backup);
+  }
 
-    @Override
-    public Class<OAuthProviderRepository> getRepositoryType() {
-        return OAuthProviderRepository.class;
-    }
+  @Override
+  public Class<OAuthProviderRepository> getRepositoryType() {
+    return OAuthProviderRepository.class;
+  }
 
-    @Override
-    public String toString() {
-        return "UpdateOAuthProvider(" + provider.getName() + ")";
-    }
+  @Override
+  public String toString() {
+    return "UpdateOAuthProvider(" + provider.getName() + ")";
+  }
 }

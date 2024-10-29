@@ -1,73 +1,73 @@
 package pl.allegro.tech.hermes.consumers.config;
 
-import pl.allegro.tech.hermes.common.config.KafkaAuthorizationProperties;
+import pl.allegro.tech.hermes.common.config.KafkaAuthenticationProperties;
 import pl.allegro.tech.hermes.common.kafka.KafkaParameters;
 
 public class KafkaProperties implements KafkaParameters {
 
-    private KafkaAuthorizationProperties authorization = new KafkaAuthorizationProperties();
+  private KafkaAuthenticationProperties authentication = new KafkaAuthenticationProperties();
 
-    private String datacenter = "dc";
+  private String datacenter = "dc";
 
-    private String clusterName = "primary";
+  private String clusterName = "primary";
 
-    private String brokerList = "localhost:9092";
+  private String brokerList = "localhost:9092";
 
-    public KafkaAuthorizationProperties getAuthorization() {
-        return authorization;
-    }
+  public KafkaAuthenticationProperties getAuthentication() {
+    return authentication;
+  }
 
-    public void setAuthorization(KafkaAuthorizationProperties authorization) {
-        this.authorization = authorization;
-    }
+  @Deprecated
+  public void setAuthorization(KafkaAuthenticationProperties authorization) {
+    this.authentication = authorization;
+  }
 
-    public String getDatacenter() {
-        return datacenter;
-    }
+  public void setAuthentication(KafkaAuthenticationProperties authentication) {
+    this.authentication = authentication;
+  }
 
-    public void setDatacenter(String datacenter) {
-        this.datacenter = datacenter;
-    }
+  public String getDatacenter() {
+    return datacenter;
+  }
 
-    public String getClusterName() {
-        return clusterName;
-    }
+  public void setDatacenter(String datacenter) {
+    this.datacenter = datacenter;
+  }
 
-    public void setClusterName(String clusterName) {
-        this.clusterName = clusterName;
-    }
+  public String getClusterName() {
+    return clusterName;
+  }
 
-    @Override
-    public boolean isEnabled() {
-        return authorization.isEnabled();
-    }
+  public void setClusterName(String clusterName) {
+    this.clusterName = clusterName;
+  }
 
-    @Override
-    public String getMechanism() {
-        return authorization.getMechanism();
-    }
+  @Override
+  public boolean isAuthenticationEnabled() {
+    return authentication.isEnabled();
+  }
 
-    @Override
-    public String getProtocol() {
-        return authorization.getProtocol();
-    }
+  @Override
+  public String getAuthenticationMechanism() {
+    return authentication.getMechanism();
+  }
 
-    @Override
-    public String getUsername() {
-        return authorization.getUsername();
-    }
+  @Override
+  public String getAuthenticationProtocol() {
+    return authentication.getProtocol();
+  }
 
-    @Override
-    public String getPassword() {
-        return authorization.getPassword();
-    }
+  @Override
+  public String getBrokerList() {
+    return brokerList;
+  }
 
-    @Override
-    public String getBrokerList() {
-        return brokerList;
-    }
+  public void setBrokerList(String brokerList) {
+    this.brokerList = brokerList;
+  }
 
-    public void setBrokerList(String brokerList) {
-        this.brokerList = brokerList;
-    }
+  @Override
+  public String getJaasConfig() {
+    return authentication.getJaasConfig();
+  }
 }

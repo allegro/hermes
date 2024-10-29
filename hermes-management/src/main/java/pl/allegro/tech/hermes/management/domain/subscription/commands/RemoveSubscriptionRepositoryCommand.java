@@ -9,38 +9,41 @@ import pl.allegro.tech.hermes.management.domain.dc.RepositoryCommand;
 
 public class RemoveSubscriptionRepositoryCommand extends RepositoryCommand<SubscriptionRepository> {
 
-    private final TopicName topicName;
-    private final String subscriptionName;
+  private final TopicName topicName;
+  private final String subscriptionName;
 
-    private Subscription backup;
+  private Subscription backup;
 
-    public RemoveSubscriptionRepositoryCommand(TopicName topicName, String subscriptionName) {
-        this.topicName = topicName;
-        this.subscriptionName = subscriptionName;
-    }
+  public RemoveSubscriptionRepositoryCommand(TopicName topicName, String subscriptionName) {
+    this.topicName = topicName;
+    this.subscriptionName = subscriptionName;
+  }
 
-    @Override
-    public void backup(DatacenterBoundRepositoryHolder<SubscriptionRepository> holder) {
-        backup = holder.getRepository().getSubscriptionDetails(topicName, subscriptionName);
-    }
+  @Override
+  public void backup(DatacenterBoundRepositoryHolder<SubscriptionRepository> holder) {
+    backup = holder.getRepository().getSubscriptionDetails(topicName, subscriptionName);
+  }
 
-    @Override
-    public void execute(DatacenterBoundRepositoryHolder<SubscriptionRepository> holder) {
-        holder.getRepository().removeSubscription(topicName, subscriptionName);
-    }
+  @Override
+  public void execute(DatacenterBoundRepositoryHolder<SubscriptionRepository> holder) {
+    holder.getRepository().removeSubscription(topicName, subscriptionName);
+  }
 
-    @Override
-    public void rollback(DatacenterBoundRepositoryHolder<SubscriptionRepository> holder) {
-        holder.getRepository().createSubscription(backup);
-    }
+  @Override
+  public void rollback(
+      DatacenterBoundRepositoryHolder<SubscriptionRepository> holder, Exception exception) {
+    holder.getRepository().createSubscription(backup);
+  }
 
-    @Override
-    public Class<SubscriptionRepository> getRepositoryType() {
-        return SubscriptionRepository.class;
-    }
+  @Override
+  public Class<SubscriptionRepository> getRepositoryType() {
+    return SubscriptionRepository.class;
+  }
 
-    @Override
-    public String toString() {
-        return "RemoveSubscription(" + new SubscriptionName(subscriptionName, topicName).getQualifiedName() + ")";
-    }
+  @Override
+  public String toString() {
+    return "RemoveSubscription("
+        + new SubscriptionName(subscriptionName, topicName).getQualifiedName()
+        + ")";
+  }
 }

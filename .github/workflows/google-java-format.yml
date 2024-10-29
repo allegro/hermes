@@ -1,0 +1,26 @@
+name: Google java format
+
+on:
+  workflow_dispatch:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.head_ref }}
+
+      - name: Download and run google java format
+        run: |
+          ls -la
+          curl -sSLO "https://github.com/google/google-java-format/releases/download/v$VERSION/google-java-format_linux-x86-64"
+          chmod a+x google-java-format_linux-x86-64
+          ./.github/scripts/check-google-java-format.sh
+        shell: bash
+        env:
+            VERSION: 1.23.0
+

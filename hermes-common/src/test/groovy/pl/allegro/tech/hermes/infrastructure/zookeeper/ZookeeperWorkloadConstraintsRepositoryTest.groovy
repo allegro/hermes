@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.infrastructure.zookeeper
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.zookeeper.KeeperException
+import org.awaitility.Awaitility
 import pl.allegro.tech.hermes.api.SubscriptionName
 import pl.allegro.tech.hermes.api.TopicName
 import pl.allegro.tech.hermes.api.Constraints
@@ -13,7 +14,8 @@ import pl.allegro.tech.hermes.test.IntegrationTest
 
 import java.util.concurrent.TimeUnit
 
-import static com.jayway.awaitility.Awaitility.await
+import static org.awaitility.Awaitility.await
+
 
 class ZookeeperWorkloadConstraintsRepositoryTest extends IntegrationTest {
 

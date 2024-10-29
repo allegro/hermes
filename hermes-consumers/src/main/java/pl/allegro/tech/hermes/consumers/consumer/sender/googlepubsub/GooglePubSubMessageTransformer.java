@@ -5,6 +5,5 @@ import pl.allegro.tech.hermes.consumers.consumer.Message;
 
 interface GooglePubSubMessageTransformer {
 
-    PubsubMessage fromHermesMessage(Message message);
-
+  PubsubMessage fromHermesMessage(Message message);
 }

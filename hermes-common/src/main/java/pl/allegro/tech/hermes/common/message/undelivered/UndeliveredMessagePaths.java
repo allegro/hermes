@@ -5,15 +5,15 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 
 class UndeliveredMessagePaths {
 
-    private static final String NODE_NAME = "undelivered";
+  private static final String NODE_NAME = "undelivered";
 
-    private final ZookeeperPaths zookeeperPaths;
+  private final ZookeeperPaths zookeeperPaths;
 
-    UndeliveredMessagePaths(ZookeeperPaths zookeeperPaths) {
-        this.zookeeperPaths = zookeeperPaths;
-    }
+  UndeliveredMessagePaths(ZookeeperPaths zookeeperPaths) {
+    this.zookeeperPaths = zookeeperPaths;
+  }
 
-    String buildPath(TopicName topicName, String subscriptionName) {
-        return zookeeperPaths.subscriptionPath(topicName, subscriptionName, NODE_NAME);
-    }
+  String buildPath(TopicName topicName, String subscriptionName) {
+    return zookeeperPaths.subscriptionPath(topicName, subscriptionName, NODE_NAME);
+  }
 }

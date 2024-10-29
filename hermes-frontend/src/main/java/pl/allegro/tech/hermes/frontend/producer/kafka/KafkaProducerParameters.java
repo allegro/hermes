@@ -4,29 +4,33 @@ import java.time.Duration;
 
 public interface KafkaProducerParameters {
 
-    Duration getMaxBlock();
+  Duration getMaxBlock();
 
-    Duration getMetadataMaxAge();
+  Duration getMetadataMaxAge();
 
-    String getCompressionCodec();
+  String getCompressionCodec();
 
-    int getRetries();
+  int getRetries();
 
-    Duration getRetryBackoff();
+  Duration getRetryBackoff();
 
-    Duration getRequestTimeout();
+  Duration getRequestTimeout();
 
-    int getBatchSize();
+  int getBatchSize();
 
-    int getTcpSendBuffer();
+  int getTcpSendBuffer();
 
-    int getMaxRequestSize();
+  int getMaxRequestSize();
 
-    Duration getLinger();
+  Duration getDeliveryTimeout();
 
-    Duration getMetricsSampleWindow();
+  Duration getLinger();
 
-    int getMaxInflightRequestsPerConnection();
+  Duration getMetricsSampleWindow();
 
-    boolean isReportNodeMetricsEnabled();
+  int getMaxInflightRequestsPerConnection();
+
+  boolean isReportNodeMetricsEnabled();
+
+  boolean isIdempotenceEnabled();
 }

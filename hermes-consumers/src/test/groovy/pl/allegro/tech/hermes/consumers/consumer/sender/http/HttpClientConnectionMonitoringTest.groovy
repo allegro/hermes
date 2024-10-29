@@ -1,19 +1,15 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.http
 
-import com.codahale.metrics.MetricRegistry
 import com.github.tomakehurst.wiremock.WireMockServer
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.search.Search
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import org.eclipse.jetty.client.HttpClient
-import pl.allegro.tech.hermes.common.metric.HermesMetrics
 import pl.allegro.tech.hermes.common.metric.MetricsFacade
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory
-import pl.allegro.tech.hermes.common.metric.executor.ThreadPoolMetrics
 import pl.allegro.tech.hermes.consumers.config.ConsumerSenderConfiguration
 import pl.allegro.tech.hermes.consumers.config.Http1ClientProperties
 import pl.allegro.tech.hermes.consumers.config.SslContextProperties
-import pl.allegro.tech.hermes.metrics.PathsCompiler
 import pl.allegro.tech.hermes.test.helper.util.Ports
 import spock.lang.Shared
 import spock.lang.Specification
@@ -28,11 +24,8 @@ class HttpClientConnectionMonitoringTest extends Specification {
 
     HttpClient client
     HttpClient batchClient
-    MetricRegistry metricRegistry = new MetricRegistry()
-    HermesMetrics hermesMetrics = new HermesMetrics(metricRegistry, new PathsCompiler("localhost"))
     MeterRegistry meterRegistry = new SimpleMeterRegistry()
-    MetricsFacade metrics = new MetricsFacade(meterRegistry, hermesMetrics)
-    ThreadPoolMetrics threadPoolMetrics = new ThreadPoolMetrics(metrics)
+    MetricsFacade metrics = new MetricsFacade(meterRegistry)
 
     def setupSpec() {
         port = Ports.nextAvailable()
@@ -45,7 +38,7 @@ class HttpClientConnectionMonitoringTest extends Specification {
         SslContextFactoryProvider sslContextFactoryProvider = new SslContextFactoryProvider(null, new SslContextProperties())
         ConsumerSenderConfiguration consumerConfiguration = new ConsumerSenderConfiguration();
         client = consumerConfiguration.http1SerialClient(new HttpClientsFactory(
-                new InstrumentedExecutorServiceFactory(threadPoolMetrics),
+                new InstrumentedExecutorServiceFactory(metrics),
                 sslContextFactoryProvider), new Http1ClientProperties()
         )
         batchClient = Mock(HttpClient)
@@ -61,13 +54,10 @@ class HttpClientConnectionMonitoringTest extends Specification {
         client.POST("http://localhost:${port}/hello").send()
 
         and:
-        def idleDropwizard = metricRegistry.gauges['http-clients.serial.http1.idle-connections'].value
-        def activeDropwizard = metricRegistry.gauges['http-clients.serial.http1.active-connections'].value
         def idleMicrometer = Search.in(meterRegistry).name("http-clients.serial.http1.idle-connections").gauge().value()
         def activeMicrometer = Search.in(meterRegistry).name("http-clients.serial.http1.active-connections").gauge().value()
 
         then:
-        idleDropwizard + activeDropwizard > 0
         idleMicrometer + activeMicrometer > 0
     }
 
@@ -79,7 +69,6 @@ class HttpClientConnectionMonitoringTest extends Specification {
         reporter.start()
 
         then:
-        metricRegistry.gauges.size() == 0
         Search.in(meterRegistry).gauges().size() == 0
     }
 }

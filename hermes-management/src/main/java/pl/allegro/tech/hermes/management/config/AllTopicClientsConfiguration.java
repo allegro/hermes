@@ -12,12 +12,13 @@ import pl.allegro.tech.hermes.management.domain.clients.DefaultAllTopicClientsSe
 @Configuration
 public class AllTopicClientsConfiguration {
 
-    private static final Logger logger = LoggerFactory.getLogger(AllTopicClientsConfiguration.class);
+  private static final Logger logger = LoggerFactory.getLogger(AllTopicClientsConfiguration.class);
 
-    @Bean
-    @ConditionalOnMissingBean(AllTopicClientsService.class)
-    public AllTopicClientsService allTopicClientsService(SubscriptionRepository subscriptionRepository) {
-        logger.info("Creating allTopicClientsService bean");
-        return new DefaultAllTopicClientsService(subscriptionRepository);
-    }
+  @Bean
+  @ConditionalOnMissingBean(AllTopicClientsService.class)
+  public AllTopicClientsService allTopicClientsService(
+      SubscriptionRepository subscriptionRepository) {
+    logger.info("Creating allTopicClientsService bean");
+    return new DefaultAllTopicClientsService(subscriptionRepository);
+  }
 }

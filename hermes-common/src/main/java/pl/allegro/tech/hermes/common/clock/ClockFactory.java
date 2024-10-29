@@ -4,7 +4,7 @@ import java.time.Clock;
 
 public class ClockFactory {
 
-    public Clock provide() {
-        return Clock.systemDefaultZone();
-    }
+  public Clock provide() {
+    return Clock.systemDefaultZone();
+  }
 }

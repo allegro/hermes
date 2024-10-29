@@ -7,36 +7,37 @@ import pl.allegro.tech.hermes.management.domain.dc.RepositoryCommand;
 
 public class UpdateGroupRepositoryCommand extends RepositoryCommand<GroupRepository> {
 
-    private final Group group;
+  private final Group group;
 
-    private Group backup;
+  private Group backup;
 
-    public UpdateGroupRepositoryCommand(Group group) {
-        this.group = group;
-    }
+  public UpdateGroupRepositoryCommand(Group group) {
+    this.group = group;
+  }
 
-    @Override
-    public void backup(DatacenterBoundRepositoryHolder<GroupRepository> holder) {
-        backup = holder.getRepository().getGroupDetails(group.getGroupName());
-    }
+  @Override
+  public void backup(DatacenterBoundRepositoryHolder<GroupRepository> holder) {
+    backup = holder.getRepository().getGroupDetails(group.getGroupName());
+  }
 
-    @Override
-    public void execute(DatacenterBoundRepositoryHolder<GroupRepository> holder) {
-        holder.getRepository().updateGroup(group);
-    }
+  @Override
+  public void execute(DatacenterBoundRepositoryHolder<GroupRepository> holder) {
+    holder.getRepository().updateGroup(group);
+  }
 
-    @Override
-    public void rollback(DatacenterBoundRepositoryHolder<GroupRepository> holder) {
-        holder.getRepository().updateGroup(backup);
-    }
+  @Override
+  public void rollback(
+      DatacenterBoundRepositoryHolder<GroupRepository> holder, Exception exception) {
+    holder.getRepository().updateGroup(backup);
+  }
 
-    @Override
-    public Class<GroupRepository> getRepositoryType() {
-        return GroupRepository.class;
-    }
+  @Override
+  public Class<GroupRepository> getRepositoryType() {
+    return GroupRepository.class;
+  }
 
-    @Override
-    public String toString() {
-        return "UpdateGroup(" + group.getGroupName() + ")";
-    }
+  @Override
+  public String toString() {
+    return "UpdateGroup(" + group.getGroupName() + ")";
+  }
 }

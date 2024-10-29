@@ -2,88 +2,55 @@ package pl.allegro.tech.hermes.integrationtests.setup;
 
 import java.util.UUID;
 
-public class TraceContext {
+public record TraceContext(
+    String traceId, String spanId, String parentSpanId, String traceSampled, String traceReported) {
 
-    private final String traceId;
-    private final String spanId;
-    private final String parentSpanId;
-    private final String traceSampled;
-    private final String traceReported;
+  public static TraceContext random() {
 
-    public TraceContext(String traceId, String spanId, String parentSpanId, String traceSampled, String traceReported) {
-        this.traceId = traceId;
-        this.spanId = spanId;
-        this.parentSpanId = parentSpanId;
-        this.traceSampled = traceSampled;
-        this.traceReported = traceReported;
+    return new Builder()
+        .withTraceId(UUID.randomUUID().toString())
+        .withSpanId(UUID.randomUUID().toString())
+        .withParentSpanId(UUID.randomUUID().toString())
+        .withTraceSampled("1")
+        .withTraceReported("0")
+        .build();
+  }
+
+  public static class Builder {
+
+    private String traceId;
+    private String spanId;
+    private String parentSpanId;
+    private String traceSampled;
+    private String traceReported;
+
+    public Builder withTraceId(String traceId) {
+      this.traceId = traceId;
+      return this;
     }
 
-    public String getTraceId() {
-        return traceId;
+    public Builder withSpanId(String spanId) {
+      this.spanId = spanId;
+      return this;
     }
 
-    public String getSpanId() {
-        return spanId;
+    public Builder withParentSpanId(String parentSpanId) {
+      this.parentSpanId = parentSpanId;
+      return this;
     }
 
-    public String getParentSpanId() {
-        return parentSpanId;
+    public Builder withTraceSampled(String traceSampled) {
+      this.traceSampled = traceSampled;
+      return this;
     }
 
-    public String getTraceSampled() {
-        return traceSampled;
+    public Builder withTraceReported(String traceReported) {
+      this.traceReported = traceReported;
+      return this;
     }
 
-    public String getTraceReported() {
-        return traceReported;
+    public TraceContext build() {
+      return new TraceContext(traceId, spanId, parentSpanId, traceSampled, traceReported);
     }
-
-    public static TraceContext random() {
-
-        return new Builder()
-                .withTraceId(UUID.randomUUID().toString())
-                .withSpanId(UUID.randomUUID().toString())
-                .withParentSpanId(UUID.randomUUID().toString())
-                .withTraceSampled("1")
-                .withTraceReported("0")
-                .build();
-    }
-
-    public static class Builder {
-
-        private String traceId;
-        private String spanId;
-        private String parentSpanId;
-        private String traceSampled;
-        private String traceReported;
-
-        public Builder withTraceId(String traceId) {
-            this.traceId = traceId;
-            return this;
-        }
-
-        public Builder withSpanId(String spanId) {
-            this.spanId = spanId;
-            return this;
-        }
-
-        public Builder withParentSpanId(String parentSpanId) {
-            this.parentSpanId = parentSpanId;
-            return this;
-        }
-
-        public Builder withTraceSampled(String traceSampled) {
-            this.traceSampled = traceSampled;
-            return this;
-        }
-
-        public Builder withTraceReported(String traceReported) {
-            this.traceReported = traceReported;
-            return this;
-        }
-
-        public TraceContext build() {
-            return new TraceContext(traceId, spanId, parentSpanId, traceSampled, traceReported);
-        }
-    }
+  }
 }

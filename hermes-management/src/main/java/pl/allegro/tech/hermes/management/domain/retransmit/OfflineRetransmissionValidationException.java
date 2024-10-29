@@ -5,12 +5,12 @@ import pl.allegro.tech.hermes.common.exception.HermesException;
 
 public class OfflineRetransmissionValidationException extends HermesException {
 
-    public OfflineRetransmissionValidationException(String msg) {
-        super(msg);
-    }
+  public OfflineRetransmissionValidationException(String msg) {
+    super(msg);
+  }
 
-    @Override
-    public ErrorCode getCode() {
-        return ErrorCode.VALIDATION_ERROR;
-    }
+  @Override
+  public ErrorCode getCode() {
+    return ErrorCode.VALIDATION_ERROR;
+  }
 }

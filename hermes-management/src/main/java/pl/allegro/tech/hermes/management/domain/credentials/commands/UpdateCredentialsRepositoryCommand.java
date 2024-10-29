@@ -6,29 +6,28 @@ import pl.allegro.tech.hermes.management.domain.dc.RepositoryCommand;
 
 public class UpdateCredentialsRepositoryCommand extends RepositoryCommand<CredentialsRepository> {
 
-    private final CredentialsRepository repository;
-    private final String password;
+  private final CredentialsRepository repository;
+  private final String password;
 
-    public UpdateCredentialsRepositoryCommand(CredentialsRepository repository, String password) {
-        this.repository = repository;
-        this.password = password;
-    }
+  public UpdateCredentialsRepositoryCommand(CredentialsRepository repository, String password) {
+    this.repository = repository;
+    this.password = password;
+  }
 
-    @Override
-    public void backup(DatacenterBoundRepositoryHolder<CredentialsRepository> holder) {
-    }
+  @Override
+  public void backup(DatacenterBoundRepositoryHolder<CredentialsRepository> holder) {}
 
-    @Override
-    public void execute(DatacenterBoundRepositoryHolder<CredentialsRepository> holder) {
-        repository.overwriteAdminPassword(password);
-    }
+  @Override
+  public void execute(DatacenterBoundRepositoryHolder<CredentialsRepository> holder) {
+    repository.overwriteAdminPassword(password);
+  }
 
-    @Override
-    public void rollback(DatacenterBoundRepositoryHolder<CredentialsRepository> holder) {
-    }
+  @Override
+  public void rollback(
+      DatacenterBoundRepositoryHolder<CredentialsRepository> holder, Exception exception) {}
 
-    @Override
-    public Class<CredentialsRepository> getRepositoryType() {
-        return CredentialsRepository.class;
-    }
+  @Override
+  public Class<CredentialsRepository> getRepositoryType() {
+    return CredentialsRepository.class;
+  }
 }

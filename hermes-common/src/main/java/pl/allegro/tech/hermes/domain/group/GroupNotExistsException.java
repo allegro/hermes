@@ -5,16 +5,16 @@ import pl.allegro.tech.hermes.common.exception.HermesException;
 
 public class GroupNotExistsException extends HermesException {
 
-    public GroupNotExistsException(String groupName, Exception exception) {
-        super(String.format("Group %s does not exist", groupName), exception);
-    }
+  public GroupNotExistsException(String groupName, Exception exception) {
+    super(String.format("Group %s does not exist", groupName), exception);
+  }
 
-    public GroupNotExistsException(String groupName) {
-        this(groupName, null);
-    }
+  public GroupNotExistsException(String groupName) {
+    this(groupName, null);
+  }
 
-    @Override
-    public ErrorCode getCode() {
-        return ErrorCode.GROUP_NOT_EXISTS;
-    }
+  @Override
+  public ErrorCode getCode() {
+    return ErrorCode.GROUP_NOT_EXISTS;
+  }
 }

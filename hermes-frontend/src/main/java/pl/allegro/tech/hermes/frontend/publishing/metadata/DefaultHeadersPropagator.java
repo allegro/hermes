@@ -1,44 +1,65 @@
 package pl.allegro.tech.hermes.frontend.publishing.metadata;
 
-import com.google.common.collect.ImmutableMap;
+import static java.util.Spliterators.spliteratorUnknownSize;
+import static java.util.stream.Collectors.toMap;
+import static java.util.stream.StreamSupport.stream;
 
-import java.util.Arrays;
+import com.google.common.collect.ImmutableMap;
+import io.undertow.util.HeaderMap;
+import io.undertow.util.HeaderValues;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
+import pl.allegro.tech.hermes.frontend.config.HTTPHeadersProperties;
+import pl.allegro.tech.hermes.frontend.publishing.handlers.end.TrackingHeadersExtractor;
 
-import static java.util.Collections.emptySet;
-import static java.util.stream.Collectors.toSet;
+public class DefaultHeadersPropagator implements HeadersPropagator, TrackingHeadersExtractor {
 
-public class DefaultHeadersPropagator implements HeadersPropagator {
+  private final boolean propagate;
+  private final Set<String> supportedHeaders;
+  private final Set<String> trackingHeaders;
 
-    private final boolean propagate;
-    private final Set<String> supportedHeaders;
+  public DefaultHeadersPropagator(HTTPHeadersProperties httpHeadersProperties) {
+    propagate = httpHeadersProperties.isPropagationEnabled();
+    supportedHeaders = httpHeadersProperties.getAllowedSet();
+    trackingHeaders =
+        new HashSet<>() {
+          {
+            addAll(httpHeadersProperties.getAllowedSet());
+            addAll(httpHeadersProperties.getAdditionalAllowedSetToLog());
+          }
+        };
+  }
 
-    public DefaultHeadersPropagator(boolean enabled, String allowFilter) {
-        if (enabled) {
-            propagate = true;
-            supportedHeaders = Arrays.stream(allowFilter.split(","))
-                    .map(String::trim)
-                    .filter(v -> v.length() > 0)
-                    .collect(toSet());
-        } else {
-            propagate = false;
-            supportedHeaders = emptySet();
-        }
+  @Override
+  public Map<String, String> extract(HeaderMap headerMap) {
+    if (propagate) {
+      Map<String, String> headers = toHeadersMap(headerMap);
+      if (supportedHeaders.isEmpty()) {
+        return ImmutableMap.copyOf(headers);
+      }
+
+      return extractHeaders(headers, supportedHeaders);
+    } else {
+      return ImmutableMap.of();
     }
+  }
 
-    @Override
-    public Map<String, String> extract(Map<String, String> headers) {
-        if (propagate) {
-            if (supportedHeaders.isEmpty()) {
-                return ImmutableMap.copyOf(headers);
-            }
-            return headers.entrySet().stream()
-                    .filter(e -> this.supportedHeaders.contains(e.getKey()))
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-        } else {
-            return ImmutableMap.of();
-        }
-    }
+  @Override
+  public Map<String, String> extractHeadersToLog(HeaderMap headers) {
+    return extractHeaders(toHeadersMap(headers), trackingHeaders);
+  }
+
+  private static Map<String, String> toHeadersMap(HeaderMap headerMap) {
+    return stream(spliteratorUnknownSize(headerMap.iterator(), 0), false)
+        .collect(toMap(h -> h.getHeaderName().toString(), HeaderValues::getFirst));
+  }
+
+  private static Map<String, String> extractHeaders(
+      Map<String, String> headers, Set<String> headersToExtract) {
+    return headers.entrySet().stream()
+        .filter(headerEntry -> headersToExtract.contains(headerEntry.getKey().toLowerCase()))
+        .filter(headerEntry -> !headerEntry.getValue().isEmpty())
+        .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
+  }
 }

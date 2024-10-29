@@ -1,25 +1,23 @@
 package pl.allegro.tech.hermes.domain.group;
 
-import pl.allegro.tech.hermes.api.Group;
-
 import java.util.List;
+import pl.allegro.tech.hermes.api.Group;
 
 public interface GroupRepository {
 
-    boolean groupExists(String groupName);
+  boolean groupExists(String groupName);
 
-    void ensureGroupExists(String groupName);
+  void ensureGroupExists(String groupName);
 
-    void createGroup(Group group);
+  void createGroup(Group group);
 
-    void updateGroup(Group group);
+  void updateGroup(Group group);
 
-    void removeGroup(String groupName);
+  void removeGroup(String groupName);
 
-    List<String> listGroupNames();
+  List<String> listGroupNames();
 
-    List<Group> listGroups();
+  List<Group> listGroups();
 
-    Group getGroupDetails(String groupName);
-
+  Group getGroupDetails(String groupName);
 }

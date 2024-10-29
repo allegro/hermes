@@ -4,17 +4,17 @@ import java.time.Duration;
 
 public interface MaxRateParameters {
 
-    Duration getBalanceInterval();
+  Duration getBalanceInterval();
 
-    Duration getUpdateInterval();
+  Duration getUpdateInterval();
 
-    int getHistorySize();
+  int getHistorySize();
 
-    double getBusyTolerance();
+  double getBusyTolerance();
 
-    double getMinMaxRate();
+  double getMinMaxRate();
 
-    double getMinAllowedChangePercent();
+  double getMinAllowedChangePercent();
 
-    double getMinSignificantUpdatePercent();
+  double getMinSignificantUpdatePercent();
 }

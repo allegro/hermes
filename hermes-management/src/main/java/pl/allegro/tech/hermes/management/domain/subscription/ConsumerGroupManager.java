@@ -5,5 +5,5 @@ import pl.allegro.tech.hermes.api.Topic;
 
 public interface ConsumerGroupManager {
 
-    void createConsumerGroup(Topic topic, Subscription subscription);
+  void createConsumerGroup(Topic topic, Subscription subscription);
 }

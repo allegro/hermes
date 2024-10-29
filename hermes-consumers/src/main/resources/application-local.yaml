@@ -9,11 +9,6 @@ consumer:
     clusters:
       - datacenter: "dc"
         brokerList: "localhost:9092"
-  graphite:
-    host: "localhost"
-  metrics:
-    metrics-registry:
-      graphiteReporterEnabled: true
   workload:
     consumerPerSubscription: 1
   schema:

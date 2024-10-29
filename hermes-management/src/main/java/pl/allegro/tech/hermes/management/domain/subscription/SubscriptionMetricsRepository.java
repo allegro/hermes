@@ -6,7 +6,7 @@ import pl.allegro.tech.hermes.api.TopicName;
 
 public interface SubscriptionMetricsRepository {
 
-    SubscriptionMetrics loadMetrics(TopicName topicName, String subscriptionName);
+  SubscriptionMetrics loadMetrics(TopicName topicName, String subscriptionName);
 
-    PersistentSubscriptionMetrics loadZookeeperMetrics(TopicName topicName, String subscriptionName);
+  PersistentSubscriptionMetrics loadZookeeperMetrics(TopicName topicName, String subscriptionName);
 }

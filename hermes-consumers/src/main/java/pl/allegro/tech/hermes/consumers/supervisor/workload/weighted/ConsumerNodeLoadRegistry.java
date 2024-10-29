@@ -4,9 +4,9 @@ import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecordersR
 
 public interface ConsumerNodeLoadRegistry extends SubscriptionLoadRecordersRegistry {
 
-    void start();
+  void start();
 
-    void stop();
+  void stop();
 
-    ConsumerNodeLoad get(String consumerId);
+  ConsumerNodeLoad get(String consumerId);
 }

@@ -10,23 +10,30 @@ import pl.allegro.tech.hermes.api.Topic;
 
 public class ObjectMapperFactory {
 
-    private final boolean schemaIdSerializationEnabled;
+  private final boolean schemaIdSerializationEnabled;
+  private final boolean fallbackToRemoteDatacenterEnabled;
 
-    public ObjectMapperFactory(boolean schemaIdSerializationEnabled) {
-        this.schemaIdSerializationEnabled = schemaIdSerializationEnabled;
-    }
+  public ObjectMapperFactory(
+      boolean schemaIdSerializationEnabled, boolean fallbackToRemoteDatacenterEnabled) {
+    this.schemaIdSerializationEnabled = schemaIdSerializationEnabled;
+    this.fallbackToRemoteDatacenterEnabled = fallbackToRemoteDatacenterEnabled;
+  }
 
-    public ObjectMapper provide() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-        objectMapper.disable(SerializationFeature.WRITE_NULL_MAP_VALUES);
-        objectMapper.registerModule(new JavaTimeModule());
+  public ObjectMapper provide() {
+    ObjectMapper objectMapper = new ObjectMapper();
+    objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+    objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+    objectMapper.disable(SerializationFeature.WRITE_NULL_MAP_VALUES);
+    objectMapper.registerModule(new JavaTimeModule());
 
-        final InjectableValues defaultSchemaIdAwareSerializationEnabled = new InjectableValues
-                .Std().addValue(Topic.DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY, schemaIdSerializationEnabled);
-        objectMapper.setInjectableValues(defaultSchemaIdAwareSerializationEnabled);
+    final InjectableValues defaultSchemaIdAwareSerializationEnabled =
+        new InjectableValues.Std()
+            .addValue(
+                Topic.DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY, schemaIdSerializationEnabled)
+            .addValue(
+                Topic.DEFAULT_FALLBACK_TO_REMOTE_DATACENTER_KEY, fallbackToRemoteDatacenterEnabled);
+    objectMapper.setInjectableValues(defaultSchemaIdAwareSerializationEnabled);
 
-        return objectMapper;
-    }
+    return objectMapper;
+  }
 }
