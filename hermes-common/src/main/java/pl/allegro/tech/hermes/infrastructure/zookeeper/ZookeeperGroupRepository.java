@@ -81,7 +81,7 @@ public class ZookeeperGroupRepository extends ZookeeperBasedRepository implement
     if (pathExists(topicDeletionTimePath)) {
       // topicDeletionTimePath can contain a list of previously deleted topics
       pathsToDelete = new ArrayList<String>(pathsToDelete);
-      pathsToDelete.addAll(childrenOf(topicDeletionTimePath));
+      pathsToDelete.addAll(childrenPathsOf(topicDeletionTimePath));
       pathsToDelete.add(topicDeletionTimePath);
     }
     try {
