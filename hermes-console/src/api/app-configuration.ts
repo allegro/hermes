@@ -17,6 +17,12 @@ export interface ConsoleConfiguration {
   contactLink: string;
   environmentName: string;
   criticalEnvironment: boolean;
+  knownEnvironments: ConsoleEnvironment[];
+}
+
+export interface ConsoleEnvironment {
+  name: string;
+  url: string;
 }
 
 export interface DashboardConfiguration {
