@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.infrastructure.zookeeper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -65,8 +66,8 @@ public class ZookeeperGroupRepository extends ZookeeperBasedRepository implement
   }
 
   /**
-   * Atomic removal of <code>group</code> and <code>group/topics</code> nodes is required to prevent
-   * lengthy loop during removal, see: {@link
+   * Atomic removal of <code>group</code>, <code>group/topics</code> and <code>group/deletion_time
+   * </code> nodes is required to prevent lengthy loop during removal, see: {@link
    * pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperTopicRepository#removeTopic(TopicName)}.
    */
   @Override
@@ -75,14 +76,13 @@ public class ZookeeperGroupRepository extends ZookeeperBasedRepository implement
     ensureGroupIsEmpty(groupName);
 
     logger.info("Removing group: {}", groupName);
-    List<String> pathsToDelete;
+    List<String> pathsToDelete = List.of(paths.topicsPath(groupName), paths.groupPath(groupName));
     String topicDeletionTimePath = paths.groupTopicDeletionTimePath(groupName);
-    if (!pathExists(topicDeletionTimePath)) {
-      pathsToDelete = List.of(paths.topicsPath(groupName), paths.groupPath(groupName));
-    } else {
-      // need to add all deletion time paths here
-      pathsToDelete =
-          List.of(paths.topicsPath(groupName), topicDeletionTimePath, paths.groupPath(groupName));
+    if (pathExists(topicDeletionTimePath)) {
+      // topicDeletionTimePath can contain a list of previously deleted topics
+      pathsToDelete = new ArrayList<String>(pathsToDelete);
+      pathsToDelete.addAll(childrenOf(topicDeletionTimePath));
+      pathsToDelete.add(topicDeletionTimePath);
     }
     try {
       deleteInTransaction(pathsToDelete);
