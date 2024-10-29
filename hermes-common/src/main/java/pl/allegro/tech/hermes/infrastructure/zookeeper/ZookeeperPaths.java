@@ -13,6 +13,7 @@ public class ZookeeperPaths {
   public static final String GROUPS_PATH = "groups";
   public static final String SUBSCRIPTIONS_PATH = "subscriptions";
   public static final String KAFKA_TOPICS_PATH = "kafka_topics";
+  public static final String DELETION_TIME_PATH = "deletion_time";
   public static final String URL_SEPARATOR = "/";
   public static final String CONSUMERS_WORKLOAD_PATH = "consumers-workload";
   public static final String CONSUMER_LOAD_PATH = "consumer-load";
@@ -61,8 +62,17 @@ public class ZookeeperPaths {
     return Joiner.on(URL_SEPARATOR).join(groupsPath(), groupName);
   }
 
+  public String groupTopicDeletionTimePath(String groupName) {
+    return Joiner.on(URL_SEPARATOR).join(groupPath(groupName), DELETION_TIME_PATH);
+  }
+
   public String topicsPath(String groupName) {
     return Joiner.on(URL_SEPARATOR).join(groupPath(groupName), TOPICS_PATH);
+  }
+
+  public String topicDeletionTimePath(TopicName topicName) {
+    return Joiner.on(URL_SEPARATOR)
+        .join(groupPath(topicName.getGroupName()), DELETION_TIME_PATH, topicName.getName());
   }
 
   public String topicMetricPath(TopicName topicName, String metricName) {

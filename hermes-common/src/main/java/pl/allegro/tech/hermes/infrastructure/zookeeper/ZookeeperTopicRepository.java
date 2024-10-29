@@ -1,6 +1,9 @@
 package pl.allegro.tech.hermes.infrastructure.zookeeper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -15,6 +18,7 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicAlreadyExistsException;
+import pl.allegro.tech.hermes.domain.topic.TopicDeletedRecentlyException;
 import pl.allegro.tech.hermes.domain.topic.TopicNotExistsException;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 
@@ -64,6 +68,7 @@ public class ZookeeperTopicRepository extends ZookeeperBasedRepository implement
   @Override
   public void createTopic(Topic topic) {
     groupRepository.ensureGroupExists(topic.getName().getGroupName());
+    ensureTopicCanBeCreated(topic.getName());
 
     String topicPath = paths.topicPath(topic.getName());
     logger.info("Creating topic for path {}", topicPath);
@@ -144,8 +149,23 @@ public class ZookeeperTopicRepository extends ZookeeperBasedRepository implement
     pathsForRemoval.add(paths.subscriptionsPath(topicName));
     pathsForRemoval.add(paths.topicPath(topicName));
 
+    String topicDeletionTimePath = paths.topicDeletionTimePath(topicName);
+
     try {
-      deleteInTransaction(pathsForRemoval);
+      if (pathExists(topicDeletionTimePath)) {
+        deleteAndOverwriteInTransaction(pathsForRemoval, topicDeletionTimePath, Instant.now());
+      } else {
+        String groupDeletionTimePath = paths.groupTopicDeletionTimePath(topicName.getGroupName());
+        if (!pathExists(groupDeletionTimePath)) {
+          deleteAndCreateInTransaction(
+              pathsForRemoval,
+              List.of(groupDeletionTimePath),
+              topicDeletionTimePath,
+              Instant.now());
+        } else {
+          deleteAndCreateInTransaction(pathsForRemoval, topicDeletionTimePath, Instant.now());
+        }
+      }
     } catch (Exception e) {
       throw new InternalProcessingException(e);
     }
@@ -190,6 +210,19 @@ public class ZookeeperTopicRepository extends ZookeeperBasedRepository implement
           topic.setModifiedAt(stat.getMtime());
         },
         quiet);
+  }
+
+  @Override
+  public void ensureTopicCanBeCreated(TopicName topicName) {
+    String topicDeletionTimePath = paths.topicDeletionTimePath(topicName);
+    if (pathExists(topicDeletionTimePath)) {
+      Instant deletionTime = readFrom(topicDeletionTimePath, Instant.class);
+      // TODO: make threshold configurable
+      Instant thresholdTime = deletionTime.plus(5, ChronoUnit.MINUTES);
+      if (Duration.between(thresholdTime, Instant.now()).toSeconds() > 0) {
+        throw new TopicDeletedRecentlyException(topicName, thresholdTime);
+      }
+    }
   }
 
   @Override

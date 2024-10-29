@@ -75,7 +75,15 @@ public class ZookeeperGroupRepository extends ZookeeperBasedRepository implement
     ensureGroupIsEmpty(groupName);
 
     logger.info("Removing group: {}", groupName);
-    List<String> pathsToDelete = List.of(paths.topicsPath(groupName), paths.groupPath(groupName));
+    List<String> pathsToDelete;
+    String topicDeletionTimePath = paths.groupTopicDeletionTimePath(groupName);
+    if (!pathExists(topicDeletionTimePath)) {
+      pathsToDelete = List.of(paths.topicsPath(groupName), paths.groupPath(groupName));
+    } else {
+      // need to add all deletion time paths here
+      pathsToDelete =
+          List.of(paths.topicsPath(groupName), topicDeletionTimePath, paths.groupPath(groupName));
+    }
     try {
       deleteInTransaction(pathsToDelete);
     } catch (Exception e) {
@@ -84,7 +92,11 @@ public class ZookeeperGroupRepository extends ZookeeperBasedRepository implement
   }
 
   private void ensureGroupIsEmpty(String groupName) {
-    if (!childrenOf(paths.topicsPath(groupName)).isEmpty()) {
+    String topicDeletionTimePath = paths.groupTopicDeletionTimePath(groupName);
+    if (!childrenOf(paths.topicsPath(groupName)).stream()
+        .filter(path -> !path.equals(topicDeletionTimePath))
+        .collect(Collectors.toList())
+        .isEmpty()) {
       throw new GroupNotEmptyException(groupName);
     }
   }
