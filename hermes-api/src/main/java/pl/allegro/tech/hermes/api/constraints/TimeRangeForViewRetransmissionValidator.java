@@ -4,9 +4,8 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import pl.allegro.tech.hermes.api.OfflineRetransmissionRequest;
 
-public class TimeRangeAbsentForViewRetransmissionValidator
-    implements ConstraintValidator<
-        TimeRangeAbsentForViewRetransmission, OfflineRetransmissionRequest> {
+public class TimeRangeForViewRetransmissionValidator
+    implements ConstraintValidator<TimeRangeForViewRetransmission, OfflineRetransmissionRequest> {
 
   @Override
   public boolean isValid(

@@ -23,7 +23,7 @@ class RetransmissionTimeRangeValidatorTest extends Specification {
     @Unroll
     def "View validator should validate view retransmission request when startTimestamp is '#startTimestamp', endTimestamp is '#endTimestamp'"() {
         given:
-        TimeRangeAbsentForViewRetransmissionValidator validator = new TimeRangeAbsentForViewRetransmissionValidator()
+        TimeRangeForViewRetransmissionValidator validator = new TimeRangeForViewRetransmissionValidator()
         def request = new OfflineRetransmissionRequest(
                 "someSourceView",
                 null,
@@ -44,7 +44,7 @@ class RetransmissionTimeRangeValidatorTest extends Specification {
 
     def "View validator should skip validation for topic retransmission request"() {
         given:
-        TimeRangeAbsentForViewRetransmissionValidator validator = new TimeRangeAbsentForViewRetransmissionValidator()
+        TimeRangeForViewRetransmissionValidator validator = new TimeRangeForViewRetransmissionValidator()
         def invalidTopicRetransmissionRequest = new OfflineRetransmissionRequest(
                 null,
                 "someSourceTopic",
@@ -59,7 +59,7 @@ class RetransmissionTimeRangeValidatorTest extends Specification {
     @Unroll
     def "Topic validator should validate topic retransmission request when startTimestamp is '#startTimestamp', endTimestamp is '#endTimestamp'"() {
         given:
-        ProperTimeRangePresentForTopicRetransmissionValidator validator = new ProperTimeRangePresentForTopicRetransmissionValidator()
+        TimeRangeForTopicRetransmissionValidator validator = new TimeRangeForTopicRetransmissionValidator()
         def request = new OfflineRetransmissionRequest(
                 null,
                 "someSourceTopic",
@@ -82,7 +82,7 @@ class RetransmissionTimeRangeValidatorTest extends Specification {
 
     def "Topic validator should skip validation for view retransmission request"() {
         given:
-        ProperTimeRangePresentForTopicRetransmissionValidator validator = new ProperTimeRangePresentForTopicRetransmissionValidator()
+        TimeRangeForTopicRetransmissionValidator validator = new TimeRangeForTopicRetransmissionValidator()
         def invalidViewRetransmissionRequest = new OfflineRetransmissionRequest(
                 "someSourceView",
                 null,

@@ -11,10 +11,10 @@ import java.lang.annotation.Target;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({TYPE})
-@Constraint(validatedBy = ProperTimeRangePresentForTopicRetransmissionValidator.class)
-public @interface ProperTimeRangePresentForTopicRetransmission {
+@Constraint(validatedBy = TimeRangeForViewRetransmissionValidator.class)
+public @interface TimeRangeForViewRetransmission {
   String message() default
-      "Must contain both startTimestamp and endTimestamp when source topic is given, startTimestamp must be lower than endTimestamp";
+      "must not contain startTimestamp and endTimestamp when source view is given";
 
   Class[] groups() default {};
 
