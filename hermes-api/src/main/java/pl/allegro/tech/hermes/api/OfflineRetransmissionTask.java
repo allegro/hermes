@@ -83,10 +83,10 @@ public class OfflineRetransmissionTask {
     return "OfflineRetransmissionTask{" + "taskId='" + taskId + '\'' + ", request=" + request + '}';
   }
 
-  private static String parseTimestamp(@Nullable Instant startTimestamp) {
-    if (startTimestamp == null) {
+  private static String parseTimestamp(@Nullable Instant timestamp) {
+    if (timestamp == null) {
       return null;
     }
-    return startTimestamp.toString();
+    return timestamp.toString();
   }
 }
