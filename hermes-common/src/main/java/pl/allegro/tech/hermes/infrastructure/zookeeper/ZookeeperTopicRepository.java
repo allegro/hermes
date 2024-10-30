@@ -219,7 +219,7 @@ public class ZookeeperTopicRepository extends ZookeeperBasedRepository implement
       Instant deletionTime = readFrom(topicDeletionTimePath, Instant.class);
       // TODO: make threshold configurable
       Instant thresholdTime = deletionTime.plus(5, ChronoUnit.MINUTES);
-      if (Duration.between(thresholdTime, Instant.now()).toSeconds() > 0) {
+      if (Duration.between(Instant.now(), thresholdTime).toSeconds() > 0) {
         throw new TopicDeletedRecentlyException(topicName, thresholdTime);
       }
     }

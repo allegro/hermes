@@ -27,6 +27,10 @@ class RepositoryWaiter extends ZookeeperWaiter {
         untilZookeeperPathIsCreated(paths.topicPath(new TopicName(groupName, topicName)))
     }
 
+	void untilTopicRemoved(String groupName, String topicName) {
+		untilZookeeperPathIsCreated(paths.topicDeletionTimePath(new TopicName(groupName, topicName)))
+	}
+
     void untilSubscriptionCreated(TopicName topic, String subscription) {
         untilZookeeperPathIsCreated(paths.subscriptionPath(topic, subscription))
     }

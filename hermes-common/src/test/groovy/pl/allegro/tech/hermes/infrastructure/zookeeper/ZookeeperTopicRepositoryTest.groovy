@@ -6,6 +6,7 @@ import pl.allegro.tech.hermes.api.TopicName
 import pl.allegro.tech.hermes.common.metric.counter.zookeeper.ZookeeperCounterStorage
 import pl.allegro.tech.hermes.domain.group.GroupNotExistsException
 import pl.allegro.tech.hermes.domain.topic.TopicAlreadyExistsException
+import pl.allegro.tech.hermes.domain.topic.TopicDeletedRecentlyException
 import pl.allegro.tech.hermes.domain.topic.TopicNotExistsException
 import pl.allegro.tech.hermes.infrastructure.MalformedDataException
 import pl.allegro.tech.hermes.test.IntegrationTest
@@ -18,13 +19,25 @@ import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic
 class ZookeeperTopicRepositoryTest extends IntegrationTest {
 
     private static final String GROUP = "topicRepositoryGroup"
+    private static final String MALFORMED_TOPIC_GROUP = "topicRepositorMalformedTopicGroup"
 
     private ZookeeperTopicRepository repository = new ZookeeperTopicRepository(zookeeper(), mapper, paths, groupRepository)
 
     void setup() {
+		 if (!groupRepository.groupExists(MALFORMED_TOPIC_GROUP)) {
+            groupRepository.createGroup(Group.from(MALFORMED_TOPIC_GROUP))
+        }
         if (!groupRepository.groupExists(GROUP)) {
             groupRepository.createGroup(Group.from(GROUP))
+        } else {
+            for (name in repository.listTopicNames(GROUP)) {
+               repository.removeTopic(new TopicName(GROUP, name))
+               wait.untilTopicRemoved(GROUP, name)
+            }
+            groupRepository.removeGroup(GROUP)
+            groupRepository.createGroup(Group.from(GROUP))
         }
+		wait.untilGroupCreated(GROUP)
     }
 
     def "should create topic"() {
@@ -231,13 +244,29 @@ class ZookeeperTopicRepositoryTest extends IntegrationTest {
 
     def "should not throw exception on malformed topic when reading list of all topics"() {
         given:
-        zookeeper().create().forPath(paths.topicPath(new TopicName(GROUP, 'malformed')), ''.bytes)
-        wait.untilTopicCreated(GROUP, 'malformed')
+
+        zookeeper().create().forPath(paths.topicPath(new TopicName(MALFORMED_TOPIC_GROUP, 'malformed')), ''.bytes)
+        wait.untilTopicCreated(MALFORMED_TOPIC_GROUP, 'malformed')
 
         when:
-        repository.listTopics(GROUP)
+        repository.listTopics(MALFORMED_TOPIC_GROUP)
 
         then:
         notThrown(MalformedDataException)
     }
+
+    def "should  throw exception removing a topic and immediately attempting to recreate it"() {
+        given:
+        repository.createTopic(topic(GROUP, 'remove').build())
+        wait.untilTopicCreated(GROUP, 'remove')
+        repository.removeTopic(new TopicName(GROUP, 'remove'))
+        wait.untilTopicRemoved(GROUP, 'remove')
+
+        when:
+        repository.createTopic(topic(GROUP, 'remove').build())
+
+        then:
+        thrown(TopicDeletedRecentlyException)
+    }
+
 }
