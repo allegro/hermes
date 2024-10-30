@@ -2,9 +2,11 @@ import { expect } from 'vitest';
 import { fireEvent } from '@testing-library/vue';
 import { render } from '@/utils/test-utils';
 import EnvironmentSwitch from '@/components/environment-switch/EnvironmentSwitch.vue';
+import userEvent from '@testing-library/user-event';
 
 const mockReplace = vi.fn();
 const mockHref = vi.fn();
+const mockOpen = vi.fn();
 
 Object.defineProperty(window, 'location', {
   value: {
@@ -14,6 +16,8 @@ Object.defineProperty(window, 'location', {
     replace: mockReplace,
   },
 });
+
+window.open = mockOpen;
 
 const TEST_URL_ENV_1 =
   'http://localhost:3000/ui/groups/pl.example.hermes/topics/pl.example.hermes.TemperatureChanged';
@@ -81,5 +85,63 @@ describe('EnvironmentSwitch', () => {
 
     // then
     expect(mockReplace).toHaveBeenCalledWith(TEST_URL_ENV_2);
+  });
+
+  it('should open the new tab on holding ctrl and clicking', async () => {
+    // given
+    mockHref.mockReturnValue(TEST_URL_ENV_1);
+
+    // and
+    const { getByText } = render(EnvironmentSwitch, {
+      props: {
+        knownEnvironments: [
+          {
+            name: 'env1',
+            url: 'localhost:3000',
+          },
+          {
+            name: 'env2',
+            url: '127.0.0.1:3000',
+          },
+        ],
+      },
+    });
+
+    // when
+    const user = userEvent.setup();
+    await user.keyboard('[ControlLeft>]');
+    await user.click(getByText('env2').closest('button'));
+
+    // then
+    expect(mockOpen).toHaveBeenCalledWith(TEST_URL_ENV_2, '_blank');
+  });
+
+  it('should open the new tab on holding cmd and clicking', async () => {
+    // given
+    mockHref.mockReturnValue(TEST_URL_ENV_1);
+
+    // and
+    const { getByText } = render(EnvironmentSwitch, {
+      props: {
+        knownEnvironments: [
+          {
+            name: 'env1',
+            url: 'localhost:3000',
+          },
+          {
+            name: 'env2',
+            url: '127.0.0.1:3000',
+          },
+        ],
+      },
+    });
+
+    // when
+    const user = userEvent.setup();
+    await user.keyboard('[MetaLeft>]');
+    await user.click(getByText('env2').closest('button'));
+
+    // then
+    expect(mockOpen).toHaveBeenCalledWith(TEST_URL_ENV_2, '_blank');
   });
 });

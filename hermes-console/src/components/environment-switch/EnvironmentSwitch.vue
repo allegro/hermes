@@ -21,11 +21,15 @@
     );
   }
 
-  function switchToEnv(env: ConsoleEnvironment): string {
+  function switchToEnv(env: ConsoleEnvironment, event): string {
     const currentUrl = location.href;
     const currentEnv: ConsoleEnvironment = getCurrentEnv();
     const switchedUrl = currentUrl.replace(currentEnv.url, env.url);
-    window.location.replace(switchedUrl);
+    if (event.ctrlKey || event.metaKey) {
+      window.open(switchedUrl, '_blank');
+    } else {
+      window.location.replace(switchedUrl);
+    }
   }
 </script>
 
@@ -35,7 +39,7 @@
       v-for="env in knownEnvironments"
       min-width="100"
       v-bind:key="env.name"
-      v-on:click="switchToEnv(env)"
+      @click="switchToEnv(env, $event)"
     >
       {{ env.name }}
     </v-btn>
