@@ -10,6 +10,7 @@ import java.util.List;
 public class MarkTopicsAsUnusedRepositoryCommand extends RepositoryCommand<UnusedTopicsRepository> {
 
   private final List<UnusedTopic> unusedTopics;
+  private List<UnusedTopic> backup;
 
   public MarkTopicsAsUnusedRepositoryCommand(List<UnusedTopic> unusedTopics) {
     this.unusedTopics = unusedTopics;
@@ -17,7 +18,7 @@ public class MarkTopicsAsUnusedRepositoryCommand extends RepositoryCommand<Unuse
 
   @Override
   public void backup(DatacenterBoundRepositoryHolder<UnusedTopicsRepository> holder) {
-    // TODO
+    backup = holder.getRepository().read();
   }
 
   @Override
@@ -28,7 +29,7 @@ public class MarkTopicsAsUnusedRepositoryCommand extends RepositoryCommand<Unuse
   @Override
   public void rollback(
       DatacenterBoundRepositoryHolder<UnusedTopicsRepository> holder, Exception exception) {
-    // TODO
+    holder.getRepository().upsert(backup);
   }
 
   @Override
@@ -38,6 +39,6 @@ public class MarkTopicsAsUnusedRepositoryCommand extends RepositoryCommand<Unuse
 
   @Override
   public String toString() {
-    return String.format("MarkTopicAsUnused(%s)", unusedTopic.topicName().qualifiedName());
+    return String.format("MarkTopicsAsUnused(number of topics=%d)", unusedTopics.size());
   }
 }

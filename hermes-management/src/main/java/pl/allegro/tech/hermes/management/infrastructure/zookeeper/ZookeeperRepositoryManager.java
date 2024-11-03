@@ -33,9 +33,11 @@ import pl.allegro.tech.hermes.management.config.storage.ZookeeperGroupRepository
 import pl.allegro.tech.hermes.management.domain.blacklist.TopicBlacklistRepository;
 import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryManager;
+import pl.allegro.tech.hermes.management.domain.detection.UnusedTopicsRepository;
 import pl.allegro.tech.hermes.management.domain.readiness.DatacenterReadinessRepository;
 import pl.allegro.tech.hermes.management.domain.retransmit.OfflineRetransmissionRepository;
 import pl.allegro.tech.hermes.management.infrastructure.blacklist.ZookeeperTopicBlacklistRepository;
+import pl.allegro.tech.hermes.management.infrastructure.detection.ZookeeperUnusedTopicsRepository;
 import pl.allegro.tech.hermes.management.infrastructure.readiness.ZookeeperDatacenterReadinessRepository;
 import pl.allegro.tech.hermes.management.infrastructure.retransmit.ZookeeperOfflineRetransmissionRepository;
 
@@ -67,6 +69,7 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
       new HashMap<>();
   private final Map<String, OfflineRetransmissionRepository> offlineRetransmissionRepositoriesByDc =
       new HashMap<>();
+  private final Map<String, UnusedTopicsRepository> unusedTopicsRepositoriesByDc = new HashMap<>();
   private final ZookeeperGroupRepositoryFactory zookeeperGroupRepositoryFactory;
 
   public ZookeeperRepositoryManager(
@@ -138,6 +141,10 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
       ZookeeperOfflineRetransmissionRepository offlineRetransmissionRepository =
           new ZookeeperOfflineRetransmissionRepository(zookeeper, mapper, paths);
       offlineRetransmissionRepositoriesByDc.put(dcName, offlineRetransmissionRepository);
+
+      ZookeeperUnusedTopicsRepository unusedTopicsRepository =
+          new ZookeeperUnusedTopicsRepository(zookeeper, mapper, paths);
+      unusedTopicsRepositoriesByDc.put(dcName, unusedTopicsRepository);
     }
   }
 
@@ -189,5 +196,6 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
     repositoryByType.put(DatacenterReadinessRepository.class, readinessRepositoriesByDc);
     repositoryByType.put(
         OfflineRetransmissionRepository.class, offlineRetransmissionRepositoriesByDc);
+    repositoryByType.put(UnusedTopicsRepository.class, unusedTopicsRepositoriesByDc);
   }
 }

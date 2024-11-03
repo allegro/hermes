@@ -31,10 +31,12 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperTopicRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperWorkloadConstraintsRepository;
 import pl.allegro.tech.hermes.management.domain.blacklist.TopicBlacklistRepository;
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
+import pl.allegro.tech.hermes.management.domain.detection.UnusedTopicsRepository;
 import pl.allegro.tech.hermes.management.domain.mode.ModeService;
 import pl.allegro.tech.hermes.management.domain.readiness.DatacenterReadinessRepository;
 import pl.allegro.tech.hermes.management.domain.retransmit.OfflineRetransmissionRepository;
 import pl.allegro.tech.hermes.management.infrastructure.blacklist.ZookeeperTopicBlacklistRepository;
+import pl.allegro.tech.hermes.management.infrastructure.detection.ZookeeperUnusedTopicsRepository;
 import pl.allegro.tech.hermes.management.infrastructure.metrics.SummedSharedCounter;
 import pl.allegro.tech.hermes.management.infrastructure.readiness.ZookeeperDatacenterReadinessRepository;
 import pl.allegro.tech.hermes.management.infrastructure.retransmit.ZookeeperOfflineRetransmissionRepository;
@@ -175,6 +177,13 @@ public class StorageConfiguration {
   DatacenterReadinessRepository readinessRepository() {
     ZookeeperClient localClient = clientManager().getLocalClient();
     return new ZookeeperDatacenterReadinessRepository(
+        localClient.getCuratorFramework(), objectMapper, zookeeperPaths());
+  }
+
+  @Bean
+  UnusedTopicsRepository unusedTopicsRepository() {
+    ZookeeperClient localClient = clientManager().getLocalClient();
+    return new ZookeeperUnusedTopicsRepository(
         localClient.getCuratorFramework(), objectMapper, zookeeperPaths());
   }
 }
