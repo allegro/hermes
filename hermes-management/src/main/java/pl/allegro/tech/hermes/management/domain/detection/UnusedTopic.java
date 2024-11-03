@@ -1,8 +1,9 @@
 package pl.allegro.tech.hermes.management.domain.detection;
 
-import pl.allegro.tech.hermes.api.TopicName;
-
-import java.time.Instant;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public record UnusedTopic(
-    TopicName topicName, Instant lastPublishedMessage, Instant lastNotified, boolean whitelisted) {}
+    @JsonProperty String qualifiedTopicName,
+    @JsonProperty long lastPublishedMessageTimestampMs,
+    @JsonProperty long lastNotifiedTimestampMs,
+    @JsonProperty boolean whitelisted) {}
