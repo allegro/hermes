@@ -5,12 +5,14 @@ import pl.allegro.tech.hermes.management.domain.dc.RepositoryCommand;
 import pl.allegro.tech.hermes.management.domain.detection.UnusedTopic;
 import pl.allegro.tech.hermes.management.domain.detection.UnusedTopicsRepository;
 
-public class MarkTopicAsUnusedRepositoryCommand extends RepositoryCommand<UnusedTopicsRepository> {
+import java.util.List;
 
-  private final UnusedTopic unusedTopic;
+public class MarkTopicsAsUnusedRepositoryCommand extends RepositoryCommand<UnusedTopicsRepository> {
 
-  public MarkTopicAsUnusedRepositoryCommand(UnusedTopic unusedTopic) {
-    this.unusedTopic = unusedTopic;
+  private final List<UnusedTopic> unusedTopics;
+
+  public MarkTopicsAsUnusedRepositoryCommand(List<UnusedTopic> unusedTopics) {
+    this.unusedTopics = unusedTopics;
   }
 
   @Override
@@ -20,7 +22,7 @@ public class MarkTopicAsUnusedRepositoryCommand extends RepositoryCommand<Unused
 
   @Override
   public void execute(DatacenterBoundRepositoryHolder<UnusedTopicsRepository> holder) {
-    holder.getRepository().markAsUnused(unusedTopic);
+    holder.getRepository().upsert(unusedTopics);
   }
 
   @Override

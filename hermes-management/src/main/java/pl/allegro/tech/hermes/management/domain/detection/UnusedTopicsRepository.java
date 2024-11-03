@@ -1,7 +1,9 @@
 package pl.allegro.tech.hermes.management.domain.detection;
 
-public interface UnusedTopicsRepository {
-  void markAsUnused(UnusedTopic unusedTopic);
+import java.util.List;
 
-  void unmarkAsUnused(UnusedTopic unusedTopic);
+public interface UnusedTopicsRepository {
+  void upsert(List<UnusedTopic> unusedTopics);
+
+  List<UnusedTopic> read();
 }
