@@ -25,7 +25,7 @@ class UnusedTopicsServiceTest extends MultiZookeeperIntegrationTest {
     UnusedTopicsService unusedTopicsService
     UnusedTopicsRepository unusedTopicsRepository
 
-    def objectMapper = new ObjectMapper().registerModule(new JavaTimeModule()).registerModule(new Jdk8Module())
+    def objectMapper = new ObjectMapper().registerModule(new JavaTimeModule())
     def paths = new ZookeeperPaths('/hermes')
 
     def setup() {
@@ -47,8 +47,9 @@ class UnusedTopicsServiceTest extends MultiZookeeperIntegrationTest {
     }
 
     def TEST_UNUSED_TOPICS = [
-            new UnusedTopic("group.topic1", 1730641716154L, Optional.of(1730641716250L), false),
-            new UnusedTopic("group.topic2", 1730641712371L, Optional.empty(), true),
+            new UnusedTopic("group.topic1", 1730641716154L, [1730641716250L, 1730641716321], false),
+            new UnusedTopic("group.topic2", 1730641712371L, [1730641716250L], false),
+            new UnusedTopic("group.topic3", 1730641712371L, [], true),
     ]
 
     def "should create node in all zk clusters if it doesn't exist when upserting"() {
@@ -66,8 +67,8 @@ class UnusedTopicsServiceTest extends MultiZookeeperIntegrationTest {
         and:
         def newUnusedTopics = [
                 TEST_UNUSED_TOPICS[0],
-                new UnusedTopic("group.topic2", 1730641712371L, Optional.of(1730641712678L), false),
-                new UnusedTopic("group.topic3", 1730641712706L, Optional.of(1730641712999L), false),
+                new UnusedTopic("group.topic3", 1730641712371L, [1730641712678L], false),
+                new UnusedTopic("group.topic4", 1730641712706L, [1730641712999L], false),
         ]
 
         when:
@@ -86,7 +87,7 @@ class UnusedTopicsServiceTest extends MultiZookeeperIntegrationTest {
 
         when:
         unusedTopicsService.markAsUnused([
-                new UnusedTopic("group.topic3", 1730641656154L, Optional.empty(), false)
+                new UnusedTopic("group.topic3", 1730641656154L, [], false)
         ])
 
         then:
