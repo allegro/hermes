@@ -99,7 +99,7 @@ class UnusedTopicsServiceTest extends MultiZookeeperIntegrationTest {
 
     def "should return empty list when node doesn't exist"() {
         when:
-        def result = unusedTopicsService.readUnusedTopics()
+        def result = unusedTopicsService.getUnusedTopics()
 
         then:
         result == []
@@ -110,7 +110,7 @@ class UnusedTopicsServiceTest extends MultiZookeeperIntegrationTest {
         setupNodes([])
 
         when:
-        def result = unusedTopicsService.readUnusedTopics()
+        def result = unusedTopicsService.getUnusedTopics()
 
         then:
         result == []
@@ -121,7 +121,7 @@ class UnusedTopicsServiceTest extends MultiZookeeperIntegrationTest {
         setupNodes(TEST_UNUSED_TOPICS)
 
         when:
-        def result = unusedTopicsService.readUnusedTopics()
+        def result = unusedTopicsService.getUnusedTopics()
 
         then:
         result.sort() == TEST_UNUSED_TOPICS.sort()

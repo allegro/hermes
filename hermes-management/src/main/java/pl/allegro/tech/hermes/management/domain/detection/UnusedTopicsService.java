@@ -22,7 +22,7 @@ public class UnusedTopicsService {
     multiDcExecutor.execute(new MarkTopicsAsUnusedRepositoryCommand(unusedTopics));
   }
 
-  public List<UnusedTopic> readUnusedTopics() {
+  public List<UnusedTopic> getUnusedTopics() {
     return unusedTopicsRepository.read();
   }
 }
