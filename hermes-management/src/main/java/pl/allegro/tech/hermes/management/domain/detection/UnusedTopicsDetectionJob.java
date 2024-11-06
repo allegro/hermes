@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
-import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.management.config.detection.UnusedTopicsDetectionProperties;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 
@@ -36,9 +36,10 @@ public class UnusedTopicsDetectionJob {
   }
 
   public void detectAndNotify() {
-    List<Topic> allTopics = topicService.getAllTopics();
+    List<String> qualifiedTopicNames = topicService.listQualifiedTopicNames();
     List<UnusedTopic> historicalUnusedTopics = unusedTopicsService.getUnusedTopics();
-    List<UnusedTopic> foundUnusedTopics = detectUnusedTopics(allTopics, historicalUnusedTopics);
+    List<UnusedTopic> foundUnusedTopics =
+        detectUnusedTopics(qualifiedTopicNames, historicalUnusedTopics);
 
     Map<Boolean, List<UnusedTopic>> groupedByNeedOfNotification =
         foundUnusedTopics.stream()
@@ -49,24 +50,23 @@ public class UnusedTopicsDetectionJob {
     Instant now = clock.instant();
     List<UnusedTopic> unusedTopicsToSave =
         Stream.concat(
-                groupedByNeedOfNotification.get(true).stream()
+                groupedByNeedOfNotification.getOrDefault(true, Collections.emptyList()).stream()
                     .map(topic -> topic.notificationSent(now)),
-                groupedByNeedOfNotification.get(false).stream())
+                groupedByNeedOfNotification.getOrDefault(false, Collections.emptyList()).stream())
             .toList();
 
     unusedTopicsService.markAsUnused(unusedTopicsToSave);
   }
 
   private List<UnusedTopic> detectUnusedTopics(
-      List<Topic> allTopics, List<UnusedTopic> historicalUnusedTopics) {
+      List<String> qualifiedTopicNames, List<UnusedTopic> historicalUnusedTopics) {
     Map<String, UnusedTopic> historicalUnusedTopicsByName = groupByName(historicalUnusedTopics);
-    return allTopics.stream()
+    return qualifiedTopicNames.stream()
         .map(
-            topic ->
+            qualifiedTopicName ->
                 unusedTopicsDetectionService.detectUnusedTopic(
-                    topic.getName(),
-                    Optional.ofNullable(
-                        historicalUnusedTopicsByName.get(topic.getQualifiedName()))))
+                    TopicName.fromQualifiedName(qualifiedTopicName),
+                    Optional.ofNullable(historicalUnusedTopicsByName.get(qualifiedTopicName))))
         .map(opt -> opt.orElse(null))
         .filter(Objects::nonNull)
         .toList();
