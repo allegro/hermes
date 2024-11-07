@@ -7,6 +7,8 @@ import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.TopicName;
@@ -19,20 +21,25 @@ public class UnusedTopicsDetectionJob {
   private final TopicService topicService;
   private final UnusedTopicsService unusedTopicsService;
   private final UnusedTopicsDetectionService unusedTopicsDetectionService;
-  private final UnusedTopicsNotifier notifier;
+  private final Optional<UnusedTopicsNotifier> notifier;
   private final Clock clock;
+
+  private static final Logger logger = LoggerFactory.getLogger(UnusedTopicsDetectionJob.class);
 
   public UnusedTopicsDetectionJob(
       TopicService topicService,
       UnusedTopicsService unusedTopicsService,
       UnusedTopicsDetectionService unusedTopicsDetectionService,
-      UnusedTopicsNotifier notifier,
+      Optional<UnusedTopicsNotifier> notifier,
       Clock clock) {
     this.topicService = topicService;
     this.unusedTopicsService = unusedTopicsService;
     this.unusedTopicsDetectionService = unusedTopicsDetectionService;
-    this.notifier = notifier;
     this.clock = clock;
+    if (notifier.isEmpty()) {
+      logger.info("Unused topics notifier bean is absent");
+    }
+    this.notifier = notifier;
   }
 
   public void detectAndNotify() {
@@ -45,17 +52,17 @@ public class UnusedTopicsDetectionJob {
         foundUnusedTopics.stream()
             .collect(groupingBy(unusedTopicsDetectionService::shouldBeNotified));
 
-    notifier.notify(groupedByNeedOfNotification.get(true));
+    List<UnusedTopic> topicsToNotify = groupedByNeedOfNotification.getOrDefault(true, List.of());
+    List<UnusedTopic> topicsToSkipNotification =
+        groupedByNeedOfNotification.getOrDefault(false, List.of());
+
+    notify(topicsToNotify);
 
     Instant now = clock.instant();
-    List<UnusedTopic> unusedTopicsToSave =
-        Stream.concat(
-                groupedByNeedOfNotification.getOrDefault(true, Collections.emptyList()).stream()
-                    .map(topic -> topic.notificationSent(now)),
-                groupedByNeedOfNotification.getOrDefault(false, Collections.emptyList()).stream())
-            .toList();
+    List<UnusedTopic> notifiedTopics =
+        topicsToNotify.stream().map(topic -> topic.notificationSent(now)).toList();
 
-    unusedTopicsService.markAsUnused(unusedTopicsToSave);
+    saveUnusedTopics(notifiedTopics, topicsToSkipNotification);
   }
 
   private List<UnusedTopic> detectUnusedTopics(
@@ -75,5 +82,15 @@ public class UnusedTopicsDetectionJob {
   private Map<String, UnusedTopic> groupByName(List<UnusedTopic> unusedTopics) {
     return unusedTopics.stream()
         .collect(Collectors.toMap(UnusedTopic::qualifiedTopicName, v -> v, (v1, v2) -> v1));
+  }
+
+  private void notify(List<UnusedTopic> unusedTopics) {
+    notifier.ifPresent(notifier -> notifier.notify(unusedTopics));
+  }
+
+  private void saveUnusedTopics(
+      List<UnusedTopic> notifiedTopics, List<UnusedTopic> skippedNotificationTopics) {
+    unusedTopicsService.markAsUnused(
+        Stream.concat(notifiedTopics.stream(), skippedNotificationTopics.stream()).toList());
   }
 }

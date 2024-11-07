@@ -36,7 +36,7 @@ class UnusedTopicsDetectionJobTest extends Specification {
             topicServiceMock,
             unusedTopicsServiceMock,
             detectionService,
-            unusedTopicsNotifier,
+            Optional.of(unusedTopicsNotifier),
             clockMock
     )
 
@@ -86,5 +86,25 @@ class UnusedTopicsDetectionJobTest extends Specification {
                 new UnusedTopic("group.topic4", ago21days.toEpochMilli(), [ago14days.toEpochMilli(), now.toEpochMilli()], false),
                 new UnusedTopic("group.topic3", ago7days.toEpochMilli(), [], true)
         ])
+    }
+
+    def "should not notify if there are no unused topics"() {
+        given:
+        topicServiceMock.listQualifiedTopicNames() >> ["group.topic0"]
+        unusedTopicsServiceMock.getUnusedTopics() >> []
+
+        and:
+        def now = Instant.ofEpochMilli(1630600266987L)
+        clockMock.instant() >> now
+        metricsRepositoryMock.getLastPublishedMessageTimestamp(fromQualifiedName("group.topic0")) >> now
+
+        when:
+        detectionJob.detectAndNotify()
+
+        then:
+        unusedTopicsNotifier.getNotifiedTopics().toList() == []
+
+        and:
+        1 * unusedTopicsServiceMock.markAsUnused([])
     }
 }
