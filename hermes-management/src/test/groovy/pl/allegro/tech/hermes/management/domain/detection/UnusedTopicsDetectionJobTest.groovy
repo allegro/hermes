@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.management.domain.detection
 
 
-import pl.allegro.tech.hermes.api.TopicName
 import pl.allegro.tech.hermes.management.config.detection.UnusedTopicsDetectionProperties
 import pl.allegro.tech.hermes.management.domain.topic.TopicService
 import spock.lang.Specification
@@ -11,6 +10,7 @@ import java.time.Duration
 import java.time.Instant
 
 import static java.time.temporal.ChronoUnit.DAYS
+import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName
 
 class UnusedTopicsDetectionJobTest extends Specification {
 
@@ -48,7 +48,7 @@ class UnusedTopicsDetectionJobTest extends Specification {
         def ago21days = now.minus(21, DAYS)
         clockMock.instant() >> now
 
-        and:
+        and: "names of all topics"
         topicServiceMock.listQualifiedTopicNames() >> [
                 "group.topic0",
                 "group.topic1",
@@ -65,21 +65,22 @@ class UnusedTopicsDetectionJobTest extends Specification {
         ]
 
         and: "current last published message timestamp"
-        metricsRepositoryMock.getLastPublishedMessageTimestamp(TopicName.fromQualifiedName("group.topic0")) >> now
-        metricsRepositoryMock.getLastPublishedMessageTimestamp(TopicName.fromQualifiedName("group.topic1")) >> ago7days
-        metricsRepositoryMock.getLastPublishedMessageTimestamp(TopicName.fromQualifiedName("group.topic2")) >> now
-        metricsRepositoryMock.getLastPublishedMessageTimestamp(TopicName.fromQualifiedName("group.topic3")) >> ago7days
-        metricsRepositoryMock.getLastPublishedMessageTimestamp(TopicName.fromQualifiedName("group.topic4")) >> ago21days
+        metricsRepositoryMock.getLastPublishedMessageTimestamp(fromQualifiedName("group.topic0")) >> now
+        metricsRepositoryMock.getLastPublishedMessageTimestamp(fromQualifiedName("group.topic1")) >> ago7days
+        metricsRepositoryMock.getLastPublishedMessageTimestamp(fromQualifiedName("group.topic2")) >> now
+        metricsRepositoryMock.getLastPublishedMessageTimestamp(fromQualifiedName("group.topic3")) >> ago7days
+        metricsRepositoryMock.getLastPublishedMessageTimestamp(fromQualifiedName("group.topic4")) >> ago21days
 
         when:
         detectionJob.detectAndNotify()
 
-        then:
+        then: "notified are unused topics that are not whitelisted"
         unusedTopicsNotifier.getNotifiedTopics().toList() == [
                 new UnusedTopic("group.topic1", ago7days.toEpochMilli(), [], false),
                 new UnusedTopic("group.topic4", ago21days.toEpochMilli(), [ago14days.toEpochMilli()], false)
         ]
 
+        and: "saved are all unused topics with updated notification timestamps"
         1 * unusedTopicsServiceMock.markAsUnused([
                 new UnusedTopic("group.topic1", ago7days.toEpochMilli(), [now.toEpochMilli()], false),
                 new UnusedTopic("group.topic4", ago21days.toEpochMilli(), [ago14days.toEpochMilli(), now.toEpochMilli()], false),
