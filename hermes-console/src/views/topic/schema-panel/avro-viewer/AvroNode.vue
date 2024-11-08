@@ -11,7 +11,7 @@
   const getComplexType = (type: Type) => {
     if (type.type === 'array') {
       const arrayType = getTypes(type.items)[0];
-      return `[]${arrayType}`;
+      return `${arrayType}[]`;
     } else if (type.type === 'map') {
       const mapType = getTypes(type.values)[0];
       return `map[string]${mapType}`;
@@ -45,7 +45,7 @@
         .map((subType) => findNestedType(subType))
         .find((subType) => Object.getOwnPropertyDescriptor(subType, 'type'));
     }
-    if (type.type === 'array') return type.items;
+    if (type.type === 'array') return findNestedType(type.items);
     if (type.type === 'map') return type.values;
     return type;
   };

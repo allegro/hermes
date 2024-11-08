@@ -6,6 +6,7 @@
   import { useRoles } from '@/composables/roles/use-roles/useRoles';
   import { useRouter } from 'vue-router';
   import { useSubscription } from '@/composables/subscription/use-subscription/useSubscription';
+  import { useTopic } from '@/composables/topic/use-topic/useTopic';
   import ConfirmationDialog from '@/components/confirmation-dialog/ConfirmationDialog.vue';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import CostsCard from '@/components/costs-card/CostsCard.vue';
@@ -23,7 +24,7 @@
   const router = useRouter();
   const { groupId, subscriptionId, topicId } = router.currentRoute.value
     .params as Record<string, string>;
-
+  const { topic } = useTopic(topicId);
   const { t } = useI18n();
 
   const {
@@ -202,6 +203,7 @@
             :subscription="subscription"
             :owner="owner"
             :roles="roles"
+            :schema="topic?.schema"
             @remove="openRemoveDialog"
             @suspend="openSuspendDialog"
             @activate="openActivateDialog"
@@ -247,6 +249,7 @@
           <filters-card
             v-if="subscription && subscription?.filters.length > 0"
             :filters="subscription?.filters!!"
+            :schema="topic?.schema"
             :topic="topicId"
           />
           <headers-card
