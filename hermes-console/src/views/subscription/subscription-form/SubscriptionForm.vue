@@ -22,6 +22,7 @@
     subscription: Subscription | null;
     operation: 'add' | 'edit';
     roles: Role[] | undefined;
+    paths: string[];
   }>();
   const emit = defineEmits<{
     created: [subscription: string];
@@ -348,12 +349,13 @@
       <v-col class="text-right">
         <subscription-path-filters-debug
           :topic="props.topic"
+          :paths="paths"
           v-model="form.pathFilters"
           :edit-enabled="true"
         />
       </v-col>
     </v-row>
-    <subscription-path-filters v-model="form.pathFilters" />
+    <subscription-path-filters :paths="paths" v-model="form.pathFilters" />
 
     <v-divider class="mb-4" />
 
