@@ -117,6 +117,10 @@ public class MultiDCAwareService {
     clusters.forEach(clusterService -> clusterService.createConsumerGroup(topic, subscription));
   }
 
+  public void deleteConsumerGroups(Topic topic, Subscription subscription) {
+    clusters.forEach(clusterService -> clusterService.deleteConsumerGroup(topic, subscription));
+  }
+
   private void waitUntilOffsetsAreMoved(Topic topic, String subscriptionName) {
     Instant abortAttemptsInstant = clock.instant().plus(offsetsMovedTimeout);
 

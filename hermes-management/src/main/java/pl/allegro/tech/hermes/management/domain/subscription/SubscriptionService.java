@@ -191,7 +191,9 @@ public class SubscriptionService {
 
   public void removeSubscription(
       TopicName topicName, String subscriptionName, RequestUser removedBy) {
-    subscriptionRemover.removeSubscription(topicName, subscriptionName, removedBy);
+    Topic topic = topicService.getTopicDetails(topicName);
+    Subscription subscription = subscriptionRepository.getSubscriptionDetails(topicName, subscriptionName);
+    subscriptionRemover.removeSubscription(topic, subscription, removedBy);
   }
 
   public void updateSubscription(

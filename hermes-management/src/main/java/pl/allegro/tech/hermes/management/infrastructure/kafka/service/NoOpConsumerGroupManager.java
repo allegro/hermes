@@ -9,4 +9,9 @@ public class NoOpConsumerGroupManager implements ConsumerGroupManager {
   public void createConsumerGroup(Topic topic, Subscription subscription) {
     // no operation
   }
+
+  @Override
+  public void deleteConsumerGroup(Topic topic, Subscription subscription) {
+    // no operation
+  }
 }

@@ -12,36 +12,40 @@ import pl.allegro.tech.hermes.management.domain.Auditor;
 import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
 import pl.allegro.tech.hermes.management.domain.subscription.commands.RemoveSubscriptionRepositoryCommand;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 
 public class SubscriptionRemover {
 
   private static final Logger logger = LoggerFactory.getLogger(SubscriptionRemover.class);
   private final Auditor auditor;
+  private final MultiDCAwareService multiDCAwareService;
   private final MultiDatacenterRepositoryCommandExecutor multiDcExecutor;
   private final SubscriptionOwnerCache subscriptionOwnerCache;
   private final SubscriptionRepository subscriptionRepository;
 
   public SubscriptionRemover(
       Auditor auditor,
+      MultiDCAwareService multiDCAwareService,
       MultiDatacenterRepositoryCommandExecutor multiDcExecutor,
       SubscriptionOwnerCache subscriptionOwnerCache,
       SubscriptionRepository subscriptionRepository) {
     this.auditor = auditor;
+    this.multiDCAwareService = multiDCAwareService;
     this.multiDcExecutor = multiDcExecutor;
     this.subscriptionOwnerCache = subscriptionOwnerCache;
     this.subscriptionRepository = subscriptionRepository;
   }
 
   public void removeSubscription(
-      TopicName topicName, String subscriptionName, RequestUser removedBy) {
+      Topic topic, Subscription subscription, RequestUser removedBy) {
     auditor.beforeObjectRemoval(
-        removedBy.getUsername(), Subscription.class.getSimpleName(), subscriptionName);
-    Subscription subscription =
-        subscriptionRepository.getSubscriptionDetails(topicName, subscriptionName);
+        removedBy.getUsername(), Subscription.class.getSimpleName(), subscription.getName());
+    subscriptionRepository.getSubscriptionDetails(topic.getName(), subscription.getName());
+    multiDCAwareService.deleteConsumerGroups(topic, subscription);
     multiDcExecutor.executeByUser(
-        new RemoveSubscriptionRepositoryCommand(topicName, subscriptionName), removedBy);
+        new RemoveSubscriptionRepositoryCommand(topic.getName(), subscription.getName()), removedBy);
     auditor.objectRemoved(removedBy.getUsername(), subscription);
-    subscriptionOwnerCache.onRemovedSubscription(subscriptionName, topicName);
+    subscriptionOwnerCache.onRemovedSubscription(subscription.getName(), topic.getName());
   }
 
   public void removeSubscriptionRelatedToTopic(Topic topic, RequestUser removedBy) {
@@ -50,7 +54,7 @@ public class SubscriptionRemover {
     logger.info(
         "Removing subscriptions of topic: {}, subscriptions: {}", topic.getName(), subscriptions);
     long start = System.currentTimeMillis();
-    subscriptions.forEach(sub -> removeSubscription(topic.getName(), sub.getName(), removedBy));
+    subscriptions.forEach(sub -> removeSubscription(topic, sub, removedBy));
     logger.info(
         "Removed subscriptions of topic: {} in {} ms",
         topic.getName(),
