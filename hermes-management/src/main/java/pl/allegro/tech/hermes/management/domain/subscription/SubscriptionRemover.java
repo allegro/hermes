@@ -36,14 +36,13 @@ public class SubscriptionRemover {
     this.subscriptionRepository = subscriptionRepository;
   }
 
-  public void removeSubscription(
-      Topic topic, Subscription subscription, RequestUser removedBy) {
+  public void removeSubscription(Topic topic, Subscription subscription, RequestUser removedBy) {
     auditor.beforeObjectRemoval(
         removedBy.getUsername(), Subscription.class.getSimpleName(), subscription.getName());
-    subscriptionRepository.getSubscriptionDetails(topic.getName(), subscription.getName());
     multiDCAwareService.deleteConsumerGroups(topic, subscription);
     multiDcExecutor.executeByUser(
-        new RemoveSubscriptionRepositoryCommand(topic.getName(), subscription.getName()), removedBy);
+        new RemoveSubscriptionRepositoryCommand(topic.getName(), subscription.getName()),
+        removedBy);
     auditor.objectRemoved(removedBy.getUsername(), subscription);
     subscriptionOwnerCache.onRemovedSubscription(subscription.getName(), topic.getName());
   }

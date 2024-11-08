@@ -90,24 +90,27 @@ public class KafkaConsumerGroupManager implements ConsumerGroupManager {
   @Override
   public void deleteConsumerGroup(Topic topic, Subscription subscription) {
     logger.info(
-            "Deleting consumer group for subscription {}, cluster: {}",
-            subscription.getQualifiedName(),
-            clusterName);
+        "Deleting consumer group for subscription {}, cluster: {}",
+        subscription.getQualifiedName(),
+        clusterName);
 
     try {
       ConsumerGroupId groupId = kafkaNamesMapper.toConsumerGroupId(subscription.getQualifiedName());
-      kafkaAdminClient.deleteConsumerGroups(Collections.singletonList(groupId.asString())).all().get();
+      kafkaAdminClient
+          .deleteConsumerGroups(Collections.singletonList(groupId.asString()))
+          .all()
+          .get();
 
       logger.info(
-              "Successfully deleted consumer group for subscription {}, cluster: {}",
-              subscription.getQualifiedName(),
-              clusterName);
+          "Successfully deleted consumer group for subscription {}, cluster: {}",
+          subscription.getQualifiedName(),
+          clusterName);
     } catch (Exception e) {
       logger.error(
-              "Failed to delete consumer group for subscription {}, cluster: {}",
-              subscription.getQualifiedName(),
-              clusterName,
-              e);
+          "Failed to delete consumer group for subscription {}, cluster: {}",
+          subscription.getQualifiedName(),
+          clusterName,
+          e);
     }
   }
 }

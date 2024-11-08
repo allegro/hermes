@@ -112,7 +112,8 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
                       new OffsetsAvailableChecker(consumerPool, storage),
                       new LogEndOffsetChecker(consumerPool),
                       brokerAdminClient,
-                      createConsumerGroupManager(kafkaProperties, kafkaNamesMapper, brokerAdminClient),
+                      createConsumerGroupManager(
+                          kafkaProperties, kafkaNamesMapper, brokerAdminClient),
                       createKafkaConsumerManager(kafkaProperties, kafkaNamesMapper));
                 })
             .collect(toList());
@@ -126,7 +127,9 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
   }
 
   private ConsumerGroupManager createConsumerGroupManager(
-      KafkaProperties kafkaProperties, KafkaNamesMapper kafkaNamesMapper, AdminClient kafkaAdminClient) {
+      KafkaProperties kafkaProperties,
+      KafkaNamesMapper kafkaNamesMapper,
+      AdminClient kafkaAdminClient) {
     return subscriptionProperties.isCreateConsumerGroupManuallyEnabled()
         ? new KafkaConsumerGroupManager(
             kafkaNamesMapper,
