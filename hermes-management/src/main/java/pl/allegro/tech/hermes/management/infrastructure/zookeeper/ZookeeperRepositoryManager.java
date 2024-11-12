@@ -69,7 +69,8 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
       new HashMap<>();
   private final Map<String, OfflineRetransmissionRepository> offlineRetransmissionRepositoriesByDc =
       new HashMap<>();
-  private final Map<String, InactiveTopicsRepository> inactiveTopicsRepositoriesByDc = new HashMap<>();
+  private final Map<String, InactiveTopicsRepository> inactiveTopicsRepositoriesByDc =
+      new HashMap<>();
   private final ZookeeperGroupRepositoryFactory zookeeperGroupRepositoryFactory;
 
   public ZookeeperRepositoryManager(

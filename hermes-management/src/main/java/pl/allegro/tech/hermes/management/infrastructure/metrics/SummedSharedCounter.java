@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.management.infrastructure.metrics;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;

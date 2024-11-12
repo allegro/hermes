@@ -1,9 +1,8 @@
 package pl.allegro.tech.hermes.management.config.detection;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
 import java.time.Duration;
 import java.util.Set;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "detection.inactive-topics")
 public record InactiveTopicsDetectionProperties(

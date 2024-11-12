@@ -87,12 +87,12 @@ public class InactiveTopicsDetectionJob {
 
   private void notify(List<InactiveTopic> inactiveTopics) {
     if (!inactiveTopics.isEmpty()) {
-        if (notifier.isPresent()) {
-          logger.info("Notifying {} inactive topics", inactiveTopics.size());
-          notifier.get().notify(inactiveTopics);
-        } else {
-          logger.info("Skipping notification of {} inactive topics", inactiveTopics.size());
-        }
+      if (notifier.isPresent()) {
+        logger.info("Notifying {} inactive topics", inactiveTopics.size());
+        notifier.get().notify(inactiveTopics);
+      } else {
+        logger.info("Skipping notification of {} inactive topics", inactiveTopics.size());
+      }
     }
   }
 
