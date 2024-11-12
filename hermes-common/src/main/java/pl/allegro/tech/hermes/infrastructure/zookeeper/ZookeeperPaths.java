@@ -187,6 +187,10 @@ public class ZookeeperPaths {
     return Joiner.on(URL_SEPARATOR).join(basePath, UNUSED_TOPICS_PATH);
   }
 
+  public String unusedTopicsLeaderPath() {
+    return Joiner.on(URL_SEPARATOR).join(unusedTopicsPath(), "leader");
+  }
+
   public String join(String... parts) {
     return Joiner.on(URL_SEPARATOR).join(parts);
   }

@@ -9,4 +9,5 @@ import java.util.Set;
 public record UnusedTopicsDetectionProperties(
     Duration inactivityThreshold,
     Duration nextNotificationThreshold,
-    Set<String> whitelistedQualifiedTopicNames) {}
+    Set<String> whitelistedQualifiedTopicNames,
+    String leaderElectionZookeeperDc) {}
