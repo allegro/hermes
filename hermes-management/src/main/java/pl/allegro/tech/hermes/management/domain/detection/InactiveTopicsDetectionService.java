@@ -27,10 +27,14 @@ public class InactiveTopicsDetectionService {
   public Optional<InactiveTopic> detectInactiveTopic(
       TopicName topicName, Optional<InactiveTopic> historicalInactiveTopic) {
     Instant now = clock.instant();
-    Instant lastUsed = metricsRepository.getLastPublishedMessageTimestamp(topicName);
-    boolean isInactive = isInactive(lastUsed, now);
+    Optional<Instant> lastUsedOptional =
+        metricsRepository.getLastPublishedMessageTimestamp(topicName);
+    if (lastUsedOptional.isEmpty()) {
+      return Optional.empty();
+    }
+    Instant lastUsed = lastUsedOptional.get();
 
-    if (isInactive) {
+    if (isInactive(lastUsed, now)) {
       return Optional.of(
           new InactiveTopic(
               topicName.qualifiedName(),

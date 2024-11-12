@@ -66,11 +66,11 @@ class InactiveTopicsDetectionJobTest extends Specification {
         ]
 
         and: "current last published message timestamp"
-        metricsRepositoryMock.getLastPublishedMessageTimestamp(fromQualifiedName("group.topic0")) >> now
-        metricsRepositoryMock.getLastPublishedMessageTimestamp(fromQualifiedName("group.topic1")) >> ago7days
-        metricsRepositoryMock.getLastPublishedMessageTimestamp(fromQualifiedName("group.topic2")) >> now
-        metricsRepositoryMock.getLastPublishedMessageTimestamp(fromQualifiedName("group.topic3")) >> ago7days
-        metricsRepositoryMock.getLastPublishedMessageTimestamp(fromQualifiedName("group.topic4")) >> ago21days
+        mockLastPublishedMessageTimestamp("group.topic0", now)
+        mockLastPublishedMessageTimestamp("group.topic1", ago7days)
+        mockLastPublishedMessageTimestamp("group.topic2", now)
+        mockLastPublishedMessageTimestamp("group.topic3", ago7days)
+        mockLastPublishedMessageTimestamp("group.topic4", ago21days)
 
         when:
         detectionJob.detectAndNotify()
@@ -97,7 +97,7 @@ class InactiveTopicsDetectionJobTest extends Specification {
         and:
         def now = Instant.ofEpochMilli(1630600266987L)
         clockMock.instant() >> now
-        metricsRepositoryMock.getLastPublishedMessageTimestamp(fromQualifiedName("group.topic0")) >> now
+        mockLastPublishedMessageTimestamp("group.topic0", now)
 
         when:
         detectionJob.detectAndNotify()
@@ -107,5 +107,9 @@ class InactiveTopicsDetectionJobTest extends Specification {
 
         and:
         1 * inactiveTopicsStorageServiceMock.markAsInactive([])
+    }
+
+    private def mockLastPublishedMessageTimestamp(String topicName, Instant instant) {
+        metricsRepositoryMock.getLastPublishedMessageTimestamp(fromQualifiedName(topicName)) >> Optional.ofNullable(instant)
     }
 }

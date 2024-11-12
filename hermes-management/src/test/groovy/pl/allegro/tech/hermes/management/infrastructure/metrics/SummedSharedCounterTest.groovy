@@ -52,19 +52,19 @@ class SummedSharedCounterTest extends MultiZookeeperIntegrationTest {
         def sharedCounterDc1Mtime = getMtime(DC_1_NAME, COUNTER_PATH)
 
         then:
-        summedSharedCounter.getLastModified(COUNTER_PATH).toEpochMilli() == sharedCounterDc1Mtime
+        summedSharedCounter.getLastModified(COUNTER_PATH).get().toEpochMilli() == sharedCounterDc1Mtime
 
         when:
         sharedCounterDc2.increment(COUNTER_PATH, 1)
         def sharedCounterDc2Mtime = getMtime(DC_2_NAME, COUNTER_PATH)
 
         then:
-        summedSharedCounter.getLastModified(COUNTER_PATH).toEpochMilli() == sharedCounterDc2Mtime
+        summedSharedCounter.getLastModified(COUNTER_PATH).get().toEpochMilli() == sharedCounterDc2Mtime
     }
 
-    def "should return null for last modified time of non existing counter"() {
+    def "should return empty optional for last modified time of non existing counter"() {
         expect:
-        summedSharedCounter.getLastModified("/does/not/exist") == null
+        summedSharedCounter.getLastModified("/does/not/exist") == Optional.empty()
     }
 
     private def getMtime(String dc, String counterPath) {

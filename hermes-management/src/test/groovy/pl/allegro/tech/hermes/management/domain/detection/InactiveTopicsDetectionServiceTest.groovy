@@ -29,8 +29,8 @@ class InactiveTopicsDetectionServiceTest extends Specification {
     private def service = new InactiveTopicsDetectionService(metricsRepositoryMock, properties, clockMock)
 
     def setup() {
-        metricsRepositoryMock.getLastPublishedMessageTimestamp(TopicName.fromQualifiedName(TEST_TOPIC_NAME)) >> LAST_PUBLISHED
-        metricsRepositoryMock.getLastPublishedMessageTimestamp(TopicName.fromQualifiedName(WHITELISTED_TOPIC_NAME)) >> LAST_PUBLISHED
+        metricsRepositoryMock.getLastPublishedMessageTimestamp(TopicName.fromQualifiedName(TEST_TOPIC_NAME)) >> Optional.of(LAST_PUBLISHED)
+        metricsRepositoryMock.getLastPublishedMessageTimestamp(TopicName.fromQualifiedName(WHITELISTED_TOPIC_NAME)) >> Optional.of(LAST_PUBLISHED)
     }
 
     def "should detect inactive topic when it surpasses inactivity threshold"() {
@@ -109,6 +109,24 @@ class InactiveTopicsDetectionServiceTest extends Specification {
                 Optional.of(inactiveTopic(TEST_TOPIC_NAME, LAST_PUBLISHED, [])),
                 Optional.empty(),
         ]
+    }
+
+    def "should not detect inactive topic when last published message metrics are not available"() {
+        given:
+        String topicName = "group.topicWithoutMetrics"
+
+        and:
+        clockMock.instant() >> plusDays(LAST_PUBLISHED, INACTIVITY_THRESHOLD)
+        metricsRepositoryMock.getLastPublishedMessageTimestamp(TopicName.fromQualifiedName(topicName)) >> Optional.empty()
+
+        when:
+        def result = service.detectInactiveTopic(
+                TopicName.fromQualifiedName(topicName),
+                Optional.empty()
+        )
+
+        then:
+        result.isEmpty()
     }
 
     def "should be notified when inactive and no sent notifications"() {

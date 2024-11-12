@@ -7,6 +7,7 @@ import pl.allegro.tech.hermes.management.domain.detection.LastPublishedMessageMe
 import pl.allegro.tech.hermes.management.infrastructure.metrics.SummedSharedCounter;
 
 import java.time.Instant;
+import java.util.Optional;
 
 @Component
 public class ZookeeperLastPublishedMessageMetricsRepository
@@ -21,7 +22,7 @@ public class ZookeeperLastPublishedMessageMetricsRepository
   }
 
   @Override
-  public Instant getLastPublishedMessageTimestamp(TopicName topicName) {
+  public Optional<Instant> getLastPublishedMessageTimestamp(TopicName topicName) {
     return summedSharedCounter.getLastModified(
         zookeeperPaths.topicMetricPath(topicName, "published"));
   }

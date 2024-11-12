@@ -8,6 +8,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.atomic.DistributedAtomicLong;
@@ -40,7 +41,7 @@ public class SummedSharedCounter {
     }
   }
 
-  public Instant getLastModified(String path) {
+  public Optional<Instant> getLastModified(String path) {
     try {
       return counterAggregators.get(path).getLastModified();
     } catch (ZookeeperCounterException e) {
@@ -102,7 +103,7 @@ public class SummedSharedCounter {
       return sum;
     }
 
-    Instant getLastModified() throws Exception {
+    Optional<Instant> getLastModified() throws Exception {
       Instant lastModified = null;
       for (Map.Entry<String, CuratorFramework> curatorClient : curatorPerDatacenter.entrySet()) {
         ensureConnected(curatorClient.getKey());
@@ -114,7 +115,7 @@ public class SummedSharedCounter {
           }
         }
       }
-      return lastModified;
+      return Optional.ofNullable(lastModified);
     }
 
     private void ensureConnected(String datacenter) {
