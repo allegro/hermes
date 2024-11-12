@@ -62,6 +62,7 @@ public class InactiveTopicsDetectionScheduler {
   public void run() {
     if (leaderLatch.isPresent()) {
       if (leaderLatch.get().hasLeadership()) {
+        logger.info("Inactive topics detection started");
         job.detectAndNotify();
       }
     } else {
