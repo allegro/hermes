@@ -7,36 +7,36 @@ import java.util.Collections;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.management.config.detection.UnusedTopicsDetectionProperties;
+import pl.allegro.tech.hermes.management.config.detection.InactiveTopicsDetectionProperties;
 
 @Service
-public class UnusedTopicsDetectionService {
+public class InactiveTopicsDetectionService {
   private final LastPublishedMessageMetricsRepository metricsRepository;
-  private final UnusedTopicsDetectionProperties properties;
+  private final InactiveTopicsDetectionProperties properties;
   private final Clock clock;
 
-  public UnusedTopicsDetectionService(
+  public InactiveTopicsDetectionService(
       LastPublishedMessageMetricsRepository metricsRepository,
-      UnusedTopicsDetectionProperties properties,
+      InactiveTopicsDetectionProperties properties,
       Clock clock) {
     this.metricsRepository = metricsRepository;
     this.properties = properties;
     this.clock = clock;
   }
 
-  public Optional<UnusedTopic> detectUnusedTopic(
-      TopicName topicName, Optional<UnusedTopic> historicalUnusedTopic) {
+  public Optional<InactiveTopic> detectInactiveTopic(
+      TopicName topicName, Optional<InactiveTopic> historicalInactiveTopic) {
     Instant now = clock.instant();
     Instant lastUsed = metricsRepository.getLastPublishedMessageTimestamp(topicName);
-    boolean isUnused = isInactive(lastUsed, now);
+    boolean isInactive = isInactive(lastUsed, now);
 
-    if (isUnused) {
+    if (isInactive) {
       return Optional.of(
-          new UnusedTopic(
+          new InactiveTopic(
               topicName.qualifiedName(),
               lastUsed.toEpochMilli(),
-              historicalUnusedTopic
-                  .map(UnusedTopic::notificationTimestampsMs)
+              historicalInactiveTopic
+                  .map(InactiveTopic::notificationTimestampsMs)
                   .orElse(Collections.emptyList()),
               properties.whitelistedQualifiedTopicNames().contains(topicName.qualifiedName())));
     } else {
@@ -44,17 +44,17 @@ public class UnusedTopicsDetectionService {
     }
   }
 
-  public boolean shouldBeNotified(UnusedTopic unusedTopic) {
+  public boolean shouldBeNotified(InactiveTopic inactiveTopic) {
     Instant now = clock.instant();
-    Instant lastUsed = Instant.ofEpochMilli(unusedTopic.lastPublishedMessageTimestampMs());
+    Instant lastUsed = Instant.ofEpochMilli(inactiveTopic.lastPublishedMessageTimestampMs());
     Optional<Instant> lastNotified =
-        unusedTopic.notificationTimestampsMs().stream()
+        inactiveTopic.notificationTimestampsMs().stream()
             .max(Long::compare)
             .map(Instant::ofEpochMilli);
     boolean isInactive = isInactive(lastUsed, now);
 
     return isInactive
-        && !unusedTopic.whitelisted()
+        && !inactiveTopic.whitelisted()
         && lastNotified.map(instant -> readyForNextNotification(instant, now)).orElse(true);
   }
 

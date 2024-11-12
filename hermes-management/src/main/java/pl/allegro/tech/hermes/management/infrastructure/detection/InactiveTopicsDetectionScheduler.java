@@ -11,29 +11,29 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
-import pl.allegro.tech.hermes.management.config.detection.UnusedTopicsDetectionProperties;
-import pl.allegro.tech.hermes.management.domain.detection.UnusedTopicsDetectionJob;
+import pl.allegro.tech.hermes.management.config.detection.InactiveTopicsDetectionProperties;
+import pl.allegro.tech.hermes.management.domain.detection.InactiveTopicsDetectionJob;
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClient;
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClientManager;
 
-@ConditionalOnProperty(value = "detection.unused-topics.enabled", havingValue = "true")
+@ConditionalOnProperty(value = "detection.inactive-topics.enabled", havingValue = "true")
 @Component
-@EnableConfigurationProperties(UnusedTopicsDetectionProperties.class)
-public class UnusedTopicsDetectionScheduler {
-  private final UnusedTopicsDetectionJob job;
+@EnableConfigurationProperties(InactiveTopicsDetectionProperties.class)
+public class InactiveTopicsDetectionScheduler {
+  private final InactiveTopicsDetectionJob job;
   private final String leaderElectionDc;
   private final Optional<LeaderLatch> leaderLatch;
 
   private static final Logger logger =
-      LoggerFactory.getLogger(UnusedTopicsDetectionScheduler.class);
+      LoggerFactory.getLogger(InactiveTopicsDetectionScheduler.class);
 
-  public UnusedTopicsDetectionScheduler(
-      UnusedTopicsDetectionJob job,
+  public InactiveTopicsDetectionScheduler(
+      InactiveTopicsDetectionJob job,
       ZookeeperClientManager zookeeperClientManager,
-      UnusedTopicsDetectionProperties unusedTopicsDetectionProperties,
+      InactiveTopicsDetectionProperties inactiveTopicsDetectionProperties,
       ZookeeperPaths zookeeperPaths) {
-    this.leaderElectionDc = unusedTopicsDetectionProperties.leaderElectionZookeeperDc();
-    String leaderPath = zookeeperPaths.unusedTopicsLeaderPath();
+    this.leaderElectionDc = inactiveTopicsDetectionProperties.leaderElectionZookeeperDc();
+    String leaderPath = zookeeperPaths.inactiveTopicsLeaderPath();
     Optional<CuratorFramework> leaderCuratorFramework =
         zookeeperClientManager.getClients().stream()
             .filter(it -> it.getDatacenterName().equals(leaderElectionDc))
@@ -58,7 +58,7 @@ public class UnusedTopicsDetectionScheduler {
         });
   }
 
-  @Scheduled(cron = "${detection.unused-topics.cron}")
+  @Scheduled(cron = "${detection.inactive-topics.cron}")
   public void run() {
     if (leaderLatch.isPresent()) {
       if (leaderLatch.get().hasLeadership()) {
@@ -70,6 +70,6 @@ public class UnusedTopicsDetectionScheduler {
   }
 
   private void logLeaderZookeeperClientNotFound(String dc) {
-    logger.error("Cannot run unused topics detection - no zookeeper client for datacenter={}", dc);
+    logger.error("Cannot run inactive topics detection - no zookeeper client for datacenter={}", dc);
   }
 }

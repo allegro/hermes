@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.management.domain.detection
 
 import pl.allegro.tech.hermes.api.TopicName
-import pl.allegro.tech.hermes.management.config.detection.UnusedTopicsDetectionProperties
+import pl.allegro.tech.hermes.management.config.detection.InactiveTopicsDetectionProperties
 import spock.lang.Specification
 
 import java.time.Clock
@@ -9,7 +9,7 @@ import java.time.Duration
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 
-class UnusedTopicsDetectionServiceTest extends Specification {
+class InactiveTopicsDetectionServiceTest extends Specification {
 
     private static def TEST_TOPIC_NAME = "group.topic"
     private static def WHITELISTED_TOPIC_NAME = "whitelisted.topic"
@@ -17,7 +17,7 @@ class UnusedTopicsDetectionServiceTest extends Specification {
     private static def INACTIVITY_THRESHOLD = 7
     private static def NEXT_NOTIFICATION_THRESHOLD = 14
 
-    UnusedTopicsDetectionProperties properties = new UnusedTopicsDetectionProperties(
+    InactiveTopicsDetectionProperties properties = new InactiveTopicsDetectionProperties(
             Duration.ofDays(INACTIVITY_THRESHOLD),
             Duration.ofDays(NEXT_NOTIFICATION_THRESHOLD),
             [WHITELISTED_TOPIC_NAME] as Set<String>,
@@ -26,57 +26,57 @@ class UnusedTopicsDetectionServiceTest extends Specification {
 
     private def metricsRepositoryMock = Mock(LastPublishedMessageMetricsRepository)
     private def clockMock = Mock(Clock)
-    private def service = new UnusedTopicsDetectionService(metricsRepositoryMock, properties, clockMock)
+    private def service = new InactiveTopicsDetectionService(metricsRepositoryMock, properties, clockMock)
 
     def setup() {
         metricsRepositoryMock.getLastPublishedMessageTimestamp(TopicName.fromQualifiedName(TEST_TOPIC_NAME)) >> LAST_PUBLISHED
         metricsRepositoryMock.getLastPublishedMessageTimestamp(TopicName.fromQualifiedName(WHITELISTED_TOPIC_NAME)) >> LAST_PUBLISHED
     }
 
-    def "should detect unused topic when it surpasses inactivity threshold"() {
+    def "should detect inactive topic when it surpasses inactivity threshold"() {
         given:
         clockMock.instant() >> now
 
         when:
-        def result = service.detectUnusedTopic(
+        def result = service.detectInactiveTopic(
                 TopicName.fromQualifiedName(TEST_TOPIC_NAME),
-                historicalUnusedTopic
+                historicalInactiveTopic
         )
 
         then:
-        result.get() == new UnusedTopic(
+        result.get() == new InactiveTopic(
                 TEST_TOPIC_NAME,
                 LAST_PUBLISHED.toEpochMilli(),
-                historicalUnusedTopic.map { it.notificationTimestampsMs() }.orElse([]),
+                historicalInactiveTopic.map { it.notificationTimestampsMs() }.orElse([]),
                 false
         )
 
         where:
-        now                                                | historicalUnusedTopic
-        plusDays(LAST_PUBLISHED, INACTIVITY_THRESHOLD)     | Optional.of(unusedTopic(TEST_TOPIC_NAME, LAST_PUBLISHED, [now]))
+        now                                                | historicalInactiveTopic
+        plusDays(LAST_PUBLISHED, INACTIVITY_THRESHOLD)     | Optional.of(inactiveTopic(TEST_TOPIC_NAME, LAST_PUBLISHED, [now]))
         plusDays(LAST_PUBLISHED, INACTIVITY_THRESHOLD)     | Optional.empty()
-        plusDays(LAST_PUBLISHED, INACTIVITY_THRESHOLD + 3) | Optional.of(unusedTopic(TEST_TOPIC_NAME, LAST_PUBLISHED, [now]))
+        plusDays(LAST_PUBLISHED, INACTIVITY_THRESHOLD + 3) | Optional.of(inactiveTopic(TEST_TOPIC_NAME, LAST_PUBLISHED, [now]))
     }
 
-    def "should correctly detect unused topic as whitelisted or not"() {
+    def "should correctly detect inactive topic as whitelisted or not"() {
         given:
         def now = plusDays(LAST_PUBLISHED, INACTIVITY_THRESHOLD)
-        def historicalUnusedTopic = unusedTopic(topicName, LAST_PUBLISHED, [now], historicallyWhitelisted)
+        def historicalInactiveTopic = inactiveTopic(topicName, LAST_PUBLISHED, [now], historicallyWhitelisted)
 
         and:
         clockMock.instant() >> now
 
         when:
-        def result = service.detectUnusedTopic(
+        def result = service.detectInactiveTopic(
                 TopicName.fromQualifiedName(topicName),
-                Optional.of(historicalUnusedTopic)
+                Optional.of(historicalInactiveTopic)
         )
 
         then:
-        result.get() == new UnusedTopic(
+        result.get() == new InactiveTopic(
                 topicName,
                 LAST_PUBLISHED.toEpochMilli(),
-                historicalUnusedTopic.notificationTimestampsMs(),
+                historicalInactiveTopic.notificationTimestampsMs(),
                 whitelisted
         )
 
@@ -88,7 +88,7 @@ class UnusedTopicsDetectionServiceTest extends Specification {
         WHITELISTED_TOPIC_NAME | true                    || true
     }
 
-    def "should not detect unused topic when it is within inactivity threshold"() {
+    def "should not detect inactive topic when it is within inactivity threshold"() {
         given:
         def now = plusDays(LAST_PUBLISHED, INACTIVITY_THRESHOLD - 1)
 
@@ -96,17 +96,17 @@ class UnusedTopicsDetectionServiceTest extends Specification {
         clockMock.instant() >> now
 
         when:
-        def result = service.detectUnusedTopic(
+        def result = service.detectInactiveTopic(
                 TopicName.fromQualifiedName(TEST_TOPIC_NAME),
-                historicalUnusedTopic
+                historicalInactiveTopic
         )
 
         then:
         result.isEmpty()
 
         where:
-        historicalUnusedTopic << [
-                Optional.of(unusedTopic(TEST_TOPIC_NAME, LAST_PUBLISHED, [])),
+        historicalInactiveTopic << [
+                Optional.of(inactiveTopic(TEST_TOPIC_NAME, LAST_PUBLISHED, [])),
                 Optional.empty(),
         ]
     }
@@ -116,10 +116,10 @@ class UnusedTopicsDetectionServiceTest extends Specification {
         clockMock.instant() >> now
 
         and:
-        def unusedTopic = unusedTopic(TEST_TOPIC_NAME, LAST_PUBLISHED, [])
+        def inactiveTopic = inactiveTopic(TEST_TOPIC_NAME, LAST_PUBLISHED, [])
 
         expect:
-        service.shouldBeNotified(unusedTopic)
+        service.shouldBeNotified(inactiveTopic)
 
         where:
         now << [plusDays(LAST_PUBLISHED, INACTIVITY_THRESHOLD), plusDays(LAST_PUBLISHED, 2 * INACTIVITY_THRESHOLD)]
@@ -130,10 +130,10 @@ class UnusedTopicsDetectionServiceTest extends Specification {
         clockMock.instant() >> now
 
         and:
-        def unusedTopic = unusedTopic(TEST_TOPIC_NAME, LAST_PUBLISHED, notificationTimestamps)
+        def inactiveTopic = inactiveTopic(TEST_TOPIC_NAME, LAST_PUBLISHED, notificationTimestamps)
 
         expect:
-        service.shouldBeNotified(unusedTopic)
+        service.shouldBeNotified(inactiveTopic)
 
         where:
         now                                                                              | notificationTimestamps
@@ -149,10 +149,10 @@ class UnusedTopicsDetectionServiceTest extends Specification {
         clockMock.instant() >> now
 
         and:
-        def unusedTopic = unusedTopic(TEST_TOPIC_NAME, LAST_PUBLISHED, [])
+        def inactiveTopic = inactiveTopic(TEST_TOPIC_NAME, LAST_PUBLISHED, [])
 
         expect:
-        !service.shouldBeNotified(unusedTopic)
+        !service.shouldBeNotified(inactiveTopic)
     }
 
     def "should not be notified when whitelisted"() {
@@ -163,10 +163,10 @@ class UnusedTopicsDetectionServiceTest extends Specification {
         clockMock.instant() >> now
 
         and:
-        def unusedTopic = unusedTopic(TEST_TOPIC_NAME, LAST_PUBLISHED, [], true)
+        def inactiveTopic = inactiveTopic(TEST_TOPIC_NAME, LAST_PUBLISHED, [], true)
 
         expect:
-        !service.shouldBeNotified(unusedTopic)
+        !service.shouldBeNotified(inactiveTopic)
     }
 
     def "should not be notified when not enough time from last notification"() {
@@ -174,10 +174,10 @@ class UnusedTopicsDetectionServiceTest extends Specification {
         clockMock.instant() >> now
 
         and:
-        def unusedTopic = unusedTopic(TEST_TOPIC_NAME, LAST_PUBLISHED, notificationTimestamps)
+        def inactiveTopic = inactiveTopic(TEST_TOPIC_NAME, LAST_PUBLISHED, notificationTimestamps)
 
         expect:
-        !service.shouldBeNotified(unusedTopic)
+        !service.shouldBeNotified(inactiveTopic)
 
         where:
         now                                                                              | notificationTimestamps
@@ -189,8 +189,8 @@ class UnusedTopicsDetectionServiceTest extends Specification {
         return instant.plus(days, ChronoUnit.DAYS)
     }
 
-    private static UnusedTopic unusedTopic(String name, Instant lastPublished, List<Instant> notificationTimestamps, boolean whitelisted = false) {
-        return new UnusedTopic(
+    private static InactiveTopic inactiveTopic(String name, Instant lastPublished, List<Instant> notificationTimestamps, boolean whitelisted = false) {
+        return new InactiveTopic(
                 name,
                 lastPublished.toEpochMilli(),
                 notificationTimestamps.collect { it.toEpochMilli() },

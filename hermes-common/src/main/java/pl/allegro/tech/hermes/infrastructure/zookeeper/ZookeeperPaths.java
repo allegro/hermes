@@ -30,7 +30,7 @@ public class ZookeeperPaths {
   public static final String DATACENTER_READINESS_PATH = "datacenter-readiness";
   public static final String OFFLINE_RETRANSMISSION_PATH = "offline-retransmission";
   public static final String OFFLINE_RETRANSMISSION_TASKS_PATH = "tasks";
-  public static final String UNUSED_TOPICS_PATH = "unused-topics";
+  public static final String INACTIVE_TOPICS_PATH = "inactive-topics";
 
   private final String basePath;
 
@@ -183,12 +183,12 @@ public class ZookeeperPaths {
         .join(basePath, OFFLINE_RETRANSMISSION_PATH, OFFLINE_RETRANSMISSION_TASKS_PATH, taskId);
   }
 
-  public String unusedTopicsPath() {
-    return Joiner.on(URL_SEPARATOR).join(basePath, UNUSED_TOPICS_PATH);
+  public String inactiveTopicsPath() {
+    return Joiner.on(URL_SEPARATOR).join(basePath, INACTIVE_TOPICS_PATH);
   }
 
-  public String unusedTopicsLeaderPath() {
-    return Joiner.on(URL_SEPARATOR).join(unusedTopicsPath(), "leader");
+  public String inactiveTopicsLeaderPath() {
+    return Joiner.on(URL_SEPARATOR).join(inactiveTopicsPath(), "leader");
   }
 
   public String join(String... parts) {

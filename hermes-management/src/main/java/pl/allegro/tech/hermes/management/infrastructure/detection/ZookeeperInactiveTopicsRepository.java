@@ -10,31 +10,29 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperBasedRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
-import pl.allegro.tech.hermes.management.domain.detection.UnusedTopic;
-import pl.allegro.tech.hermes.management.domain.detection.UnusedTopicsRepository;
+import pl.allegro.tech.hermes.management.domain.detection.InactiveTopic;
+import pl.allegro.tech.hermes.management.domain.detection.InactiveTopicsRepository;
 
-public class ZookeeperUnusedTopicsRepository extends ZookeeperBasedRepository
-    implements UnusedTopicsRepository {
+public class ZookeeperInactiveTopicsRepository extends ZookeeperBasedRepository
+    implements InactiveTopicsRepository {
 
   private static final Logger logger =
-      LoggerFactory.getLogger(ZookeeperUnusedTopicsRepository.class);
+      LoggerFactory.getLogger(ZookeeperInactiveTopicsRepository.class);
 
-  public ZookeeperUnusedTopicsRepository(
+  public ZookeeperInactiveTopicsRepository(
       CuratorFramework curatorFramework, ObjectMapper objectMapper, ZookeeperPaths paths) {
     super(curatorFramework, objectMapper, paths);
   }
 
   @Override
-  public void upsert(List<UnusedTopic> unusedTopics) {
-    logger.info(
-        "Saving unused topics metadata into zookeeper, number of unused topics: {}",
-        unusedTopics.size());
-    String path = paths.unusedTopicsPath();
+  public void upsert(List<InactiveTopic> inactiveTopics) {
+    logger.info("Saving inactive topics metadata into zookeeper, count={}", inactiveTopics.size());
+    String path = paths.inactiveTopicsPath();
     try {
       if (pathExists(path)) {
-        overwrite(path, unusedTopics);
+        overwrite(path, inactiveTopics);
       } else {
-        createRecursively(path, unusedTopics);
+        createRecursively(path, inactiveTopics);
       }
     } catch (Exception e) {
       throw new InternalProcessingException(e);
@@ -42,13 +40,13 @@ public class ZookeeperUnusedTopicsRepository extends ZookeeperBasedRepository
   }
 
   @Override
-  public List<UnusedTopic> read() {
-    String path = paths.unusedTopicsPath();
+  public List<InactiveTopic> read() {
+    String path = paths.inactiveTopicsPath();
     if (!pathExists(path)) {
-      logger.warn("Unused topics ZK node does not exist: {}", path);
+      logger.warn("Inactive topics ZK node does not exist: {}", path);
       return Collections.emptyList();
     }
-    return readFrom(paths.unusedTopicsPath(), new TypeReference<List<UnusedTopic>>() {}, true)
+    return readFrom(paths.inactiveTopicsPath(), new TypeReference<List<InactiveTopic>>() {}, true)
         .orElse(Collections.emptyList());
   }
 }

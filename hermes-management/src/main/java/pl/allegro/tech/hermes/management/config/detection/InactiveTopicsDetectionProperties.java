@@ -5,8 +5,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import java.time.Duration;
 import java.util.Set;
 
-@ConfigurationProperties(prefix = "detection.unused-topics")
-public record UnusedTopicsDetectionProperties(
+@ConfigurationProperties(prefix = "detection.inactive-topics")
+public record InactiveTopicsDetectionProperties(
     Duration inactivityThreshold,
     Duration nextNotificationThreshold,
     Set<String> whitelistedQualifiedTopicNames,

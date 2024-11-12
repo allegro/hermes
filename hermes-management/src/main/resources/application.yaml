@@ -76,7 +76,7 @@ console:
     showFixedHeaders: false
 
 detection:
-  unused-topics:
+  inactive-topics:
     enabled: false
     inactivity-threshold: 60d
     next-notification-threshold: 14d
