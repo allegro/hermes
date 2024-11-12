@@ -19,7 +19,7 @@ import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 @EnableConfigurationProperties({UnusedTopicsDetectionProperties.class})
 public class UnusedTopicsDetectionJob {
   private final TopicService topicService;
-  private final UnusedTopicsService unusedTopicsService;
+  private final UnusedTopicsStorageService unusedTopicsStorageService;
   private final UnusedTopicsDetectionService unusedTopicsDetectionService;
   private final Optional<UnusedTopicsNotifier> notifier;
   private final Clock clock;
@@ -28,12 +28,12 @@ public class UnusedTopicsDetectionJob {
 
   public UnusedTopicsDetectionJob(
       TopicService topicService,
-      UnusedTopicsService unusedTopicsService,
+      UnusedTopicsStorageService unusedTopicsStorageService,
       UnusedTopicsDetectionService unusedTopicsDetectionService,
       Optional<UnusedTopicsNotifier> notifier,
       Clock clock) {
     this.topicService = topicService;
-    this.unusedTopicsService = unusedTopicsService;
+    this.unusedTopicsStorageService = unusedTopicsStorageService;
     this.unusedTopicsDetectionService = unusedTopicsDetectionService;
     this.clock = clock;
     if (notifier.isEmpty()) {
@@ -44,7 +44,7 @@ public class UnusedTopicsDetectionJob {
 
   public void detectAndNotify() {
     List<String> qualifiedTopicNames = topicService.listQualifiedTopicNames();
-    List<UnusedTopic> historicalUnusedTopics = unusedTopicsService.getUnusedTopics();
+    List<UnusedTopic> historicalUnusedTopics = unusedTopicsStorageService.getUnusedTopics();
     List<UnusedTopic> foundUnusedTopics =
         detectUnusedTopics(qualifiedTopicNames, historicalUnusedTopics);
 
@@ -85,12 +85,17 @@ public class UnusedTopicsDetectionJob {
   }
 
   private void notify(List<UnusedTopic> unusedTopics) {
-    notifier.ifPresent(notifier -> notifier.notify(unusedTopics));
+    if (notifier.isPresent()) {
+      logger.info("Notifying {} unused topics", unusedTopics.size());
+      notifier.get().notify(unusedTopics);
+    } else {
+      logger.info("Skipping notification of {} unused topics", unusedTopics.size());
+    }
   }
 
   private void saveUnusedTopics(
       List<UnusedTopic> notifiedTopics, List<UnusedTopic> skippedNotificationTopics) {
-    unusedTopicsService.markAsUnused(
+    unusedTopicsStorageService.markAsUnused(
         Stream.concat(notifiedTopics.stream(), skippedNotificationTopics.stream()).toList());
   }
 }

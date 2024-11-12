@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.management.domain.detection
 
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths
@@ -14,7 +13,7 @@ import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClien
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperRepositoryManager
 import pl.allegro.tech.hermes.management.utils.MultiZookeeperIntegrationTest
 
-class UnusedTopicsServiceTest extends MultiZookeeperIntegrationTest {
+class UnusedTopicsStorageServiceTest extends MultiZookeeperIntegrationTest {
 
     static UNUSED_TOPICS_PATH = '/hermes/unused-topics'
 
@@ -22,7 +21,7 @@ class UnusedTopicsServiceTest extends MultiZookeeperIntegrationTest {
     ZookeeperRepositoryManager repositoryManager
     ModeService modeService
     MultiDatacenterRepositoryCommandExecutor commandExecutor
-    UnusedTopicsService unusedTopicsService
+    UnusedTopicsStorageService unusedTopicsStorageService
     UnusedTopicsRepository unusedTopicsRepository
 
     def objectMapper = new ObjectMapper().registerModule(new JavaTimeModule())
@@ -39,7 +38,7 @@ class UnusedTopicsServiceTest extends MultiZookeeperIntegrationTest {
         repositoryManager.start()
         modeService = new ModeService()
         commandExecutor = new MultiDatacenterRepositoryCommandExecutor(repositoryManager, true, modeService)
-        unusedTopicsService = new UnusedTopicsService(unusedTopicsRepository, commandExecutor)
+        unusedTopicsStorageService = new UnusedTopicsStorageService(unusedTopicsRepository, commandExecutor)
     }
 
     def cleanup() {
@@ -54,7 +53,7 @@ class UnusedTopicsServiceTest extends MultiZookeeperIntegrationTest {
 
     def "should create node in all zk clusters if it doesn't exist when upserting"() {
         when:
-        unusedTopicsService.markAsUnused(TEST_UNUSED_TOPICS)
+        unusedTopicsStorageService.markAsUnused(TEST_UNUSED_TOPICS)
 
         then:
         assertNodesContain(TEST_UNUSED_TOPICS)
@@ -72,7 +71,7 @@ class UnusedTopicsServiceTest extends MultiZookeeperIntegrationTest {
         ]
 
         when:
-        unusedTopicsService.markAsUnused(newUnusedTopics)
+        unusedTopicsStorageService.markAsUnused(newUnusedTopics)
 
         then:
         assertNodesContain(newUnusedTopics)
@@ -86,7 +85,7 @@ class UnusedTopicsServiceTest extends MultiZookeeperIntegrationTest {
         zookeeper2.stop()
 
         when:
-        unusedTopicsService.markAsUnused([
+        unusedTopicsStorageService.markAsUnused([
                 new UnusedTopic("group.topic3", 1730641656154L, [], false)
         ])
 
@@ -100,7 +99,7 @@ class UnusedTopicsServiceTest extends MultiZookeeperIntegrationTest {
 
     def "should return empty list when node doesn't exist"() {
         when:
-        def result = unusedTopicsService.getUnusedTopics()
+        def result = unusedTopicsStorageService.getUnusedTopics()
 
         then:
         result == []
@@ -111,7 +110,7 @@ class UnusedTopicsServiceTest extends MultiZookeeperIntegrationTest {
         setupNodes([])
 
         when:
-        def result = unusedTopicsService.getUnusedTopics()
+        def result = unusedTopicsStorageService.getUnusedTopics()
 
         then:
         result == []
@@ -122,7 +121,7 @@ class UnusedTopicsServiceTest extends MultiZookeeperIntegrationTest {
         setupNodes(TEST_UNUSED_TOPICS)
 
         when:
-        def result = unusedTopicsService.getUnusedTopics()
+        def result = unusedTopicsStorageService.getUnusedTopics()
 
         then:
         result.sort() == TEST_UNUSED_TOPICS.sort()

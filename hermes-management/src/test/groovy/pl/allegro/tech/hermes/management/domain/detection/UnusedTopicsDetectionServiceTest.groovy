@@ -20,7 +20,8 @@ class UnusedTopicsDetectionServiceTest extends Specification {
     UnusedTopicsDetectionProperties properties = new UnusedTopicsDetectionProperties(
             Duration.ofDays(INACTIVITY_THRESHOLD),
             Duration.ofDays(NEXT_NOTIFICATION_THRESHOLD),
-            [WHITELISTED_TOPIC_NAME] as Set<String>
+            [WHITELISTED_TOPIC_NAME] as Set<String>,
+            "dc"
     )
 
     private def metricsRepositoryMock = Mock(LastPublishedMessageMetricsRepository)

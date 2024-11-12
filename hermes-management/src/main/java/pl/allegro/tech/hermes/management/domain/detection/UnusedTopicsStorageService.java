@@ -7,11 +7,11 @@ import pl.allegro.tech.hermes.management.domain.detection.command.MarkTopicsAsUn
 import java.util.List;
 
 @Service
-public class UnusedTopicsService {
+public class UnusedTopicsStorageService {
   private final UnusedTopicsRepository unusedTopicsRepository;
   private final MultiDatacenterRepositoryCommandExecutor multiDcExecutor;
 
-  public UnusedTopicsService(
+  public UnusedTopicsStorageService(
       UnusedTopicsRepository unusedTopicsRepository,
       MultiDatacenterRepositoryCommandExecutor multiDcExecutor) {
     this.unusedTopicsRepository = unusedTopicsRepository;

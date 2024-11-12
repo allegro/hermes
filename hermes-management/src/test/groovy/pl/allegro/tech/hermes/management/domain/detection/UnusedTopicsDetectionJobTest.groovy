@@ -15,7 +15,7 @@ import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName
 class UnusedTopicsDetectionJobTest extends Specification {
 
     def topicServiceMock = Mock(TopicService)
-    def unusedTopicsServiceMock = Mock(UnusedTopicsService)
+    def unusedTopicsStorageServiceMock = Mock(UnusedTopicsStorageService)
     def metricsRepositoryMock = Mock(LastPublishedMessageMetricsRepository)
     def clockMock = Mock(Clock)
     def unusedTopicsNotifier = new InMemoryUnusedTopicsNotifier()
@@ -23,7 +23,8 @@ class UnusedTopicsDetectionJobTest extends Specification {
     def unusedTopicsDetectionProperties = new UnusedTopicsDetectionProperties(
             Duration.ofDays(7),
             Duration.ofDays(14),
-            ["group.topic3"] as Set<String>
+            ["group.topic3"] as Set<String>,
+            "dc"
     )
 
     UnusedTopicsDetectionService detectionService = new UnusedTopicsDetectionService(
@@ -34,7 +35,7 @@ class UnusedTopicsDetectionJobTest extends Specification {
 
     UnusedTopicsDetectionJob detectionJob = new UnusedTopicsDetectionJob(
             topicServiceMock,
-            unusedTopicsServiceMock,
+            unusedTopicsStorageServiceMock,
             detectionService,
             Optional.of(unusedTopicsNotifier),
             clockMock
@@ -58,7 +59,7 @@ class UnusedTopicsDetectionJobTest extends Specification {
         ]
 
         and: "historically saved unused topics"
-        unusedTopicsServiceMock.getUnusedTopics() >> [
+        unusedTopicsStorageServiceMock.getUnusedTopics() >> [
                 new UnusedTopic("group.topic2", ago7days.toEpochMilli(), [], false),
                 new UnusedTopic("group.topic3", ago7days.toEpochMilli(), [], true),
                 new UnusedTopic("group.topic4", ago21days.toEpochMilli(), [ago14days.toEpochMilli()], false),
@@ -81,7 +82,7 @@ class UnusedTopicsDetectionJobTest extends Specification {
         ]
 
         and: "saved are all unused topics with updated notification timestamps"
-        1 * unusedTopicsServiceMock.markAsUnused([
+        1 * unusedTopicsStorageServiceMock.markAsUnused([
                 new UnusedTopic("group.topic1", ago7days.toEpochMilli(), [now.toEpochMilli()], false),
                 new UnusedTopic("group.topic4", ago21days.toEpochMilli(), [ago14days.toEpochMilli(), now.toEpochMilli()], false),
                 new UnusedTopic("group.topic3", ago7days.toEpochMilli(), [], true)
@@ -91,7 +92,7 @@ class UnusedTopicsDetectionJobTest extends Specification {
     def "should not notify if there are no unused topics"() {
         given:
         topicServiceMock.listQualifiedTopicNames() >> ["group.topic0"]
-        unusedTopicsServiceMock.getUnusedTopics() >> []
+        unusedTopicsStorageServiceMock.getUnusedTopics() >> []
 
         and:
         def now = Instant.ofEpochMilli(1630600266987L)
@@ -105,6 +106,6 @@ class UnusedTopicsDetectionJobTest extends Specification {
         unusedTopicsNotifier.getNotifiedTopics().toList() == []
 
         and:
-        1 * unusedTopicsServiceMock.markAsUnused([])
+        1 * unusedTopicsStorageServiceMock.markAsUnused([])
     }
 }

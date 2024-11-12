@@ -28,8 +28,7 @@ public class UnusedTopicsDetectionService {
       TopicName topicName, Optional<UnusedTopic> historicalUnusedTopic) {
     Instant now = clock.instant();
     Instant lastUsed = metricsRepository.getLastPublishedMessageTimestamp(topicName);
-    boolean isUnused =
-        Duration.between(lastUsed, now).compareTo(properties.inactivityThreshold()) >= 0;
+    boolean isUnused = isInactive(lastUsed, now);
 
     if (isUnused) {
       return Optional.of(
@@ -52,24 +51,19 @@ public class UnusedTopicsDetectionService {
         unusedTopic.notificationTimestampsMs().stream()
             .max(Long::compare)
             .map(Instant::ofEpochMilli);
-    boolean isInactive =
-        Duration.between(lastUsed, now).compareTo(properties.inactivityThreshold()) >= 0;
+    boolean isInactive = isInactive(lastUsed, now);
 
     return isInactive
         && !unusedTopic.whitelisted()
-        && lastNotified
-            .map(
-                instant ->
-                    durationBetweenSurpassesThreshold(
-                        instant, now, properties.nextNotificationThreshold()))
-            .orElseGet(
-                () ->
-                    durationBetweenSurpassesThreshold(
-                        lastUsed, now, properties.inactivityThreshold()));
+        && lastNotified.map(instant -> readyForNextNotification(instant, now)).orElse(true);
   }
 
-  private boolean durationBetweenSurpassesThreshold(
-      Instant start, Instant end, Duration threshold) {
-    return Duration.between(start, end).compareTo(threshold) >= 0;
+  private boolean isInactive(Instant lastUsed, Instant now) {
+    return Duration.between(lastUsed, now).compareTo(properties.inactivityThreshold()) >= 0;
+  }
+
+  private boolean readyForNextNotification(Instant lastNotified, Instant now) {
+    return Duration.between(lastNotified, now).compareTo(properties.nextNotificationThreshold())
+        >= 0;
   }
 }
