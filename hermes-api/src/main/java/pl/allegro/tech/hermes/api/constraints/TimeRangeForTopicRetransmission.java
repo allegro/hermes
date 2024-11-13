@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
 @Constraint(validatedBy = TimeRangeForTopicRetransmissionValidator.class)
 public @interface TimeRangeForTopicRetransmission {
   String message() default
-      "Must contain both startTimestamp and endTimestamp when source topic is given, startTimestamp must be lower than endTimestamp";
+      "Must contain both startTimestamp and endTimestamp for topic retransmission. StartTimestamp must be lower than endTimestamp";
 
   Class[] groups() default {};
 

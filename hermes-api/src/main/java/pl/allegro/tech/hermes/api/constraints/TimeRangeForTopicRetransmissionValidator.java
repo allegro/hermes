@@ -2,26 +2,22 @@ package pl.allegro.tech.hermes.api.constraints;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import pl.allegro.tech.hermes.api.OfflineRetransmissionRequest;
+import pl.allegro.tech.hermes.api.OfflineRetransmissionFromTopicRequest;
 
 public class TimeRangeForTopicRetransmissionValidator
-    implements ConstraintValidator<TimeRangeForTopicRetransmission, OfflineRetransmissionRequest> {
+    implements ConstraintValidator<
+        TimeRangeForTopicRetransmission, OfflineRetransmissionFromTopicRequest> {
 
   @Override
   public boolean isValid(
-      OfflineRetransmissionRequest offlineRetransmissionRequest,
+      OfflineRetransmissionFromTopicRequest offlineRetransmissionRequest,
       ConstraintValidatorContext context) {
-    var sourceTopic = offlineRetransmissionRequest.getSourceTopic();
     var startTimestamp = offlineRetransmissionRequest.getStartTimestamp();
     var endTimestamp = offlineRetransmissionRequest.getEndTimestamp();
 
-    if (sourceTopic.isEmpty()) {
-      // skip validation for non-topic retransmission
-      return true;
-    }
-    if (startTimestamp.isEmpty() || endTimestamp.isEmpty()) {
+    if (startTimestamp == null || endTimestamp == null) {
       return false;
     }
-    return startTimestamp.get().isBefore(endTimestamp.get());
+    return startTimestamp.isBefore(endTimestamp);
   }
 }

@@ -12,7 +12,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import pl.allegro.tech.hermes.api.Group;
-import pl.allegro.tech.hermes.api.OfflineRetransmissionRequest;
+import pl.allegro.tech.hermes.api.OfflineRetransmissionFromTopicRequest;
+import pl.allegro.tech.hermes.api.OfflineRetransmissionFromViewRequest;
+import pl.allegro.tech.hermes.api.OfflineRetransmissionRequest.RetransmissionType;
 import pl.allegro.tech.hermes.api.OfflineRetransmissionTask;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesExtension;
@@ -41,7 +43,7 @@ public class OfflineRetransmissionManagementTest {
     Topic targetTopic = hermes.initHelper().createTopic(topicWithRandomName().build());
 
     // when
-    OfflineRetransmissionRequest request =
+    OfflineRetransmissionFromTopicRequest request =
         createSampleTopicRetransmissionRequest(
             sourceTopic.getQualifiedName(), targetTopic.getQualifiedName());
     WebTestClient.ResponseSpec response = hermes.api().createOfflineRetransmissionTask(request);
@@ -53,9 +55,10 @@ public class OfflineRetransmissionManagementTest {
     // and
     List<OfflineRetransmissionTask> allTasks = getOfflineRetransmissionTasks();
     assertThat(allTasks.size()).isEqualTo(1);
-    assertThat(allTasks.get(0).getStartTimestamp()).isEqualTo(request.getStartTimestamp());
-    assertThat(allTasks.get(0).getEndTimestamp()).isEqualTo(request.getEndTimestamp());
-    assertThat(allTasks.get(0).getSourceTopic()).isEqualTo(request.getSourceTopic());
+    assertThat(allTasks.get(0).getType()).isEqualTo(RetransmissionType.TOPIC);
+    assertThat(allTasks.get(0).getStartTimestamp()).hasValue(request.getStartTimestamp());
+    assertThat(allTasks.get(0).getEndTimestamp()).hasValue(request.getEndTimestamp());
+    assertThat(allTasks.get(0).getSourceTopic()).hasValue(request.getSourceTopic());
     assertThat(allTasks.get(0).getTargetTopic()).isEqualTo(request.getTargetTopic());
     assertThat(allTasks.get(0).getCreatedAt()).isBefore(now);
   }
@@ -67,7 +70,7 @@ public class OfflineRetransmissionManagementTest {
 
     // when
     var request =
-        createSampleViewRetransmissionRequest("testViewPath", targetTopic.getQualifiedName());
+        new OfflineRetransmissionFromViewRequest("testViewPath", targetTopic.getQualifiedName());
     var response = hermes.api().createOfflineRetransmissionTask(request);
     var now = Instant.now();
 
@@ -77,6 +80,7 @@ public class OfflineRetransmissionManagementTest {
     // and
     var allTasks = getOfflineRetransmissionTasks();
     assertThat(allTasks.size()).isEqualTo(1);
+    assertThat(allTasks.get(0).getType()).isEqualTo(RetransmissionType.VIEW);
     assertThat(allTasks.get(0).getStartTimestamp()).isEmpty();
     assertThat(allTasks.get(0).getEndTimestamp()).isEmpty();
     assertThat(allTasks.get(0).getSourceTopic()).isEmpty();
@@ -92,10 +96,10 @@ public class OfflineRetransmissionManagementTest {
   }
 
   @Test
-  public void shouldReturnClientErrorWhenRequestingRetransmissionWithEmptyData() {
+  public void shouldReturnClientErrorWhenRequestingTopicRetransmissionWithEmptyData() {
     // given
-    OfflineRetransmissionRequest request =
-        new OfflineRetransmissionRequest(null, "", "", null, null);
+    OfflineRetransmissionFromTopicRequest request =
+        new OfflineRetransmissionFromTopicRequest("", "", null, null);
 
     // when
     WebTestClient.ResponseSpec response = hermes.api().createOfflineRetransmissionTask(request);
@@ -105,14 +109,29 @@ public class OfflineRetransmissionManagementTest {
     assertThat(response.expectBody(String.class).returnResult().getResponseBody())
         .contains(
             List.of(
-                "must contain one defined source of retransmission data - source topic or source view"));
+                "Must contain both startTimestamp and endTimestamp for topic retransmission. StartTimestamp must be lower than endTimestamp"));
   }
 
   @Test
-  public void shouldReturnClientErrorWhenRequestingRetransmissionWithNotExistingSourceTopic() {
+  public void shouldReturnClientErrorWhenRequestingViewRetransmissionWithEmptyData() {
+    // given
+    OfflineRetransmissionFromViewRequest request =
+        new OfflineRetransmissionFromViewRequest(null, null);
+
+    // when
+    WebTestClient.ResponseSpec response = hermes.api().createOfflineRetransmissionTask(request);
+
+    // then
+    response.expectStatus().isBadRequest();
+    assertThat(response.expectBody(String.class).returnResult().getResponseBody())
+        .contains(List.of("targetTopic must not be empty"));
+  }
+
+  @Test
+  public void shouldReturnClientErrorWhenRequestingTopicRetransmissionWithNotExistingSourceTopic() {
     // given
     Topic targetTopic = hermes.initHelper().createTopic(topicWithRandomName().build());
-    OfflineRetransmissionRequest request =
+    OfflineRetransmissionFromTopicRequest request =
         createSampleTopicRetransmissionRequest(
             "not.existing.sourceTopic", targetTopic.getQualifiedName());
 
@@ -126,10 +145,10 @@ public class OfflineRetransmissionManagementTest {
   }
 
   @Test
-  public void shouldReturnClientErrorWhenRequestingRetransmissionWithNotExistingTargetTopic() {
+  public void shouldReturnClientErrorWhenRequestingTopicRetransmissionWithNotExistingTargetTopic() {
     // given
     Topic sourceTopic = hermes.initHelper().createTopic(topicWithRandomName().build());
-    OfflineRetransmissionRequest request =
+    OfflineRetransmissionFromTopicRequest request =
         createSampleTopicRetransmissionRequest(
             sourceTopic.getQualifiedName(), "not.existing.targetTopic");
 
@@ -143,13 +162,28 @@ public class OfflineRetransmissionManagementTest {
   }
 
   @Test
-  public void shouldReturnClientErrorWhenRequestingRetransmissionWithNegativeTimeRange() {
+  public void shouldReturnClientErrorWhenRequestingViewRetransmissionWithNotExistingTargetTopic() {
+    // given
+    Topic sourceTopic = hermes.initHelper().createTopic(topicWithRandomName().build());
+    OfflineRetransmissionFromViewRequest request =
+        new OfflineRetransmissionFromViewRequest("testViewPath", "not.existing.targetTopic");
+
+    // when
+    WebTestClient.ResponseSpec response = hermes.api().createOfflineRetransmissionTask(request);
+
+    // then
+    response.expectStatus().isBadRequest();
+    assertThat(response.expectBody(String.class).returnResult().getResponseBody())
+        .contains("Target topic does not exist");
+  }
+
+  @Test
+  public void shouldReturnClientErrorWhenRequestingTopicRetransmissionWithNegativeTimeRange() {
     // given
     Topic sourceTopic = hermes.initHelper().createTopic(topicWithRandomName().build());
     Topic targetTopic = hermes.initHelper().createTopic(topicWithRandomName().build());
-    OfflineRetransmissionRequest request =
-        new OfflineRetransmissionRequest(
-            null,
+    OfflineRetransmissionFromTopicRequest request =
+        new OfflineRetransmissionFromTopicRequest(
             sourceTopic.getQualifiedName(),
             targetTopic.getQualifiedName(),
             Instant.now().toString(),
@@ -162,18 +196,38 @@ public class OfflineRetransmissionManagementTest {
     response.expectStatus().isBadRequest();
     assertThat(response.expectBody(String.class).returnResult().getResponseBody())
         .contains(
-            "Must contain both startTimestamp and endTimestamp when source topic is given, startTimestamp must be lower than endTimestamp");
+            "Must contain both startTimestamp and endTimestamp for topic retransmission. StartTimestamp must be lower than endTimestamp");
   }
 
   @Test
-  public void shouldReturnClientErrorWhenRequestingRetransmissionWithTargetTopicStoredOffline() {
+  public void
+      shouldReturnClientErrorWhenRequestingTopicRetransmissionWithTargetTopicStoredOffline() {
     // given
     Topic sourceTopic = hermes.initHelper().createTopic(topicWithRandomName().build());
     Topic targetTopic =
         hermes.initHelper().createTopic(topicWithRandomName().withOfflineStorage(1).build());
-    OfflineRetransmissionRequest request =
+    OfflineRetransmissionFromTopicRequest request =
         createSampleTopicRetransmissionRequest(
             sourceTopic.getQualifiedName(), targetTopic.getQualifiedName());
+
+    // when
+    WebTestClient.ResponseSpec response = hermes.api().createOfflineRetransmissionTask(request);
+
+    // then
+    response.expectStatus().isBadRequest();
+    assertThat(response.expectBody(String.class).returnResult().getResponseBody())
+        .contains("Target topic must not be stored offline");
+  }
+
+  @Test
+  public void
+      shouldReturnClientErrorWhenRequestingViewRetransmissionWithTargetTopicStoredOffline() {
+    // given
+    Topic sourceTopic = hermes.initHelper().createTopic(topicWithRandomName().build());
+    Topic targetTopic =
+        hermes.initHelper().createTopic(topicWithRandomName().withOfflineStorage(1).build());
+    OfflineRetransmissionFromViewRequest request =
+        new OfflineRetransmissionFromViewRequest("testViewPath", targetTopic.getQualifiedName());
 
     // when
     WebTestClient.ResponseSpec response = hermes.api().createOfflineRetransmissionTask(request);
@@ -190,7 +244,7 @@ public class OfflineRetransmissionManagementTest {
     Topic sourceTopic = hermes.initHelper().createTopic(topicWithRandomName().build());
     Topic targetTopic = hermes.initHelper().createTopic(topicWithRandomName().build());
 
-    OfflineRetransmissionRequest request =
+    OfflineRetransmissionFromTopicRequest request =
         createSampleTopicRetransmissionRequest(
             sourceTopic.getQualifiedName(), targetTopic.getQualifiedName());
     hermes.api().createOfflineRetransmissionTask(request);
@@ -222,12 +276,12 @@ public class OfflineRetransmissionManagementTest {
 
   @Test
   public void
-      shouldThrowAccessDeniedWhenTryingToCreateTaskWithoutPermissionsToSourceAndTargetTopics() {
+      shouldThrowAccessDeniedWhenTryingToCreateTopicRetransmissionTaskWithoutPermissionsToSourceAndTargetTopics() {
     // given
     Topic sourceTopic = hermes.initHelper().createTopic(topicWithRandomName().build());
     Topic targetTopic = hermes.initHelper().createTopic(topicWithRandomName().build());
     TestSecurityProvider.setUserIsAdmin(false);
-    OfflineRetransmissionRequest request =
+    OfflineRetransmissionFromTopicRequest request =
         createSampleTopicRetransmissionRequest(
             sourceTopic.getQualifiedName(), targetTopic.getQualifiedName());
 
@@ -245,40 +299,39 @@ public class OfflineRetransmissionManagementTest {
   }
 
   @Test
-  public void shouldReturnClientErrorWhenRequestingRetransmissionFromViewWithTimestamps() {
+  public void
+      shouldThrowAccessDeniedWhenTryingToCreateViewRetransmissionTaskWithoutPermissionsToTargetTopic() {
     // given
-    Topic targetTopic =
-        hermes.initHelper().createTopic(topicWithRandomName().withOfflineStorage(1).build());
-
-    OfflineRetransmissionRequest request =
-        new OfflineRetransmissionRequest(
-            "sourceView",
-            null,
-            targetTopic.getQualifiedName(),
-            Instant.now().minusSeconds(5).toString(),
-            Instant.now().toString());
+    Topic targetTopic = hermes.initHelper().createTopic(topicWithRandomName().build());
+    TestSecurityProvider.setUserIsAdmin(false);
+    OfflineRetransmissionFromViewRequest request =
+        new OfflineRetransmissionFromViewRequest("testViewPath", targetTopic.getQualifiedName());
 
     // when
     WebTestClient.ResponseSpec response = hermes.api().createOfflineRetransmissionTask(request);
 
     // then
-    response.expectStatus().isBadRequest();
+    response.expectStatus().isForbidden();
     assertThat(response.expectBody(String.class).returnResult().getResponseBody())
-        .contains(
-            List.of("must not contain startTimestamp and endTimestamp when source view is given"));
+        .contains("User needs permissions to target topic");
+    assertThat(getOfflineRetransmissionTasks().size()).isEqualTo(0);
+
+    // cleanup
+    TestSecurityProvider.reset();
   }
 
   @Test
-  public void shouldReturnClientErrorWhenRequestingRetransmissionFromTopicTableWithoutTimestamps() {
+  public void
+      shouldReturnClientErrorWhenRequestingTopicRetransmissionFromTopicTableWithoutTimestamps() {
     // given
     Topic sourceTopic =
         hermes.initHelper().createTopic(topicWithRandomName().withOfflineStorage(1).build());
     Topic targetTopic =
         hermes.initHelper().createTopic(topicWithRandomName().withOfflineStorage(1).build());
 
-    OfflineRetransmissionRequest request =
-        new OfflineRetransmissionRequest(
-            null, sourceTopic.getQualifiedName(), targetTopic.getQualifiedName(), null, null);
+    OfflineRetransmissionFromTopicRequest request =
+        new OfflineRetransmissionFromTopicRequest(
+            sourceTopic.getQualifiedName(), targetTopic.getQualifiedName(), null, null);
 
     // when
     WebTestClient.ResponseSpec response = hermes.api().createOfflineRetransmissionTask(request);
@@ -288,22 +341,16 @@ public class OfflineRetransmissionManagementTest {
     assertThat(response.expectBody(String.class).returnResult().getResponseBody())
         .contains(
             List.of(
-                "Must contain both startTimestamp and endTimestamp when source topic is given, startTimestamp must be lower than endTimestamp"));
+                "Must contain both startTimestamp and endTimestamp for topic retransmission. StartTimestamp must be lower than endTimestamp"));
   }
 
-  private OfflineRetransmissionRequest createSampleTopicRetransmissionRequest(
+  private OfflineRetransmissionFromTopicRequest createSampleTopicRetransmissionRequest(
       String sourceTopic, String targetTopic) {
-    return new OfflineRetransmissionRequest(
-        null,
+    return new OfflineRetransmissionFromTopicRequest(
         sourceTopic,
         targetTopic,
         Instant.now().minusSeconds(1).toString(),
         Instant.now().toString());
-  }
-
-  private OfflineRetransmissionRequest createSampleViewRetransmissionRequest(
-      String sourceView, String targetTopic) {
-    return new OfflineRetransmissionRequest(sourceView, null, targetTopic, null, null);
   }
 
   private void deleteTasks() {
