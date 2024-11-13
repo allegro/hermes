@@ -9,14 +9,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.management.config.detection.InactiveTopicsDetectionProperties;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 
 @Component
-@EnableConfigurationProperties({InactiveTopicsDetectionProperties.class})
 public class InactiveTopicsDetectionJob {
   private final TopicService topicService;
   private final InactiveTopicsStorageService inactiveTopicsStorageService;
