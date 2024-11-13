@@ -109,6 +109,37 @@ class InactiveTopicsDetectionJobTest extends Specification {
         1 * inactiveTopicsStorageServiceMock.markAsInactive([])
     }
 
+    def "should only save inactive topics when notifier is not provided"() {
+        given:
+        def job = new InactiveTopicsDetectionJob(
+                topicServiceMock,
+                inactiveTopicsStorageServiceMock,
+                detectionService,
+                Optional.empty(),
+                clockMock
+        )
+
+        and:
+        topicServiceMock.listQualifiedTopicNames() >> ["group.topic0"]
+        inactiveTopicsStorageServiceMock.getInactiveTopics() >> []
+
+        and:
+        def now = Instant.ofEpochMilli(1630600266987L)
+        clockMock.instant() >> now
+
+        and:
+        def ago7days = now.minus(7, DAYS)
+        mockLastPublishedMessageTimestamp("group.topic0", ago7days)
+
+        when:
+        job.detectAndNotify()
+
+        then: "inactive topic is saved but notification timestamp is not added"
+        1 * inactiveTopicsStorageServiceMock.markAsInactive([
+                new InactiveTopic("group.topic0", ago7days.toEpochMilli(), [], false)
+        ])
+    }
+
     private def mockLastPublishedMessageTimestamp(String topicName, Instant instant) {
         metricsRepositoryMock.getLastPublishedMessageTimestamp(fromQualifiedName(topicName)) >> Optional.ofNullable(instant)
     }

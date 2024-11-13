@@ -52,12 +52,7 @@ public class InactiveTopicsDetectionJob {
     List<InactiveTopic> topicsToNotify = groupedByNeedOfNotification.getOrDefault(true, List.of());
     List<InactiveTopic> topicsToSkipNotification =
         groupedByNeedOfNotification.getOrDefault(false, List.of());
-
-    notify(topicsToNotify);
-
-    Instant now = clock.instant();
-    List<InactiveTopic> notifiedTopics =
-        topicsToNotify.stream().map(topic -> topic.notificationSent(now)).toList();
+    List<InactiveTopic> notifiedTopics = notify(topicsToNotify);
 
     saveInactiveTopics(notifiedTopics, topicsToSkipNotification);
   }
@@ -82,14 +77,18 @@ public class InactiveTopicsDetectionJob {
         .collect(Collectors.toMap(InactiveTopic::qualifiedTopicName, v -> v, (v1, v2) -> v1));
   }
 
-  private void notify(List<InactiveTopic> inactiveTopics) {
-    if (!inactiveTopics.isEmpty()) {
-      if (notifier.isPresent()) {
-        logger.info("Notifying {} inactive topics", inactiveTopics.size());
-        notifier.get().notify(inactiveTopics);
-      } else {
-        logger.info("Skipping notification of {} inactive topics", inactiveTopics.size());
-      }
+  private List<InactiveTopic> notify(List<InactiveTopic> inactiveTopics) {
+    if (inactiveTopics.isEmpty()) {
+      logger.info("No inactive topics to notify");
+      return inactiveTopics;
+    } else if (notifier.isPresent()) {
+      logger.info("Notifying {} inactive topics", inactiveTopics.size());
+      notifier.get().notify(inactiveTopics);
+      Instant now = clock.instant();
+      return inactiveTopics.stream().map(topic -> topic.notificationSent(now)).toList();
+    } else {
+      logger.info("Skipping notification of {} inactive topics", inactiveTopics.size());
+      return inactiveTopics;
     }
   }
 
