@@ -16,7 +16,7 @@ import pl.allegro.tech.hermes.management.domain.detection.InactiveTopicsDetectio
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClient;
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClientManager;
 
-@ConditionalOnProperty(value = "detection.inactive-topics.enabled", havingValue = "true")
+@ConditionalOnProperty(prefix = "detection.inactive-topics", value = "enabled", havingValue = "true")
 @Component
 @EnableConfigurationProperties(InactiveTopicsDetectionProperties.class)
 public class InactiveTopicsDetectionScheduler {
@@ -42,6 +42,8 @@ public class InactiveTopicsDetectionScheduler {
     this.leaderLatch = leaderCuratorFramework.map(it -> new LeaderLatch(it, leaderPath));
     if (leaderLatch.isEmpty()) {
       logLeaderZookeeperClientNotFound(leaderElectionDc);
+    } else {
+      logger.info("Found leader Zookeeper Client, leader latch created");
     }
     this.job = job;
   }
@@ -50,6 +52,7 @@ public class InactiveTopicsDetectionScheduler {
   public void startListeningForLeadership() {
     leaderLatch.ifPresent(
         it -> {
+          logger.info("Starting listening for leadership");
           try {
             it.start();
           } catch (Exception e) {
@@ -64,6 +67,8 @@ public class InactiveTopicsDetectionScheduler {
       if (leaderLatch.get().hasLeadership()) {
         logger.info("Inactive topics detection started");
         job.detectAndNotify();
+      } else {
+        logger.info("Inactive topics detection not started - not a leader");
       }
     } else {
       logLeaderZookeeperClientNotFound(leaderElectionDc);
