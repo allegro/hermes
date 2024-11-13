@@ -1,7 +1,6 @@
 <script setup lang="ts">
-  import { computed, ComputedRef, Ref, ref } from 'vue';
+  import { computed, ref } from 'vue';
   import { v4 as generateUUID } from 'uuid';
-  import { PathFilter } from '@/views/subscription/subscription-form/subscription-basic-filters/types';
   import { useGlobalI18n } from '@/i18n';
   import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
   import { useSubscriptionFiltersDebug } from '@/composables/subscription/use-subscription-filters-debug/useSubscriptionFiltersDebug';
@@ -9,10 +8,13 @@
   import AceEditor from '@/components/ace-editor/AceEditor.vue';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import SubscriptionPathFilters from '@/views/subscription/subscription-form/subscription-basic-filters/SubscriptionPathFilters.vue';
+  import type { ComputedRef, Ref } from 'vue';
   import type { ContentType } from '@/api/content-type';
+  import type { PathFilter } from '@/views/subscription/subscription-form/subscription-basic-filters/types';
 
   const props = defineProps<{
     topic: string;
+    paths: string[];
     editEnabled: boolean;
     modelValue: PathFilter[];
   }>();
@@ -142,7 +144,7 @@
           ></console-alert>
         </v-card-item>
         <v-card-item>
-          <subscription-path-filters v-model="debugFilters" />
+          <subscription-path-filters v-model="debugFilters" :paths="paths" />
         </v-card-item>
         <v-card-item class="text-right mb-4">
           <v-btn
