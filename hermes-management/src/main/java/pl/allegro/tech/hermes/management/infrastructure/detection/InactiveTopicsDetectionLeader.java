@@ -52,6 +52,6 @@ public class InactiveTopicsDetectionLeader {
 
   private void logLeaderZookeeperClientNotFound(String dc) {
     logger.error(
-        "Cannot run inactive topics detection - no zookeeper client for datacenter={}", dc);
+        "Cannot start listening for leadership - no zookeeper client for datacenter={}", dc);
   }
 }
