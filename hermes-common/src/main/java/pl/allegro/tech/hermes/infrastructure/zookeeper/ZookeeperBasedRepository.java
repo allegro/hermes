@@ -161,10 +161,11 @@ public abstract class ZookeeperBasedRepository {
 
   protected void createInTransaction(String path, Object value, String childPath) throws Exception {
     ensureConnected();
-    zookeeper.transaction().forOperations(
+    zookeeper
+        .transaction()
+        .forOperations(
             zookeeper.transactionOp().create().forPath(path, mapper.writeValueAsBytes(value)),
-            zookeeper.transactionOp().create().forPath(childPath)
-    );
+            zookeeper.transactionOp().create().forPath(childPath));
   }
 
   protected void deleteInTransaction(List<String> paths) throws Exception {
