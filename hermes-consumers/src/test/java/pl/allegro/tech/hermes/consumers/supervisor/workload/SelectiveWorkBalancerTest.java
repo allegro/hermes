@@ -269,7 +269,7 @@ public class SelectiveWorkBalancerTest {
             .withActiveConsumers(supervisors.size())
             .withConsumersPerSubscription(3)
             .withMaxSubscriptionsPerConsumer(100)
-            .withSubscriptionConstraints(Map.of(subscriptions.get(0), new Constraints(1)))
+            .withSubscriptionConstraints(Map.of(subscriptions.get(0), new Constraints(1, null)))
             .build();
     SubscriptionAssignmentView stateAfterRebalance =
         workBalancer
@@ -302,7 +302,7 @@ public class SelectiveWorkBalancerTest {
             .withConsumersPerSubscription(2)
             .withMaxSubscriptionsPerConsumer(4)
             .withSubscriptionConstraints(
-                Map.of(subscriptions.get(0), new Constraints(requiredConsumersNumber)))
+                Map.of(subscriptions.get(0), new Constraints(requiredConsumersNumber, null)))
             .build();
 
     // when

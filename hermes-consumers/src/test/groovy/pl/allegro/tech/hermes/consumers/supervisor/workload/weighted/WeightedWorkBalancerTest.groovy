@@ -524,8 +524,8 @@ class WeightedWorkBalancerTest extends Specification {
                 .withConsumersPerSubscription(2)
                 .withMaxSubscriptionsPerConsumer(3)
                 .withActiveConsumers(initial.consumerNodes.size())
-                .withTopicConstraints([(topic): new Constraints(1)])
-                .withSubscriptionConstraints([(subscription("sub1", topic)): new Constraints(3)])
+                .withTopicConstraints([(topic): new Constraints(1, null)])
+                .withSubscriptionConstraints([(subscription("sub1", topic)): new Constraints(3, null)])
                 .build()
 
         when:
