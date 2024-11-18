@@ -3,6 +3,13 @@ package pl.allegro.tech.hermes.infrastructure.zookeeper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.api.transaction.CuratorOp;
@@ -13,14 +20,6 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.exception.RepositoryNotAvailableException;
 import pl.allegro.tech.hermes.infrastructure.MalformedDataException;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.BiConsumer;
-import java.util.stream.Collectors;
 
 public abstract class ZookeeperBasedRepository {
 
@@ -162,10 +161,11 @@ public abstract class ZookeeperBasedRepository {
 
   protected void createInTransaction(String path, Object value, String childPath) throws Exception {
     ensureConnected();
-    zookeeper.transaction().forOperations(
+    zookeeper
+        .transaction()
+        .forOperations(
             zookeeper.transactionOp().create().forPath(path, mapper.writeValueAsBytes(value)),
-            zookeeper.transactionOp().create().forPath(childPath)
-    );
+            zookeeper.transactionOp().create().forPath(childPath));
   }
 
   protected void deleteInTransaction(List<String> paths) throws Exception {

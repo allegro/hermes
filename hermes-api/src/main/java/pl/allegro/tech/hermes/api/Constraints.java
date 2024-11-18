@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
-
 import java.util.Objects;
 
 public class Constraints {
@@ -17,9 +16,7 @@ public class Constraints {
 
   @JsonCreator
   public Constraints(
-      @JsonProperty("consumersNumber") int consumersNumber,
-      @JsonProperty("reason") String reason
-  ) {
+      @JsonProperty("consumersNumber") int consumersNumber, @JsonProperty("reason") String reason) {
     this.consumersNumber = consumersNumber;
     this.reason = reason;
   }
