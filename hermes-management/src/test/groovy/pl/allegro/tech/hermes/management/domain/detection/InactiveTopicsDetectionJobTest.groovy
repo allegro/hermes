@@ -109,7 +109,7 @@ class InactiveTopicsDetectionJobTest extends Specification {
         1 * inactiveTopicsStorageServiceMock.markAsInactive([])
     }
 
-    def "should only save inactive topics when notifier is not provided"() {
+    def "should not save new notification timestamp when notifier is not provided"() {
         given:
         def job = new InactiveTopicsDetectionJob(
                 topicServiceMock,
@@ -125,10 +125,8 @@ class InactiveTopicsDetectionJobTest extends Specification {
 
         and:
         def now = Instant.ofEpochMilli(1630600266987L)
-        clockMock.instant() >> now
-
-        and:
         def ago7days = now.minus(7, DAYS)
+        clockMock.instant() >> now
         mockLastPublishedMessageTimestamp("group.topic0", ago7days)
 
         when:
@@ -138,6 +136,43 @@ class InactiveTopicsDetectionJobTest extends Specification {
         1 * inactiveTopicsStorageServiceMock.markAsInactive([
                 new InactiveTopic("group.topic0", ago7days.toEpochMilli(), [], false)
         ])
+    }
+
+    def "should not save new notification timestamp when notification did not succeed"() {
+        given:
+        def notifierMock = Mock(InactiveTopicsNotifier)
+
+        and:
+        def job = new InactiveTopicsDetectionJob(
+                topicServiceMock,
+                inactiveTopicsStorageServiceMock,
+                detectionService,
+                Optional.of(notifierMock),
+                clockMock
+        )
+
+        and:
+        topicServiceMock.listQualifiedTopicNames() >> ["group.topic0", "group.topic1"]
+        inactiveTopicsStorageServiceMock.getInactiveTopics() >> []
+        notifierMock.notify(_) >> new NotificationResult(["group.topic0": true, "group.topic1": false])
+
+        and:
+        def now = Instant.ofEpochMilli(1630600266987L)
+        def ago7days = now.minus(7, DAYS)
+        clockMock.instant() >> now
+        mockLastPublishedMessageTimestamp("group.topic0", ago7days)
+        mockLastPublishedMessageTimestamp("group.topic1", ago7days)
+
+        when:
+        job.detectAndNotify()
+
+        then:
+        1 * inactiveTopicsStorageServiceMock.markAsInactive([
+                new InactiveTopic("group.topic0", ago7days.toEpochMilli(), [now.toEpochMilli()], false),
+                new InactiveTopic("group.topic1", ago7days.toEpochMilli(), [], false),
+        ])
+
+
     }
 
     private def mockLastPublishedMessageTimestamp(String topicName, Instant instant) {

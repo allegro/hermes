@@ -83,9 +83,16 @@ public class InactiveTopicsDetectionJob {
       return inactiveTopics;
     } else if (notifier.isPresent()) {
       logger.info("Notifying {} inactive topics", inactiveTopics.size());
-      notifier.get().notify(inactiveTopics);
+      NotificationResult result = notifier.get().notify(inactiveTopics);
       Instant now = clock.instant();
-      return inactiveTopics.stream().map(topic -> topic.notificationSent(now)).toList();
+
+      return inactiveTopics.stream()
+          .map(
+              topic ->
+                  result.isSuccess(topic.qualifiedTopicName())
+                      ? topic.notificationSent(now)
+                      : topic)
+          .toList();
     } else {
       logger.info("Skipping notification of {} inactive topics", inactiveTopics.size());
       return inactiveTopics;
