@@ -44,10 +44,10 @@ public class KafkaReadinessCheckTest {
     HermesTestApp management =
         new HermesManagementTestApp(hermesZookeeper, kafka, schemaRegistry).start();
 
+    frontendApp.start();
     HermesInitHelper hermesInitHelper = new HermesInitHelper(management.getPort(), frontendApp);
     topic = hermesInitHelper.createTopic(topicWithRandomName().withAck(ALL).build());
     management.stop();
-    frontendApp.start();
   }
 
   @AfterAll
