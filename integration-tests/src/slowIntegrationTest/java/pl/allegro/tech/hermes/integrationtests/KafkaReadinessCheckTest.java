@@ -33,6 +33,8 @@ public class KafkaReadinessCheckTest {
   private static final KafkaContainerCluster kafka = new KafkaContainerCluster(3);
   private static final ConfluentSchemaRegistryContainer schemaRegistry =
       new ConfluentSchemaRegistryContainer().withKafkaCluster(kafka);
+  private static HermesFrontendTestApp frontendApp =
+      new HermesFrontendTestApp(hermesZookeeper, kafka, schemaRegistry);
   private static Topic topic;
 
   @BeforeAll
@@ -42,17 +44,16 @@ public class KafkaReadinessCheckTest {
     HermesTestApp management =
         new HermesManagementTestApp(hermesZookeeper, kafka, schemaRegistry).start();
 
-    HermesInitHelper hermesInitHelper =
-        new HermesInitHelper(
-            management.getPort(),
-            new HermesFrontendTestApp(hermesZookeeper, kafka, schemaRegistry));
+    HermesInitHelper hermesInitHelper = new HermesInitHelper(management.getPort(), frontendApp);
     topic = hermesInitHelper.createTopic(topicWithRandomName().withAck(ALL).build());
     management.stop();
+    frontendApp.start();
   }
 
   @AfterAll
   public static void clean() {
     Stream.of(hermesZookeeper, kafka, schemaRegistry).parallel().forEach(Startable::stop);
+    frontendApp.stop();
   }
 
   @Test
