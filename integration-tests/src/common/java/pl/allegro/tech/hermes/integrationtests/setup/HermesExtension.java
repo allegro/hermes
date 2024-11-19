@@ -81,7 +81,7 @@ public class HermesExtension
             });
     hermesTestClient =
         new HermesTestClient(management.getPort(), frontend.getPort(), consumers.getPort());
-    hermesInitHelper = new HermesInitHelper(management.getPort());
+    hermesInitHelper = new HermesInitHelper(management.getPort(), frontend);
     auditEvents = auditEventsReceiver.createSubscriberWithStrictPath(200, AUDIT_EVENT_PATH);
     brokerOperations =
         new BrokerOperations(kafka.getBootstrapServersForExternalClients(), "itTest");

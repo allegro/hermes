@@ -31,6 +31,7 @@ import java.util.Map;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import pl.allegro.tech.hermes.frontend.HermesFrontend;
+import pl.allegro.tech.hermes.frontend.cache.topic.NotificationBasedTopicsCache;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
 import pl.allegro.tech.hermes.test.helper.containers.ConfluentSchemaRegistryContainer;
 import pl.allegro.tech.hermes.test.helper.containers.KafkaContainerCluster;
@@ -144,6 +145,11 @@ public class HermesFrontendTestApp implements HermesTestApp {
     app.run(currentArgs.toArray(new String[0]));
     port = app.context().getBean(HermesServer.class).getPort();
     return this;
+  }
+
+  @Override
+  public void refreshCache() {
+    app.context().getBean(NotificationBasedTopicsCache.class).refreshCache();
   }
 
   @Override

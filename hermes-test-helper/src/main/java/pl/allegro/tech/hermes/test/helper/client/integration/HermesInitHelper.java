@@ -9,16 +9,24 @@ import pl.allegro.tech.hermes.api.OAuthProvider;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicWithSchema;
+import pl.allegro.tech.hermes.test.helper.environment.HermesTestApp;
 
 public class HermesInitHelper {
 
   private final ManagementTestClient managementTestClient;
+  private final HermesTestApp frontendApp;
 
-  public HermesInitHelper(int managementPort) {
+  public HermesInitHelper(int managementPort, HermesTestApp frontendApp) {
     managementTestClient = new ManagementTestClient(managementPort);
+    this.frontendApp = frontendApp;
   }
 
-  public HermesInitHelper(int managementPort, String defaultHeaderName, String defaultHeaderValue) {
+  public HermesInitHelper(
+      int managementPort,
+      String defaultHeaderName,
+      String defaultHeaderValue,
+      HermesTestApp frontendApp) {
+    this.frontendApp = frontendApp;
     managementTestClient =
         new ManagementTestClient(managementPort, defaultHeaderName, defaultHeaderValue);
   }
@@ -30,6 +38,7 @@ public class HermesInitHelper {
         .expectStatus()
         .is2xxSuccessful();
     waitUntilTopicCreated(topic.getQualifiedName());
+    frontendApp.refreshCache();
     return topic;
   }
 
@@ -94,4 +103,6 @@ public class HermesInitHelper {
     managementTestClient.createOAuthProvider(provider).expectStatus().is2xxSuccessful();
     return provider;
   }
+
+  public void refreshFrontendCache() {}
 }
