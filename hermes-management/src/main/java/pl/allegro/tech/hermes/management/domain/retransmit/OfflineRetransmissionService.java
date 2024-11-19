@@ -1,9 +1,13 @@
 package pl.allegro.tech.hermes.management.domain.retransmit;
 
+import static pl.allegro.tech.hermes.api.OfflineRetransmissionRequest.RetransmissionType.TOPIC;
+import static pl.allegro.tech.hermes.api.OfflineRetransmissionRequest.RetransmissionType.VIEW;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import pl.allegro.tech.hermes.api.OfflineRetransmissionRequest;
+import pl.allegro.tech.hermes.api.OfflineRetransmissionFromTopicRequest;
+import pl.allegro.tech.hermes.api.OfflineRetransmissionFromViewRequest;
 import pl.allegro.tech.hermes.api.OfflineRetransmissionTask;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
@@ -21,17 +25,49 @@ public class OfflineRetransmissionService {
     this.topicRepository = topicRepository;
   }
 
-  public void validateRequest(OfflineRetransmissionRequest request) {
-    TopicName sourceTopicName = TopicName.fromQualifiedName(request.getSourceTopic().orElse(null));
+  public void validateTopicRequest(OfflineRetransmissionFromTopicRequest request) {
+    TopicName sourceTopicName = TopicName.fromQualifiedName(request.getSourceTopic());
     TopicName targetTopicName = TopicName.fromQualifiedName(request.getTargetTopic());
 
-    ensureTopicsExist(sourceTopicName, targetTopicName);
-    ensureTimeRangeIsProper(request);
+    ensureSourceTopicExists(sourceTopicName);
+    ensureTargetTopicExists(targetTopicName);
     ensureTopicIsNotStoredOffline(targetTopicName);
   }
 
-  public OfflineRetransmissionTask createTask(OfflineRetransmissionRequest request) {
-    return saveTask(request);
+  public void validateViewRequest(OfflineRetransmissionFromViewRequest request) {
+    TopicName targetTopicName = TopicName.fromQualifiedName(request.getTargetTopic());
+    ensureTargetTopicExists(targetTopicName);
+    ensureTopicIsNotStoredOffline(targetTopicName);
+  }
+
+  public OfflineRetransmissionTask createTopicTask(OfflineRetransmissionFromTopicRequest request) {
+    OfflineRetransmissionTask task =
+        new OfflineRetransmissionTask(
+            TOPIC,
+            UUID.randomUUID().toString(),
+            null,
+            request.getSourceTopic(),
+            request.getTargetTopic(),
+            request.getStartTimestamp(),
+            request.getEndTimestamp(),
+            Instant.now());
+    offlineRetransmissionRepository.saveTask(task);
+    return task;
+  }
+
+  public OfflineRetransmissionTask createViewTask(OfflineRetransmissionFromViewRequest request) {
+    OfflineRetransmissionTask task =
+        new OfflineRetransmissionTask(
+            VIEW,
+            UUID.randomUUID().toString(),
+            request.getSourceViewPath(),
+            null,
+            request.getTargetTopic(),
+            null,
+            null,
+            Instant.now());
+    offlineRetransmissionRepository.saveTask(task);
+    return task;
   }
 
   public List<OfflineRetransmissionTask> getAllTasks() {
@@ -49,21 +85,15 @@ public class OfflineRetransmissionService {
     }
   }
 
-  private void ensureTopicsExist(TopicName sourceTopicName, TopicName targetTopicName) {
-    if (sourceTopicName != null && !topicRepository.topicExists(sourceTopicName)) {
+  private void ensureSourceTopicExists(TopicName sourceTopicName) {
+    if (!topicRepository.topicExists(sourceTopicName)) {
       throw new OfflineRetransmissionValidationException("Source topic does not exist");
-    }
-
-    if (!topicRepository.topicExists(targetTopicName)) {
-      throw new OfflineRetransmissionValidationException("Target topic does not exist");
     }
   }
 
-  private void ensureTimeRangeIsProper(OfflineRetransmissionRequest request) {
-    if (request.getStartTimestamp().isAfter(request.getEndTimestamp())
-        || request.getStartTimestamp().equals(request.getEndTimestamp())) {
-      throw new OfflineRetransmissionValidationException(
-          "End timestamp must be greater than start timestamp");
+  private void ensureTargetTopicExists(TopicName targetTopicName) {
+    if (!topicRepository.topicExists(targetTopicName)) {
+      throw new OfflineRetransmissionValidationException("Target topic does not exist");
     }
   }
 
@@ -72,12 +102,5 @@ public class OfflineRetransmissionService {
     if (targetTopic.getOfflineStorage().isEnabled()) {
       throw new OfflineRetransmissionValidationException("Target topic must not be stored offline");
     }
-  }
-
-  private OfflineRetransmissionTask saveTask(OfflineRetransmissionRequest request) {
-    OfflineRetransmissionTask task =
-        new OfflineRetransmissionTask(UUID.randomUUID().toString(), request, Instant.now());
-    offlineRetransmissionRepository.saveTask(task);
-    return task;
   }
 }
