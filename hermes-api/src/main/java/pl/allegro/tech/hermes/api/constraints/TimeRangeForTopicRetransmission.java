@@ -11,10 +11,10 @@ import java.lang.annotation.Target;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({TYPE})
-@Constraint(validatedBy = OneSourceRetransmissionValidator.class)
-public @interface OneSourceRetransmission {
+@Constraint(validatedBy = TimeRangeForTopicRetransmissionValidator.class)
+public @interface TimeRangeForTopicRetransmission {
   String message() default
-      "must contain one defined source of retransmission data - source topic or source view";
+      "Must contain both startTimestamp and endTimestamp for topic retransmission. StartTimestamp must be lower than endTimestamp";
 
   Class[] groups() default {};
 
