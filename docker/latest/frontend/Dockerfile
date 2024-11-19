@@ -1,10 +1,10 @@
-FROM gradle:7.6-jdk17 AS builder
+FROM gradle:7.6-jdk21 AS builder
 
 COPY --chown=gradle:gradle . /home/gradle/src/
 WORKDIR /home/gradle/src/
 RUN gradle clean distZip -Pdistribution
 
-FROM eclipse-temurin:17.0.7_7-jre
+FROM eclipse-temurin:21-jre
 
 RUN apt-get update \
   && apt-get -y install unzip wget bash \

@@ -89,6 +89,10 @@ tasks.register('prepareIndexTemplate') {
     }
 }
 
+tasks.named('compileTestGroovy') {
+    dependsOn 'attachHermesConsole'
+}
+
 jar.dependsOn(attachHermesConsole, 'prepareIndexTemplate')
 
 run.dependsOn(attachHermesConsole, 'prepareIndexTemplate')
