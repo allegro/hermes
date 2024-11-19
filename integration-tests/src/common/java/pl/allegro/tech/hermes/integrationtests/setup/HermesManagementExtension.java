@@ -9,7 +9,7 @@ public class HermesManagementExtension implements BeforeAllCallback, AfterAllCal
 
   private final HermesManagementTestApp management;
   private HermesInitHelper initHelper;
-  private HermesFrontendTestApp frontendTestApp;
+  private final HermesFrontendTestApp frontendTestApp;
 
   public HermesManagementExtension(InfrastructureExtension infra) {
     management =
@@ -21,12 +21,14 @@ public class HermesManagementExtension implements BeforeAllCallback, AfterAllCal
   @Override
   public void beforeAll(ExtensionContext context) {
     management.start();
+    frontendTestApp.start();
     initHelper = new HermesInitHelper(management.getPort(), frontendTestApp);
   }
 
   @Override
   public void afterAll(ExtensionContext context) {
     management.stop();
+    frontendTestApp.stop();
   }
 
   public HermesInitHelper initHelper() {

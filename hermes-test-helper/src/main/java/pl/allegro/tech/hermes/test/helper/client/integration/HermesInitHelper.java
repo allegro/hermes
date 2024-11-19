@@ -21,16 +21,6 @@ public class HermesInitHelper {
     this.frontendApp = frontendApp;
   }
 
-  public HermesInitHelper(
-      int managementPort,
-      String defaultHeaderName,
-      String defaultHeaderValue,
-      HermesTestApp frontendApp) {
-    this.frontendApp = frontendApp;
-    managementTestClient =
-        new ManagementTestClient(managementPort, defaultHeaderName, defaultHeaderValue);
-  }
-
   public Topic createTopic(Topic topic) {
     createGroupIfMissing(Group.from(topic.getName().getGroupName()));
     managementTestClient
@@ -104,5 +94,7 @@ public class HermesInitHelper {
     return provider;
   }
 
-  public void refreshFrontendCache() {}
+  public void refreshFrontendCache() {
+    frontendApp.refreshCache();
+  }
 }
