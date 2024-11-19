@@ -37,7 +37,7 @@ jobs:
         tasks: [
           # Add/remove task in Allure Report job also
 #          {alias: "unitTests", name: "check"},
-          {alias: "integrationTests", name: "integrationTest --tests 'pl.allegro.tech.hermes.integrationtests.PublishingAvroTest' -i"},
+          {alias: "integrationTests", name: "integrationTest --tests 'pl.allegro.tech.hermes.integrationtests.PublishingAvroTest' --tests='pl.allegro.tech.hermes.integrationtests.PublishingTest' --tests='pl.allegro.tech.hermes.integrationtests.PublishingTimeoutTest' --tests='pl.allegro.tech.hermes.integrationtests.HermesClientPublishingTest' --tests='pl.allegro.tech.hermes.integrationtests.FilteringHeadersTest'"},
 #          {alias: "slowIntegrationTests", name: "slowIntegrationTest"},
 #          {alias: "benchmark", name: "jmh -Pjmh.iterations=1 -Pjmh.timeOnIteration=5s -Pjmh.warmupIterations=0"}
         ]
