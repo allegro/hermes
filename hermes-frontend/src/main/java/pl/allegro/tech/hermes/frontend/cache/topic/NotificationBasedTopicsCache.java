@@ -5,6 +5,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
@@ -32,6 +35,8 @@ public class NotificationBasedTopicsCache
   private final MetricsFacade metricsFacade;
   private final KafkaNamesMapper kafkaNamesMapper;
   private final ThroughputRegistry throughputRegistry;
+  private final ScheduledExecutorService executorService =
+      Executors.newSingleThreadScheduledExecutor();
 
   public NotificationBasedTopicsCache(
       InternalNotificationsBus notificationsBus,
@@ -116,10 +121,19 @@ public class NotificationBasedTopicsCache
 
   @Override
   public void start() {
-    for (String groupName : groupRepository.listGroupNames()) {
-      for (Topic topic : topicRepository.listTopics(groupName)) {
-        topicCache.put(topic.getQualifiedName(), cachedTopic(topic));
+    refreshCache();
+    executorService.scheduleAtFixedRate(this::refreshCache, 1, 1, TimeUnit.SECONDS);
+  }
+
+  private void refreshCache() {
+    try {
+      for (String groupName : groupRepository.listGroupNames()) {
+        for (Topic topic : topicRepository.listTopics(groupName)) {
+          topicCache.put(topic.getQualifiedName(), cachedTopic(topic));
+        }
       }
+    } catch (Exception exception) {
+      logger.error("Failed to refresh topics cache", exception);
     }
   }
 
