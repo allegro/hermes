@@ -30,15 +30,17 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.frontend.HermesFrontend;
 import pl.allegro.tech.hermes.frontend.cache.topic.NotificationBasedTopicsCache;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
 import pl.allegro.tech.hermes.test.helper.containers.ConfluentSchemaRegistryContainer;
 import pl.allegro.tech.hermes.test.helper.containers.KafkaContainerCluster;
 import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
+import pl.allegro.tech.hermes.test.helper.environment.FrontendNotification;
 import pl.allegro.tech.hermes.test.helper.environment.HermesTestApp;
 
-public class HermesFrontendTestApp implements HermesTestApp {
+public class HermesFrontendTestApp implements HermesTestApp, FrontendNotification {
 
   private final ZookeeperContainer hermesZookeeper;
   private final Map<String, KafkaContainerCluster> kafkaClusters;
@@ -147,9 +149,15 @@ public class HermesFrontendTestApp implements HermesTestApp {
     return this;
   }
 
+  public void notifyTopicCreated(Topic topic) {
+    app.context().getBean(NotificationBasedTopicsCache.class).onTopicCreated(topic);
+  }
+
   @Override
-  public void refreshCache() {
-    app.context().getBean(NotificationBasedTopicsCache.class).refreshCache();
+  public void notifyTopicBlacklisted(Topic topic) {
+    app.context()
+        .getBean(NotificationBasedTopicsCache.class)
+        .onTopicBlacklisted(topic.getQualifiedName());
   }
 
   @Override

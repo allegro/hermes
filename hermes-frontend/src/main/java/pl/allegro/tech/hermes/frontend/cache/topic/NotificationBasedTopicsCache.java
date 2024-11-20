@@ -116,20 +116,24 @@ public class NotificationBasedTopicsCache
 
   @Override
   public void start() {
-    refreshCache();
-  }
-
-  public void refreshCache() {
-    try {
-      for (String groupName : groupRepository.listGroupNames()) {
-        for (Topic topic : topicRepository.listTopics(groupName)) {
-          topicCache.put(topic.getQualifiedName(), cachedTopic(topic));
-        }
+    for (String groupName : groupRepository.listGroupNames()) {
+      for (Topic topic : topicRepository.listTopics(groupName)) {
+        topicCache.put(topic.getQualifiedName(), cachedTopic(topic));
       }
-    } catch (Exception exception) {
-      logger.error("Failed to refresh topics cache", exception);
     }
   }
+
+  //  public void refreshCache() {
+  //    try {
+  //      for (String groupName : groupRepository.listGroupNames()) {
+  //        for (Topic topic : topicRepository.listTopics(groupName)) {
+  //          topicCache.put(topic.getQualifiedName(), cachedTopic(topic));
+  //        }
+  //      }
+  //    } catch (Exception exception) {
+  //      logger.error("Failed to refresh topics cache", exception);
+  //    }
+  //  }
 
   private CachedTopic cachedTopic(Topic topic) {
     return new CachedTopic(

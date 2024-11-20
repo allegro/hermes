@@ -9,16 +9,16 @@ import pl.allegro.tech.hermes.api.OAuthProvider;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicWithSchema;
-import pl.allegro.tech.hermes.test.helper.environment.HermesTestApp;
+import pl.allegro.tech.hermes.test.helper.environment.FrontendNotification;
 
 public class HermesInitHelper {
 
   private final ManagementTestClient managementTestClient;
-  private final HermesTestApp frontendApp;
+  private final FrontendNotification frontendNotification;
 
-  public HermesInitHelper(int managementPort, HermesTestApp frontendApp) {
+  public HermesInitHelper(int managementPort, FrontendNotification frontendNotification) {
     managementTestClient = new ManagementTestClient(managementPort);
-    this.frontendApp = frontendApp;
+    this.frontendNotification = frontendNotification;
   }
 
   public Topic createTopic(Topic topic) {
@@ -28,7 +28,7 @@ public class HermesInitHelper {
         .expectStatus()
         .is2xxSuccessful();
     waitUntilTopicCreated(topic.getQualifiedName());
-    frontendApp.refreshCache();
+    frontendNotification.notifyTopicCreated(topic);
     return topic;
   }
 
@@ -36,6 +36,12 @@ public class HermesInitHelper {
     createGroupIfMissing(Group.from(topic.getName().getGroupName()));
     managementTestClient.createTopic(topic).expectStatus().is2xxSuccessful();
     waitUntilTopicCreated(topic.getQualifiedName());
+    frontendNotification.notifyTopicCreated(topic.getTopic());
+    return topic;
+  }
+
+  public Topic notifyFrontendTopicBlacklisted(Topic topic) {
+    frontendNotification.notifyTopicBlacklisted(topic);
     return topic;
   }
 
@@ -92,9 +98,5 @@ public class HermesInitHelper {
   public OAuthProvider createOAuthProvider(OAuthProvider provider) {
     managementTestClient.createOAuthProvider(provider).expectStatus().is2xxSuccessful();
     return provider;
-  }
-
-  public void refreshFrontendCache() {
-    frontendApp.refreshCache();
   }
 }

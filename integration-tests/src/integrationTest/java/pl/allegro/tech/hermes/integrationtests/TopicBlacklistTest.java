@@ -26,7 +26,7 @@ public class TopicBlacklistTest {
 
     // when
     hermes.api().blacklistTopic(topic.getQualifiedName());
-    hermes.initHelper().refreshFrontendCache();
+    hermes.initHelper().notifyFrontendTopicBlacklisted(topic);
     waitAtMost(Duration.ofSeconds(10))
         .untilAsserted(
             () -> {
@@ -47,7 +47,7 @@ public class TopicBlacklistTest {
 
     // when
     hermes.api().unblacklistTopic(topic.getQualifiedName());
-    hermes.initHelper().refreshFrontendCache();
+    hermes.initHelper().notifyFrontendTopicBlacklisted(topic);
 
     waitAtMost(Duration.ofSeconds(10))
         .untilAsserted(

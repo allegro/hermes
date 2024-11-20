@@ -11,8 +11,4 @@ public interface HermesTestApp {
   void restoreDefaultSettings();
 
   int getPort();
-
-  default void refreshCache() {
-    throw new UnsupportedOperationException("Not implemented");
-  }
 }
