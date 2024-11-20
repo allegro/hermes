@@ -44,8 +44,7 @@ public class KafkaReadinessCheckTest {
   public static void setup() {
     Stream.of(hermesZookeeper, kafka).parallel().forEach(Startable::start);
     schemaRegistry.start();
-    HermesTestApp management =
-        new HermesManagementTestApp(hermesZookeeper, kafka, schemaRegistry).start();
+    management = new HermesManagementTestApp(hermesZookeeper, kafka, schemaRegistry).start();
     frontendApp.start();
     hermesInitHelper = new HermesInitHelper(management.getPort(), frontendApp);
   }
