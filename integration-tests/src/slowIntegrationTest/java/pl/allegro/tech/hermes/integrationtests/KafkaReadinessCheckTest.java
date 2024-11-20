@@ -38,6 +38,7 @@ public class KafkaReadinessCheckTest {
       new HermesFrontendTestApp(hermesZookeeper, kafka, schemaRegistry);
   private static Topic topic;
   private static HermesInitHelper hermesInitHelper;
+  private static HermesTestApp management;
 
   @BeforeAll
   public static void setup() {
@@ -47,7 +48,6 @@ public class KafkaReadinessCheckTest {
         new HermesManagementTestApp(hermesZookeeper, kafka, schemaRegistry).start();
     frontendApp.start();
     hermesInitHelper = new HermesInitHelper(management.getPort(), frontendApp);
-    management.stop();
   }
 
   @BeforeEach
@@ -59,6 +59,7 @@ public class KafkaReadinessCheckTest {
   public static void clean() {
     Stream.of(hermesZookeeper, kafka, schemaRegistry).parallel().forEach(Startable::stop);
     frontendApp.stop();
+    management.stop();
   }
 
   @Test
