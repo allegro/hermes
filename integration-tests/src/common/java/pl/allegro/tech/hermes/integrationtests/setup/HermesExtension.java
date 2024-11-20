@@ -186,6 +186,10 @@ public class HermesExtension
 
   @Override
   public void afterEach(ExtensionContext context) throws Exception {
-    clearManagementData();
+    try {
+      clearManagementData();
+    } catch (Exception e) {
+      logger.error("Error during cleaning up management data", e);
+    }
   }
 }
