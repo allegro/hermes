@@ -1,11 +1,13 @@
 <script setup lang="ts">
   import { ref } from 'vue';
+  import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
 
   const emit = defineEmits<{
     retransmit: [targetTopic: string, from: string, to: string];
     cancel: [];
   }>();
 
+  const configStore = useAppConfigStore();
   const targetTopic = ref('');
   const startTimestamp = ref(new Date().toISOString().slice(0, -5));
   const endTimestamp = ref(new Date().toISOString().slice(0, -5));
@@ -23,7 +25,20 @@
 <template>
   <v-form @submit.prevent>
     <v-card>
-      <v-card-title> {{ $t('offlineRetransmission.title') }}</v-card-title>
+      <v-card-title>
+        {{ $t('offlineRetransmission.title') }}
+        <v-btn
+          density="compact"
+          variant="outlined"
+          prepend-icon="mdi-open-in-new"
+          target="_blank"
+          :href="
+            configStore.loadedConfig.topic.offlineRetransmissionFromViewDocsUrl
+          "
+        >
+          {{ $t('offlineRetransmission.titleRetransmissionFromView') }}</v-btn
+        >
+      </v-card-title>
       <v-card-subtitle>{{
         $t('offlineRetransmission.subtitle')
       }}</v-card-subtitle>

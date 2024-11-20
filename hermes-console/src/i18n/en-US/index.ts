@@ -647,6 +647,7 @@ const en_US = {
   },
   offlineRetransmission: {
     title: 'Offline retransmission',
+    titleRetransmissionFromView: 'Docs for retransmission from View',
     subtitle:
       'Offline retransmission allows retransmitting events from GCP (BigQuery) to Hermes.',
     targetTopic: 'Target topic',

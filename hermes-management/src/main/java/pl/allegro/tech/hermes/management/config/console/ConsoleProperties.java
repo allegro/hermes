@@ -350,6 +350,7 @@ public class ConsoleProperties {
         Lists.newArrayList(new RetentionUnit("DAYS", "DAYS"));
     private boolean offlineRetransmissionEnabled = false;
     private String offlineRetransmissionDescription = "Offline retransmission";
+    private String offlineRetransmissionFromViewDocsUrl = "https://hermes-pubsub.rtfd.org";
 
     public boolean isMessagePreviewEnabled() {
       return messagePreviewEnabled;
@@ -461,6 +462,15 @@ public class ConsoleProperties {
 
     public void setOfflineRetransmissionDescription(String offlineRetransmissionDescription) {
       this.offlineRetransmissionDescription = offlineRetransmissionDescription;
+    }
+
+    public String getOfflineRetransmissionFromViewDocsUrl() {
+      return offlineRetransmissionFromViewDocsUrl;
+    }
+
+    public void setOfflineRetransmissionFromViewDocsUrl(
+        String offlineRetransmissionFromViewDocsUrl) {
+      this.offlineRetransmissionFromViewDocsUrl = offlineRetransmissionFromViewDocsUrl;
     }
   }
 
