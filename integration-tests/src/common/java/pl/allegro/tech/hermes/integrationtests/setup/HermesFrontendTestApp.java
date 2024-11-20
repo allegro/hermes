@@ -149,6 +149,7 @@ public class HermesFrontendTestApp implements HermesTestApp, FrontendNotificatio
     return this;
   }
 
+  @Override
   public void notifyTopicCreated(Topic topic) {
     app.context().getBean(NotificationBasedTopicsCache.class).onTopicCreated(topic);
   }
