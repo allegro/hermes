@@ -48,6 +48,15 @@ public class ModelAwareZookeeperNotifyingCache {
     }
   }
 
+  public void reset() {
+    try {
+      cache.stop();
+      cache.start();
+    } catch (Exception e) {
+      logger.warn("Failed to reset Zookeeper cache", e);
+    }
+  }
+
   public void registerGroupCallback(Consumer<PathChildrenCacheEvent> callback) {
     cache.registerCallback(GROUP_LEVEL, callback);
   }
