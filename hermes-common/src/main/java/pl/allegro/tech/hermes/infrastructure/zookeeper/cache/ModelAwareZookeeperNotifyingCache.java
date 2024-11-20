@@ -25,14 +25,14 @@ public class ModelAwareZookeeperNotifyingCache {
   private final ExecutorService executor;
 
   public ModelAwareZookeeperNotifyingCache(
-      CuratorFramework curator, ExecutorService executor, String rootPath) {
+      CuratorFramework curator, ExecutorService executor, String rootPath, String module) {
     List<String> levelPrefixes =
         Arrays.asList(
             ZookeeperPaths.GROUPS_PATH,
             ZookeeperPaths.TOPICS_PATH,
             ZookeeperPaths.SUBSCRIPTIONS_PATH);
     this.executor = executor;
-    this.cache = new HierarchicalCache(curator, executor, rootPath, 3, levelPrefixes, true);
+    this.cache = new HierarchicalCache(curator, executor, rootPath, 3, levelPrefixes, true, module);
   }
 
   public void start() throws Exception {

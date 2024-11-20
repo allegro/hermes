@@ -158,7 +158,8 @@ public class CommonConfiguration {
       DatacenterNameProvider datacenterNameProvider) {
     ZookeeperProperties zookeeperProperties =
         zookeeperClustersProperties.toZookeeperProperties(datacenterNameProvider);
-    return new ModelAwareZookeeperNotifyingCacheFactory(curator, metricsFacade, zookeeperProperties)
+    return new ModelAwareZookeeperNotifyingCacheFactory(
+            curator, metricsFacade, zookeeperProperties, "consumers")
         .provide();
   }
 

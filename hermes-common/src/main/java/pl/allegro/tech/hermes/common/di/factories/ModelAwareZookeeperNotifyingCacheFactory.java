@@ -18,13 +18,17 @@ public class ModelAwareZookeeperNotifyingCacheFactory {
 
   private final ZookeeperParameters zookeeperParameters;
 
+  private final String module;
+
   public ModelAwareZookeeperNotifyingCacheFactory(
       CuratorFramework curator,
       MetricsFacade metricaFacade,
-      ZookeeperParameters zookeeperParameters) {
+      ZookeeperParameters zookeeperParameters,
+      String module) {
     this.curator = curator;
     this.metricsFacade = metricaFacade;
     this.zookeeperParameters = zookeeperParameters;
+    this.module = module;
   }
 
   public ModelAwareZookeeperNotifyingCache provide() {
@@ -32,7 +36,7 @@ public class ModelAwareZookeeperNotifyingCacheFactory {
     ExecutorService executor =
         createExecutor(rootPath, zookeeperParameters.getProcessingThreadPoolSize());
     ModelAwareZookeeperNotifyingCache cache =
-        new ModelAwareZookeeperNotifyingCache(curator, executor, rootPath);
+        new ModelAwareZookeeperNotifyingCache(curator, executor, rootPath, module);
     try {
       cache.start();
     } catch (Exception e) {

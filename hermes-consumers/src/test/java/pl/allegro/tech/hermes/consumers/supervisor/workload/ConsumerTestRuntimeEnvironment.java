@@ -140,7 +140,7 @@ class ConsumerTestRuntimeEnvironment {
 
     ModelAwareZookeeperNotifyingCache modelAwareCache =
         new ModelAwareZookeeperNotifyingCacheFactory(
-                curator, metricsSupplier.get(), zookeeperProperties)
+                curator, metricsSupplier.get(), zookeeperProperties, "consumer")
             .provide();
 
     InternalNotificationsBus notificationsBus =
@@ -243,7 +243,7 @@ class ConsumerTestRuntimeEnvironment {
     CuratorFramework curator = consumerZookeeperConnections.get(consumerId);
     ModelAwareZookeeperNotifyingCache modelAwareCache =
         new ModelAwareZookeeperNotifyingCacheFactory(
-                curator, metricsSupplier.get(), zookeeperProperties)
+                curator, metricsSupplier.get(), zookeeperProperties, "consumer")
             .provide();
     InternalNotificationsBus notificationsBus =
         new ZookeeperInternalNotificationBus(objectMapper, modelAwareCache);

@@ -35,6 +35,7 @@ class HierarchicalCacheLevel extends PathChildrenCache implements PathChildrenCa
   private final boolean removeNodesWithNoData;
 
   private final Map<String, HierarchicalCacheLevel> subcacheMap = new HashMap<>();
+  private final String module;
 
   HierarchicalCacheLevel(
       CuratorFramework curatorClient,
@@ -43,7 +44,8 @@ class HierarchicalCacheLevel extends PathChildrenCache implements PathChildrenCa
       int depth,
       CacheListeners eventConsumer,
       Optional<BiFunction<Integer, String, HierarchicalCacheLevel>> nextLevelFactory,
-      boolean removeNodesWithNoData) {
+      boolean removeNodesWithNoData,
+      String module) {
     super(curatorClient, path, true, false, executorService);
     this.curatorClient = curatorClient;
     this.currentDepth = depth;
@@ -51,6 +53,7 @@ class HierarchicalCacheLevel extends PathChildrenCache implements PathChildrenCa
     this.nextLevelFactory = nextLevelFactory;
     this.removeNodesWithNoData = removeNodesWithNoData;
     getListenable().addListener(this);
+    this.module = module;
   }
 
   @Override
@@ -61,7 +64,7 @@ class HierarchicalCacheLevel extends PathChildrenCache implements PathChildrenCa
 
     String path = event.getData().getPath();
     String cacheName = cacheNameFromPath(path);
-    logger.debug("Got {} event for path {}", event.getType(), path);
+    logger.debug("{}: Got {} event for path {}", module, event.getType(), path);
 
     switch (event.getType()) {
       case CHILD_ADDED:
