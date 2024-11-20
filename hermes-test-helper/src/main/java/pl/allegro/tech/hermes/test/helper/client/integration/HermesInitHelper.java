@@ -27,7 +27,7 @@ public class HermesInitHelper {
         .createTopic(TopicWithSchema.topicWithSchema(topic, null))
         .expectStatus()
         .is2xxSuccessful();
-    frontendNotification.notifyTopicCreated(topic);
+    //    frontendNotification.notifyTopicCreated(topic);
     waitUntilTopicCreated(topic.getQualifiedName());
     return topic;
   }
@@ -35,17 +35,17 @@ public class HermesInitHelper {
   public Topic createTopicWithSchema(TopicWithSchema topic) {
     createGroupIfMissing(Group.from(topic.getName().getGroupName()));
     managementTestClient.createTopic(topic).expectStatus().is2xxSuccessful();
-    frontendNotification.notifyTopicCreated(topic.getTopic());
+    //    frontendNotification.notifyTopicCreated(topic.getTopic());
     waitUntilTopicCreated(topic.getQualifiedName());
     return topic;
   }
 
   public void notifyFrontendTopicBlacklisted(Topic topic) {
-    frontendNotification.notifyTopicBlacklisted(topic);
+    //    frontendNotification.notifyTopicBlacklisted(topic);
   }
 
   public void notifyFrontendTopicUnblacklisted(Topic topic) {
-    frontendNotification.notifyTopicUnblacklisted(topic);
+    //    frontendNotification.notifyTopicUnblacklisted(topic);
   }
 
   public Group createGroupIfMissing(Group group) {

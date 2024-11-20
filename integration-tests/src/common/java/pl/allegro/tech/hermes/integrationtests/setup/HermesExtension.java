@@ -186,6 +186,6 @@ public class HermesExtension
 
   @Override
   public void beforeEach(ExtensionContext context) throws Exception {
-    frontend.reset();
+    clearManagementData();
   }
 }
