@@ -7,7 +7,7 @@ import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithR
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import pl.allegro.tech.hermes.api.OwnerId;
@@ -20,10 +20,10 @@ public class ListSubscriptionForOwnerTest {
 
   @RegisterExtension public static final HermesExtension hermes = new HermesExtension();
 
-  private static Topic topic;
+  private Topic topic;
 
-  @BeforeAll
-  public static void createTopic() {
+  @BeforeEach
+  public void createTopic() {
     topic = hermes.initHelper().createTopic(topicWithRandomName().build());
   }
 

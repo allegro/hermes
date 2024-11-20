@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.testcontainers.lifecycle.Startable;
@@ -36,6 +37,7 @@ public class KafkaReadinessCheckTest {
   private static HermesFrontendTestApp frontendApp =
       new HermesFrontendTestApp(hermesZookeeper, kafka, schemaRegistry);
   private static Topic topic;
+  private static HermesInitHelper hermesInitHelper;
 
   @BeforeAll
   public static void setup() {
@@ -43,11 +45,14 @@ public class KafkaReadinessCheckTest {
     schemaRegistry.start();
     HermesTestApp management =
         new HermesManagementTestApp(hermesZookeeper, kafka, schemaRegistry).start();
-
     frontendApp.start();
-    HermesInitHelper hermesInitHelper = new HermesInitHelper(management.getPort(), frontendApp);
-    topic = hermesInitHelper.createTopic(topicWithRandomName().withAck(ALL).build());
+    hermesInitHelper = new HermesInitHelper(management.getPort(), frontendApp);
     management.stop();
+  }
+
+  @BeforeEach
+  public void beforeEach() {
+    topic = hermesInitHelper.createTopic(topicWithRandomName().withAck(ALL).build());
   }
 
   @AfterAll
