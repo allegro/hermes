@@ -90,6 +90,7 @@ export interface TopicViewConfiguration {
   retentionUnits: RetentionUnit[];
   offlineRetransmissionEnabled: boolean;
   offlineRetransmissionDescription: string;
+  offlineRetransmissionFromViewDocsUrl: string;
 }
 
 export interface DefaultTopicViewConfiguration {

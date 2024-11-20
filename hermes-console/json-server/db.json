@@ -672,7 +672,8 @@
         }
       ],
       "offlineRetransmissionEnabled": true,
-      "offlineRetransmissionDescription": "Offline retransmission"
+      "offlineRetransmissionDescription": "Offline retransmission",
+      "offlineRetransmissionFromViewDocsUrl": "https://hermes-pubsub.rtfd.org"
     },
     "subscription": {
       "endpointAddressResolverMetadata": {

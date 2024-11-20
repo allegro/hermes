@@ -8,6 +8,7 @@
   }>();
 
   const consumersNumber: Ref<number> = ref(1);
+  const reason: Ref<string> = ref('');
   const topicName: Ref<string> = ref('');
   const subscriptionName: Ref<string> = ref('');
 
@@ -17,7 +18,10 @@
   }>();
 
   const onCreated = async () => {
-    const constraint: Constraint = { consumersNumber: consumersNumber.value };
+    const constraint: Constraint = {
+      consumersNumber: consumersNumber.value,
+      reason: reason.value,
+    };
     let resourceId = '';
     if (props.isSubscription) {
       resourceId = subscriptionFqn(topicName.value, subscriptionName.value);
@@ -62,6 +66,15 @@
           type="number"
           v-model="consumersNumber"
           data-testid="createConstraintConsumersNumberInput"
+        >
+        </v-text-field>
+      </v-card-item>
+      <v-card-item>
+        <v-text-field
+          :label="$t('constraints.createForm.reason')"
+          type="text"
+          v-model="reason"
+          data-testid="createConstraintReasonInput"
         >
         </v-text-field>
       </v-card-item>
