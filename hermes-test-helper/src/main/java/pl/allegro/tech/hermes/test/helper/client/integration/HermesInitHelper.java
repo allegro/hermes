@@ -45,6 +45,11 @@ public class HermesInitHelper {
     return topic;
   }
 
+  public Topic notifyFrontendTopicUnblacklisted(Topic topic) {
+    frontendNotification.notifyTopicunblacklisted(topic);
+    return topic;
+  }
+
   public Group createGroupIfMissing(Group group) {
     if (managementTestClient.getGroups().contains(group.getGroupName())) {
       return group;

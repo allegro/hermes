@@ -6,4 +6,6 @@ public interface FrontendNotification {
   void notifyTopicCreated(Topic topic);
 
   void notifyTopicBlacklisted(Topic topic);
+
+  void notifyTopicunblacklisted(Topic topic);
 }

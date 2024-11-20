@@ -47,7 +47,7 @@ public class TopicBlacklistTest {
 
     // when
     hermes.api().unblacklistTopic(topic.getQualifiedName());
-    hermes.initHelper().notifyFrontendTopicBlacklisted(topic);
+    hermes.initHelper().notifyFrontendTopicUnblacklisted(topic);
 
     waitAtMost(Duration.ofSeconds(10))
         .untilAsserted(
