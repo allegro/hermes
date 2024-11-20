@@ -79,7 +79,7 @@ public class MessageBufferLoadingTest {
 
     FrontendTestClient publisher = new FrontendTestClient(newFrontend.getPort());
 
-    Topic topic = management.newInitHelper(newFrontend).createTopic(topicWithRandomName().build());
+    Topic topic = management.initHelper(newFrontend).createTopic(topicWithRandomName().build());
 
     try {
       // given
@@ -109,30 +109,33 @@ public class MessageBufferLoadingTest {
   public void shouldLoadMessageFromBackupStorage() {
     // given
     String tempDirPath = Files.createTempDir().getAbsolutePath();
+    HermesFrontendTestApp oldFrontend = new HermesFrontendTestApp(infra.hermesZookeeper(), infra.kafka(), infra.schemaRegistry());
+    oldFrontend.start();
     Topic topic =
-        management.initHelper().createTopic(topicWithRandomName().withContentType(JSON).build());
+        management.initHelper(oldFrontend).createTopic(topicWithRandomName().withContentType(JSON).build());
     backupFileWithOneMessage(tempDirPath, topic);
 
     TestSubscriber subscriber = subscribers.createSubscriber();
 
     management
-        .initHelper()
+        .initHelper(oldFrontend)
         .createSubscription(
             subscription(topic.getQualifiedName(), "subscription", subscriber.getEndpoint())
                 .build());
 
-    HermesFrontendTestApp frontend =
+    HermesFrontendTestApp newFrontend =
         new HermesFrontendTestApp(infra.hermesZookeeper(), infra.kafka(), infra.schemaRegistry());
-    frontend.withProperty(MESSAGES_LOCAL_STORAGE_DIRECTORY, tempDirPath);
+    newFrontend.withProperty(MESSAGES_LOCAL_STORAGE_DIRECTORY, tempDirPath);
 
     // when
-    frontend.start();
+    newFrontend.start();
 
     // then
     subscriber.waitUntilReceived("message");
 
     // after
-    frontend.stop();
+    oldFrontend.stop();
+    newFrontend.stop();
   }
 
   private void backupFileWithOneMessage(String tempDirPath, Topic topic) {

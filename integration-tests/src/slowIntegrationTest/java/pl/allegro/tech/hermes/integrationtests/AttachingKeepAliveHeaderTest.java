@@ -38,7 +38,7 @@ public class AttachingKeepAliveHeaderTest {
               f.withProperty(FRONTEND_KEEP_ALIVE_HEADER_TIMEOUT, "2s");
             });
 
-    Topic topic = management.initHelper().createTopic(topicWithRandomName().build());
+    Topic topic = management.initHelper(frontend).createTopic(topicWithRandomName().build());
 
     FrontendTestClient publisher = new FrontendTestClient(frontend.getPort());
 
@@ -59,7 +59,7 @@ public class AttachingKeepAliveHeaderTest {
     HermesFrontendTestApp frontend =
         startFrontend(f -> f.withProperty(FRONTEND_KEEP_ALIVE_HEADER_ENABLED, false));
 
-    Topic topic = management.initHelper().createTopic(topicWithRandomName().build());
+    Topic topic = management.initHelper(frontend).createTopic(topicWithRandomName().build());
 
     FrontendTestClient publisher = new FrontendTestClient(frontend.getPort());
 

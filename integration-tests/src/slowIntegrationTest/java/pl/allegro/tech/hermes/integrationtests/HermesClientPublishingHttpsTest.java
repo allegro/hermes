@@ -65,7 +65,7 @@ public class HermesClientPublishingHttpsTest {
   @Test
   public void shouldCommunicateWithHermesUsingHttp2() {
     // given
-    Topic topic = management.initHelper().createTopic(topicWithRandomName().build());
+    Topic topic = management.initHelper(frontend).createTopic(topicWithRandomName().build());
     String message = TestMessage.of("hello", "world").body();
 
     OkHttpHermesSender okHttpHermesSender =

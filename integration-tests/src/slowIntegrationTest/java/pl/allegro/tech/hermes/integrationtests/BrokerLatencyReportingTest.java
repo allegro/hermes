@@ -24,11 +24,11 @@ public class BrokerLatencyReportingTest {
   @RegisterExtension
   public static InfrastructureExtension infra = new InfrastructureExtension();
 
+  private static HermesFrontendTestApp frontend;
+
   @Order(1)
   @RegisterExtension
   public static HermesManagementExtension management = new HermesManagementExtension(infra);
-
-  private static HermesFrontendTestApp frontend;
 
   private static FrontendTestClient frontendTestClient;
 
@@ -49,7 +49,7 @@ public class BrokerLatencyReportingTest {
   @Test
   public void shouldReportBrokerLatencyMetrics() {
     // given
-    Topic topic = management.initHelper().createTopic(topicWithRandomName().build());
+    Topic topic = management.initHelper(frontend).createTopic(topicWithRandomName().build());
 
     TestMessage message = TestMessage.of("hello", "world");
 

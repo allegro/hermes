@@ -24,7 +24,6 @@
     <logger name="pl.allegro.tech.hermes.infrastructure.zookeeper.notifications.ZookeeperInternalNotificationBus" level="DEBUG" />
     <logger name="pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaRawMessageReader" level="OFF" />
     <logger name="pl.allegro.tech.hermes.management.infrastructure.prometheus.RestTemplatePrometheusClient" level="OFF" />
-    <logger name="pl.allegro.tech.hermes.consumers.consumer.profiling.DefaultConsumerProfiler" level="OFF" />
 
     <root level="info">
         <appender-ref ref="STDOUT"/>
