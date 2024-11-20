@@ -123,6 +123,10 @@ public class NotificationBasedTopicsCache
     }
   }
 
+  public void clear() {
+    this.topicCache.clear();
+  }
+
   //  public void refreshCache() {
   //    try {
   //      for (String groupName : groupRepository.listGroupNames()) {

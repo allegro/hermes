@@ -10,6 +10,7 @@ import java.util.stream.Stream;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
+import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +35,10 @@ import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
 import pl.allegro.tech.hermes.test.helper.environment.HermesTestApp;
 
 public class HermesExtension
-    implements BeforeAllCallback, AfterAllCallback, ExtensionContext.Store.CloseableResource {
+    implements BeforeEachCallback,
+        BeforeAllCallback,
+        AfterAllCallback,
+        ExtensionContext.Store.CloseableResource {
 
   private static final Logger logger = LoggerFactory.getLogger(HermesExtension.class);
 
@@ -178,5 +182,10 @@ public class HermesExtension
   @Override
   public void afterAll(ExtensionContext context) {
     Stream.of(management, consumers, frontend).forEach(HermesTestApp::restoreDefaultSettings);
+  }
+
+  @Override
+  public void beforeEach(ExtensionContext context) throws Exception {
+    frontend.reset();
   }
 }

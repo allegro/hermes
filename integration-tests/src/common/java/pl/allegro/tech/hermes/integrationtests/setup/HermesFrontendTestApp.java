@@ -34,6 +34,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.frontend.HermesFrontend;
 import pl.allegro.tech.hermes.frontend.cache.topic.NotificationBasedTopicsCache;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.cache.ModelAwareZookeeperNotifyingCache;
 import pl.allegro.tech.hermes.test.helper.containers.ConfluentSchemaRegistryContainer;
 import pl.allegro.tech.hermes.test.helper.containers.KafkaContainerCluster;
 import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
@@ -173,6 +174,18 @@ public class HermesFrontendTestApp implements HermesTestApp, FrontendNotificatio
     if (app != null) {
       app.context().close();
       app = null;
+    }
+  }
+
+  @Override
+  public void reset() {
+    app.context().getBean(ModelAwareZookeeperNotifyingCache.class).stop();
+    app.context().getBean(NotificationBasedTopicsCache.class).clear();
+
+    try {
+      app.context().getBean(ModelAwareZookeeperNotifyingCache.class).start();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
   }
 
