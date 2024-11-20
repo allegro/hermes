@@ -7,5 +7,5 @@ public interface FrontendNotification {
 
   void notifyTopicBlacklisted(Topic topic);
 
-  void notifyTopicunblacklisted(Topic topic);
+  void notifyTopicUnblacklisted(Topic topic);
 }

@@ -40,14 +40,12 @@ public class HermesInitHelper {
     return topic;
   }
 
-  public Topic notifyFrontendTopicBlacklisted(Topic topic) {
+  public void notifyFrontendTopicBlacklisted(Topic topic) {
     frontendNotification.notifyTopicBlacklisted(topic);
-    return topic;
   }
 
-  public Topic notifyFrontendTopicUnblacklisted(Topic topic) {
-    frontendNotification.notifyTopicunblacklisted(topic);
-    return topic;
+  public void notifyFrontendTopicUnblacklisted(Topic topic) {
+    frontendNotification.notifyTopicUnblacklisted(topic);
   }
 
   public Group createGroupIfMissing(Group group) {

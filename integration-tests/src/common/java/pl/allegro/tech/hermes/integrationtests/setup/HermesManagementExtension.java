@@ -34,4 +34,8 @@ public class HermesManagementExtension implements BeforeAllCallback, AfterAllCal
   public HermesInitHelper initHelper() {
     return initHelper;
   }
+
+  public HermesInitHelper newInitHelper(HermesFrontendTestApp frontendTestApp) {
+    return new HermesInitHelper(management.getPort(), frontendTestApp);
+  }
 }

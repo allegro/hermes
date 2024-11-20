@@ -71,15 +71,15 @@ public class MessageBufferLoadingTest {
   public void shouldBackupMessage() {
     // setup
     String backupStorageDir = Files.createTempDir().getAbsolutePath();
-    HermesFrontendTestApp frontend =
+    HermesFrontendTestApp newFrontend =
         new HermesFrontendTestApp(infra.hermesZookeeper(), infra.kafka(), infra.schemaRegistry());
-    frontend.withProperty(MESSAGES_LOCAL_STORAGE_DIRECTORY, backupStorageDir);
-    frontend.withProperty(MESSAGES_LOCAL_STORAGE_ENABLED, true);
-    frontend.start();
+    newFrontend.withProperty(MESSAGES_LOCAL_STORAGE_DIRECTORY, backupStorageDir);
+    newFrontend.withProperty(MESSAGES_LOCAL_STORAGE_ENABLED, true);
+    newFrontend.start();
 
-    FrontendTestClient publisher = new FrontendTestClient(frontend.getPort());
+    FrontendTestClient publisher = new FrontendTestClient(newFrontend.getPort());
 
-    Topic topic = management.initHelper().createTopic(topicWithRandomName().build());
+    Topic topic = management.newInitHelper(newFrontend).createTopic(topicWithRandomName().build());
 
     try {
       // given
@@ -101,7 +101,7 @@ public class MessageBufferLoadingTest {
     } finally {
       // after
       infra.kafka().restoreConnectionsBetweenBrokersAndClients();
-      frontend.stop();
+      newFrontend.stop();
     }
   }
 

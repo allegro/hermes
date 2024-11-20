@@ -162,7 +162,7 @@ public class HermesFrontendTestApp implements HermesTestApp, FrontendNotificatio
   }
 
   @Override
-  public void notifyTopicunblacklisted(Topic topic) {
+  public void notifyTopicUnblacklisted(Topic topic) {
     app.context()
         .getBean(NotificationBasedTopicsCache.class)
         .onTopicUnblacklisted(topic.getQualifiedName());
