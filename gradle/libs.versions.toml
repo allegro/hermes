@@ -28,15 +28,25 @@ wiremock = "3.9.0"
 [libraries]
 allure-bom = { group = "io.qameta.allure", name = "allure-bom", version.ref = "allure" }
 assertj-core = { group = "org.assertj", name = "assertj-core", version.ref = "assertj" }
+avro = { group = "org.apache.avro", name = "avro", version.ref = "avro" }
+curator-client = { group = "org.apache.curator", name = "curator-client", version.ref = "curator" }
+curator-recipes = { group = "org.apache.curator", name = "curator-recipes", version.ref = "curator" }
 failsafe = { group = "net.jodah", name = "failsafe", version.ref = "failsafe" }
 guava = { group = "com.google.guava", name = "guava", version.ref = "guava" }
 jackson-annotations = { group = "com.fasterxml.jackson.core", name = "jackson-annotations", version.ref = "jackson" }
+jackson-databind = { group = "com.fasterxml.jackson.core", name = "jackson-databind", version.ref = "jackson" }
 jackson-datatype-jsr310 = { group = "com.fasterxml.jackson.datatype", name = "jackson-datatype-jsr310", version.ref = "jackson" }
 jackson-jakarta-rs-json-provider = { group = "com.fasterxml.jackson.jakarta.rs", name = "jackson-jakarta-rs-json-provider", version.ref = "jackson" }
+jersey-bean-validation = { group = "org.glassfish.jersey.ext", name = "jersey-bean-validation", version.ref = "jersey" }
 jersey-client = { group = "org.glassfish.jersey.core", name = "jersey-client", version.ref = "jersey" }
 jersey-hk2 = { group = "org.glassfish.jersey.inject", name = "jersey-hk2", version.ref = "jersey" }
+jersey-media-json-jackson = { group = "org.glassfish.jersey.media", name = "jersey-media-json-jackson", version.ref = "jersey" }
+json2avro-converter = { group = "tech.allegro.schema.json2avro", name = "converter", version.ref = "json2avro" }
 junit-vintage-engine = { group = "org.junit.vintage", name = "junit-vintage-engine", version.ref = "junit_jupiter" }
+kafka-clients = { group = "org.apache.kafka", name = "kafka-clients", version.ref = "kafka" }
+metrics-core = { group = "io.dropwizard.metrics", name = "metrics-core", version.ref = "dropwizard_metrics" }
 micrometer-core = { group = "io.micrometer", name = "micrometer-core", version.ref = "micrometer_metrics" }
+micrometer-registry-prometheus = { group = "io.micrometer", name = "micrometer-registry-prometheus", version.ref = "micrometer_metrics" }
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
 spock-bom = { group = "org.spockframework", name = "spock-bom", version.ref = "spock" }
 spock-core = { group = "org.spockframework", name = "spock-core", version.ref = "spock" }
