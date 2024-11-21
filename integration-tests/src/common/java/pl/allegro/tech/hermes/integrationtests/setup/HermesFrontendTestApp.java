@@ -178,8 +178,8 @@ public class HermesFrontendTestApp implements HermesTestApp, FrontendNotificatio
 
   @Override
   public void reset() {
-//    app.context().getBean(ModelAwareZookeeperNotifyingCache.class).reset();
-//    app.context().getBean(NotificationBasedTopicsCache.class).clear();
+    //    app.context().getBean(ModelAwareZookeeperNotifyingCache.class).reset();
+    //    app.context().getBean(NotificationBasedTopicsCache.class).clear();
   }
 
   @Override

@@ -109,10 +109,13 @@ public class MessageBufferLoadingTest {
   public void shouldLoadMessageFromBackupStorage() {
     // given
     String tempDirPath = Files.createTempDir().getAbsolutePath();
-    HermesFrontendTestApp oldFrontend = new HermesFrontendTestApp(infra.hermesZookeeper(), infra.kafka(), infra.schemaRegistry());
+    HermesFrontendTestApp oldFrontend =
+        new HermesFrontendTestApp(infra.hermesZookeeper(), infra.kafka(), infra.schemaRegistry());
     oldFrontend.start();
     Topic topic =
-        management.initHelper(oldFrontend).createTopic(topicWithRandomName().withContentType(JSON).build());
+        management
+            .initHelper(oldFrontend)
+            .createTopic(topicWithRandomName().withContentType(JSON).build());
     backupFileWithOneMessage(tempDirPath, topic);
 
     TestSubscriber subscriber = subscribers.createSubscriber();

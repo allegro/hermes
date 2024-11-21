@@ -23,6 +23,7 @@ frontend:
         connectionString: "localhost:14192"
         connectionTimeout: 10s
         sessionTimeout: 10s
+        maxSleepTime: 1s
         authorization:
           enabled: false
           user: admin
