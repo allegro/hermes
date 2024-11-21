@@ -16,6 +16,7 @@ json2avro = "0.2.14"
 junit_jupiter = "5.10.2"
 kafka = "2.8.2"
 micrometer_metrics = "1.12.5"
+node-gradle = "7.0.2"
 okhttp = "3.9.1" # TODO: newest version requires subject alternative name in a certificate during host verification current test cert does not have one
 publish-plugin = "1.0.0"
 spock = "2.4-M4-groovy-4.0"
@@ -31,7 +32,9 @@ assertj-core = { group = "org.assertj", name = "assertj-core", version.ref = "as
 avro = { group = "org.apache.avro", name = "avro", version.ref = "avro" }
 curator-client = { group = "org.apache.curator", name = "curator-client", version.ref = "curator" }
 curator-recipes = { group = "org.apache.curator", name = "curator-recipes", version.ref = "curator" }
+curator-test = { group = "org.apache.curator", name = "curator-test", version.ref = "curator" }
 failsafe = { group = "net.jodah", name = "failsafe", version.ref = "failsafe" }
+groovy-json = { group = "org.apache.groovy", name = "groovy-json", version.ref = "groovy" }
 guava = { group = "com.google.guava", name = "guava", version.ref = "guava" }
 jackson-annotations = { group = "com.fasterxml.jackson.core", name = "jackson-annotations", version.ref = "jackson" }
 jackson-databind = { group = "com.fasterxml.jackson.core", name = "jackson-databind", version.ref = "jackson" }
@@ -41,6 +44,9 @@ jersey-bean-validation = { group = "org.glassfish.jersey.ext", name = "jersey-be
 jersey-client = { group = "org.glassfish.jersey.core", name = "jersey-client", version.ref = "jersey" }
 jersey-hk2 = { group = "org.glassfish.jersey.inject", name = "jersey-hk2", version.ref = "jersey" }
 jersey-media-json-jackson = { group = "org.glassfish.jersey.media", name = "jersey-media-json-jackson", version.ref = "jersey" }
+jersey-mvc-freemarker = { group = "org.glassfish.jersey.ext", name = "jersey-mvc-freemarker", version.ref = "jersey" }
+jetty-alpn-java-client = { group = "org.eclipse.jetty", name = "jetty-alpn-java-client", version.ref = "jetty" }
+jetty-http2-client-transport = { group = "org.eclipse.jetty.http2", name = "jetty-http2-client-transport", version.ref = "jetty" }
 json2avro-converter = { group = "tech.allegro.schema.json2avro", name = "converter", version.ref = "json2avro" }
 junit-vintage-engine = { group = "org.junit.vintage", name = "junit-vintage-engine", version.ref = "junit_jupiter" }
 kafka-clients = { group = "org.apache.kafka", name = "kafka-clients", version.ref = "kafka" }
@@ -51,10 +57,19 @@ okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhtt
 spock-bom = { group = "org.spockframework", name = "spock-bom", version.ref = "spock" }
 spock-core = { group = "org.spockframework", name = "spock-core", version.ref = "spock" }
 spock-junit4 = { group = "org.spockframework", name = "spock-junit4", version.ref = "spock" }
+spock-spring = { group = "org.spockframework", name = "spock-spring", version.ref = "spock" }
 spring-boot-configuration-processor = { group = "org.springframework.boot", name = "spring-boot-configuration-processor", version.ref = "spring" }
+spring-boot-starter = { group = "org.springframework.boot", name = "spring-boot-starter", version.ref = "spring" }
+spring-boot-starter-actuator = { group = "org.springframework.boot", name = "spring-boot-starter-actuator", version.ref = "spring" }
+spring-boot-starter-jersey = { group = "org.springframework.boot", name = "spring-boot-starter-jersey", version.ref = "spring" }
+spring-boot-starter-test = { group = "org.springframework.boot", name = "spring-boot-starter-test", version.ref = "spring" }
+spring-boot-starter-web = { group = "org.springframework.boot", name = "spring-boot-starter-web", version.ref = "spring" }
 spring-context = { group = "org.springframework", name = "spring-context", version.ref = "spring_web" }
 spring-web = { group = "org.springframework", name = "spring-web", version.ref = "spring_web" }
 spring-webflux = { group = "org.springframework", name = "spring-webflux", version.ref = "spring_web" }
+testcontainers-kafka = { group = "org.testcontainers", name = "kafka", version.ref = "testcontainers" }
+testcontainers-spock = { group = "org.testcontainers", name = "spock", version.ref = "testcontainers" }
+undertow-core = { group = "io.undertow", name = "undertow-core", version.ref = "undertow" }
 wiremock-standalone = { group = "org.wiremock", name = "wiremock-standalone", version.ref = "wiremock" }
 
 [bundles]
@@ -62,4 +77,5 @@ wiremock-standalone = { group = "org.wiremock", name = "wiremock-standalone", ve
 [plugins]
 axion-release = { id = "pl.allegro.tech.build.axion-release", version.ref = "axion-release" }
 jmh = { id = "me.champeau.jmh", version.ref = "jmh" }
+node-gradle = { id = "com.github.node-gradle.node", version.ref = "node-gradle" }
 publish-plugin = { id = "io.github.gradle-nexus.publish-plugin", version.ref = "publish-plugin" }

@@ -7,7 +7,6 @@ application {
     mainClass = "pl.allegro.tech.hermes.consumers.HermesConsumers"
 }
 
-val versions = rootProject.extra["versions"] as Map<*, *>
 val sbeClasspath: Configuration by configurations.creating
 
 dependencies {
@@ -16,9 +15,9 @@ dependencies {
     implementation(project(":hermes-metrics"))
     implementation(project(":hermes-schema"))
 
-    api(group = "org.springframework.boot", name = "spring-boot-starter", version = versions["spring"] as String)
-    api(group = "org.eclipse.jetty", name = "jetty-alpn-java-client", version = versions["jetty"] as String)
-    api(group = "org.eclipse.jetty.http2", name = "jetty-http2-client-transport", version = versions["jetty"] as String)
+    api(libs.spring.boot.starter)
+    api(libs.jetty.alpn.java.client)
+    api(libs.jetty.http2.client.transport)
     implementation(group = "org.jctools", name = "jctools-core", version = "4.0.3")
     api(group = "jakarta.jms", name = "jakarta.jms-api", version = "3.1.0")
     implementation(group = "joda-time", name = "joda-time", version = "2.12.7")
@@ -34,17 +33,17 @@ dependencies {
     api(group = "org.apache.httpcomponents.core5", name = "httpcore5", version = "5.2.4")
 
     testImplementation(project(":hermes-test-helper"))
-    testImplementation(group = "org.apache.curator", name = "curator-test", version = versions["curator"] as String)
+    testImplementation(libs.curator.test)
     testImplementation(group = "jakarta.servlet", name = "jakarta.servlet-api", version = "6.0.0")
 
     testImplementation(project(":hermes-common"))
 
     testImplementation(group = "org.awaitility", name = "awaitility-groovy", version = "4.2.1")
-    testImplementation(group = "tech.allegro.schema.json2avro", name = "converter", version = versions["json2avro"] as String)
+    testImplementation(libs.json2avro.converter)
 
-    testImplementation(group = "org.spockframework", name = "spock-core", version = versions["spock"] as String)
-    testImplementation(group = "org.spockframework", name = "spock-junit4", version = versions["spock"] as String)
-    testRuntimeOnly(group = "org.junit.vintage", name = "junit-vintage-engine", version = versions["junit_jupiter"] as String)
+    testImplementation(libs.spock.core)
+    testImplementation(libs.spock.junit4)
+    testRuntimeOnly(libs.junit.vintage.engine)
 
     sbeClasspath(group = "uk.co.real-logic", name = "sbe-all", version = "1.31.1")
 }

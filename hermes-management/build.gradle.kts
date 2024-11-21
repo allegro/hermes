@@ -3,10 +3,8 @@ import com.github.gradle.node.yarn.task.YarnTask
 plugins {
     `java-library`
     application
-    id("com.github.node-gradle.node") version "7.0.2"
+    alias(libs.plugins.node.gradle)
 }
-
-val versions = rootProject.extra["versions"] as Map<*, *>
 
 application {
     mainClass = "pl.allegro.tech.hermes.management.HermesManagement"
@@ -18,17 +16,18 @@ dependencies {
     api(project(":hermes-tracker"))
     implementation(project(":hermes-schema"))
 
-    api(group = "org.springframework.boot", name = "spring-boot-starter-web", version = versions["spring"] as String)
-    api(group = "org.springframework.boot", name = "spring-boot-starter-actuator", version = versions["spring"] as String)
-    api(group = "org.springframework.boot", name = "spring-boot-starter-jersey", version = versions["spring"] as String)
+    api(libs.spring.boot.starter.actuator)
+    api(libs.spring.boot.starter.jersey)
+    api(libs.spring.boot.starter.web)
+
     implementation(group = "net.sf.jopt-simple", name = "jopt-simple", version = "5.0.4")
-    implementation(group = "org.glassfish.jersey.ext", name = "jersey-mvc-freemarker", version = versions["jersey"] as String)
+    implementation(libs.jersey.mvc.freemarker)
 
     implementation(group = "io.swagger", name = "swagger-jersey2-jaxrs", version = "1.6.14") {
         exclude(group = "javax.validation", module = "validation-api")
     }
 
-    implementation(group = "org.apache.kafka", name = "kafka-clients", version = versions["kafka"] as String)
+    implementation(libs.kafka.clients)
 
     implementation(group = "commons-codec", name = "commons-codec", version = "1.16.1")
     implementation(group = "com.github.java-json-tools", name = "json-schema-validator", version = "2.2.14")
@@ -38,19 +37,18 @@ dependencies {
 
     api(group = "org.javers", name = "javers-core", version = "7.4.2")
 
-    implementation(group = "com.fasterxml.jackson.datatype", name = "jackson-datatype-jsr310", version = versions["jackson"] as String)
+    implementation(libs.jackson.datatype.jsr310)
     implementation(group = "commons-io", name = "commons-io", version = "2.16.1")
 
     testImplementation(project(":hermes-test-helper"))
-    testImplementation(group = "org.springframework.boot", name = "spring-boot-starter-test", version = versions["spring"] as String)
+    testImplementation(libs.spring.boot.starter.test)
 
-    testImplementation(group = "org.spockframework", name = "spock-core", version = versions["spock"] as String)
-    testImplementation(group = "org.spockframework", name = "spock-junit4", version = versions["spock"] as String)
-    testImplementation(group = "org.spockframework", name = "spock-spring", version = versions["spock"] as String)
-    testImplementation(group = "org.apache.groovy", name = "groovy-json", version = versions["groovy"] as String)
-
-    testImplementation(group = "org.testcontainers", name = "spock", version = versions["testcontainers"] as String)
-    testImplementation(group = "org.testcontainers", name = "kafka", version = versions["testcontainers"] as String)
+    testImplementation(libs.groovy.json)
+    testImplementation(libs.spock.core)
+    testImplementation(libs.spock.junit4)
+    testImplementation(libs.spock.spring)
+    testImplementation(libs.testcontainers.kafka)
+    testImplementation(libs.testcontainers.spock)
 }
 
 node {
@@ -74,9 +72,9 @@ tasks.register<YarnTask>("buildHermesConsole") {
     dependsOn("yarn")
 
     val tasksThatDontRequireConsole = listOf(
-            "integrationTest",
-            "slowIntegrationTest",
-            "check"
+        "integrationTest",
+        "slowIntegrationTest",
+        "check"
     )
 
     onlyIf {
