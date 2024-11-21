@@ -4,6 +4,7 @@ import static org.awaitility.Awaitility.waitAtMost;
 import static pl.allegro.tech.hermes.integrationtests.setup.HermesManagementTestApp.AUDIT_EVENT_PATH;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
 import java.util.stream.Stream;
@@ -66,7 +67,8 @@ public class HermesExtension
   public static BrokerOperations brokerOperations;
 
   @Override
-  public void beforeAll(ExtensionContext context) {
+  public void beforeAll(ExtensionContext context) throws IOException, InterruptedException {
+
     if (!started) {
       Stream.of(hermesZookeeper, kafka).parallel().forEach(Startable::start);
       schemaRegistry.start();
@@ -75,14 +77,18 @@ public class HermesExtension
       Stream.of(consumers, frontend).forEach(HermesTestApp::start);
       started = true;
     }
-    Stream.of(management, consumers, frontend)
-        .forEach(
-            app -> {
-              if (app.shouldBeRestarted()) {
-                app.stop();
-                app.start();
-              }
-            });
+    boolean shouldBeRestarted =
+        Stream.of(management, consumers, frontend).anyMatch(HermesTestApp::shouldBeRestarted);
+    if (shouldBeRestarted) {
+      restart();
+    }
+    //        .forEach(
+    //            app -> {
+    //              if (app.shouldBeRestarted()) {
+    //                app.stop();
+    //                app.start();
+    //              }
+    //            });
     hermesTestClient =
         new HermesTestClient(management.getPort(), frontend.getPort(), consumers.getPort());
     hermesInitHelper = new HermesInitHelper(management.getPort(), frontend);
@@ -93,9 +99,24 @@ public class HermesExtension
 
   @Override
   public void close() {
-    Stream.of(management, consumers, frontend).parallel().forEach(HermesTestApp::stop);
-    Stream.of(hermesZookeeper, kafka, schemaRegistry).parallel().forEach(Startable::stop);
-    started = false;
+    if (started) {
+      Stream.of(management, consumers, frontend).parallel().forEach(HermesTestApp::stop);
+      Stream.of(hermesZookeeper, kafka, schemaRegistry).parallel().forEach(Startable::stop);
+      started = false;
+    }
+  }
+
+  public void restart() throws IOException, InterruptedException {
+    management.stop();
+    consumers.stop();
+    frontend.stop();
+
+    management.start();
+    consumers.start();
+    frontend.start();
+    //    Stream.of(management, consumers, frontend).parallel().forEach(HermesTestApp::stop);
+    //      hermesZookeeper.restart();
+    //    Stream.of(management, consumers, frontend).parallel().forEach(HermesTestApp::start);
   }
 
   public int getFrontendPort() {

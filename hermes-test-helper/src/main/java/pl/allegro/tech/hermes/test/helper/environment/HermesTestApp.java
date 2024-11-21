@@ -6,9 +6,6 @@ public interface HermesTestApp {
 
   void stop();
 
-  default void reset() {}
-  ;
-
   boolean shouldBeRestarted();
 
   void restoreDefaultSettings();

@@ -177,12 +177,6 @@ public class HermesFrontendTestApp implements HermesTestApp, FrontendNotificatio
   }
 
   @Override
-  public void reset() {
-    //    app.context().getBean(ModelAwareZookeeperNotifyingCache.class).reset();
-    //    app.context().getBean(NotificationBasedTopicsCache.class).clear();
-  }
-
-  @Override
   public int getPort() {
     if (port == -1) {
       throw new IllegalStateException("hermes-frontend port hasn't been initialized");
@@ -224,8 +218,11 @@ public class HermesFrontendTestApp implements HermesTestApp, FrontendNotificatio
 
   @Override
   public boolean shouldBeRestarted() {
-    List<String> args = createArgs();
-    return !args.equals(currentArgs);
+    if (!currentArgs.isEmpty()) {
+      List<String> args = createArgs();
+      return !args.equals(currentArgs);
+    }
+    return false;
   }
 
   @Override

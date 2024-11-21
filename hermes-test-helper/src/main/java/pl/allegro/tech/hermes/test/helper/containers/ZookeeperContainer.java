@@ -1,5 +1,9 @@
 package pl.allegro.tech.hermes.test.helper.containers;
 
+import static pl.allegro.tech.hermes.test.helper.containers.TestcontainersUtils.copyScriptToContainer;
+import static pl.allegro.tech.hermes.test.helper.containers.TestcontainersUtils.readFileFromClasspath;
+
+import com.github.dockerjava.api.command.InspectContainerResponse;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +16,7 @@ public class ZookeeperContainer extends GenericContainer<ZookeeperContainer> {
   private static final DockerImageName DEFAULT_ZOOKEEPER_IMAGE_NAME =
       DockerImageName.parse("confluentinc/cp-zookeeper").withTag(ImageTags.confluentImagesTag());
   private static final int DEFAULT_ZOOKEEPER_PORT = 2181;
+  private static final String START_STOP_SCRIPT = "/zookeeper_start_stop_wrapper.sh";
   private Logger logger;
 
   private final int clientPort;
@@ -44,6 +49,15 @@ public class ZookeeperContainer extends GenericContainer<ZookeeperContainer> {
     setupLogger();
   }
 
+  //  @Override
+  //  protected void doStart() {
+  //    withCommand(
+  //        "sh",
+  //        "-c",
+  //        "while [ ! -f " + START_STOP_SCRIPT + " ]; do sleep 0.1; done; " + START_STOP_SCRIPT);
+  //    super.doStart();
+  //  }
+
   private void setupLogger() {
     if (this.logger != null) {
       Slf4jLogConsumer logConsumer = new Slf4jLogConsumer(this.logger);
@@ -54,4 +68,19 @@ public class ZookeeperContainer extends GenericContainer<ZookeeperContainer> {
   public String getConnectionString() {
     return String.format("%s:%s", getHost(), getMappedPort(clientPort));
   }
+  //
+  //  @Override
+  //  protected void containerIsStarting(InspectContainerResponse containerInfo, boolean reused) {
+  //    try {
+  //      super.containerIsStarting(containerInfo, reused);
+  //      if (reused) {
+  //        return;
+  //      }
+  //      String wrapperScript =
+  //          readFileFromClasspath("testcontainers/zookeeper_start_stop_wrapper.sh");
+  //      copyScriptToContainer(wrapperScript, this, START_STOP_SCRIPT);
+  //    } catch (Exception ex) {
+  //      throw new RuntimeException(ex);
+  //    }
+  //  }
 }
