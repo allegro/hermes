@@ -26,7 +26,7 @@ import pl.allegro.tech.hermes.common.di.factories.HermesCuratorClientFactory;
 import pl.allegro.tech.hermes.common.di.factories.MicrometerRegistryParameters;
 import pl.allegro.tech.hermes.common.di.factories.ObjectMapperFactory;
 import pl.allegro.tech.hermes.common.di.factories.PrometheusMeterRegistryFactory;
-import pl.allegro.tech.hermes.common.di.factories.ZookeeperCallbaRegistrarFactory;
+import pl.allegro.tech.hermes.common.di.factories.ZookeeperCallbackRegistrarFactory;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.NamespaceKafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
@@ -158,7 +158,7 @@ public class CommonConfiguration {
       DatacenterNameProvider datacenterNameProvider) {
     ZookeeperProperties zookeeperProperties =
         zookeeperClustersProperties.toZookeeperProperties(datacenterNameProvider);
-    return new ZookeeperCallbaRegistrarFactory(
+    return new ZookeeperCallbackRegistrarFactory(
             curator, metricsFacade, zookeeperProperties, "consumers")
         .provide();
   }

@@ -10,7 +10,7 @@ import pl.allegro.tech.hermes.common.cache.queue.LinkedHashSetBlockingQueue;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.cache.PathDepthAwareZookeeperCallbackRegistrar;
 
-public class ZookeeperCallbaRegistrarFactory {
+public class ZookeeperCallbackRegistrarFactory {
 
   private final CuratorFramework curator;
 
@@ -20,7 +20,7 @@ public class ZookeeperCallbaRegistrarFactory {
 
   private final String module;
 
-  public ZookeeperCallbaRegistrarFactory(
+  public ZookeeperCallbackRegistrarFactory(
       CuratorFramework curator,
       MetricsFacade metricsFacade,
       ZookeeperParameters zookeeperParameters,

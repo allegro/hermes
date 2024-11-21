@@ -8,7 +8,7 @@
     </appender>
 
     <logger name="pl.allegro.tech.hermes.infrastructure.zookeeper.cache" level="debug" />
-    <logger name="org.apache.zookeeper" level="warn" />
+    <logger name="org.apache.zookeeper" level="debug" />
     <logger name="kafka" level="warn" />
     <logger name="org.apache.kafka" level="warn" />
     <logger name="org.apache.kafka.common.network.Selector" level="error"/>

@@ -24,7 +24,7 @@ import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
-import pl.allegro.tech.hermes.common.di.factories.ZookeeperCallbaRegistrarFactory;
+import pl.allegro.tech.hermes.common.di.factories.ZookeeperCallbackRegistrarFactory;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.config.CommonConsumerProperties;
@@ -139,7 +139,7 @@ class ConsumerTestRuntimeEnvironment {
     workloadProperties.setMonitorScanInterval(Duration.ofSeconds(1));
 
     PathDepthAwareZookeeperCallbackRegistrar modelAwareCache =
-        new ZookeeperCallbaRegistrarFactory(
+        new ZookeeperCallbackRegistrarFactory(
                 curator, metricsSupplier.get(), zookeeperProperties, "consumer")
             .provide();
 
@@ -242,7 +242,7 @@ class ConsumerTestRuntimeEnvironment {
       Duration monitorScanInterval) {
     CuratorFramework curator = consumerZookeeperConnections.get(consumerId);
     PathDepthAwareZookeeperCallbackRegistrar modelAwareCache =
-        new ZookeeperCallbaRegistrarFactory(
+        new ZookeeperCallbackRegistrarFactory(
                 curator, metricsSupplier.get(), zookeeperProperties, "consumer")
             .provide();
     InternalCallbackRegistrar notificationsBus =
