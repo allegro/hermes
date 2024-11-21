@@ -19,9 +19,9 @@ import pl.allegro.tech.hermes.common.clock.ClockFactory;
 import pl.allegro.tech.hermes.common.di.factories.CuratorClientFactory;
 import pl.allegro.tech.hermes.common.di.factories.HermesCuratorClientFactory;
 import pl.allegro.tech.hermes.common.di.factories.MicrometerRegistryParameters;
-import pl.allegro.tech.hermes.common.di.factories.ModelAwareZookeeperNotifyingCacheFactory;
 import pl.allegro.tech.hermes.common.di.factories.ObjectMapperFactory;
 import pl.allegro.tech.hermes.common.di.factories.PrometheusMeterRegistryFactory;
+import pl.allegro.tech.hermes.common.di.factories.ZookeeperCallbaRegistrarFactory;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.NamespaceKafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
@@ -49,7 +49,7 @@ import pl.allegro.tech.hermes.domain.filtering.chain.FilterChainFactory;
 import pl.allegro.tech.hermes.domain.filtering.header.HeaderSubscriptionMessageFilterCompiler;
 import pl.allegro.tech.hermes.domain.filtering.json.JsonPathSubscriptionMessageFilterCompiler;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
-import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
+import pl.allegro.tech.hermes.domain.notifications.InternalCallbackRegistrar;
 import pl.allegro.tech.hermes.domain.oauth.OAuthProviderRepository;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
@@ -67,9 +67,9 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperSubscriptionOffs
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperSubscriptionRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperTopicRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperWorkloadConstraintsRepository;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.cache.ModelAwareZookeeperNotifyingCache;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.cache.PathDepthAwareZookeeperCallbackRegistrar;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.SharedCounter;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.notifications.ZookeeperInternalNotificationBus;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.notifications.ZookeeperCallbackRegistrar;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
 
@@ -151,20 +151,20 @@ public class CommonConfiguration {
   }
 
   @Bean
-  public InternalNotificationsBus zookeeperInternalNotificationBus(
-      ObjectMapper objectMapper, ModelAwareZookeeperNotifyingCache modelNotifyingCache) {
-    return new ZookeeperInternalNotificationBus(objectMapper, modelNotifyingCache);
+  public InternalCallbackRegistrar zookeeperInternalNotificationBus(
+      ObjectMapper objectMapper, PathDepthAwareZookeeperCallbackRegistrar modelNotifyingCache) {
+    return new ZookeeperCallbackRegistrar(objectMapper, modelNotifyingCache);
   }
 
   @Bean(initMethod = "start", destroyMethod = "stop")
-  public ModelAwareZookeeperNotifyingCache modelAwareZookeeperNotifyingCache(
+  public PathDepthAwareZookeeperCallbackRegistrar modelAwareZookeeperNotifyingCache(
       CuratorFramework curator,
       MetricsFacade metricsFacade,
       ZookeeperClustersProperties zookeeperClustersProperties,
       DatacenterNameProvider datacenterNameProvider) {
     ZookeeperProperties zookeeperProperties =
         zookeeperClustersProperties.toZookeeperProperties(datacenterNameProvider);
-    return new ModelAwareZookeeperNotifyingCacheFactory(
+    return new ZookeeperCallbaRegistrarFactory(
             curator, metricsFacade, zookeeperProperties, "frontend")
         .provide();
   }

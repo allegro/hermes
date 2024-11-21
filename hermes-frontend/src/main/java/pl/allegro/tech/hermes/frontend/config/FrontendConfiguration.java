@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
-import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
+import pl.allegro.tech.hermes.domain.notifications.InternalCallbackRegistrar;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.frontend.blacklist.BlacklistZookeeperNotifyingCache;
 import pl.allegro.tech.hermes.frontend.buffer.BackupMessagesLoader;
@@ -38,7 +38,7 @@ public class FrontendConfiguration {
 
   @Bean(initMethod = "start")
   public TopicsCache notificationBasedTopicsCache(
-      InternalNotificationsBus internalNotificationsBus,
+      InternalCallbackRegistrar internalCallbackRegistrar,
       GroupRepository groupRepository,
       TopicRepository topicRepository,
       MetricsFacade metricsFacade,
@@ -47,7 +47,7 @@ public class FrontendConfiguration {
       BlacklistZookeeperNotifyingCache blacklistZookeeperNotifyingCache) {
 
     return new NotificationBasedTopicsCache(
-        internalNotificationsBus,
+        internalCallbackRegistrar,
         blacklistZookeeperNotifyingCache,
         groupRepository,
         topicRepository,

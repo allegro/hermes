@@ -12,7 +12,7 @@ import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionIdProvider;
 import pl.allegro.tech.hermes.consumers.subscription.id.SubscriptionIds;
 import pl.allegro.tech.hermes.consumers.subscription.id.ZookeeperSubscriptionIdProvider;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
-import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
+import pl.allegro.tech.hermes.domain.notifications.InternalCallbackRegistrar;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
@@ -29,13 +29,13 @@ public class SubscriptionConfiguration {
 
   @Bean
   public SubscriptionIds subscriptionIds(
-      InternalNotificationsBus internalNotificationsBus,
+      InternalCallbackRegistrar internalCallbackRegistrar,
       SubscriptionsCache subscriptionsCache,
       SubscriptionIdProvider subscriptionIdProvider,
       CommonConsumerProperties commonConsumerProperties) {
     NotificationAwareSubscriptionIdsCache cache =
         new NotificationAwareSubscriptionIdsCache(
-            internalNotificationsBus,
+            internalCallbackRegistrar,
             subscriptionsCache,
             subscriptionIdProvider,
             commonConsumerProperties.getSubscriptionIdsCacheRemovedExpireAfterAccess().toSeconds(),
@@ -46,7 +46,7 @@ public class SubscriptionConfiguration {
 
   @Bean
   public SubscriptionsCache subscriptionsCache(
-      InternalNotificationsBus notificationsBus,
+      InternalCallbackRegistrar notificationsBus,
       GroupRepository groupRepository,
       TopicRepository topicRepository,
       SubscriptionRepository subscriptionRepository) {

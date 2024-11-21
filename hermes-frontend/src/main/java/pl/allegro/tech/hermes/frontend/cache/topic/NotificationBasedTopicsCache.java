@@ -12,7 +12,7 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
-import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
+import pl.allegro.tech.hermes.domain.notifications.InternalCallbackRegistrar;
 import pl.allegro.tech.hermes.domain.notifications.TopicCallback;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.frontend.blacklist.BlacklistZookeeperNotifyingCache;
@@ -34,7 +34,7 @@ public class NotificationBasedTopicsCache
   private final ThroughputRegistry throughputRegistry;
 
   public NotificationBasedTopicsCache(
-      InternalNotificationsBus notificationsBus,
+      InternalCallbackRegistrar callbackRegistrar,
       BlacklistZookeeperNotifyingCache blacklistZookeeperNotifyingCache,
       GroupRepository groupRepository,
       TopicRepository topicRepository,
@@ -46,7 +46,7 @@ public class NotificationBasedTopicsCache
     this.metricsFacade = metricsFacade;
     this.kafkaNamesMapper = kafkaNamesMapper;
     this.throughputRegistry = throughputRegistry;
-    notificationsBus.registerTopicCallback(this);
+    callbackRegistrar.registerTopicCallback(this);
     blacklistZookeeperNotifyingCache.addCallback(this);
   }
 

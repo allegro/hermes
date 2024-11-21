@@ -8,7 +8,7 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
-import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
+import pl.allegro.tech.hermes.domain.notifications.InternalCallbackRegistrar;
 import pl.allegro.tech.hermes.domain.notifications.SubscriptionCallback;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
@@ -25,7 +25,7 @@ public class NotificationsBasedSubscriptionCache
   private final SubscriptionRepository subscriptionRepository;
 
   public NotificationsBasedSubscriptionCache(
-      InternalNotificationsBus notificationsBus,
+      InternalCallbackRegistrar notificationsBus,
       GroupRepository groupRepository,
       TopicRepository topicRepository,
       SubscriptionRepository subscriptionRepository) {

@@ -3,7 +3,7 @@ package pl.allegro.tech.hermes.common.schema;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
+import pl.allegro.tech.hermes.domain.notifications.InternalCallbackRegistrar;
 import pl.allegro.tech.hermes.schema.CachedCompiledSchemaRepository;
 import pl.allegro.tech.hermes.schema.CachedSchemaVersionsRepository;
 import pl.allegro.tech.hermes.schema.CompiledSchemaRepository;
@@ -15,13 +15,13 @@ public class SchemaVersionsRepositoryFactory {
 
   private final RawSchemaClient rawSchemaClient;
   private final SchemaVersionRepositoryParameters schemaVersionsRepositoryParameters;
-  private final InternalNotificationsBus notificationsBus;
+  private final InternalCallbackRegistrar notificationsBus;
   private final CompiledSchemaRepository<?> compiledSchemaRepository;
 
   public SchemaVersionsRepositoryFactory(
       RawSchemaClient rawSchemaClient,
       SchemaVersionRepositoryParameters schemaVersionsRepositoryParameters,
-      InternalNotificationsBus notificationsBus,
+      InternalCallbackRegistrar notificationsBus,
       CompiledSchemaRepository<?> compiledSchemaRepository) {
     this.rawSchemaClient = rawSchemaClient;
     this.schemaVersionsRepositoryParameters = schemaVersionsRepositoryParameters;

@@ -24,7 +24,7 @@ import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.admin.zookeeper.ZookeeperAdminCache;
-import pl.allegro.tech.hermes.common.di.factories.ModelAwareZookeeperNotifyingCacheFactory;
+import pl.allegro.tech.hermes.common.di.factories.ZookeeperCallbaRegistrarFactory;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.config.CommonConsumerProperties;
@@ -49,7 +49,7 @@ import pl.allegro.tech.hermes.consumers.supervisor.monitor.ConsumersRuntimeMonit
 import pl.allegro.tech.hermes.consumers.supervisor.process.Retransmitter;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.selective.SelectiveWorkBalancer;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
-import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
+import pl.allegro.tech.hermes.domain.notifications.InternalCallbackRegistrar;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraintsRepository;
@@ -58,8 +58,8 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperSubscriptionRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperTopicRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperWorkloadConstraintsRepository;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.cache.ModelAwareZookeeperNotifyingCache;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.notifications.ZookeeperInternalNotificationBus;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.cache.PathDepthAwareZookeeperCallbackRegistrar;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.notifications.ZookeeperCallbackRegistrar;
 import pl.allegro.tech.hermes.test.helper.metrics.TestMetricsFacadeFactory;
 
 class ConsumerTestRuntimeEnvironment {
@@ -138,13 +138,13 @@ class ConsumerTestRuntimeEnvironment {
     workloadProperties.setConsumersPerSubscription(2);
     workloadProperties.setMonitorScanInterval(Duration.ofSeconds(1));
 
-    ModelAwareZookeeperNotifyingCache modelAwareCache =
-        new ModelAwareZookeeperNotifyingCacheFactory(
+    PathDepthAwareZookeeperCallbackRegistrar modelAwareCache =
+        new ZookeeperCallbaRegistrarFactory(
                 curator, metricsSupplier.get(), zookeeperProperties, "consumer")
             .provide();
 
-    InternalNotificationsBus notificationsBus =
-        new ZookeeperInternalNotificationBus(objectMapper, modelAwareCache);
+    InternalCallbackRegistrar notificationsBus =
+        new ZookeeperCallbackRegistrar(objectMapper, modelAwareCache);
 
     SubscriptionsCache subscriptionsCache =
         new NotificationsBasedSubscriptionCache(
@@ -241,12 +241,12 @@ class ConsumerTestRuntimeEnvironment {
       WorkloadSupervisor workloadSupervisor,
       Duration monitorScanInterval) {
     CuratorFramework curator = consumerZookeeperConnections.get(consumerId);
-    ModelAwareZookeeperNotifyingCache modelAwareCache =
-        new ModelAwareZookeeperNotifyingCacheFactory(
+    PathDepthAwareZookeeperCallbackRegistrar modelAwareCache =
+        new ZookeeperCallbaRegistrarFactory(
                 curator, metricsSupplier.get(), zookeeperProperties, "consumer")
             .provide();
-    InternalNotificationsBus notificationsBus =
-        new ZookeeperInternalNotificationBus(objectMapper, modelAwareCache);
+    InternalCallbackRegistrar notificationsBus =
+        new ZookeeperCallbackRegistrar(objectMapper, modelAwareCache);
     SubscriptionsCache subscriptionsCache =
         new NotificationsBasedSubscriptionCache(
             notificationsBus, groupRepository, topicRepository, subscriptionRepository);

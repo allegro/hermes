@@ -21,7 +21,7 @@ import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistry;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
 import pl.allegro.tech.hermes.consumers.supervisor.ConsumersSupervisor;
-import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
+import pl.allegro.tech.hermes.domain.notifications.InternalCallbackRegistrar;
 import pl.allegro.tech.hermes.domain.notifications.SubscriptionCallback;
 import pl.allegro.tech.hermes.domain.notifications.TopicCallback;
 import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraintsRepository;
@@ -35,7 +35,7 @@ public class WorkloadSupervisor
   private static final Logger logger = LoggerFactory.getLogger(WorkloadSupervisor.class);
 
   private final ConsumersSupervisor supervisor;
-  private final InternalNotificationsBus notificationsBus;
+  private final InternalCallbackRegistrar notificationsBus;
   private final SubscriptionsCache subscriptionsCache;
   private final ConsumerAssignmentCache assignmentCache;
   private final ConsumerNodesRegistry consumersRegistry;
@@ -47,7 +47,7 @@ public class WorkloadSupervisor
 
   public WorkloadSupervisor(
       ConsumersSupervisor supervisor,
-      InternalNotificationsBus notificationsBus,
+      InternalCallbackRegistrar notificationsBus,
       SubscriptionsCache subscriptionsCache,
       ConsumerAssignmentCache assignmentCache,
       ConsumerAssignmentRegistry consumerAssignmentRegistry,

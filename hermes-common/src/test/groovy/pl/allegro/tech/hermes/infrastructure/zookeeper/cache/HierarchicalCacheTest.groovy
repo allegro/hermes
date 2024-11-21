@@ -17,7 +17,7 @@ class HierarchicalCacheTest extends IntegrationTest {
             '/hierarchicalCacheTest',
             3,
             ['groups', 'topics', 'subscriptions'],
-            true
+            true, "test"
     )
 
     private Set calledCallbacks = [] as Set
@@ -127,7 +127,7 @@ class HierarchicalCacheTest extends IntegrationTest {
                 '/hierarchicalCacheTest/workload',
                 2,
                 [],
-                removeEmptyNodes)
+                removeEmptyNodes, "test")
 
         cache.registerCallback(0, loggingCallback)
         cache.registerCallback(1, loggingCallback)
