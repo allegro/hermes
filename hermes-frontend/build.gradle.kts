@@ -6,7 +6,7 @@ plugins {
 val versions = rootProject.extra["versions"] as Map<*, *>
 
 application {
-    mainClass.set("pl.allegro.tech.hermes.frontend.HermesFrontend")
+    mainClass = "pl.allegro.tech.hermes.frontend.HermesFrontend"
 }
 
 dependencies {

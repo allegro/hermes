@@ -10,7 +10,7 @@ dependencies {
 val testArtifacts: Configuration by configurations.creating
 
 tasks.register<Jar>("testJar") {
-    archiveClassifier.set("tests")
+    archiveClassifier = "tests"
     from(sourceSets["test"].output)
 }
 

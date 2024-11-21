@@ -9,7 +9,7 @@ plugins {
 val versions = rootProject.extra["versions"] as Map<*, *>
 
 application {
-    mainClass.set("pl.allegro.tech.hermes.management.HermesManagement")
+    mainClass = "pl.allegro.tech.hermes.management.HermesManagement"
 }
 
 dependencies {
@@ -57,9 +57,9 @@ node {
     version = "20.4.0"
     distBaseUrl = "https://nodejs.org/dist"
     download = true
-    workDir.set(file("${project.buildDir}/nodejs"))
-    npmWorkDir.set(file("${project.buildDir}/npm"))
-    nodeProjectDir.set(file("${project.rootDir}/hermes-console"))
+    workDir = file("${project.buildDir}/nodejs")
+    npmWorkDir = file("${project.buildDir}/npm")
+    nodeProjectDir = file("${project.rootDir}/hermes-console")
 }
 
 tasks.named("yarnSetup") {
@@ -83,7 +83,7 @@ tasks.register<YarnTask>("buildHermesConsole") {
         tasksThatDontRequireConsole.intersect(gradle.startParameter.taskNames.toSet()).isEmpty()
     }
 
-    args.set(listOf("build-only"))
+    args = listOf("build-only")
 }
 
 tasks.register<Copy>("attachHermesConsole") {

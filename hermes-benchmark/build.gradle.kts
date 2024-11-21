@@ -9,22 +9,22 @@ configurations {
 val chronicleMapJvmArgs = listOf<String>()
 
 jmh {
-    includes.set(listOf("pl\\.allegro\\.tech\\.hermes\\.benchmark\\..*"))
-    humanOutputFile.set(null as File?)
-    jmhVersion.set("1.36")
-    zip64.set(true)
-    verbosity.set("NORMAL")
-    iterations.set(intProperty("jmh.iterations", 4))
-    timeOnIteration.set(stringProperty("jmh.timeOnIteration", "80s"))
-    fork.set(intProperty("jmh.fork", 1))
-    warmupIterations.set(intProperty("jmh.warmupIterations", 4))
-    warmup.set(stringProperty("jmh.timeOnWarmupIteration", "80s"))
-    jvmArgs.set(listProperty("jmh.jvmArgs", listOf("-Xmx1g", "-Xms1g", "-XX:+UseG1GC") + chronicleMapJvmArgs))
-    failOnError.set(booleanProperty("jmh.failOnError", true))
-    threads.set(intProperty("jmh.threads", 4))
-    synchronizeIterations.set(false)
-    forceGC.set(false)
-    duplicateClassesStrategy.set(DuplicatesStrategy.EXCLUDE)
+    includes = listOf("pl\\.allegro\\.tech\\.hermes\\.benchmark\\..*")
+    humanOutputFile = null as File?
+    jmhVersion = "1.36"
+    zip64 = true
+    verbosity = "NORMAL"
+    iterations = intProperty("jmh.iterations", 4)
+    timeOnIteration = stringProperty("jmh.timeOnIteration", "80s")
+    fork = intProperty("jmh.fork", 1)
+    warmupIterations = intProperty("jmh.warmupIterations", 4)
+    warmup = stringProperty("jmh.timeOnWarmupIteration", "80s")
+    jvmArgs = listProperty("jmh.jvmArgs", listOf("-Xmx1g", "-Xms1g", "-XX:+UseG1GC") + chronicleMapJvmArgs)
+    failOnError = booleanProperty("jmh.failOnError", true)
+    threads = intProperty("jmh.threads", 4)
+    synchronizeIterations = false
+    forceGC = false
+    duplicateClassesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 dependencies {
@@ -59,7 +59,7 @@ fun listProperty(property: String, defaultValue: List<String>): List<String> =
     (project.findProperty(property) as? String)?.split(' ') ?: defaultValue
 
 fun intProperty(property: String, defaultValue: Int): Int =
-    (project.findProperty(property) as? String)?.toInt() ?: defaultValue
+    (project.findProperty(property) as? String)?.toIntOrNull() ?: defaultValue
 
 fun booleanProperty(property: String, defaultValue: Boolean): Boolean =
-    (project.findProperty(property) as? String)?.toBoolean() ?: defaultValue
+    (project.findProperty(property) as? String)?.toBooleanStrictOrNull() ?: defaultValue

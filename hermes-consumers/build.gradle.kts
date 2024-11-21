@@ -4,7 +4,7 @@ plugins {
 }
 
 application {
-    mainClass.set("pl.allegro.tech.hermes.consumers.HermesConsumers")
+    mainClass = "pl.allegro.tech.hermes.consumers.HermesConsumers"
 }
 
 val versions = rootProject.extra["versions"] as Map<*, *>
@@ -54,7 +54,7 @@ val generatedPath = "$buildDir/generated/java/"
 tasks.register<JavaExec>("generateMaxRateSbeStubs") {
     description = "Generate SBE stubs for max-rate"
     classpath = sbeClasspath
-    mainClass.set("uk.co.real_logic.sbe.SbeTool")
+    mainClass = "uk.co.real_logic.sbe.SbeTool"
     systemProperties["sbe.output.dir"] = generatedPath
     systemProperties["sbe.xinclude.aware"] = "true"
     args = listOf("src/main/resources/sbe/max-rate.xml")
@@ -63,7 +63,7 @@ tasks.register<JavaExec>("generateMaxRateSbeStubs") {
 tasks.register<JavaExec>("generateWorkloadSbeStubs") {
     description = "Generate SBE stubs for workload"
     classpath = sbeClasspath
-    mainClass.set("uk.co.real_logic.sbe.SbeTool")
+    mainClass = "uk.co.real_logic.sbe.SbeTool"
     systemProperties["sbe.output.dir"] = generatedPath
     systemProperties["sbe.xinclude.aware"] = "true"
     args = listOf("src/main/resources/sbe/workload.xml")
