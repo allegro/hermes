@@ -1,3 +1,7 @@
+plugins {
+    id("idea")
+}
+
 repositories {
     mavenCentral()
     maven { url 'https://repository.jboss.org/nexus/content/groups/public' }
@@ -95,5 +99,15 @@ def registerIntegrationTestTask(String name, SourceSet common) {
             exceptionFormat = 'full'
             events "passed", "skipped", "failed", "standardError", "standardOut"
         }
+    }
+}
+
+idea {
+    module {
+        testSources.from(sourceSets.integrationTest.allSource.srcDirs)
+        testResources.from(sourceSets.integrationTest.resources.srcDirs)
+
+        testSources.from(sourceSets.slowIntegrationTest.allSource.srcDirs)
+        testResources.from(sourceSets.slowIntegrationTest.resources.srcDirs)
     }
 }
