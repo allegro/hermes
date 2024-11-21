@@ -6,8 +6,8 @@ plugins {
     java
     signing
     `maven-publish`
-    id("pl.allegro.tech.build.axion-release") version "1.18.15"
-    id("io.github.gradle-nexus.publish-plugin") version "1.0.0"
+    alias(libs.plugins.axion.release)
+    alias(libs.plugins.publish.plugin)
 }
 
 scmVersion {
@@ -89,7 +89,6 @@ allprojects {
         "--add-opens=java.base/java.util=ALL-UNNAMED"
     )
 
-    val versions = extra["versions"] as Map<*, *>
     val chronicleMapJvmArgs = (extra["chronicleMapJvmArgs"] as? List<String>) ?: emptyList()
 
     repositories {
@@ -101,22 +100,22 @@ allprojects {
         implementation("org.apache.commons:commons-lang3:3.14.0")
 
         // Allure Spock adapter
-        testImplementation(platform("io.qameta.allure:allure-bom:${versions["allure"] as String}"))
+        testImplementation(platform(rootProject.libs.allure.bom))
         testImplementation("io.qameta.allure:allure-spock2")
         testImplementation("io.qameta.allure:allure-junit-platform")
 
         // Spock framework
-        testImplementation(platform("org.spockframework:spock-bom:${versions["spock"] as String}"))
+        testImplementation(platform(rootProject.libs.spock.bom))
         testImplementation("org.spockframework:spock-core")
 
         testImplementation("junit:junit:4.11")
         testImplementation("com.tngtech.java:junit-dataprovider:1.10.0")
         testImplementation("pl.pragmatists:JUnitParams:1.0.2")
         testImplementation("org.mockito:mockito-core:5.11.0")
-        testImplementation("org.assertj:assertj-core:${versions["assertj"] as String}")
+        testImplementation(rootProject.libs.assertj.core)
         testImplementation("org.awaitility:awaitility:4.2.1")
 
-        annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:${versions["spring"] as String}")
+        annotationProcessor(rootProject.libs.spring.boot.configuration.processor)
     }
 
     tasks.withType<Test> {
@@ -197,6 +196,7 @@ subprojects {
     configurations.all {
         exclude(group = "org.slf4j", module = "slf4j-log4j12")
         exclude(group = "log4j", module = "log4j")
+
         resolutionStrategy {
             force("org.jboss.logging:jboss-logging:3.2.1.Final")
             force("com.google.guava:guava:${versions["guava"] as String}")

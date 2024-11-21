@@ -1,0 +1,55 @@
+[versions]
+allure = "2.24.0"
+assertj = "3.25.3"
+avro = "1.11.3"
+axion-release = "1.18.15"
+curator = "5.4.0"
+dropwizard_metrics = "4.2.25"
+failsafe = "2.4.4"
+groovy = "4.0.21"
+guava = "33.1.0-jre"
+jackson = "2.17.0"
+jersey = "3.1.6"
+jetty = "12.0.8"
+jmh = "0.7.2"
+json2avro = "0.2.14"
+junit_jupiter = "5.10.2"
+kafka = "2.8.2"
+micrometer_metrics = "1.12.5"
+okhttp = "3.9.1" # TODO: newest version requires subject alternative name in a certificate during host verification current test cert does not have one
+publish-plugin = "1.0.0"
+spock = "2.4-M4-groovy-4.0"
+spring = "3.2.4"
+spring_web = "6.1.6"
+testcontainers = "1.19.8"
+undertow = "2.3.12.Final"
+wiremock = "3.9.0"
+
+[libraries]
+allure-bom = { group = "io.qameta.allure", name = "allure-bom", version.ref = "allure" }
+assertj-core = { group = "org.assertj", name = "assertj-core", version.ref = "assertj" }
+failsafe = { group = "net.jodah", name = "failsafe", version.ref = "failsafe" }
+guava = { group = "com.google.guava", name = "guava", version.ref = "guava" }
+jackson-annotations = { group = "com.fasterxml.jackson.core", name = "jackson-annotations", version.ref = "jackson" }
+jackson-datatype-jsr310 = { group = "com.fasterxml.jackson.datatype", name = "jackson-datatype-jsr310", version.ref = "jackson" }
+jackson-jakarta-rs-json-provider = { group = "com.fasterxml.jackson.jakarta.rs", name = "jackson-jakarta-rs-json-provider", version.ref = "jackson" }
+jersey-client = { group = "org.glassfish.jersey.core", name = "jersey-client", version.ref = "jersey" }
+jersey-hk2 = { group = "org.glassfish.jersey.inject", name = "jersey-hk2", version.ref = "jersey" }
+junit-vintage-engine = { group = "org.junit.vintage", name = "junit-vintage-engine", version.ref = "junit_jupiter" }
+micrometer-core = { group = "io.micrometer", name = "micrometer-core", version.ref = "micrometer_metrics" }
+okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
+spock-bom = { group = "org.spockframework", name = "spock-bom", version.ref = "spock" }
+spock-core = { group = "org.spockframework", name = "spock-core", version.ref = "spock" }
+spock-junit4 = { group = "org.spockframework", name = "spock-junit4", version.ref = "spock" }
+spring-boot-configuration-processor = { group = "org.springframework.boot", name = "spring-boot-configuration-processor", version.ref = "spring" }
+spring-context = { group = "org.springframework", name = "spring-context", version.ref = "spring_web" }
+spring-web = { group = "org.springframework", name = "spring-web", version.ref = "spring_web" }
+spring-webflux = { group = "org.springframework", name = "spring-webflux", version.ref = "spring_web" }
+wiremock-standalone = { group = "org.wiremock", name = "wiremock-standalone", version.ref = "wiremock" }
+
+[bundles]
+
+[plugins]
+axion-release = { id = "pl.allegro.tech.build.axion-release", version.ref = "axion-release" }
+jmh = { id = "me.champeau.jmh", version.ref = "jmh" }
+publish-plugin = { id = "io.github.gradle-nexus.publish-plugin", version.ref = "publish-plugin" }
