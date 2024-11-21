@@ -89,7 +89,7 @@ public class ConsumersElasticsearchLogRepositoryTest extends AbstractLogReposito
                       .setQuery(query)
                       .execute()
                       .get();
-              return response.getHits().getTotalHits() == 1;
+              return response.getHits().getTotalHits().value == 1;
             });
   }
 

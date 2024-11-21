@@ -1,6 +1,11 @@
 console:
   console:
     title: hermes console
+    knownEnvironments:
+      - name: localhost
+        url: http://localhost:8090
+      - name: also-localhost
+        url: http://127.0.0.1:8090
   dashboard:
     metrics: http://localhost:8082
     docs: http://hermes-pubsub.rtfd.org
