@@ -1,6 +1,16 @@
 {
   "console": {
-    "title": "hermes console"
+    "title": "hermes console",
+    "knownEnvironments": [
+      {
+        "name": "local",
+        "url": "localhost:8090"
+      },
+      {
+        "name": "also-local",
+        "url": "127.0.0.1:8090"
+      }
+    ]
   },
   "dashboard": {
     "metrics": "http://localhost:8082",

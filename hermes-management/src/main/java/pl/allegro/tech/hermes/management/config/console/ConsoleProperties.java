@@ -98,6 +98,8 @@ public class ConsoleProperties {
 
     private boolean criticalEnvironment = false;
 
+    private List<ConsoleEnvironment> knownEnvironments = Collections.emptyList();
+
     public String getTitle() {
       return title;
     }
@@ -128,6 +130,35 @@ public class ConsoleProperties {
 
     public void setEnvironmentName(String environmentName) {
       this.environmentName = environmentName;
+    }
+
+    public List<ConsoleEnvironment> getKnownEnvironments() {
+      return knownEnvironments;
+    }
+
+    public void setKnownEnvironments(List<ConsoleEnvironment> knownEnvironments) {
+      this.knownEnvironments = knownEnvironments;
+    }
+  }
+
+  public static final class ConsoleEnvironment {
+    private String name;
+    private String url;
+
+    public String getName() {
+      return name;
+    }
+
+    public void setName(String name) {
+      this.name = name;
+    }
+
+    public String getUrl() {
+      return url;
+    }
+
+    public void setUrl(String url) {
+      this.url = url;
     }
   }
 
