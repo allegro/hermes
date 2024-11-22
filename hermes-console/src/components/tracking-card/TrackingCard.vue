@@ -1,11 +1,9 @@
 <script setup lang="ts">
+  import type { TrackingUrl } from '@/api/tracking-url';
 
-
-import type {TrackingUrl} from "@/api/topic";
-
-const props = defineProps<{
-  trackingUrls: TrackingUrl[]
-}>();
+  const props = defineProps<{
+    trackingUrls: TrackingUrl[];
+  }>();
 </script>
 
 <template>
@@ -17,21 +15,19 @@ const props = defineProps<{
         </p>
       </div>
     </template>
-    <v-card-item v-if="trackingUrls">
-      <p v-for="trackingUrl in trackingUrls">
+    <v-card-item v-if="props.trackingUrls && props.trackingUrls.length > 0">
+      <p v-for="trackingUrl in props.trackingUrls" :key="trackingUrl.name">
         <v-btn
-            :href="trackingUrl.url"
-            target="_blank"
-            variant="text"
-            color="green"
+          :href="trackingUrl.url"
+          target="_blank"
+          variant="text"
+          color="blue"
         >
           {{ trackingUrl.name }}
         </v-btn>
       </p>
     </v-card-item>
-    <v-card-item v-else>
-      No tracking urls available
-    </v-card-item>
+    <v-card-item v-else> No tracking urls available </v-card-item>
   </v-card>
 </template>
 

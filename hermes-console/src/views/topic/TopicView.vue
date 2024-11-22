@@ -9,7 +9,6 @@
   import ConfirmationDialog from '@/components/confirmation-dialog/ConfirmationDialog.vue';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import CostsCard from '@/components/costs-card/CostsCard.vue';
-  import TrackingCard from "@/components/tracking-card/TrackingCard.vue";
   import LoadingSpinner from '@/components/loading-spinner/LoadingSpinner.vue';
   import MessagesPreview from '@/views/topic/messages-preview/MessagesPreview.vue';
   import MetricsList from '@/views/topic/metrics-list/MetricsList.vue';
@@ -18,6 +17,7 @@
   import SchemaPanel from '@/views/topic/schema-panel/SchemaPanel.vue';
   import SubscriptionsList from '@/views/topic/subscriptions-list/SubscriptionsList.vue';
   import TopicHeader from '@/views/topic/topic-header/TopicHeader.vue';
+  import TrackingCard from '@/components/tracking-card/TrackingCard.vue';
 
   const router = useRouter();
 
@@ -37,6 +37,7 @@
     error,
     subscriptions,
     offlineClientsSource,
+    topicTrackingUrls,
     fetchOfflineClientsSource,
     removeTopic,
   } = useTopic(topicName);
@@ -138,8 +139,8 @@
             :details-url="costs.detailsUrl"
           />
           <tracking-card
-              v-if="topic?.trackingEnabled"
-              :tracking-urls="topic?.trackingUrls"
+            v-if="topic?.trackingEnabled"
+            :tracking-urls="topicTrackingUrls"
           />
         </v-col>
         <v-col md="6">

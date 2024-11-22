@@ -204,10 +204,6 @@
       "jsonToAvroDryRun": false,
       "ack": "LEADER",
       "trackingEnabled": true,
-      "trackingUrls": [
-        {"name": "Tracking Link 1", "url": "#"},
-        {"name": "Tracking Link 2", "url": "#"}
-      ],
       "migratedFromJsonType": false,
       "schemaIdAwareSerializationEnabled": false,
       "contentType": "AVRO",
@@ -244,6 +240,10 @@
       "subscriptions": 1,
       "throughput": "0.0"
     }
+  ],
+  "topicsTrackingUrls": [
+    {"name": "Tracking Link 1", "url": "#"},
+    {"name": "Tracking Link 2", "url": "#"}
   ],
   "topicsOwners": [
     {

@@ -8,6 +8,7 @@
   "/owners/sources/Service%20Catalog/:id": "/topicsOwners/:id",
   "/readiness/datacenters": "/readinessDatacenters",
   "/topics": "/topicNames",
+  "/topics/:topicName/tracking-urls": "/topicsTrackingUrls",
   "/topics/:id/metrics": "/topicsMetrics/:id",
   "/topics/:id/preview": "/topicPreview",
   "/topics/:id/offline-clients-source": "/offlineClientsSource",
