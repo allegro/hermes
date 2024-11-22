@@ -25,6 +25,7 @@ export const dummyTopic: TopicWithSchema = {
   jsonToAvroDryRun: false,
   ack: Ack.LEADER,
   trackingEnabled: false,
+  trackingUrls: [],
   migratedFromJsonType: false,
   schemaIdAwareSerializationEnabled: false,
   contentType: ContentType.AVRO,

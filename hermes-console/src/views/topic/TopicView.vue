@@ -9,6 +9,7 @@
   import ConfirmationDialog from '@/components/confirmation-dialog/ConfirmationDialog.vue';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import CostsCard from '@/components/costs-card/CostsCard.vue';
+  import TrackingCard from "@/components/tracking-card/TrackingCard.vue";
   import LoadingSpinner from '@/components/loading-spinner/LoadingSpinner.vue';
   import MessagesPreview from '@/views/topic/messages-preview/MessagesPreview.vue';
   import MetricsList from '@/views/topic/metrics-list/MetricsList.vue';
@@ -135,6 +136,10 @@
             v-if="configStore.appConfig?.costs.enabled"
             :iframe-url="costs.iframeUrl"
             :details-url="costs.detailsUrl"
+          />
+          <tracking-card
+              v-if="topic?.trackingEnabled"
+              :tracking-urls="topic?.trackingUrls"
           />
         </v-col>
         <v-col md="6">

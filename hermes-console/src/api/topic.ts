@@ -14,6 +14,7 @@ export interface Topic {
   jsonToAvroDryRun: boolean;
   ack: Ack;
   trackingEnabled: boolean;
+  trackingUrls: TrackingUrl[];
   migratedFromJsonType: boolean;
   schemaIdAwareSerializationEnabled: boolean;
   contentType: ContentType;
@@ -71,4 +72,9 @@ export interface TopicMetrics {
 export interface MessagePreview {
   content: string;
   truncated: boolean;
+}
+
+export interface TrackingUrl {
+  name: string,
+  url: string
 }

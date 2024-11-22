@@ -818,6 +818,9 @@ const en_US = {
     title: 'Costs',
     detailsButton: 'DASHBOARD',
   },
+  trackingCard: {
+    title: 'Tracking'
+  }
 };
 
 export default en_US;
