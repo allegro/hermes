@@ -4,7 +4,6 @@ import static org.awaitility.Awaitility.waitAtMost;
 import static pl.allegro.tech.hermes.integrationtests.setup.HermesManagementTestApp.AUDIT_EVENT_PATH;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
-import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
 import java.util.stream.Stream;
@@ -45,16 +44,15 @@ public class HermesExtension
 
   public static final TestSubscribersExtension auditEventsReceiver = new TestSubscribersExtension();
 
-  private static final ZookeeperContainer hermesZookeeper =
-      new ZookeeperContainer("HermesZookeeper");
-  private static final KafkaContainerCluster kafka = new KafkaContainerCluster(1);
-  public static final ConfluentSchemaRegistryContainer schemaRegistry =
+  private static ZookeeperContainer hermesZookeeper = new ZookeeperContainer("HermesZookeeper");
+  private static KafkaContainerCluster kafka = new KafkaContainerCluster(1);
+  public static ConfluentSchemaRegistryContainer schemaRegistry =
       new ConfluentSchemaRegistryContainer().withKafkaCluster(kafka);
-  private static final HermesConsumersTestApp consumers =
+  private static HermesConsumersTestApp consumers =
       new HermesConsumersTestApp(hermesZookeeper, kafka, schemaRegistry);
-  private static final HermesManagementTestApp management =
+  private static HermesManagementTestApp management =
       new HermesManagementTestApp(hermesZookeeper, kafka, schemaRegistry);
-  private static final HermesFrontendTestApp frontend =
+  private static HermesFrontendTestApp frontend =
       new HermesFrontendTestApp(hermesZookeeper, kafka, schemaRegistry);
   private HermesTestClient hermesTestClient;
   private HermesInitHelper hermesInitHelper;
@@ -77,14 +75,18 @@ public class HermesExtension
       Stream.of(consumers, frontend).forEach(HermesTestApp::start);
       started = true;
     }
-    Stream.of(management, consumers, frontend)
-        .forEach(
-            app -> {
-              if (app.shouldBeRestarted()) {
-                app.stop();
-                app.start();
-              }
-            });
+    boolean needsRestart =
+        Stream.of(management, consumers, frontend).anyMatch(HermesTestApp::shouldBeRestarted);
+    if (needsRestart) {
+      restart();
+    }
+    //        .forEach(
+    //            app -> {
+    //              if (app.shouldBeRestarted()) {
+    //                app.stop();
+    //                app.start();
+    //              }
+    //            });
     hermesTestClient =
         new HermesTestClient(management.getPort(), frontend.getPort(), consumers.getPort());
     hermesInitHelper = new HermesInitHelper(management.getPort(), frontend);
@@ -102,10 +104,22 @@ public class HermesExtension
     }
   }
 
-  public void restart() throws IOException, InterruptedException {
-    Stream.of(management, consumers, frontend).forEach(HermesTestApp::stop);
-    hermesZookeeper.restart();
-    Stream.of(management, consumers, frontend).forEach(HermesTestApp::start);
+  public void restart() {
+    Stream.of(management, consumers, frontend).parallel().forEach(HermesTestApp::stop);
+    Stream.of(hermesZookeeper, kafka, schemaRegistry).parallel().forEach(Startable::stop);
+
+    hermesZookeeper = new ZookeeperContainer("HermesZookeeper");
+    kafka = new KafkaContainerCluster(1);
+    schemaRegistry = new ConfluentSchemaRegistryContainer().withKafkaCluster(kafka);
+    consumers = new HermesConsumersTestApp(hermesZookeeper, kafka, schemaRegistry);
+    management = new HermesManagementTestApp(hermesZookeeper, kafka, schemaRegistry);
+    frontend = new HermesFrontendTestApp(hermesZookeeper, kafka, schemaRegistry);
+
+    Stream.of(hermesZookeeper, kafka).parallel().forEach(Startable::start);
+    schemaRegistry.start();
+    management.addEventAuditorListener(auditEventsReceiver.getPort());
+    management.start();
+    Stream.of(consumers, frontend).forEach(HermesTestApp::start);
   }
 
   public int getFrontendPort() {
