@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Configuration;
 public class PrometheusConfiguration {
 
   @Bean
-  @ConditionalOnMissingBean
+  @ConditionalOnMissingBean(PrometheusMeterRegistry.class)
   public PrometheusMeterRegistry micrometerRegistry(
       MicrometerRegistryProperties properties, PrometheusConfig prometheusConfig) {
     return new PrometheusMeterRegistryFactory(properties, prometheusConfig, "hermes-management")
