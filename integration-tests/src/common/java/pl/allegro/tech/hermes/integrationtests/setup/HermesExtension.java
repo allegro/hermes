@@ -67,7 +67,7 @@ public class HermesExtension
   public static BrokerOperations brokerOperations;
 
   @Override
-  public void beforeAll(ExtensionContext context) throws IOException, InterruptedException {
+  public void beforeAll(ExtensionContext context) {
 
     if (!started) {
       Stream.of(hermesZookeeper, kafka).parallel().forEach(Startable::start);
