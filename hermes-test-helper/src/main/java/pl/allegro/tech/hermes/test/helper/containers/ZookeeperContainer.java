@@ -21,7 +21,7 @@ public class ZookeeperContainer extends GenericContainer<ZookeeperContainer> {
   private static final DockerImageName DEFAULT_ZOOKEEPER_IMAGE_NAME =
       DockerImageName.parse("confluentinc/cp-zookeeper").withTag(ImageTags.confluentImagesTag());
   private static final int DEFAULT_ZOOKEEPER_PORT = 2181;
-  private static final Duration ZOOKEEPER_RESTART_WAIT_TIMEOUT = Duration.ofMinutes(1);
+  private static final Duration ZOOKEEPER_RESTART_WAIT_TIMEOUT = Duration.ofSeconds(30);
   private static final String START_STOP_SCRIPT = "/zookeeper_start_stop_wrapper.sh";
   private Logger logger;
 
@@ -98,9 +98,14 @@ public class ZookeeperContainer extends GenericContainer<ZookeeperContainer> {
   }
 
   private void startAndWaitUntilRunning() throws IOException, InterruptedException {
-    execInContainer("sh", "-c", "touch /tmp/start");
-    Unreliables.retryUntilTrue(
-        (int) ZOOKEEPER_RESTART_WAIT_TIMEOUT.toSeconds(), TimeUnit.SECONDS, this::isStarted);
+    // try really hard to start this process as it can have temporary issues colliding with previous
+    // process
+    int startsTrials = 3;
+    for (int i = 0; i < startsTrials; i++) {
+      execInContainer("sh", "-c", "touch /tmp/start");
+      Unreliables.retryUntilTrue(
+          (int) ZOOKEEPER_RESTART_WAIT_TIMEOUT.toSeconds(), TimeUnit.SECONDS, this::isStarted);
+    }
   }
 
   private void stopAndWaitUntilKilled() throws IOException, InterruptedException {
