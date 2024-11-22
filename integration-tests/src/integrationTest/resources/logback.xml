@@ -8,8 +8,8 @@
     </appender>
 
     <logger name="pl.allegro.tech.hermes.infrastructure.zookeeper.cache" level="debug" />
-    <logger name="org.apache.zookeeper" level="info" />
-    <logger name="org.apache.curator.framework" level="debug" />
+    <logger name="org.apache.zookeeper" level="debug" />
+    <logger name="org.apache.curator" level="debug" />
     <logger name="kafka" level="warn" />
     <logger name="org.apache.kafka" level="warn" />
     <logger name="org.apache.kafka.common.network.Selector" level="error"/>
