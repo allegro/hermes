@@ -28,6 +28,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import pl.allegro.tech.hermes.api.Topic;
@@ -41,7 +43,7 @@ import pl.allegro.tech.hermes.test.helper.environment.FrontendNotification;
 import pl.allegro.tech.hermes.test.helper.environment.HermesTestApp;
 
 public class HermesFrontendTestApp implements HermesTestApp, FrontendNotification {
-
+  private static final Logger logger = LoggerFactory.getLogger(HermesFrontendTestApp.class);
   private final ZookeeperContainer hermesZookeeper;
   private final Map<String, KafkaContainerCluster> kafkaClusters;
   private final ConfluentSchemaRegistryContainer schemaRegistry;
@@ -142,6 +144,7 @@ public class HermesFrontendTestApp implements HermesTestApp, FrontendNotificatio
 
   @Override
   public HermesTestApp start() {
+    logger.info("Starting frontend...");
     app = new SpringApplicationBuilder(HermesFrontend.class).web(WebApplicationType.NONE);
     currentArgs = createArgs();
     app.run(currentArgs.toArray(new String[0]));

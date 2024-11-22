@@ -2,6 +2,8 @@ package pl.allegro.tech.hermes.integrationtests.setup;
 
 import java.time.Duration;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import pl.allegro.tech.hermes.consumers.HermesConsumers;
@@ -13,6 +15,7 @@ import pl.allegro.tech.hermes.test.helper.environment.HermesTestApp;
 
 public class HermesConsumersTestApp implements HermesTestApp {
 
+  private static final Logger logger = LoggerFactory.getLogger(HermesConsumersTestApp.class);
   private final ZookeeperContainer hermesZookeeper;
   private final KafkaContainerCluster kafka;
   private final ConfluentSchemaRegistryContainer schemaRegistry;
@@ -33,6 +36,7 @@ public class HermesConsumersTestApp implements HermesTestApp {
 
   @Override
   public HermesTestApp start() {
+    logger.info("Starting consumers...");
     app = new SpringApplicationBuilder(HermesConsumers.class).web(WebApplicationType.NONE);
     currentArgs = createArgs();
     app.run(currentArgs.toArray(new String[0]));

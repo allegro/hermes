@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.Environment;
@@ -31,7 +33,7 @@ import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
 import pl.allegro.tech.hermes.test.helper.environment.HermesTestApp;
 
 public class HermesManagementTestApp implements HermesTestApp {
-
+  private static final Logger logger = LoggerFactory.getLogger(HermesManagementTestApp.class);
   private int port = -1;
 
   private int auditEventPort = -1;
@@ -63,6 +65,7 @@ public class HermesManagementTestApp implements HermesTestApp {
 
   @Override
   public HermesTestApp start() {
+    logger.info("Starting management...");
     currentArgs = createArgs();
     app = new SpringApplicationBuilder(HermesManagement.class);
     app.run(currentArgs.toArray(new String[0]));
