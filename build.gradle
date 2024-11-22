@@ -52,7 +52,7 @@ allprojects {
             jackson           : '2.17.0',
             jersey            : '3.1.6',
             jetty             : '12.0.8',
-            curator           : '5.4.0',
+            curator           : '5.7.1',
             dropwizard_metrics: '4.2.25',
             micrometer_metrics: '1.12.5',
             wiremock          : '3.9.0',

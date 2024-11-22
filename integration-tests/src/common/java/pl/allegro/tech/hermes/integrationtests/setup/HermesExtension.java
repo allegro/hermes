@@ -75,18 +75,14 @@ public class HermesExtension
       Stream.of(consumers, frontend).forEach(HermesTestApp::start);
       started = true;
     }
-    boolean needsRestart =
-        Stream.of(management, consumers, frontend).anyMatch(HermesTestApp::shouldBeRestarted);
-    if (needsRestart) {
-      restart();
-    }
-    //        .forEach(
-    //            app -> {
-    //              if (app.shouldBeRestarted()) {
-    //                app.stop();
-    //                app.start();
-    //              }
-    //            });
+    Stream.of(management, consumers, frontend)
+        .forEach(
+            app -> {
+              if (app.shouldBeRestarted()) {
+                app.stop();
+                app.start();
+              }
+            });
     hermesTestClient =
         new HermesTestClient(management.getPort(), frontend.getPort(), consumers.getPort());
     hermesInitHelper = new HermesInitHelper(management.getPort(), frontend);
