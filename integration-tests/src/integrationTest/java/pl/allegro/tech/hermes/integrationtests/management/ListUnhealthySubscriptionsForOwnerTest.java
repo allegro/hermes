@@ -10,8 +10,6 @@ import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithR
 
 import java.time.Duration;
 import java.util.Set;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -33,16 +31,6 @@ public class ListUnhealthySubscriptionsForOwnerTest {
   @Order(1)
   @RegisterExtension
   public static final HermesExtension hermes = new HermesExtension().withPrometheus(prometheus);
-
-  @BeforeAll
-  static void setup() {
-    hermes.clearManagementData();
-  }
-
-  @AfterEach
-  void cleanup() {
-    hermes.clearManagementData();
-  }
 
   @Test
   public void shouldNotListHealthySubscriptions() {

@@ -202,8 +202,11 @@ public class HermesFrontendTestApp implements HermesTestApp {
 
   @Override
   public boolean shouldBeRestarted() {
-    List<String> args = createArgs();
-    return !args.equals(currentArgs);
+    if (!currentArgs.isEmpty()) {
+      List<String> args = createArgs();
+      return !args.equals(currentArgs);
+    }
+    return false;
   }
 
   @Override

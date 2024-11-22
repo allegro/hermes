@@ -11,11 +11,14 @@ import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.Environment;
 import pl.allegro.tech.hermes.integrationtests.prometheus.PrometheusExtension;
 import pl.allegro.tech.hermes.management.HermesManagement;
@@ -79,6 +82,7 @@ public class HermesManagementTestApp implements HermesTestApp {
       HttpRequest request =
           HttpRequest.newBuilder()
               .uri(new URI("http://localhost:" + getPort() + "/mode"))
+              .timeout(Duration.ofSeconds(1))
               .GET()
               .build();
       HttpClient httpClient = HttpClient.newHttpClient();
@@ -110,7 +114,7 @@ public class HermesManagementTestApp implements HermesTestApp {
   @Override
   public void stop() {
     if (app != null) {
-      app.context().close();
+      Optional.ofNullable(app.context()).ifPresent(ConfigurableApplicationContext::close);
       app = null;
     }
   }
@@ -130,8 +134,11 @@ public class HermesManagementTestApp implements HermesTestApp {
 
   @Override
   public boolean shouldBeRestarted() {
-    List<String> args = createArgs();
-    return !args.equals(currentArgs);
+    if (!currentArgs.isEmpty()) {
+      List<String> args = createArgs();
+      return !args.equals(currentArgs);
+    }
+    return false;
   }
 
   private List<String> createArgs() {

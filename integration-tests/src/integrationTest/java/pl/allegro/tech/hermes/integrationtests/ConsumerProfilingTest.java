@@ -10,7 +10,6 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
 import java.time.Duration;
 import java.util.List;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,12 +47,6 @@ public class ConsumerProfilingTest {
   @AfterEach
   void teardown() {
     ((Logger) LoggerFactory.getLogger(DefaultConsumerProfiler.class)).detachAndStopAllAppenders();
-    hermes.clearManagementData();
-  }
-
-  @AfterAll
-  static void teardownClass() {
-    hermes.clearManagementData();
   }
 
   @Test

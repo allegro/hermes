@@ -3,12 +3,13 @@
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %logger{36} - %msg%n</Pattern>
+            <Pattern>[%thread] - %d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %logger{36} - %msg%n</Pattern>
         </encoder>
     </appender>
 
     <logger name="pl.allegro.tech.hermes.infrastructure.zookeeper.cache" level="debug" />
-    <logger name="org.apache.zookeeper" level="warn" />
+    <logger name="org.apache.zookeeper" level="info" />
+    <logger name="org.apache.curator.framework" level="debug" />
     <logger name="kafka" level="warn" />
     <logger name="org.apache.kafka" level="warn" />
     <logger name="org.apache.kafka.common.network.Selector" level="error"/>
@@ -18,10 +19,10 @@
     <logger name="pl.allegro.tech.hermes.consumers.supervisor.workload.BalancingJob" level="warn" />
     <logger name="pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistry" level="warn" />
     <logger name="pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateCalculator" level="warn" />
-    <logger name="pl.allegro.tech.hermes.infrastructure.zookeeper.cache.HierarchicalCacheLevel" level="OFF" />
-    <logger name="pl.allegro.tech.hermes.infrastructure.zookeeper.cache.HierarchicalCache" level="OFF" />
+    <logger name="pl.allegro.tech.hermes.infrastructure.zookeeper.cache.HierarchicalCacheLevel" level="DEBUG" />
+    <logger name="pl.allegro.tech.hermes.infrastructure.zookeeper.cache.HierarchicalCache" level="DEBUG" />
     <logger name="pl.allegro.tech.hermes.consumers.supervisor.workload.ClusterAssignmentCache" level="warn" />
-    <logger name="pl.allegro.tech.hermes.infrastructure.zookeeper.notifications.ZookeeperInternalNotificationBus" level="OFF" />
+    <logger name="pl.allegro.tech.hermes.infrastructure.zookeeper.notifications.ZookeeperCallbackRegistrar" level="DEBUG" />
     <logger name="pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaRawMessageReader" level="OFF" />
     <logger name="pl.allegro.tech.hermes.management.infrastructure.prometheus.RestTemplatePrometheusClient" level="OFF" />
 

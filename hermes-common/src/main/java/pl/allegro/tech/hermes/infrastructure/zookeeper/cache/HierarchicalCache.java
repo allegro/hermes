@@ -65,7 +65,7 @@ public class HierarchicalCache {
   }
 
   private HierarchicalCacheLevel createLevelCache(int depth, String path) {
-    BiFunction<Integer, String, HierarchicalCacheLevel> function =
+    BiFunction<Integer, String, HierarchicalCacheLevel> nextLevelFactory =
         depth + 1 < maxDepth ? this::createLevelCache : null;
     HierarchicalCacheLevel levelCache =
         new HierarchicalCacheLevel(
@@ -74,7 +74,7 @@ public class HierarchicalCache {
             path(depth, path),
             depth,
             levelCallbacks.get(depth),
-            Optional.ofNullable(function),
+            Optional.ofNullable(nextLevelFactory),
             removeNodesWithNoData);
     try {
       logger.debug("Starting hierarchical cache level for path  {} and depth {}", path, depth);
