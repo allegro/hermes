@@ -111,6 +111,8 @@ public class HermesExtension
     consumers.stop();
     frontend.stop();
 
+    hermesZookeeper.restart();
+
     management.start();
     consumers.start();
     frontend.start();
