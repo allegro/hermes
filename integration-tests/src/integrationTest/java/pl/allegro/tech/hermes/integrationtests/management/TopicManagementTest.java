@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.integrationtests.management;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.awaitility.Awaitility.waitAtMost;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.api.ContentType.JSON;
@@ -186,6 +187,9 @@ public class TopicManagementTest {
                     .withAutoDeleteWithTopicEnabled(true)
                     .build());
 
+    // then
+    assertThat(hermes.countConsumerGroups()).isEqualTo(1);
+
     // when
     WebTestClient.ResponseSpec response = hermes.api().deleteTopic(topic.getQualifiedName());
 
@@ -198,6 +202,11 @@ public class TopicManagementTest {
         .getSubscriptionResponse(topic.getQualifiedName(), subscription.getName())
         .expectStatus()
         .isBadRequest();
+
+    // and
+    await().atMost(Duration.ofSeconds(30)).untilAsserted(() ->
+            assertThat(hermes.countConsumerGroups()).isEqualTo(0)
+    );
   }
 
   @Test

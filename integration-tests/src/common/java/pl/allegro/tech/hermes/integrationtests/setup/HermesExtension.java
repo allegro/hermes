@@ -106,6 +106,16 @@ public class HermesExtension
     return hermesInitHelper;
   }
 
+  public int countConsumerGroups() {
+      try {
+          return kafka.countConsumerGroups();
+      } catch (java.io.IOException e) {
+          throw new RuntimeException(e);
+      } catch (InterruptedException e) {
+          throw new RuntimeException(e);
+      }
+  }
+
   public void cutOffConnectionsBetweenBrokersAndClients() {
     kafka.cutOffConnectionsBetweenBrokersAndClients();
   }

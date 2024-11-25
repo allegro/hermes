@@ -208,6 +208,17 @@ public class KafkaContainerCluster implements Startable {
     return Integer.parseInt(sanitizedOutput);
   }
 
+  public int countConsumerGroups() throws java.io.IOException, InterruptedException {
+    KafkaContainer firstBroker = selectFirstRunningBroker();
+    ExecResult result =
+            firstBroker.execInContainer(
+                    "sh",
+                    "-c",
+                    "kafka-consumer-groups --bootstrap-server localhost:9092 --list | wc -l");
+    String sanitizedOutput = result.getStdout().replaceAll("\"", "").replaceAll("\\s+", "");
+    return Integer.parseInt(sanitizedOutput);
+  }
+
   private KafkaContainer selectFirstRunningBroker() {
     return brokers.stream()
         .filter(KafkaContainer::isKafkaRunning)
