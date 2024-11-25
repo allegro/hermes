@@ -45,6 +45,8 @@ public class ZookeeperContainer extends GenericContainer<ZookeeperContainer> {
     maybeLoggerName.ifPresent(s -> this.logger = LoggerFactory.getLogger(s));
     withExposedPorts(clientPort);
     withEnv("ZOOKEEPER_CLIENT_PORT", String.valueOf(clientPort));
+    withEnv("KAFKA_OPTS", "-Dzookeeper.4lw.commands.whitelist=*");
+    withEnv("ZOOKEEPER_LOG4J_ROOT_LOGLEVEL", "DEBUG");
     this.clientPort = clientPort;
   }
 

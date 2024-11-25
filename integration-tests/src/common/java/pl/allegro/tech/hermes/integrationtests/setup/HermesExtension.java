@@ -91,6 +91,11 @@ public class HermesExtension
         new BrokerOperations(kafka.getBootstrapServersForExternalClients(), "itTest");
   }
 
+  public void restartFrontend() {
+    frontend.stop();
+    frontend.start();
+  }
+
   @Override
   public void close() {
     if (started) {
@@ -98,24 +103,6 @@ public class HermesExtension
       Stream.of(hermesZookeeper, kafka, schemaRegistry).parallel().forEach(Startable::stop);
       started = false;
     }
-  }
-
-  public void restart() {
-    Stream.of(management, consumers, frontend).parallel().forEach(HermesTestApp::stop);
-    Stream.of(hermesZookeeper, kafka, schemaRegistry).parallel().forEach(Startable::stop);
-
-    hermesZookeeper = new ZookeeperContainer("HermesZookeeper");
-    kafka = new KafkaContainerCluster(1);
-    schemaRegistry = new ConfluentSchemaRegistryContainer().withKafkaCluster(kafka);
-    consumers = new HermesConsumersTestApp(hermesZookeeper, kafka, schemaRegistry);
-    management = new HermesManagementTestApp(hermesZookeeper, kafka, schemaRegistry);
-    frontend = new HermesFrontendTestApp(hermesZookeeper, kafka, schemaRegistry);
-
-    Stream.of(hermesZookeeper, kafka).parallel().forEach(Startable::start);
-    schemaRegistry.start();
-    management.addEventAuditorListener(auditEventsReceiver.getPort());
-    management.start();
-    Stream.of(consumers, frontend).forEach(HermesTestApp::start);
   }
 
   public int getFrontendPort() {
@@ -207,7 +194,7 @@ public class HermesExtension
   @Override
   public void afterEach(ExtensionContext context) throws Exception {
     try {
-      clearManagementData();
+      //      clearManagementData();
     } catch (Exception e) {
       logger.error("Error during cleaning up management data", e);
     }
