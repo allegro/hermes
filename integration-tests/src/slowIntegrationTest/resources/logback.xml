@@ -21,7 +21,7 @@
     <logger name="pl.allegro.tech.hermes.infrastructure.zookeeper.cache.HierarchicalCacheLevel" level="OFF" />
     <logger name="pl.allegro.tech.hermes.infrastructure.zookeeper.cache.HierarchicalCache" level="OFF" />
     <logger name="pl.allegro.tech.hermes.consumers.supervisor.workload.ClusterAssignmentCache" level="warn" />
-    <logger name="pl.allegro.tech.hermes.infrastructure.zookeeper.notifications.ZookeeperCallbackRegistrar" level="OFF" />
+    <logger name="pl.allegro.tech.hermes.infrastructure.zookeeper.notifications.ZookeeperInternalNotificationBus" level="OFF" />
     <logger name="pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaRawMessageReader" level="OFF" />
     <logger name="pl.allegro.tech.hermes.management.infrastructure.prometheus.RestTemplatePrometheusClient" level="OFF" />
 
