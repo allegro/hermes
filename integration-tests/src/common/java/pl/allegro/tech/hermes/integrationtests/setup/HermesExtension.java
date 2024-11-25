@@ -91,11 +91,6 @@ public class HermesExtension
         new BrokerOperations(kafka.getBootstrapServersForExternalClients(), "itTest");
   }
 
-  public void restartFrontend() {
-    frontend.stop();
-    frontend.start();
-  }
-
   @Override
   public void close() {
     if (started) {

@@ -114,10 +114,7 @@ public class TopicAuthorizationTest {
   @MethodSource("notPublishAsGuestWhenAuthIsRequiredTopics")
   public void shouldNotPublishAsGuestWhenAuthIsRequired(Topic topic) {
     // given
-    hermes.initHelper().createTopic(TopicBuilder.randomTopic("myGroup", "tp-").build());
-    hermes.restartFrontend();
-    hermes.initHelper().createTopic(TopicBuilder.randomTopic("myGroup", "tp2-").build());
-    hermes.restartFrontend();
+    hermes.initHelper().createTopic(topic);
 
     waitAtMost(Duration.ofSeconds(10))
         .untilAsserted(
