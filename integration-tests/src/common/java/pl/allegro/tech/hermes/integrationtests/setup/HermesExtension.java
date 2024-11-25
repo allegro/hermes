@@ -98,21 +98,6 @@ public class HermesExtension
     started = false;
   }
 
-  public void restart() throws IOException, InterruptedException {
-    management.stop();
-    consumers.stop();
-    frontend.stop();
-
-    hermesZookeeper.restart();
-
-    management.start();
-    consumers.start();
-    frontend.start();
-    //    Stream.of(management, consumers, frontend).parallel().forEach(HermesTestApp::stop);
-    //      hermesZookeeper.restart();
-    //    Stream.of(management, consumers, frontend).parallel().forEach(HermesTestApp::start);
-  }
-
   public int getFrontendPort() {
     return frontend.getPort();
   }
