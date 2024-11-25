@@ -5,15 +5,12 @@ dependencies {
     implementation project(':hermes-common')
     implementation project(':hermes-tracker')
     implementation 'org.slf4j:slf4j-api:2.0.13'
-    // TODO: client has to have the same major version as backend: https://www.elastic.co/guide/en/elasticsearch/client/java-api/current/client.html
-    // we need to use test-containers for elasticsearch server to able to use newer client.
-    api group: 'org.elasticsearch.client', name: 'transport', version: '6.8.12'
+    api group: 'org.elasticsearch.client', name: 'transport', version: '7.10.2'
 
     testImplementation project(path: ":hermes-tracker", configuration: "testArtifacts")
     testImplementation project(path: ":hermes-test-helper")
     testImplementation group: 'org.spockframework', name: 'spock-core', version: versions.spock
     testImplementation group: 'org.spockframework', name: 'spock-junit4', version: versions.spock
-    // this should be migrated to testcontainers
-    testImplementation 'pl.allegro.tech:embedded-elasticsearch:2.10.0'
+    testImplementation "org.testcontainers:elasticsearch:1.20.3"
     testRuntimeOnly group: 'org.junit.vintage', name: 'junit-vintage-engine', version: versions.junit_jupiter
 }

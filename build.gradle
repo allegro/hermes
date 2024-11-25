@@ -20,6 +20,12 @@ scmVersion {
     versionCreator 'versionWithBranch'
 }
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
 nexusPublishing {
     connectTimeout = Duration.ofMinutes(getIntProperty('publishingTimeoutInMin', 10))
     clientTimeout = Duration.ofMinutes(getIntProperty('publishingTimeoutInMin', 10))
@@ -42,9 +48,6 @@ allprojects {
 
     group = 'pl.allegro.tech.hermes'
     version = scmVersion.version
-
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
 
     project.ext.versions = [
             kafka             : '2.8.2',
@@ -195,9 +198,9 @@ subprojects {
 
     test {
         reports {
-            html.enabled = false
-            junitXml.enabled = true
-            junitXml.destination = file("$buildDir/test-results/$name")
+            html.required = false
+            junitXml.required = true
+            junitXml.outputLocation = file("$buildDir/test-results/$name")
         }
 
         testLogging {

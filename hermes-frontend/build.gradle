@@ -14,7 +14,7 @@ dependencies {
     api group: 'org.springframework.boot', name: 'spring-boot-starter', version: versions.spring
     api group: 'io.undertow', name: 'undertow-core', version: versions.undertow
     // Did not update that as we're trying to abandon buffers
-    api(group: 'net.openhft', name: 'chronicle-map', version: '3.22.9') {
+    api(group: 'net.openhft', name: 'chronicle-map', version: '3.25ea6') {
         exclude group: 'net.openhft', module: 'chronicle-analytics'
     }
     implementation group: 'commons-io', name: 'commons-io', version: '2.16.1'

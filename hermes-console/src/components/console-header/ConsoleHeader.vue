@@ -6,6 +6,7 @@
   import { useRouter } from 'vue-router';
   import { useTheme } from 'vuetify';
   import EnvironmentBadge from '@/components/environment-badge/EnviromentBadge.vue';
+  import EnvironmentSwitch from '@/components/environment-switch/EnvironmentSwitch.vue';
   import ThemeSwitch from '@/components/theme-switch/ThemeSwitch.vue';
 
   const { t } = useI18n();
@@ -17,6 +18,9 @@
   const authStore = useAuthStore();
 
   const isLoggedIn = computed(() => authStore.isUserAuthorized);
+  const knownEnvironments = computed(
+    () => configStore.appConfig?.console.knownEnvironments || [],
+  );
 
   function logIn() {
     authStore.login(window.location.pathname);
@@ -57,6 +61,8 @@
             configStore.appConfig?.console.criticalEnvironment || false
           "
         />
+        <v-divider vertical v-if="knownEnvironments.length > 0"></v-divider>
+        <environment-switch :known-environments="knownEnvironments" />
       </div>
       <div>
         <theme-switch />
