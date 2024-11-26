@@ -2,6 +2,8 @@ import java.time.Duration
 
 buildscript {
     repositories {
+        maven { url 'https://artifactory.allegrogroup.com/artifactory/group-allegro/' }
+        maven { url 'https://artifactory.allegrogroup.com/artifactory/remote-repos/' }
         mavenCentral()
     }
 }
@@ -74,6 +76,8 @@ allprojects {
     ]
 
     repositories {
+        maven { url 'https://artifactory.allegrogroup.com/artifactory/group-allegro/' }
+        maven { url 'https://artifactory.allegrogroup.com/artifactory/remote-repos/' }
         mavenCentral()
     }
 

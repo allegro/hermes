@@ -6,13 +6,11 @@ import com.google.cloud.bigquery.storage.v1.stub.BigQueryWriteStubSettings;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.*;
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.GoogleBigQueryAvroDataWriterPool;
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.GoogleBigQueryAvroMessageTransformer;
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.GoogleBigQueryAvroStreamWriterFactory;
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.GoogleBigQueryAvroToProtoConverter;
+import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.*;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.json.GoogleBigQueryJsonDataWriterPool;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.json.GoogleBigQueryJsonMessageTransformer;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.json.GoogleBigQueryJsonStreamWriterFactory;
+
 
 import java.io.IOException;
 
@@ -52,8 +50,12 @@ public class GoogleBigQueryConfiguration {
         return new GoogleBigQueryAvroDataWriterPool(factory);
     }
 
+//    @Bean
+//    public GoogleBigQueryAvroToProtoConverter avroToProtoConverter() {
+//        return new GoogleBigQueryAvroToProtoConverter();
+//    }
     @Bean
-    public GoogleBigQueryAvroToProtoConverter avroToProtoConverter() {
-        return new GoogleBigQueryAvroToProtoConverter();
+    public AllegroAvroToBigQueryRow avroToProtoConverter() {
+        return new AllegroAvroToBigQueryRow(new GenericRecordToDynamicMessageConverter());
     }
 }

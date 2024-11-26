@@ -30,33 +30,33 @@ services:
       - kafka_data:/var/lib/kafka/data
       - kafka_secrets:/etc/kafka/secrets
 
-  frontend:
-    build:
-      context: ../
-      dockerfile: ./docker/latest/frontend/Dockerfile
-    ports:
-      - "8080:8080"
-    depends_on:
-      - zk
-      - kafka
-
-  consumers:
-    build:
-      context: ../
-      dockerfile: ./docker/latest/consumers/Dockerfile
-    depends_on:
-      - zk
-      - kafka
-
-  management:
-    build:
-      context: ../
-      dockerfile: ./docker/latest/management/Dockerfile
-    ports:
-      - "8090:8090"
-    depends_on:
-      - zk
-      - kafka
+#  frontend:
+#    build:
+#      context: ../
+#      dockerfile: ./docker/latest/frontend/Dockerfile
+#    ports:
+#      - "8080:8080"
+#    depends_on:
+#      - zk
+#      - kafka
+#
+#  consumers:
+#    build:
+#      context: ../
+#      dockerfile: ./docker/latest/consumers/Dockerfile
+#    depends_on:
+#      - zk
+#      - kafka
+#
+#  management:
+#    build:
+#      context: ../
+#      dockerfile: ./docker/latest/management/Dockerfile
+#    ports:
+#      - "8090:8090"
+#    depends_on:
+#      - zk
+#      - kafka
 
   schema-registry:
     image: "confluentinc/cp-schema-registry:${CONFLUENT_IMAGES_TAG}"

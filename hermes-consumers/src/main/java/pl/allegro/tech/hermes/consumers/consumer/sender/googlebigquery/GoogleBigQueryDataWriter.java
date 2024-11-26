@@ -12,6 +12,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.SenderClient;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -39,6 +40,10 @@ public abstract class GoogleBigQueryDataWriter<
             ApiFutures.addCallback(appendFuture, new GoogleBigQueryAppendCompleteCallback(resultFuture), MoreExecutors.directExecutor());
         } catch (Exceptions.AppendSerializationError e) {
             logger.warn("Writer {} has failed to append rows to stream {}", getWriterId(), getStreamName(), e);
+            for (Map.Entry<Integer, String> entry : e.getRowIndexToErrorMessage().entrySet()) {
+                logger.warn("Writer {} has failed because of {}", getWriterId(), entry.getValue(), e);
+            }
+
             resultFuture.complete(MessageSendingResult.failedResult(new GoogleBigQueryFailedAppendException(e)));
         } catch (Exception e) {
             logger.warn("Writer {} has failed to append rows to stream {}", getWriterId(), getStreamName(), e);

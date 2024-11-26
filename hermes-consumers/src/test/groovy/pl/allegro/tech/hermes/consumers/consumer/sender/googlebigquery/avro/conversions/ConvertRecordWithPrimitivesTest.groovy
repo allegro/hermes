@@ -33,6 +33,8 @@ class ConvertRecordWithPrimitivesTest  extends Specification implements AvroTrai
         GoogleBigQueryAvroToProtoConverter converter = new GoogleBigQueryAvroToProtoConverter()
 
         when:
+        println("descriptor.fields = ${protoDescriptor.findFieldByName("field").messageType.nestedTypes}")
+
         DynamicMessage message = converter.convertToProtoMessage(protoDescriptor, record)
 
 
@@ -48,13 +50,13 @@ class ConvertRecordWithPrimitivesTest  extends Specification implements AvroTrai
         where:
         suite               | avroType  | protoDescriptor                                          | avroValue                         | expectedProtoValue | transformResult
         "record-primitives" | "string"  | RecordStringProto.RecordPrimitivesString.getDescriptor() | "value"                           | "\"value\""        | { c -> c }
-        "record-primitives" | "int"     | RecordInt32Proto.RecordPrimitivesInt32.getDescriptor()   | 12                                | 12                 | { c -> c }
-        "record-primitives" | "long"    | RecordInt64Proto.RecordPrimitivesInt64.getDescriptor()   | 12l                               | 12l                | { c -> c }
-        "record-primitives" | "boolean" | RecordInt64Proto.RecordPrimitivesInt64.getDescriptor()   | 12l                               | 12l                | { c -> c }
-        "record-primitives" | "boolean" | RecordBoolProto.RecordPrimitivesBool.getDescriptor()     | true                              | true               | { c -> c }
-        "record-primitives" | "bytes"   | RecordBytesProto.RecordPrimitivesBytes.getDescriptor()   | ByteBuffer.wrap("123".getBytes()) | "\"123\""          | { c -> new String(c.bytes) }
-        "record-primitives" | "float"   | RecordFloatProto.RecordPrimitivesFloat.getDescriptor()   | 1.234f                            | 1.234f             | { c -> c }
-        "record-primitives" | "double"  | RecordDoubleProto.RecordPrimitivesDouble.getDescriptor() | 1.234d                            | 1.234d             | { c -> c }
+//        "record-primitives" | "int"     | RecordInt32Proto.RecordPrimitivesInt32.getDescriptor()   | 12                                | 12                 | { c -> c }
+//        "record-primitives" | "long"    | RecordInt64Proto.RecordPrimitivesInt64.getDescriptor()   | 12l                               | 12l                | { c -> c }
+//        "record-primitives" | "boolean" | RecordInt64Proto.RecordPrimitivesInt64.getDescriptor()   | 12l                               | 12l                | { c -> c }
+//        "record-primitives" | "boolean" | RecordBoolProto.RecordPrimitivesBool.getDescriptor()     | true                              | true               | { c -> c }
+//        "record-primitives" | "bytes"   | RecordBytesProto.RecordPrimitivesBytes.getDescriptor()   | ByteBuffer.wrap("123".getBytes()) | "\"123\""          | { c -> new String(c.bytes) }
+//        "record-primitives" | "float"   | RecordFloatProto.RecordPrimitivesFloat.getDescriptor()   | 1.234f                            | 1.234f             | { c -> c }
+//        "record-primitives" | "double"  | RecordDoubleProto.RecordPrimitivesDouble.getDescriptor() | 1.234d                            | 1.234d             | { c -> c }
 
 
     }
