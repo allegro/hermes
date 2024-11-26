@@ -4,18 +4,18 @@ plugins {
 }
 
 dependencies {
-    api(group = "com.damnhandy", name = "handy-uri-templates", version = "2.1.8")
-    api(group = "jakarta.ws.rs", name = "jakarta.ws.rs-api", version = "3.1.0")
-    api(group = "jakarta.xml.bind", name = "jakarta.xml.bind-api", version = "4.0.0")
-    api(group = "org.hibernate.validator", name = "hibernate-validator", version = "8.0.1.Final")
+    api(libs.handy.uri.templates)
+    api(libs.hibernate.validator)
     api(libs.jackson.datatype.jsr310)
     api(libs.jackson.jakarta.rs.json.provider)
+    api(libs.jakarta.ws.rs.api)
+    api(libs.jakarta.xml.bind.api)
 
-    implementation(group = "com.sun.xml.bind", name = "jaxb-core", version = "4.0.5")
-    implementation(group = "com.sun.xml.bind", name = "jaxb-impl", version = "4.0.5")
-    implementation(group = "jakarta.annotation", name = "jakarta.annotation-api", version = "3.0.0")
     implementation(libs.guava)
     implementation(libs.jackson.annotations)
+    implementation(libs.jakarta.annotation.api)
+    implementation(libs.jaxb.core)
+    implementation(libs.jaxb.impl)
 
     testImplementation(project(":hermes-test-helper"))
     testImplementation(libs.spock.core)

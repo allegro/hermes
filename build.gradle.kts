@@ -129,7 +129,6 @@ allprojects {
     }
 }
 
-
 configure(subprojects.filter { it != project(":integration-tests") }) {
     apply(plugin = "jacoco")
     apply(plugin = "maven-publish")

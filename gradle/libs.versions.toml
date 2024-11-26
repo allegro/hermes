@@ -8,7 +8,13 @@ dropwizard_metrics = "4.2.25"
 failsafe = "2.4.4"
 groovy = "4.0.21"
 guava = "33.1.0-jre"
+handy-uri-templates = "2.1.8"
+hibernate-validator = "8.0.1.Final"
 jackson = "2.17.0"
+jakarta-annotation-api = "3.0.0"
+jakarta-ws-rs-api = "3.1.0"
+jakarta-xml-bind-api = "4.0.0"
+jaxb = "4.0.5"
 jersey = "3.1.6"
 jetty = "12.0.8"
 jmh = "0.7.2"
@@ -36,10 +42,17 @@ curator-test = { group = "org.apache.curator", name = "curator-test", version.re
 failsafe = { group = "net.jodah", name = "failsafe", version.ref = "failsafe" }
 groovy-json = { group = "org.apache.groovy", name = "groovy-json", version.ref = "groovy" }
 guava = { group = "com.google.guava", name = "guava", version.ref = "guava" }
+handy-uri-templates = { group = "com.damnhandy", name = "handy-uri-templates", version.ref = "handy-uri-templates" }
+hibernate-validator = { group = "org.hibernate.validator", name = "hibernate-validator", version.ref = "hibernate-validator" }
 jackson-annotations = { group = "com.fasterxml.jackson.core", name = "jackson-annotations", version.ref = "jackson" }
 jackson-databind = { group = "com.fasterxml.jackson.core", name = "jackson-databind", version.ref = "jackson" }
 jackson-datatype-jsr310 = { group = "com.fasterxml.jackson.datatype", name = "jackson-datatype-jsr310", version.ref = "jackson" }
 jackson-jakarta-rs-json-provider = { group = "com.fasterxml.jackson.jakarta.rs", name = "jackson-jakarta-rs-json-provider", version.ref = "jackson" }
+jakarta-annotation-api = { group = "jakarta.annotation", name = "jakarta.annotation-api", version.ref = "jakarta-annotation-api" }
+jakarta-ws-rs-api = { group = "jakarta.ws.rs", name = "jakarta.ws.rs-api", version.ref = "jakarta-ws-rs-api" }
+jakarta-xml-bind-api = { group = "jakarta.xml.bind", name = "jakarta.xml.bind-api", version.ref = "jakarta-xml-bind-api" }
+jaxb-core = { group = "com.sun.xml.bind", name = "jaxb-core", version.ref = "jaxb" }
+jaxb-impl = { group = "com.sun.xml.bind", name = "jaxb-impl", version.ref = "jaxb" }
 jersey-bean-validation = { group = "org.glassfish.jersey.ext", name = "jersey-bean-validation", version.ref = "jersey" }
 jersey-client = { group = "org.glassfish.jersey.core", name = "jersey-client", version.ref = "jersey" }
 jersey-hk2 = { group = "org.glassfish.jersey.inject", name = "jersey-hk2", version.ref = "jersey" }
