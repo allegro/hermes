@@ -4,7 +4,7 @@ dependencies {
     implementation(project(":hermes-api"))
     implementation(project(":hermes-metrics"))
     testImplementation(project(path = ":hermes-test-helper"))
-    testRuntimeOnly(group = "org.junit.vintage", name = "junit-vintage-engine", version = versions["junit_jupiter"] as String)
+    testRuntimeOnly(libs.junit.vintage.engine)
 }
 
 val testArtifacts: Configuration by configurations.creating

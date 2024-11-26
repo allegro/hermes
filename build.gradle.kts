@@ -1,5 +1,7 @@
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import pl.allegro.tech.build.axion.release.domain.PredefinedVersionCreator
+import pl.allegro.tech.hermes.findIntProperty
+import pl.allegro.tech.hermes.findLongProperty
 import java.time.Duration
 
 plugins {
@@ -25,8 +27,8 @@ java {
 }
 
 nexusPublishing {
-    connectTimeout = Duration.ofMinutes(getLongProperty("publishingTimeoutInMin", 10))
-    clientTimeout = Duration.ofMinutes(getLongProperty("publishingTimeoutInMin", 10))
+    connectTimeout = Duration.ofMinutes(project.findLongProperty("publishingTimeoutInMin", 10))
+    clientTimeout = Duration.ofMinutes(project.findLongProperty("publishingTimeoutInMin", 10))
 
     repositories {
         sonatype {
@@ -36,8 +38,8 @@ nexusPublishing {
         }
     }
     transitionCheckOptions {
-        maxRetries = getIntProperty("attemptsToCloseStagingRepository", 30)
-        delayBetween = Duration.ofSeconds(getLongProperty("delayInSecBetweenCloseStagingRepositoryAttempts", 45))
+        maxRetries = project.findIntProperty("attemptsToCloseStagingRepository", 30)
+        delayBetween = Duration.ofSeconds(project.findLongProperty("delayInSecBetweenCloseStagingRepositoryAttempts", 45))
     }
 }
 
@@ -190,18 +192,16 @@ configure(subprojects.filter { it != project(":integration-tests") }) {
 }
 
 subprojects {
-    val versions = rootProject.extra["versions"] as Map<*, *>
-
     configurations.all {
         exclude(group = "org.slf4j", module = "slf4j-log4j12")
         exclude(group = "log4j", module = "log4j")
 
         resolutionStrategy {
             force("org.jboss.logging:jboss-logging:3.2.1.Final")
-            force("com.google.guava:guava:${versions["guava"] as String}")
-            force("com.fasterxml.jackson.core:jackson-databind:${versions["jackson"] as String}")
-            force("com.fasterxml.jackson.core:jackson-annotations:${versions["jackson"] as String}")
-            force("com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:${versions["jackson"] as String}")
+            force("com.google.guava:guava:${rootProject.libs.versions.guava.get()}")
+            force("com.fasterxml.jackson.core:jackson-databind:${rootProject.libs.versions.jackson.get()}")
+            force("com.fasterxml.jackson.core:jackson-annotations:${rootProject.libs.versions.jackson.get()}")
+            force("com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:${rootProject.libs.versions.jackson.get()}")
         }
     }
 
@@ -225,12 +225,4 @@ subprojects {
             )
         }
     }
-}
-
-fun getIntProperty(name: String, defaultValue: Int): Int {
-    return (project.findProperty(name) as? String)?.toIntOrNull() ?: defaultValue
-}
-
-fun getLongProperty(name: String, defaultValue: Long): Long {
-    return (project.findProperty(name) as? String)?.toLongOrNull() ?: defaultValue
 }

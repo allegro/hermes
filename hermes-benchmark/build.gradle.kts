@@ -1,3 +1,8 @@
+import pl.allegro.tech.hermes.findBooleanProperty
+import pl.allegro.tech.hermes.findIntProperty
+import pl.allegro.tech.hermes.findListProperty
+import pl.allegro.tech.hermes.findStringProperty
+
 plugins {
     alias(libs.plugins.jmh)
 }
@@ -14,14 +19,14 @@ jmh {
     jmhVersion = "1.36"
     zip64 = true
     verbosity = "NORMAL"
-    iterations = intProperty("jmh.iterations", 4)
-    timeOnIteration = stringProperty("jmh.timeOnIteration", "80s")
-    fork = intProperty("jmh.fork", 1)
-    warmupIterations = intProperty("jmh.warmupIterations", 4)
-    warmup = stringProperty("jmh.timeOnWarmupIteration", "80s")
-    jvmArgs = listProperty("jmh.jvmArgs", listOf("-Xmx1g", "-Xms1g", "-XX:+UseG1GC") + chronicleMapJvmArgs)
-    failOnError = booleanProperty("jmh.failOnError", true)
-    threads = intProperty("jmh.threads", 4)
+    iterations = project.findIntProperty("jmh.iterations", 4)
+    timeOnIteration = project.findStringProperty("jmh.timeOnIteration", "80s")
+    fork = project.findIntProperty("jmh.fork", 1)
+    warmupIterations = project.findIntProperty("jmh.warmupIterations", 4)
+    warmup = project.findStringProperty("jmh.timeOnWarmupIteration", "80s")
+    jvmArgs = project.findListProperty("jmh.jvmArgs", listOf("-Xmx1g", "-Xms1g", "-XX:+UseG1GC") + chronicleMapJvmArgs)
+    failOnError = project.findBooleanProperty("jmh.failOnError", true)
+    threads = project.findIntProperty("jmh.threads", 4)
     synchronizeIterations = false
     forceGC = false
     duplicateClassesStrategy = DuplicatesStrategy.EXCLUDE
@@ -51,15 +56,3 @@ tasks.named<Copy>("processJmhResources") {
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     }
 }
-
-fun stringProperty(property: String, defaultValue: String): String =
-    (project.findProperty(property) as? String) ?: defaultValue
-
-fun listProperty(property: String, defaultValue: List<String>): List<String> =
-    (project.findProperty(property) as? String)?.split(' ') ?: defaultValue
-
-fun intProperty(property: String, defaultValue: Int): Int =
-    (project.findProperty(property) as? String)?.toIntOrNull() ?: defaultValue
-
-fun booleanProperty(property: String, defaultValue: Boolean): Boolean =
-    (project.findProperty(property) as? String)?.toBooleanStrictOrNull() ?: defaultValue
