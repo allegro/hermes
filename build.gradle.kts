@@ -213,7 +213,7 @@ subprojects {
         reports {
             html.required = false
             junitXml.required = true
-            junitXml.outputLocation = file("$buildDir/test-results/$name")
+            junitXml.outputLocation = layout.buildDirectory.dir("test-results/$name")
         }
 
         testLogging {

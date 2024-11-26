@@ -55,9 +55,9 @@ node {
     version = "20.4.0"
     distBaseUrl = "https://nodejs.org/dist"
     download = true
-    workDir = file("${project.buildDir}/nodejs")
-    npmWorkDir = file("${project.buildDir}/npm")
-    nodeProjectDir = file("${project.rootDir}/hermes-console")
+    workDir = layout.buildDirectory.dir("nodejs")
+    npmWorkDir = layout.buildDirectory.dir("npm")
+    nodeProjectDir = rootProject.layout.projectDirectory.dir("hermes-console")
 }
 
 tasks.named("yarnSetup") {

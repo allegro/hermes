@@ -48,7 +48,7 @@ dependencies {
     sbeClasspath(group = "uk.co.real-logic", name = "sbe-all", version = "1.31.1")
 }
 
-val generatedPath = "$buildDir/generated/java/"
+val generatedPath = layout.buildDirectory.dir("generated/java").get()
 
 tasks.register<JavaExec>("generateMaxRateSbeStubs") {
     description = "Generate SBE stubs for max-rate"
