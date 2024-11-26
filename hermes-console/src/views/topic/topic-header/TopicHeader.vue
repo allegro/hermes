@@ -18,6 +18,7 @@
   import type { Role } from '@/api/role';
   import type { TopicWithSchema } from '@/api/topic';
 
+  const TOPIC_RETRANSMISSION = 'topic';
   const favorites = useFavorites();
 
   const router = useRouter();
@@ -44,6 +45,7 @@
     endTimestamp: string,
   ) => {
     offlineRetransmission.retransmit({
+      type: TOPIC_RETRANSMISSION,
       sourceTopic: props.topic.name,
       targetTopic,
       startTimestamp,

@@ -18,7 +18,8 @@ import pl.allegro.tech.hermes.api.ConsumerGroup;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.MessageFiltersVerificationInput;
 import pl.allegro.tech.hermes.api.OAuthProvider;
-import pl.allegro.tech.hermes.api.OfflineRetransmissionRequest;
+import pl.allegro.tech.hermes.api.OfflineRetransmissionFromTopicRequest;
+import pl.allegro.tech.hermes.api.OfflineRetransmissionFromViewRequest;
 import pl.allegro.tech.hermes.api.OffsetRetransmissionDate;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -508,7 +509,12 @@ public class HermesTestClient {
   }
 
   public WebTestClient.ResponseSpec createOfflineRetransmissionTask(
-      OfflineRetransmissionRequest request) {
+      OfflineRetransmissionFromTopicRequest request) {
+    return managementTestClient.createOfflineRetransmissionTask(request);
+  }
+
+  public WebTestClient.ResponseSpec createOfflineRetransmissionTask(
+      OfflineRetransmissionFromViewRequest request) {
     return managementTestClient.createOfflineRetransmissionTask(request);
   }
 
