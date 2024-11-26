@@ -12,6 +12,7 @@ and configure other options in the Hermes Management configuration.
  detection.inactive-topics.whitelisted-qualified-topic-names | list of qualified topic names that will not be notified event if inactive  | []            
  detection.inactive-topics.leader-election-zookeeper-dc      | datacenter of Zookeeper used for leader election for the detection job     | dc            
  detection.inactive-topics.cron                              | cron expression for the detection job                                      | 0 0 8 * * *   
+ detection.inactive-topics.notifications-history-limit       | how many notification timestamps will be kept in history                   | 5             
 
 The detection job runs on a single instance of Hermes Management that is a
 leader based on the leader election Zookeeper instance.
