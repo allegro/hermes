@@ -1,10 +1,11 @@
 package pl.allegro.tech.hermes.management.domain.detection
 
 class InMemoryInactiveTopicsNotifier implements InactiveTopicsNotifier {
-    private Set<InactiveTopic> notifiedTopics = new HashSet<>();
+    private Set<InactiveTopic> notifiedTopics = new HashSet<>()
 
     @Override
-    NotificationResult notify(List<InactiveTopic> inactiveTopics) {
+    NotificationResult notify(List<InactiveTopicWithOwner> inactiveTopicsWithOwner) {
+        def inactiveTopics = inactiveTopicsWithOwner.stream().map(InactiveTopicWithOwner::topic).toList()
         notifiedTopics.addAll(inactiveTopics)
         Map<String, Boolean> result = new HashMap<>();
         inactiveTopics.stream().forEach { result.put(it.qualifiedTopicName(), true) }

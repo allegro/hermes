@@ -10,6 +10,8 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import pl.allegro.tech.hermes.api.OwnerId;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 
@@ -40,7 +42,8 @@ public class InactiveTopicsDetectionJob {
   }
 
   public void detectAndNotify() {
-    List<String> qualifiedTopicNames = topicService.listQualifiedTopicNames();
+    List<Topic> topics = topicService.getAllTopics();
+    List<String> qualifiedTopicNames = topics.stream().map(Topic::getQualifiedName).toList();
     List<InactiveTopic> historicalInactiveTopics = inactiveTopicsStorageService.getInactiveTopics();
     List<InactiveTopic> foundInactiveTopics =
         detectInactiveTopics(qualifiedTopicNames, historicalInactiveTopics);
@@ -52,7 +55,7 @@ public class InactiveTopicsDetectionJob {
     List<InactiveTopic> topicsToNotify = groupedByNeedOfNotification.getOrDefault(true, List.of());
     List<InactiveTopic> topicsToSkipNotification =
         groupedByNeedOfNotification.getOrDefault(false, List.of());
-    List<InactiveTopic> notifiedTopics = notify(topicsToNotify);
+    List<InactiveTopic> notifiedTopics = notify(enrichWithOwner(topicsToNotify, topics));
 
     saveInactiveTopics(notifiedTopics, topicsToSkipNotification);
   }
@@ -77,16 +80,30 @@ public class InactiveTopicsDetectionJob {
         .collect(Collectors.toMap(InactiveTopic::qualifiedTopicName, v -> v, (v1, v2) -> v1));
   }
 
-  private List<InactiveTopic> notify(List<InactiveTopic> inactiveTopics) {
+  private List<InactiveTopicWithOwner> enrichWithOwner(
+      List<InactiveTopic> inactiveTopics, List<Topic> topics) {
+    Map<String, OwnerId> ownerByTopicName = new HashMap<>();
+    topics.forEach(topic -> ownerByTopicName.put(topic.getQualifiedName(), topic.getOwner()));
+
+    return inactiveTopics.stream()
+        .map(
+            inactiveTopic ->
+                new InactiveTopicWithOwner(
+                    inactiveTopic, ownerByTopicName.get(inactiveTopic.qualifiedTopicName())))
+        .toList();
+  }
+
+  private List<InactiveTopic> notify(List<InactiveTopicWithOwner> inactiveTopics) {
     if (inactiveTopics.isEmpty()) {
       logger.info("No inactive topics to notify");
-      return inactiveTopics;
+      return List.of();
     } else if (notifier.isPresent()) {
       logger.info("Notifying {} inactive topics", inactiveTopics.size());
       NotificationResult result = notifier.get().notify(inactiveTopics);
       Instant now = clock.instant();
 
       return inactiveTopics.stream()
+          .map(InactiveTopicWithOwner::topic)
           .map(
               topic ->
                   result.isSuccess(topic.qualifiedTopicName())
@@ -95,7 +112,7 @@ public class InactiveTopicsDetectionJob {
           .toList();
     } else {
       logger.info("Skipping notification of {} inactive topics", inactiveTopics.size());
-      return inactiveTopics;
+      return inactiveTopics.stream().map(InactiveTopicWithOwner::topic).toList();
     }
   }
 

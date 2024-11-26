@@ -1,8 +1,9 @@
 package pl.allegro.tech.hermes.management.domain.detection
 
-
+import pl.allegro.tech.hermes.api.Topic
 import pl.allegro.tech.hermes.management.config.detection.InactiveTopicsDetectionProperties
 import pl.allegro.tech.hermes.management.domain.topic.TopicService
+import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder
 import spock.lang.Specification
 
 import java.time.Clock
@@ -50,12 +51,12 @@ class InactiveTopicsDetectionJobTest extends Specification {
         clockMock.instant() >> now
 
         and: "names of all topics"
-        topicServiceMock.listQualifiedTopicNames() >> [
-                "group.topic0",
-                "group.topic1",
-                "group.topic2",
-                "group.topic3",
-                "group.topic4",
+        topicServiceMock.getAllTopics() >> [
+                topic("group.topic0"),
+                topic("group.topic1"),
+                topic("group.topic2"),
+                topic("group.topic3"),
+                topic("group.topic4"),
         ]
 
         and: "historically saved inactive topics"
@@ -91,7 +92,7 @@ class InactiveTopicsDetectionJobTest extends Specification {
 
     def "should not notify if there are no inactive topics"() {
         given:
-        topicServiceMock.listQualifiedTopicNames() >> ["group.topic0"]
+        topicServiceMock.getAllTopics() >> [topic("group.topic0")]
         inactiveTopicsStorageServiceMock.getInactiveTopics() >> []
 
         and:
@@ -120,7 +121,7 @@ class InactiveTopicsDetectionJobTest extends Specification {
         )
 
         and:
-        topicServiceMock.listQualifiedTopicNames() >> ["group.topic0"]
+        topicServiceMock.getAllTopics() >> [topic("group.topic0")]
         inactiveTopicsStorageServiceMock.getInactiveTopics() >> []
 
         and:
@@ -152,7 +153,7 @@ class InactiveTopicsDetectionJobTest extends Specification {
         )
 
         and:
-        topicServiceMock.listQualifiedTopicNames() >> ["group.topic0", "group.topic1"]
+        topicServiceMock.getAllTopics() >> [topic("group.topic0"), topic("group.topic1")]
         inactiveTopicsStorageServiceMock.getInactiveTopics() >> []
         notifierMock.notify(_) >> new NotificationResult(["group.topic0": true, "group.topic1": false])
 
@@ -177,5 +178,9 @@ class InactiveTopicsDetectionJobTest extends Specification {
 
     private def mockLastPublishedMessageTimestamp(String topicName, Instant instant) {
         metricsRepositoryMock.getLastPublishedMessageTimestamp(fromQualifiedName(topicName)) >> Optional.ofNullable(instant)
+    }
+
+    private static Topic topic(String name) {
+        return TopicBuilder.topic(name).build();
     }
 }
