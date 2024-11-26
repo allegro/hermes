@@ -18,10 +18,12 @@ import pl.allegro.tech.hermes.api.ConsumerGroup;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
 import pl.allegro.tech.hermes.management.domain.retransmit.RetransmitCommand;
+import pl.allegro.tech.hermes.management.domain.subscription.commands.RemoveSubscriptionRepositoryCommand;
 import pl.allegro.tech.hermes.management.domain.topic.BrokerTopicManagement;
 import pl.allegro.tech.hermes.management.domain.topic.UnableToMoveOffsetsException;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.BrokersClusterService;
@@ -113,12 +115,18 @@ public class MultiDCAwareService {
     clusters.forEach(brokersClusterService -> brokersClusterService.removeTopicByName(topicName));
   }
 
+  public void removeSubscription(
+      TopicName topicName, String subscriptionName, RequestUser removedBy) {
+    multiDcExecutor.executeByUser(
+        new RemoveSubscriptionRepositoryCommand(topicName, subscriptionName), removedBy);
+  }
+
   public void createConsumerGroups(Topic topic, Subscription subscription) {
     clusters.forEach(clusterService -> clusterService.createConsumerGroup(topic, subscription));
   }
 
-  public void deleteConsumerGroups(Topic topic, Subscription subscription) {
-    clusters.forEach(clusterService -> clusterService.deleteConsumerGroup(topic, subscription));
+  public void deleteConsumerGroups(SubscriptionName subscriptionName) {
+    clusters.forEach(clusterService -> clusterService.deleteConsumerGroup(subscriptionName));
   }
 
   private void waitUntilOffsetsAreMoved(Topic topic, String subscriptionName) {

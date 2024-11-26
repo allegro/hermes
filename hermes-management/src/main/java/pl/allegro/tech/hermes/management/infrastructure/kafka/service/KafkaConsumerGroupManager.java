@@ -6,20 +6,24 @@ import static java.util.stream.Collectors.toSet;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.errors.GroupIdNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.management.config.kafka.KafkaProperties;
 import pl.allegro.tech.hermes.management.domain.subscription.ConsumerGroupManager;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.ConsumerGroupDeletionException;
 
 public class KafkaConsumerGroupManager implements ConsumerGroupManager {
 
@@ -88,14 +92,13 @@ public class KafkaConsumerGroupManager implements ConsumerGroupManager {
   }
 
   @Override
-  public void deleteConsumerGroup(Topic topic, Subscription subscription) {
+  public void deleteConsumerGroup(SubscriptionName subscriptionName)
+      throws ConsumerGroupDeletionException {
     logger.info(
-        "Deleting consumer group for subscription {}, cluster: {}",
-        subscription.getQualifiedName(),
-        clusterName);
+        "Deleting consumer group for subscription {}, cluster: {}", subscriptionName, clusterName);
 
     try {
-      ConsumerGroupId groupId = kafkaNamesMapper.toConsumerGroupId(subscription.getQualifiedName());
+      ConsumerGroupId groupId = kafkaNamesMapper.toConsumerGroupId(subscriptionName);
       kafkaAdminClient
           .deleteConsumerGroups(Collections.singletonList(groupId.asString()))
           .all()
@@ -103,14 +106,24 @@ public class KafkaConsumerGroupManager implements ConsumerGroupManager {
 
       logger.info(
           "Successfully deleted consumer group for subscription {}, cluster: {}",
-          subscription.getQualifiedName(),
+          subscriptionName,
           clusterName);
-    } catch (Exception e) {
+
+    } catch (ExecutionException | InterruptedException e) {
+      if (e.getCause() instanceof GroupIdNotFoundException) {
+        logger.info(
+            "Consumer group for subscription {} not found, cluster: {}",
+            subscriptionName,
+            clusterName);
+        return;
+      }
+
       logger.error(
           "Failed to delete consumer group for subscription {}, cluster: {}",
-          subscription.getQualifiedName(),
+          subscriptionName,
           clusterName,
           e);
+      throw new ConsumerGroupDeletionException(subscriptionName, e);
     }
   }
 }

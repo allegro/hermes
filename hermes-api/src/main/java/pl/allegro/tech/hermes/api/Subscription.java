@@ -531,6 +531,14 @@ public class Subscription implements Anonymizable {
     return "Subscription(" + getQualifiedName() + ")";
   }
 
+  public static SubscriptionName getSubscriptionNameFromString(String input) {
+    if (!input.startsWith("Subscription(") || !input.endsWith(")")) {
+      throw new IllegalArgumentException("Invalid input: " + input);
+    }
+    return SubscriptionName.fromString(
+        input.replaceFirst("^Subscription\\(", "").replaceFirst("\\)$", ""));
+  }
+
   public enum State {
     PENDING,
     ACTIVE,

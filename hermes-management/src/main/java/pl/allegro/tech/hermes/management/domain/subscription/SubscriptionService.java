@@ -191,10 +191,19 @@ public class SubscriptionService {
 
   public void removeSubscription(
       TopicName topicName, String subscriptionName, RequestUser removedBy) {
-    Topic topic = topicService.getTopicDetails(topicName);
-    Subscription subscription =
-        subscriptionRepository.getSubscriptionDetails(topicName, subscriptionName);
-    subscriptionRemover.removeSubscription(topic, subscription, removedBy);
+    subscriptionRemover.removeSubscription(topicName, subscriptionName, removedBy);
+  }
+
+  public void subscriptionTerminationCleanup(SubscriptionName subscriptionName) {
+    if (subscriptionRepository.subscriptionExists(
+        subscriptionName.getTopicName(), subscriptionName.getName())) {
+      logger.info(
+          "Aborting subscription termination cleanup for subscription {} as it still exists.",
+          subscriptionName);
+      return;
+    }
+
+    subscriptionRemover.cleanupAfterSubscription(subscriptionName);
   }
 
   public void updateSubscription(

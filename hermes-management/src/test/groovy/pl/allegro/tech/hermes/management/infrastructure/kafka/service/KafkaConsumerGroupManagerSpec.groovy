@@ -173,13 +173,13 @@ class KafkaConsumerGroupManagerSpec extends Specification {
         consumerGroupManager.createConsumerGroup(topic, subscriptionToDelete)
 
         when:
-        consumerGroupManager.deleteConsumerGroup(topic, subscriptionToDelete)
+        consumerGroupManager.deleteConsumerGroup(subscriptionToDelete.getQualifiedName())
 
         then:
         adminClient.listConsumerGroups().all().get().collect { it.groupId() } == [consumerGroupId.asString()]
 
         cleanup:
-        consumerGroupManager.deleteConsumerGroup(topic, subscription)
+        consumerGroupManager.deleteConsumerGroup(subscription.getQualifiedName())
         deleteKafkaTopic(kafkaTopicName)
     }
 
@@ -195,7 +195,7 @@ class KafkaConsumerGroupManagerSpec extends Specification {
         consumerGroupManager.createConsumerGroup(topic, subscription)
 
         when:
-        consumerGroupManager.deleteConsumerGroup(topic, createTestSubscription(topic, "test-subscription-to-delete"))
+        consumerGroupManager.deleteConsumerGroup(createTestSubscription(topic, "test-subscription-to-delete").getQualifiedName())
 
         then:
         noExceptionThrown()
@@ -213,7 +213,7 @@ class KafkaConsumerGroupManagerSpec extends Specification {
         Subscription subscription = createTestSubscription(topic, "test-subscription-to-delete")
 
         when:
-        consumerGroupManager.deleteConsumerGroup(topic, subscription)
+        consumerGroupManager.deleteConsumerGroup(subscription.getQualifiedName())
 
         then:
         noExceptionThrown()

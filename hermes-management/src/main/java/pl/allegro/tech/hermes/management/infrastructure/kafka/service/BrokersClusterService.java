@@ -147,8 +147,8 @@ public class BrokersClusterService {
     consumerGroupManager.createConsumerGroup(topic, subscription);
   }
 
-  public void deleteConsumerGroup(Topic topic, Subscription subscription) {
-    consumerGroupManager.deleteConsumerGroup(topic, subscription);
+  public void deleteConsumerGroup(SubscriptionName subscriptionName) {
+    consumerGroupManager.deleteConsumerGroup(subscriptionName);
   }
 
   public Optional<ConsumerGroup> describeConsumerGroup(Topic topic, String subscriptionName) {

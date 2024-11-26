@@ -122,14 +122,9 @@ public class SubscriptionHealthConfiguration {
   public SubscriptionRemover subscriptionRemover(
       Auditor auditor,
       MultiDCAwareService multiDCAwareService,
-      MultiDatacenterRepositoryCommandExecutor multiDatacenterRepositoryCommandExecutor,
       SubscriptionOwnerCache subscriptionOwnerCache,
       SubscriptionRepository subscriptionRepository) {
     return new SubscriptionRemover(
-        auditor,
-        multiDCAwareService,
-        multiDatacenterRepositoryCommandExecutor,
-        subscriptionOwnerCache,
-        subscriptionRepository);
+        auditor, multiDCAwareService, subscriptionOwnerCache, subscriptionRepository);
   }
 }
