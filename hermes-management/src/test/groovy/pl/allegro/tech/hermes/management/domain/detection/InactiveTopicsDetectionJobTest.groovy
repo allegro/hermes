@@ -25,7 +25,8 @@ class InactiveTopicsDetectionJobTest extends Specification {
             Duration.ofDays(7),
             Duration.ofDays(14),
             ["group.topic3"] as Set<String>,
-            "dc"
+            "dc",
+            5
     )
 
     InactiveTopicsDetectionService detectionService = new InactiveTopicsDetectionService(
@@ -39,6 +40,7 @@ class InactiveTopicsDetectionJobTest extends Specification {
             inactiveTopicsStorageServiceMock,
             detectionService,
             Optional.of(inactiveTopicsNotifier),
+            inactiveTopicsDetectionProperties,
             clockMock
     )
 
@@ -85,7 +87,7 @@ class InactiveTopicsDetectionJobTest extends Specification {
         and: "saved are all inactive topics with updated notification timestamps"
         1 * inactiveTopicsStorageServiceMock.markAsInactive([
                 new InactiveTopic("group.topic1", ago7days.toEpochMilli(), [now.toEpochMilli()], false),
-                new InactiveTopic("group.topic4", ago21days.toEpochMilli(), [ago14days.toEpochMilli(), now.toEpochMilli()], false),
+                new InactiveTopic("group.topic4", ago21days.toEpochMilli(), [now.toEpochMilli(), ago14days.toEpochMilli()], false),
                 new InactiveTopic("group.topic3", ago7days.toEpochMilli(), [], true)
         ])
     }
@@ -117,6 +119,7 @@ class InactiveTopicsDetectionJobTest extends Specification {
                 inactiveTopicsStorageServiceMock,
                 detectionService,
                 Optional.empty(),
+                inactiveTopicsDetectionProperties,
                 clockMock
         )
 
@@ -149,6 +152,7 @@ class InactiveTopicsDetectionJobTest extends Specification {
                 inactiveTopicsStorageServiceMock,
                 detectionService,
                 Optional.of(notifierMock),
+                inactiveTopicsDetectionProperties,
                 clockMock
         )
 

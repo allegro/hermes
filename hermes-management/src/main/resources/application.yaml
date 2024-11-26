@@ -83,3 +83,4 @@ detection:
     whitelisted-qualified-topic-names: []
     leader-election-zookeeper-dc: dc
     cron: "0 0 8 * * *"
+    notifications-history-limit: 5

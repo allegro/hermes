@@ -18,6 +18,19 @@ public record InactiveTopic(
         this.qualifiedTopicName,
         this.lastPublishedMessageTimestampMs,
         newNotificationTimestampsMs,
-        whitelisted);
+        this.whitelisted);
+  }
+
+  InactiveTopic limitNotificationsHistory(int limit) {
+    List<Long> newNotificationTimestampsMs =
+        notificationTimestampsMs.stream()
+            .sorted((a, b) -> Long.compare(b, a))
+            .limit(limit)
+            .toList();
+    return new InactiveTopic(
+        this.qualifiedTopicName,
+        this.lastPublishedMessageTimestampMs,
+        newNotificationTimestampsMs,
+        this.whitelisted);
   }
 }

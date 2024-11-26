@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.management.config.detection.InactiveTopicsDetectionProperties;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 
 @Component
@@ -21,6 +22,7 @@ public class InactiveTopicsDetectionJob {
   private final InactiveTopicsStorageService inactiveTopicsStorageService;
   private final InactiveTopicsDetectionService inactiveTopicsDetectionService;
   private final Optional<InactiveTopicsNotifier> notifier;
+  private final InactiveTopicsDetectionProperties properties;
   private final Clock clock;
 
   private static final Logger logger = LoggerFactory.getLogger(InactiveTopicsDetectionJob.class);
@@ -30,10 +32,12 @@ public class InactiveTopicsDetectionJob {
       InactiveTopicsStorageService inactiveTopicsStorageService,
       InactiveTopicsDetectionService inactiveTopicsDetectionService,
       Optional<InactiveTopicsNotifier> notifier,
+      InactiveTopicsDetectionProperties properties,
       Clock clock) {
     this.topicService = topicService;
     this.inactiveTopicsStorageService = inactiveTopicsStorageService;
     this.inactiveTopicsDetectionService = inactiveTopicsDetectionService;
+    this.properties = properties;
     this.clock = clock;
     if (notifier.isEmpty()) {
       logger.info("Inactive topics notifier bean is absent");
@@ -118,7 +122,10 @@ public class InactiveTopicsDetectionJob {
 
   private void saveInactiveTopics(
       List<InactiveTopic> notifiedTopics, List<InactiveTopic> skippedNotificationTopics) {
-    inactiveTopicsStorageService.markAsInactive(
-        Stream.concat(notifiedTopics.stream(), skippedNotificationTopics.stream()).toList());
+    List<InactiveTopic> topicsToSave =
+        Stream.concat(notifiedTopics.stream(), skippedNotificationTopics.stream())
+            .map(topic -> topic.limitNotificationsHistory(properties.notificationsHistoryLimit()))
+            .toList();
+    inactiveTopicsStorageService.markAsInactive(topicsToSave);
   }
 }

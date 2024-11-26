@@ -9,4 +9,5 @@ public record InactiveTopicsDetectionProperties(
     Duration inactivityThreshold,
     Duration nextNotificationThreshold,
     Set<String> whitelistedQualifiedTopicNames,
-    String leaderElectionZookeeperDc) {}
+    String leaderElectionZookeeperDc,
+    int notificationsHistoryLimit) {}
