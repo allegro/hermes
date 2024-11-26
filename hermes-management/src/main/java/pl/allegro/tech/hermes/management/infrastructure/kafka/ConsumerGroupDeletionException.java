@@ -1,11 +1,11 @@
 package pl.allegro.tech.hermes.management.infrastructure.kafka;
 
+import static java.lang.String.format;
+import static pl.allegro.tech.hermes.api.ErrorCode.CONSUMER_GROUP_DELETION_ERROR;
+
 import pl.allegro.tech.hermes.api.ErrorCode;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.management.domain.ManagementException;
-
-import static java.lang.String.format;
-import static pl.allegro.tech.hermes.api.ErrorCode.CONSUMER_GROUP_DELETION_ERROR;
 
 public class ConsumerGroupDeletionException extends ManagementException {
 
