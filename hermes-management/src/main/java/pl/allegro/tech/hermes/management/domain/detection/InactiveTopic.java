@@ -6,10 +6,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public record InactiveTopic(
-    @JsonProperty String qualifiedTopicName,
-    @JsonProperty long lastPublishedMessageTimestampMs,
-    @JsonProperty List<Long> notificationTimestampsMs,
-    @JsonProperty boolean whitelisted) {
+    @JsonProperty("topic") String qualifiedTopicName,
+    @JsonProperty("lastPublishedTsMs") long lastPublishedMessageTimestampMs,
+    @JsonProperty("notificationTsMs") List<Long> notificationTimestampsMs,
+    @JsonProperty("whitelisted") boolean whitelisted) {
 
   InactiveTopic notificationSent(Instant timestamp) {
     List<Long> newNotificationTimestampsMs = new ArrayList<>(notificationTimestampsMs);
