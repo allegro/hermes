@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.infrastructure.zookeeper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -65,8 +66,8 @@ public class ZookeeperGroupRepository extends ZookeeperBasedRepository implement
   }
 
   /**
-   * Atomic removal of <code>group</code> and <code>group/topics</code> nodes is required to prevent
-   * lengthy loop during removal, see: {@link
+   * Atomic removal of <code>group</code>, <code>group/topics</code> and <code>group/deletion_time
+   * </code> nodes is required to prevent lengthy loop during removal, see: {@link
    * pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperTopicRepository#removeTopic(TopicName)}.
    */
   @Override
@@ -76,6 +77,16 @@ public class ZookeeperGroupRepository extends ZookeeperBasedRepository implement
 
     logger.info("Removing group: {}", groupName);
     List<String> pathsToDelete = List.of(paths.topicsPath(groupName), paths.groupPath(groupName));
+    String topicDeletionTimePath = paths.groupTopicDeletionTimePath(groupName);
+    if (pathExists(topicDeletionTimePath)) {
+      // topicDeletionTimePath can contain a list of previously deleted topics, need to delete those
+      // first
+      List<String> pathsToDeleteWithDeletionTime =
+          new ArrayList<String>(childrenPathsOf(topicDeletionTimePath));
+      pathsToDeleteWithDeletionTime.add(topicDeletionTimePath);
+      pathsToDeleteWithDeletionTime.addAll(pathsToDelete);
+      pathsToDelete = pathsToDeleteWithDeletionTime;
+    }
     try {
       deleteInTransaction(pathsToDelete);
     } catch (Exception e) {
@@ -84,7 +95,8 @@ public class ZookeeperGroupRepository extends ZookeeperBasedRepository implement
   }
 
   private void ensureGroupIsEmpty(String groupName) {
-    if (!childrenOf(paths.topicsPath(groupName)).isEmpty()) {
+    String topicDeletionTimePath = paths.groupTopicDeletionTimePath(groupName);
+    if (!childrenOf(paths.topicsPath(groupName)).stream().collect(Collectors.toList()).isEmpty()) {
       throw new GroupNotEmptyException(groupName);
     }
   }
