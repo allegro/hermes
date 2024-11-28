@@ -9,18 +9,16 @@ import pl.allegro.tech.hermes.api.OAuthProvider;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicWithSchema;
+import pl.allegro.tech.hermes.test.helper.environment.FrontendNotification;
 
 public class HermesInitHelper {
 
   private final ManagementTestClient managementTestClient;
+  private final FrontendNotification frontendNotification;
 
-  public HermesInitHelper(int managementPort) {
+  public HermesInitHelper(int managementPort, FrontendNotification frontendNotification) {
     managementTestClient = new ManagementTestClient(managementPort);
-  }
-
-  public HermesInitHelper(int managementPort, String defaultHeaderName, String defaultHeaderValue) {
-    managementTestClient =
-        new ManagementTestClient(managementPort, defaultHeaderName, defaultHeaderValue);
+    this.frontendNotification = frontendNotification;
   }
 
   public Topic createTopic(Topic topic) {
@@ -29,6 +27,7 @@ public class HermesInitHelper {
         .createTopic(TopicWithSchema.topicWithSchema(topic, null))
         .expectStatus()
         .is2xxSuccessful();
+    //    frontendNotification.notifyTopicCreated(topic);
     waitUntilTopicCreated(topic.getQualifiedName());
     return topic;
   }
@@ -36,8 +35,17 @@ public class HermesInitHelper {
   public Topic createTopicWithSchema(TopicWithSchema topic) {
     createGroupIfMissing(Group.from(topic.getName().getGroupName()));
     managementTestClient.createTopic(topic).expectStatus().is2xxSuccessful();
+    //    frontendNotification.notifyTopicCreated(topic.getTopic());
     waitUntilTopicCreated(topic.getQualifiedName());
     return topic;
+  }
+
+  public void notifyFrontendTopicBlacklisted(Topic topic) {
+    //    frontendNotification.notifyTopicBlacklisted(topic);
+  }
+
+  public void notifyFrontendTopicUnblacklisted(Topic topic) {
+    //    frontendNotification.notifyTopicUnblacklisted(topic);
   }
 
   public Group createGroupIfMissing(Group group) {

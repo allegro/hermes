@@ -8,7 +8,6 @@ import pl.allegro.tech.hermes.test.helper.client.integration.HermesInitHelper;
 public class HermesManagementExtension implements BeforeAllCallback, AfterAllCallback {
 
   private final HermesManagementTestApp management;
-  private HermesInitHelper initHelper;
 
   public HermesManagementExtension(InfrastructureExtension infra) {
     management =
@@ -18,7 +17,6 @@ public class HermesManagementExtension implements BeforeAllCallback, AfterAllCal
   @Override
   public void beforeAll(ExtensionContext context) {
     management.start();
-    initHelper = new HermesInitHelper(management.getPort());
   }
 
   @Override
@@ -26,7 +24,7 @@ public class HermesManagementExtension implements BeforeAllCallback, AfterAllCal
     management.stop();
   }
 
-  public HermesInitHelper initHelper() {
-    return initHelper;
+  public HermesInitHelper initHelper(HermesFrontendTestApp frontendTestApp) {
+    return new HermesInitHelper(management.getPort(), frontendTestApp);
   }
 }

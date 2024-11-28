@@ -8,9 +8,9 @@ import java.util.concurrent.TimeUnit;
 import org.apache.curator.framework.CuratorFramework;
 import pl.allegro.tech.hermes.common.cache.queue.LinkedHashSetBlockingQueue;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.cache.ModelAwareZookeeperNotifyingCache;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.cache.PathDepthAwareZookeeperCallbackRegistrar;
 
-public class ModelAwareZookeeperNotifyingCacheFactory {
+public class ZookeeperCallbackRegistrarFactory {
 
   private final CuratorFramework curator;
 
@@ -18,28 +18,32 @@ public class ModelAwareZookeeperNotifyingCacheFactory {
 
   private final ZookeeperParameters zookeeperParameters;
 
-  public ModelAwareZookeeperNotifyingCacheFactory(
+  private final String module;
+
+  public ZookeeperCallbackRegistrarFactory(
       CuratorFramework curator,
-      MetricsFacade metricaFacade,
-      ZookeeperParameters zookeeperParameters) {
+      MetricsFacade metricsFacade,
+      ZookeeperParameters zookeeperParameters,
+      String module) {
     this.curator = curator;
-    this.metricsFacade = metricaFacade;
+    this.metricsFacade = metricsFacade;
     this.zookeeperParameters = zookeeperParameters;
+    this.module = module;
   }
 
-  public ModelAwareZookeeperNotifyingCache provide() {
+  public PathDepthAwareZookeeperCallbackRegistrar provide() {
     String rootPath = zookeeperParameters.getRoot();
     ExecutorService executor =
         createExecutor(rootPath, zookeeperParameters.getProcessingThreadPoolSize());
-    ModelAwareZookeeperNotifyingCache cache =
-        new ModelAwareZookeeperNotifyingCache(curator, executor, rootPath);
+    PathDepthAwareZookeeperCallbackRegistrar callbackRegistrar =
+        new PathDepthAwareZookeeperCallbackRegistrar(curator, executor, rootPath, module);
     try {
-      cache.start();
+      callbackRegistrar.start();
     } catch (Exception e) {
       throw new IllegalStateException(
-          "Unable to start Zookeeper cache for root path " + rootPath, e);
+          "Unable to start Zookeeper callbackRegistrar for root path " + rootPath, e);
     }
-    return cache;
+    return callbackRegistrar;
   }
 
   private ExecutorService createExecutor(String rootPath, int processingThreadPoolSize) {
