@@ -12,12 +12,7 @@ import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.curator.framework.CuratorFramework;
-<<<<<<< HEAD
-import org.apache.curator.framework.api.transaction.CuratorTransaction;
-import org.apache.curator.framework.api.transaction.CuratorTransactionFinal;
-=======
 import org.apache.curator.framework.api.transaction.CuratorOp;
->>>>>>> aff78245e211d9296063afa4e67af3622b1badfe
 import org.apache.curator.utils.ZKPaths;
 import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
@@ -178,34 +173,39 @@ public abstract class ZookeeperBasedRepository {
       throw new InternalProcessingException("Attempting to remove empty set of paths from ZK");
     }
     ensureConnected();
-    List<CuratorOp> operations = new ArrayList<>(paths.size());
-    for (String path : paths) {
-      operations.add(zookeeper.transactionOp().delete().forPath(path));
-    }
+    List<CuratorOp> operations = deleteOpsForPaths(paths);
     zookeeper.transaction().forOperations(operations);
   }
 
   protected void deleteAndCreateInTransaction(List<String> paths, String path, Object value)
       throws Exception {
     ensureConnected();
-    CuratorTransactionFinal transaction = addPathsToDelete(zookeeper.inTransaction(), paths);
-    transaction.create().forPath(path, mapper.writeValueAsBytes(value)).and().commit();
+    List<CuratorOp> operations = deleteOpsForPaths(paths);
+    operations.add(
+        zookeeper.transactionOp().create().forPath(path, mapper.writeValueAsBytes(value)));
+    zookeeper.transaction().forOperations(operations);
   }
 
   protected void deleteAndCreateInTransaction(
-      List<String> pathsToDelete, List<String> paths, String path, Object value) throws Exception {
+      List<String> pathsToDelete, List<String> pathsToCreate, String path, Object value)
+      throws Exception {
     ensureConnected();
-    CuratorTransactionFinal transaction =
-        addPathsToDelete(zookeeper.inTransaction(), pathsToDelete);
-    transaction = addPathsToCreate(transaction, paths);
-    transaction.create().forPath(path, mapper.writeValueAsBytes(value)).and().commit();
+    List<CuratorOp> operations = deleteOpsForPaths(pathsToDelete);
+    for (String pathToCreate : pathsToCreate) {
+      operations.add(zookeeper.transactionOp().create().forPath(pathToCreate));
+    }
+    operations.add(
+        zookeeper.transactionOp().create().forPath(path, mapper.writeValueAsBytes(value)));
+    zookeeper.transaction().forOperations(operations);
   }
 
   protected void deleteAndOverwriteInTransaction(List<String> paths, String path, Object value)
       throws Exception {
     ensureConnected();
-    CuratorTransactionFinal transaction = addPathsToDelete(zookeeper.inTransaction(), paths);
-    transaction.setData().forPath(path, mapper.writeValueAsBytes(value)).and().commit();
+    List<CuratorOp> operations = deleteOpsForPaths(paths);
+    operations.add(
+        zookeeper.transactionOp().setData().forPath(path, mapper.writeValueAsBytes(value)));
+    zookeeper.transaction().forOperations(operations);
   }
 
   protected void create(String path, Object value) throws Exception {
@@ -233,23 +233,11 @@ public abstract class ZookeeperBasedRepository {
     T read(byte[] data) throws IOException;
   }
 
-  private CuratorTransactionFinal addPathsToDelete(
-      CuratorTransaction transaction, List<String> paths) throws Exception {
-    CuratorTransactionFinal transactionWithDelete =
-        transaction.delete().forPath(paths.get(0)).and();
-    for (int i = 1; i < paths.size(); i++) {
-      transaction = transaction.delete().forPath(paths.get(i)).and();
+  private List<CuratorOp> deleteOpsForPaths(List<String> paths) throws Exception {
+    List<CuratorOp> deleteOps = new ArrayList<>(paths.size());
+    for (String path : paths) {
+      deleteOps.add(zookeeper.transactionOp().delete().forPath(path));
     }
-    return transactionWithDelete;
-  }
-
-  private CuratorTransactionFinal addPathsToCreate(
-      CuratorTransaction transaction, List<String> paths) throws Exception {
-    CuratorTransactionFinal transactionWithCreate =
-        transaction.create().forPath(paths.get(0)).and();
-    for (int i = 1; i < paths.size(); i++) {
-      transaction = transaction.create().forPath(paths.get(i)).and();
-    }
-    return transactionWithCreate;
+    return deleteOps;
   }
 }
