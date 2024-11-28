@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.frontend.config;
 
-import io.micrometer.prometheus.PrometheusMeterRegistry;
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
 import io.undertow.server.HttpHandler;
 import java.util.Optional;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
