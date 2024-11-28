@@ -20,7 +20,7 @@ import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId
 import pl.allegro.tech.hermes.common.kafka.JsonToAvroMigrationKafkaNamesMapper
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper
 import pl.allegro.tech.hermes.management.config.kafka.KafkaProperties
-import pl.allegro.tech.hermes.management.domain.subscription.ConsumerGroupManager
+import pl.allegro.tech.hermes.management.domain.subscription.consumergroup.ConsumerGroupManager
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder
 import pl.allegro.tech.hermes.test.helper.containers.ImageTags
 import spock.lang.Shared

@@ -74,3 +74,6 @@ console:
   subscription:
     showHeadersFilter: false
     showFixedHeaders: false
+
+consumer-group-clean-up:
+  enabled: true
