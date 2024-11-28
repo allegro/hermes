@@ -581,7 +581,17 @@
       "title": "hermes console",
       "contactLink": "https://google.com",
       "environmentName": "LOCAL",
-      "criticalEnvironment": false
+      "criticalEnvironment": false,
+      "knownEnvironments": [
+        {
+          "name": "local",
+          "url": "localhost:5173"
+        },
+        {
+          "name": "also-local",
+          "url": "127.0.0.1:5173"
+        }
+      ]
     },
     "dashboard": {
       "metrics": "http://localhost:8082",
@@ -662,7 +672,8 @@
         }
       ],
       "offlineRetransmissionEnabled": true,
-      "offlineRetransmissionDescription": "Offline retransmission"
+      "offlineRetransmissionDescription": "Offline retransmission",
+      "offlineRetransmissionFromViewDocsUrl": "https://hermes-pubsub.rtfd.org"
     },
     "subscription": {
       "endpointAddressResolverMetadata": {

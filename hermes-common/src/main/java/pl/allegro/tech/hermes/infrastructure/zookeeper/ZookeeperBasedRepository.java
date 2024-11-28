@@ -12,8 +12,12 @@ import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.curator.framework.CuratorFramework;
+<<<<<<< HEAD
 import org.apache.curator.framework.api.transaction.CuratorTransaction;
 import org.apache.curator.framework.api.transaction.CuratorTransactionFinal;
+=======
+import org.apache.curator.framework.api.transaction.CuratorOp;
+>>>>>>> aff78245e211d9296063afa4e67af3622b1badfe
 import org.apache.curator.utils.ZKPaths;
 import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
@@ -163,14 +167,10 @@ public abstract class ZookeeperBasedRepository {
   protected void createInTransaction(String path, Object value, String childPath) throws Exception {
     ensureConnected();
     zookeeper
-        .inTransaction()
-        .create()
-        .forPath(path, mapper.writeValueAsBytes(value))
-        .and()
-        .create()
-        .forPath(childPath)
-        .and()
-        .commit();
+        .transaction()
+        .forOperations(
+            zookeeper.transactionOp().create().forPath(path, mapper.writeValueAsBytes(value)),
+            zookeeper.transactionOp().create().forPath(childPath));
   }
 
   protected void deleteInTransaction(List<String> paths) throws Exception {
@@ -178,7 +178,11 @@ public abstract class ZookeeperBasedRepository {
       throw new InternalProcessingException("Attempting to remove empty set of paths from ZK");
     }
     ensureConnected();
-    addPathsToDelete(zookeeper.inTransaction(), paths).commit();
+    List<CuratorOp> operations = new ArrayList<>(paths.size());
+    for (String path : paths) {
+      operations.add(zookeeper.transactionOp().delete().forPath(path));
+    }
+    zookeeper.transaction().forOperations(operations);
   }
 
   protected void deleteAndCreateInTransaction(List<String> paths, String path, Object value)

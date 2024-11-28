@@ -146,7 +146,7 @@ public class FrontendElasticsearchLogRepositoryTest extends AbstractLogRepositor
                       .setQuery(query)
                       .execute()
                       .get();
-              return response.getHits().getTotalHits() == 1;
+              return response.getHits().getTotalHits().value == 1;
             });
   }
 }
