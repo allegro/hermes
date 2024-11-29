@@ -98,24 +98,24 @@ allprojects {
     }
 
     dependencies {
-        implementation("org.slf4j:slf4j-api:2.0.4")
-        implementation("org.apache.commons:commons-lang3:3.14.0")
+        implementation(rootProject.libs.commons.lang3)
+        implementation(rootProject.libs.slf4j.api)
 
         // Allure Spock adapter
         testImplementation(platform(rootProject.libs.allure.bom))
-        testImplementation("io.qameta.allure:allure-spock2")
-        testImplementation("io.qameta.allure:allure-junit-platform")
+        testImplementation(rootProject.libs.allure.junit.platform)
+        testImplementation(rootProject.libs.allure.spock2)
 
         // Spock framework
         testImplementation(platform(rootProject.libs.spock.bom))
-        testImplementation("org.spockframework:spock-core")
+        testImplementation(rootProject.libs.spock.core)
 
-        testImplementation("junit:junit:4.11")
-        testImplementation("com.tngtech.java:junit-dataprovider:1.10.0")
-        testImplementation("pl.pragmatists:JUnitParams:1.0.2")
-        testImplementation("org.mockito:mockito-core:5.11.0")
         testImplementation(rootProject.libs.assertj.core)
-        testImplementation("org.awaitility:awaitility:4.2.1")
+        testImplementation(rootProject.libs.awaitility)
+        testImplementation(rootProject.libs.junit)
+        testImplementation(rootProject.libs.junit.dataprovider)
+        testImplementation(rootProject.libs.junit.params)
+        testImplementation(rootProject.libs.mockito.core)
 
         annotationProcessor(rootProject.libs.spring.boot.configuration.processor)
     }
@@ -197,7 +197,7 @@ subprojects {
         exclude(group = "log4j", module = "log4j")
 
         resolutionStrategy {
-            force("org.jboss.logging:jboss-logging:3.2.1.Final")
+            force("org.jboss.logging:jboss-logging:${rootProject.libs.versions.jboss.logging.get()}")
             force("com.google.guava:guava:${rootProject.libs.versions.guava.get()}")
             force("com.fasterxml.jackson.core:jackson-databind:${rootProject.libs.versions.jackson.get()}")
             force("com.fasterxml.jackson.core:jackson-annotations:${rootProject.libs.versions.jackson.get()}")

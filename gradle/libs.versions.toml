@@ -2,7 +2,9 @@
 allure = "2.24.0"
 assertj = "3.25.3"
 avro = "1.11.3"
+awaitility = "4.2.1"
 axion-release = "1.18.15"
+commons-lang3 = "3.14.0"
 curator = "5.4.0"
 dropwizard_metrics = "4.2.25"
 failsafe = "2.4.4"
@@ -15,16 +17,22 @@ jakarta-annotation-api = "3.0.0"
 jakarta-ws-rs-api = "3.1.0"
 jakarta-xml-bind-api = "4.0.0"
 jaxb = "4.0.5"
+jboss-logging = "3.2.1.Final"
 jersey = "3.1.6"
 jetty = "12.0.8"
 jmh = "0.7.2"
 json2avro = "0.2.14"
+junit = "4.11"
+junit-dataprovider = "1.10.0"
+junit-params = "1.0.2"
 junit_jupiter = "5.10.2"
 kafka = "2.8.2"
 micrometer_metrics = "1.12.5"
+mockito = "5.11.0"
 node-gradle = "7.0.2"
 okhttp = "3.9.1" # TODO: newest version requires subject alternative name in a certificate during host verification current test cert does not have one
 publish-plugin = "1.0.0"
+slf4j-api = "2.0.4"
 spock = "2.4-M4-groovy-4.0"
 spring = "3.2.4"
 spring_web = "6.1.6"
@@ -34,8 +42,12 @@ wiremock = "3.9.0"
 
 [libraries]
 allure-bom = { group = "io.qameta.allure", name = "allure-bom", version.ref = "allure" }
+allure-junit-platform = { group = "io.qameta.allure", name = "allure-junit-platform" }
+allure-spock2 = { group = "io.qameta.allure", name = "allure-spock2" }
 assertj-core = { group = "org.assertj", name = "assertj-core", version.ref = "assertj" }
 avro = { group = "org.apache.avro", name = "avro", version.ref = "avro" }
+awaitility = { group = "org.awaitility", name = "awaitility", version.ref = "awaitility" }
+commons-lang3 = { group = "org.apache.commons", name = "commons-lang3", version.ref = "commons-lang3" }
 curator-client = { group = "org.apache.curator", name = "curator-client", version.ref = "curator" }
 curator-recipes = { group = "org.apache.curator", name = "curator-recipes", version.ref = "curator" }
 curator-test = { group = "org.apache.curator", name = "curator-test", version.ref = "curator" }
@@ -61,14 +73,19 @@ jersey-mvc-freemarker = { group = "org.glassfish.jersey.ext", name = "jersey-mvc
 jetty-alpn-java-client = { group = "org.eclipse.jetty", name = "jetty-alpn-java-client", version.ref = "jetty" }
 jetty-http2-client-transport = { group = "org.eclipse.jetty.http2", name = "jetty-http2-client-transport", version.ref = "jetty" }
 json2avro-converter = { group = "tech.allegro.schema.json2avro", name = "converter", version.ref = "json2avro" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+junit-dataprovider = { group = "com.tngtech.java", name = "junit-dataprovider", version.ref = "junit-dataprovider" }
 junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junit_jupiter" }
 junit-jupiter-api = { group = "org.junit.jupiter", name = "junit-jupiter-api", version.ref = "junit_jupiter" }
+junit-params = { group = "pl.pragmatists", name = "JUnitParams", version.ref = "junit-params" }
 junit-vintage-engine = { group = "org.junit.vintage", name = "junit-vintage-engine", version.ref = "junit_jupiter" }
 kafka-clients = { group = "org.apache.kafka", name = "kafka-clients", version.ref = "kafka" }
 metrics-core = { group = "io.dropwizard.metrics", name = "metrics-core", version.ref = "dropwizard_metrics" }
 micrometer-core = { group = "io.micrometer", name = "micrometer-core", version.ref = "micrometer_metrics" }
 micrometer-registry-prometheus = { group = "io.micrometer", name = "micrometer-registry-prometheus", version.ref = "micrometer_metrics" }
+mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
+slf4j-api = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j-api" }
 spock-bom = { group = "org.spockframework", name = "spock-bom", version.ref = "spock" }
 spock-core = { group = "org.spockframework", name = "spock-core", version.ref = "spock" }
 spock-junit4 = { group = "org.spockframework", name = "spock-junit4", version.ref = "spock" }
