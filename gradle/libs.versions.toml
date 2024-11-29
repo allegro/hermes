@@ -12,15 +12,19 @@ groovy = "4.0.21"
 guava = "33.1.0-jre"
 handy-uri-templates = "2.1.8"
 hibernate-validator = "8.0.1.Final"
+http-async-client = "4.1.5"
 jackson = "2.17.0"
 jakarta-annotation-api = "3.0.0"
+jakarta-servlet-api = "6.0.0"
 jakarta-ws-rs-api = "3.1.0"
 jakarta-xml-bind-api = "4.0.0"
 jaxb = "4.0.5"
 jboss-logging = "3.2.1.Final"
 jersey = "3.1.6"
 jetty = "12.0.8"
-jmh = "0.7.2"
+jmh = "1.37"
+jmh-plugin = "0.7.2"
+json-path = "2.9.0"
 json2avro = "0.2.14"
 junit = "4.11"
 junit-dataprovider = "1.10.0"
@@ -32,6 +36,8 @@ mockito = "5.11.0"
 node-gradle = "7.0.2"
 okhttp = "3.9.1" # TODO: newest version requires subject alternative name in a certificate during host verification current test cert does not have one
 publish-plugin = "1.0.0"
+reactor = "3.6.5"
+reactor-netty = "1.1.18"
 slf4j-api = "2.0.4"
 spock = "2.4-M4-groovy-4.0"
 spring = "3.2.4"
@@ -56,11 +62,13 @@ groovy-json = { group = "org.apache.groovy", name = "groovy-json", version.ref =
 guava = { group = "com.google.guava", name = "guava", version.ref = "guava" }
 handy-uri-templates = { group = "com.damnhandy", name = "handy-uri-templates", version.ref = "handy-uri-templates" }
 hibernate-validator = { group = "org.hibernate.validator", name = "hibernate-validator", version.ref = "hibernate-validator" }
+http-async-client = { group = "org.apache.httpcomponents", name = "httpasyncclient", version.ref = "http-async-client" }
 jackson-annotations = { group = "com.fasterxml.jackson.core", name = "jackson-annotations", version.ref = "jackson" }
 jackson-databind = { group = "com.fasterxml.jackson.core", name = "jackson-databind", version.ref = "jackson" }
 jackson-datatype-jsr310 = { group = "com.fasterxml.jackson.datatype", name = "jackson-datatype-jsr310", version.ref = "jackson" }
 jackson-jakarta-rs-json-provider = { group = "com.fasterxml.jackson.jakarta.rs", name = "jackson-jakarta-rs-json-provider", version.ref = "jackson" }
 jakarta-annotation-api = { group = "jakarta.annotation", name = "jakarta.annotation-api", version.ref = "jakarta-annotation-api" }
+jakarta-servlet-api = { group = "jakarta.servlet", name = "jakarta.servlet-api", version.ref = "jakarta-servlet-api" }
 jakarta-ws-rs-api = { group = "jakarta.ws.rs", name = "jakarta.ws.rs-api", version.ref = "jakarta-ws-rs-api" }
 jakarta-xml-bind-api = { group = "jakarta.xml.bind", name = "jakarta.xml.bind-api", version.ref = "jakarta-xml-bind-api" }
 jaxb-core = { group = "com.sun.xml.bind", name = "jaxb-core", version.ref = "jaxb" }
@@ -72,6 +80,9 @@ jersey-media-json-jackson = { group = "org.glassfish.jersey.media", name = "jers
 jersey-mvc-freemarker = { group = "org.glassfish.jersey.ext", name = "jersey-mvc-freemarker", version.ref = "jersey" }
 jetty-alpn-java-client = { group = "org.eclipse.jetty", name = "jetty-alpn-java-client", version.ref = "jetty" }
 jetty-http2-client-transport = { group = "org.eclipse.jetty.http2", name = "jetty-http2-client-transport", version.ref = "jetty" }
+jmh-core = { group = "org.openjdk.jmh", name = "jmh-core", version.ref = "jmh" }
+jmh-generator-annprocess = { group = "org.openjdk.jmh", name = "jmh-generator-annprocess", version.ref = "jmh" }
+json-path = { group = "com.jayway.jsonpath", name = "json-path", version.ref = "json-path" }
 json2avro-converter = { group = "tech.allegro.schema.json2avro", name = "converter", version.ref = "json2avro" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 junit-dataprovider = { group = "com.tngtech.java", name = "junit-dataprovider", version.ref = "junit-dataprovider" }
@@ -85,6 +96,9 @@ micrometer-core = { group = "io.micrometer", name = "micrometer-core", version.r
 micrometer-registry-prometheus = { group = "io.micrometer", name = "micrometer-registry-prometheus", version.ref = "micrometer_metrics" }
 mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
+reactor-core = { group = "io.projectreactor", name = "reactor-core", version.ref = "reactor" }
+reactor-netty = { group = "io.projectreactor.netty", name = "reactor-netty", version.ref = "reactor-netty" }
+reactor-test = { group = "io.projectreactor", name = "reactor-test", version.ref = "reactor" }
 slf4j-api = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j-api" }
 spock-bom = { group = "org.spockframework", name = "spock-bom", version.ref = "spock" }
 spock-core = { group = "org.spockframework", name = "spock-core", version.ref = "spock" }
@@ -106,9 +120,10 @@ undertow-core = { group = "io.undertow", name = "undertow-core", version.ref = "
 wiremock-standalone = { group = "org.wiremock", name = "wiremock-standalone", version.ref = "wiremock" }
 
 [bundles]
+jmh = ["jmh-core", "jmh-generator-annprocess"]
 
 [plugins]
 axion-release = { id = "pl.allegro.tech.build.axion-release", version.ref = "axion-release" }
-jmh = { id = "me.champeau.jmh", version.ref = "jmh" }
+jmh = { id = "me.champeau.jmh", version.ref = "jmh-plugin" }
 node-gradle = { id = "com.github.node-gradle.node", version.ref = "node-gradle" }
 publish-plugin = { id = "io.github.gradle-nexus.publish-plugin", version.ref = "publish-plugin" }

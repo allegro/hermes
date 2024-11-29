@@ -12,21 +12,21 @@ dependencies {
 
     implementation(libs.failsafe)
 
-    api(group = "io.projectreactor", name = "reactor-core", version = "3.6.5")
+    api(libs.reactor.core)
 
+    testImplementation(libs.jakarta.servlet.api)
+    testImplementation(libs.json.path)
     testImplementation(libs.spock.core)
     testImplementation(libs.spock.junit4)
     testImplementation(libs.wiremock.standalone)
-    testImplementation(group = "jakarta.servlet", name = "jakarta.servlet-api", version = "6.0.0")
-    testImplementation(group = "com.jayway.jsonpath", name = "json-path", version = "2.9.0")
 
     testImplementation(libs.jersey.client)
     testImplementation(libs.jersey.hk2)
     testImplementation(libs.micrometer.core)
     testImplementation(libs.okhttp)
+    testImplementation(libs.reactor.netty)
+    testImplementation(libs.reactor.test)
     testImplementation(libs.spring.context)
     testImplementation(libs.spring.web)
     testImplementation(libs.spring.webflux)
-    testImplementation(group = "io.projectreactor.netty", name = "reactor-netty", version = "1.1.18")
-    testImplementation(group = "io.projectreactor", name = "reactor-test", version = "3.6.5")
 }
