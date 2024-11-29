@@ -1,5 +1,6 @@
 build
 .gradle
+.kotlin
 classes
 *.iml
 *.ipr
@@ -24,7 +25,6 @@ hermes-console/build
 hermes-console/out
 hermes-console/coverage
 hermes-console/test_out
-hermes-console/package-lock.json
 
 hermes-console/static/components
 
