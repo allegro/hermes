@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.frontend.server;
 
 import static io.undertow.util.StatusCodes.OK;
 
-import io.micrometer.prometheus.PrometheusMeterRegistry;
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 
