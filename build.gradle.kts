@@ -60,7 +60,7 @@ allprojects {
         "jetty" to "12.0.8",
         "curator" to "5.4.0",
         "dropwizard_metrics" to "4.2.25",
-        "micrometer_metrics" to "1.12.5",
+        "micrometer_metrics" to "1.13.0",
         "wiremock" to "3.9.0",
         "spock" to "2.4-M4-groovy-4.0",
         "groovy" to "4.0.21",
