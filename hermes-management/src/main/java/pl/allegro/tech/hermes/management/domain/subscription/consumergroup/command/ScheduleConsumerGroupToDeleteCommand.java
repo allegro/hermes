@@ -17,8 +17,8 @@ public class ScheduleConsumerGroupToDeleteCommand
 
   public ScheduleConsumerGroupToDeleteCommand(
       SubscriptionName subscriptionName, Instant requestedAt) {
-    this.requestedAt = requestedAt;
     this.subscriptionName = subscriptionName;
+    this.requestedAt = requestedAt;
   }
 
   @Override

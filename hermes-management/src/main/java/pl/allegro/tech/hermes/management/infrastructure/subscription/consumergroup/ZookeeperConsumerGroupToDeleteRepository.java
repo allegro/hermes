@@ -28,7 +28,7 @@ public class ZookeeperConsumerGroupToDeleteRepository extends ZookeeperBasedRepo
             consumerGroupToDelete.subscriptionName().getQualifiedName());
 
     try {
-      create(consumerGroupToDeletePath, consumerGroupToDelete);
+      createRecursively(consumerGroupToDeletePath, consumerGroupToDelete);
     } catch (KeeperException.NodeExistsException e) {
       throw new ConsumerGroupAlreadyScheduledToDeleteException(consumerGroupToDelete, e);
     } catch (Exception e) {

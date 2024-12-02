@@ -1,34 +1,28 @@
 package pl.allegro.tech.hermes.management.domain.subscription.consumergroup;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import jakarta.annotation.PreDestroy;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.management.config.subscription.consumergroup.ConsumerGroupCleanUpProperties;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 
-public class ConsumerGroupCleanUpService {
-  private final Logger logger = LoggerFactory.getLogger(ConsumerGroupCleanUpService.class);
+public class ConsumerGroupCleanUpTask implements Runnable {
+  private final Logger logger = LoggerFactory.getLogger(ConsumerGroupCleanUpTask.class);
 
   private final MultiDCAwareService multiDCAwareService;
   private final Map<String, ConsumerGroupToDeleteRepository>
       consumerGroupToDeleteRepositoriesByDatacenter;
   private final SubscriptionService subscriptionService;
-  private final ScheduledExecutorService scheduler;
   private final Clock clock;
 
   private final Duration cleanUpInitialDelay;
   private final Duration cleanUpTimeout;
 
-  public ConsumerGroupCleanUpService(
+  public ConsumerGroupCleanUpTask(
       MultiDCAwareService multiDCAwareService,
       Map<String, ConsumerGroupToDeleteRepository> consumerGroupToDeleteRepositoriesByDatacenter,
       SubscriptionService subscriptionService,
@@ -41,28 +35,16 @@ public class ConsumerGroupCleanUpService {
     this.clock = clock;
     this.cleanUpInitialDelay = cleanUpProperties.getInitialDelay();
     this.cleanUpTimeout = cleanUpProperties.getTimeout();
-
-    this.scheduler =
-        Executors.newSingleThreadScheduledExecutor(
-            new ThreadFactoryBuilder().setNameFormat("consumer-group-clean-up-%d").build());
-
-    scheduler.scheduleAtFixedRate(
-        this::cleanUpConsumerGroups,
-        0,
-        cleanUpProperties.getInterval().toMillis(),
-        TimeUnit.MILLISECONDS);
   }
 
-  @PreDestroy
-  public void stop() {
-    scheduler.shutdown();
-  }
-
-  void cleanUpConsumerGroups() {
+  @Override
+  public void run() {
+    System.out.println("[DEBUG] ConsumerGroupCleanUpTask.run() called");
     consumerGroupToDeleteRepositoriesByDatacenter.values().stream()
         .flatMap(repository -> repository.getAllConsumerGroupsToDelete().stream())
         .filter(this::shouldConsumerGroupDeletionTaskBeProcessed)
         .forEach(this::tryToDeleteConsumerGroup);
+    System.out.println("[DEBUG] ConsumerGroupCleanUpTask.run() finished");
   }
 
   private void tryToDeleteConsumerGroup(ConsumerGroupToDelete consumerGroupToDelete) {
