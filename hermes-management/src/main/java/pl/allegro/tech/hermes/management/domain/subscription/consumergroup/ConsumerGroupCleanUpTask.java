@@ -39,12 +39,10 @@ public class ConsumerGroupCleanUpTask implements Runnable {
 
   @Override
   public void run() {
-    System.out.println("[DEBUG] ConsumerGroupCleanUpTask.run() called");
     consumerGroupToDeleteRepositoriesByDatacenter.values().stream()
         .flatMap(repository -> repository.getAllConsumerGroupsToDelete().stream())
         .filter(this::shouldConsumerGroupDeletionTaskBeProcessed)
         .forEach(this::tryToDeleteConsumerGroup);
-    System.out.println("[DEBUG] ConsumerGroupCleanUpTask.run() finished");
   }
 
   private void tryToDeleteConsumerGroup(ConsumerGroupToDelete consumerGroupToDelete) {
