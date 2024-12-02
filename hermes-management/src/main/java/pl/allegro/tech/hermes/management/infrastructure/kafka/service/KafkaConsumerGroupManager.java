@@ -92,36 +92,37 @@ public class KafkaConsumerGroupManager implements ConsumerGroupManager {
   }
 
   @Override
-  public void deleteConsumerGroup(SubscriptionName subscriptionName) throws ConsumerGroupDeletionException {
+  public void deleteConsumerGroup(SubscriptionName subscriptionName)
+      throws ConsumerGroupDeletionException {
     logger.info(
-            "Deleting consumer group for subscription {}, cluster: {}", subscriptionName, clusterName);
+        "Deleting consumer group for subscription {}, cluster: {}", subscriptionName, clusterName);
 
     try {
       ConsumerGroupId groupId = kafkaNamesMapper.toConsumerGroupId(subscriptionName);
       kafkaAdminClient
-              .deleteConsumerGroups(Collections.singletonList(groupId.asString()))
-              .all()
-              .get();
+          .deleteConsumerGroups(Collections.singletonList(groupId.asString()))
+          .all()
+          .get();
 
       logger.info(
-              "Successfully deleted consumer group for subscription {}, cluster: {}",
-              subscriptionName,
-              clusterName);
+          "Successfully deleted consumer group for subscription {}, cluster: {}",
+          subscriptionName,
+          clusterName);
 
     } catch (ExecutionException | InterruptedException e) {
       if (e.getCause() instanceof GroupIdNotFoundException) {
         logger.info(
-                "Consumer group for subscription {} not found, cluster: {}",
-                subscriptionName,
-                clusterName);
+            "Consumer group for subscription {} not found, cluster: {}",
+            subscriptionName,
+            clusterName);
         return;
       }
 
       logger.error(
-              "Failed to delete consumer group for subscription {}, cluster: {}",
-              subscriptionName,
-              clusterName,
-              e);
+          "Failed to delete consumer group for subscription {}, cluster: {}",
+          subscriptionName,
+          clusterName,
+          e);
       throw new ConsumerGroupDeletionException(subscriptionName, e);
     }
   }

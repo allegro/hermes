@@ -17,22 +17,19 @@ import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperRepos
 @ConditionalOnProperty(value = "consumer-group-clean-up.enabled", havingValue = "true")
 public class ConsumerGroupCleanUpConfig {
 
-    @Autowired
-    ZookeeperRepositoryManager zookeeperRepositoryManager;
+  @Autowired ZookeeperRepositoryManager zookeeperRepositoryManager;
 
-    @Bean
-    ConsumerGroupCleanUpService consumerGroupCleanUpService(
-            MultiDCAwareService multiDCAwareService,
-            SubscriptionService subscriptionService,
-            ConsumerGroupCleanUpProperties properties,
-            Clock clock
-    ) {
-        return new ConsumerGroupCleanUpService(
-                multiDCAwareService,
-                zookeeperRepositoryManager.getRepositoriesByType(ConsumerGroupToDeleteRepository.class),
-                subscriptionService,
-                properties,
-                clock
-        );
-    }
+  @Bean
+  ConsumerGroupCleanUpService consumerGroupCleanUpService(
+      MultiDCAwareService multiDCAwareService,
+      SubscriptionService subscriptionService,
+      ConsumerGroupCleanUpProperties properties,
+      Clock clock) {
+    return new ConsumerGroupCleanUpService(
+        multiDCAwareService,
+        zookeeperRepositoryManager.getRepositoriesByType(ConsumerGroupToDeleteRepository.class),
+        subscriptionService,
+        properties,
+        clock);
+  }
 }

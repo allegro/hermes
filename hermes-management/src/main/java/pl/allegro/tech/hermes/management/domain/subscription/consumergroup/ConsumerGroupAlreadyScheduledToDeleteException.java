@@ -1,10 +1,10 @@
 package pl.allegro.tech.hermes.management.domain.subscription.consumergroup;
 
-import pl.allegro.tech.hermes.api.ErrorCode;
-import pl.allegro.tech.hermes.management.domain.ManagementException;
-
 import static java.lang.String.format;
 import static pl.allegro.tech.hermes.api.ErrorCode.OTHER;
+
+import pl.allegro.tech.hermes.api.ErrorCode;
+import pl.allegro.tech.hermes.management.domain.ManagementException;
 
 public class ConsumerGroupAlreadyScheduledToDeleteException extends ManagementException {
 

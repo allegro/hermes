@@ -9,12 +9,12 @@ import pl.allegro.tech.hermes.management.domain.ManagementException;
 
 public class ConsumerGroupDeletionException extends ManagementException {
 
-    public ConsumerGroupDeletionException(SubscriptionName subscriptionName, Throwable e) {
-        super(format("Failed to delete consumer group, for subscription %s ", subscriptionName), e);
-    }
+  public ConsumerGroupDeletionException(SubscriptionName subscriptionName, Throwable e) {
+    super(format("Failed to delete consumer group, for subscription %s ", subscriptionName), e);
+  }
 
-    @Override
-    public ErrorCode getCode() {
-        return CONSUMER_GROUP_DELETION_ERROR;
-    }
+  @Override
+  public ErrorCode getCode() {
+    return CONSUMER_GROUP_DELETION_ERROR;
+  }
 }

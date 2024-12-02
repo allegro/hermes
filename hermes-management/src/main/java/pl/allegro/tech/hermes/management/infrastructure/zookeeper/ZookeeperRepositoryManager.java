@@ -37,9 +37,9 @@ import pl.allegro.tech.hermes.management.domain.readiness.DatacenterReadinessRep
 import pl.allegro.tech.hermes.management.domain.retransmit.OfflineRetransmissionRepository;
 import pl.allegro.tech.hermes.management.domain.subscription.consumergroup.ConsumerGroupToDeleteRepository;
 import pl.allegro.tech.hermes.management.infrastructure.blacklist.ZookeeperTopicBlacklistRepository;
-import pl.allegro.tech.hermes.management.infrastructure.subscription.consumergroup.ZookeeperConsumerGroupToDeleteRepository;
 import pl.allegro.tech.hermes.management.infrastructure.readiness.ZookeeperDatacenterReadinessRepository;
 import pl.allegro.tech.hermes.management.infrastructure.retransmit.ZookeeperOfflineRetransmissionRepository;
+import pl.allegro.tech.hermes.management.infrastructure.subscription.consumergroup.ZookeeperConsumerGroupToDeleteRepository;
 
 public class ZookeeperRepositoryManager implements RepositoryManager {
 
@@ -144,7 +144,7 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
       offlineRetransmissionRepositoriesByDc.put(dcName, offlineRetransmissionRepository);
 
       ZookeeperConsumerGroupToDeleteRepository consumerGroupCleanupRepository =
-              new ZookeeperConsumerGroupToDeleteRepository(zookeeper, mapper, paths);
+          new ZookeeperConsumerGroupToDeleteRepository(zookeeper, mapper, paths);
       consumerGroupCleanupRepositoryByDc.put(dcName, consumerGroupCleanupRepository);
     }
   }

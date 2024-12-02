@@ -24,7 +24,8 @@ public class ZookeeperConsumerGroupToDeleteRepository extends ZookeeperBasedRepo
   @Override
   public void scheduleConsumerGroupToDeleteTask(ConsumerGroupToDelete consumerGroupToDelete) {
     String consumerGroupToDeletePath =
-        paths.consumerGroupToDeletePath(consumerGroupToDelete.subscriptionName().getQualifiedName());
+        paths.consumerGroupToDeletePath(
+            consumerGroupToDelete.subscriptionName().getQualifiedName());
 
     try {
       create(consumerGroupToDeletePath, consumerGroupToDelete);
@@ -38,7 +39,8 @@ public class ZookeeperConsumerGroupToDeleteRepository extends ZookeeperBasedRepo
   @Override
   public void deleteConsumerGroupToDeleteTask(ConsumerGroupToDelete consumerGroupToDelete) {
     String consumerGroupToDeletePath =
-        paths.consumerGroupToDeletePath(consumerGroupToDelete.subscriptionName().getQualifiedName());
+        paths.consumerGroupToDeletePath(
+            consumerGroupToDelete.subscriptionName().getQualifiedName());
 
     ensureConsumerGroupToDeleteExists(consumerGroupToDeletePath);
 

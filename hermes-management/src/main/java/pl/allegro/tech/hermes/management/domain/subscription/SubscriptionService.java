@@ -463,6 +463,7 @@ public class SubscriptionService {
   }
 
   public boolean subscriptionExists(SubscriptionName subscriptionName) {
-    return subscriptionRepository.subscriptionExists(subscriptionName.getTopicName(), subscriptionName.getName());
+    return subscriptionRepository.subscriptionExists(
+        subscriptionName.getTopicName(), subscriptionName.getName());
   }
 }

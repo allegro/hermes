@@ -8,40 +8,46 @@ import pl.allegro.tech.hermes.management.domain.subscription.consumergroup.Consu
 import pl.allegro.tech.hermes.management.domain.subscription.consumergroup.ConsumerGroupToDelete;
 import pl.allegro.tech.hermes.management.domain.subscription.consumergroup.ConsumerGroupToDeleteRepository;
 
-public class ScheduleConsumerGroupToDeleteCommand extends RepositoryCommand<ConsumerGroupToDeleteRepository> {
-    private final SubscriptionName subscriptionName;
-    private final Instant requestedAt;
+public class ScheduleConsumerGroupToDeleteCommand
+    extends RepositoryCommand<ConsumerGroupToDeleteRepository> {
+  private final SubscriptionName subscriptionName;
+  private final Instant requestedAt;
 
-    private ConsumerGroupToDelete consumerGroupToDelete;
+  private ConsumerGroupToDelete consumerGroupToDelete;
 
-    public ScheduleConsumerGroupToDeleteCommand(SubscriptionName subscriptionName, Instant requestedAt) {
-        this.requestedAt = requestedAt;
-        this.subscriptionName = subscriptionName;
+  public ScheduleConsumerGroupToDeleteCommand(
+      SubscriptionName subscriptionName, Instant requestedAt) {
+    this.requestedAt = requestedAt;
+    this.subscriptionName = subscriptionName;
+  }
+
+  @Override
+  public void backup(DatacenterBoundRepositoryHolder<ConsumerGroupToDeleteRepository> holder) {}
+
+  @Override
+  public void execute(DatacenterBoundRepositoryHolder<ConsumerGroupToDeleteRepository> holder) {
+    consumerGroupToDelete =
+        new ConsumerGroupToDelete(subscriptionName, holder.getDatacenterName(), requestedAt);
+    try {
+      holder.getRepository().scheduleConsumerGroupToDeleteTask(consumerGroupToDelete);
+    } catch (ConsumerGroupAlreadyScheduledToDeleteException ignored) {
     }
+  }
 
-    @Override
-    public void backup(DatacenterBoundRepositoryHolder<ConsumerGroupToDeleteRepository> holder) {}
+  @Override
+  public void rollback(
+      DatacenterBoundRepositoryHolder<ConsumerGroupToDeleteRepository> holder,
+      Exception exception) {
+    holder.getRepository().deleteConsumerGroupToDeleteTask(consumerGroupToDelete);
+  }
 
-    @Override
-    public void execute(DatacenterBoundRepositoryHolder<ConsumerGroupToDeleteRepository> holder) {
-        consumerGroupToDelete = new ConsumerGroupToDelete(subscriptionName, holder.getDatacenterName(), requestedAt);
-        try{
-            holder.getRepository().scheduleConsumerGroupToDeleteTask(consumerGroupToDelete);
-        } catch (ConsumerGroupAlreadyScheduledToDeleteException ignored) {}
-    }
+  @Override
+  public Class<ConsumerGroupToDeleteRepository> getRepositoryType() {
+    return ConsumerGroupToDeleteRepository.class;
+  }
 
-    @Override
-    public void rollback(DatacenterBoundRepositoryHolder<ConsumerGroupToDeleteRepository> holder, Exception exception) {
-        holder.getRepository().deleteConsumerGroupToDeleteTask(consumerGroupToDelete);
-    }
-
-    @Override
-    public Class<ConsumerGroupToDeleteRepository> getRepositoryType() {
-        return ConsumerGroupToDeleteRepository.class;
-    }
-
-    @Override
-    public String toString() {
-        return "ScheduleConsumerGroupToDelete(" + subscriptionName.getQualifiedName() + ")";
-    }
+  @Override
+  public String toString() {
+    return "ScheduleConsumerGroupToDelete(" + subscriptionName.getQualifiedName() + ")";
+  }
 }

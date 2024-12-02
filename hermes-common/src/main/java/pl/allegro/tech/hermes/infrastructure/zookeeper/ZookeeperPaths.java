@@ -186,7 +186,7 @@ public class ZookeeperPaths {
 
   public String consumerGroupToDeletePath() {
     return Joiner.on(URL_SEPARATOR)
-            .join(basePath, CONSUMER_GROUP_TO_DELETE, CONSUMER_GROUP_TO_DELETE_TASKS);
+        .join(basePath, CONSUMER_GROUP_TO_DELETE, CONSUMER_GROUP_TO_DELETE_TASKS);
   }
 
   public String consumerGroupToDeletePath(String taskId) {
