@@ -91,7 +91,7 @@ public class ManagementConfiguration {
   }
 
   @Bean
-  ManagementLeadership inactiveTopicsDetectionLeader(
+  ManagementLeadership managementLeadership(
       ZookeeperClientManager zookeeperClientManager,
       @Value("${management.leadership.zookeeper-dc}") String leaderElectionDc,
       ZookeeperPaths zookeeperPaths) {

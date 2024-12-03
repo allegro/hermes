@@ -27,7 +27,7 @@ public class ManagementLeadership {
             .filter(it -> it.getDatacenterName().equals(leaderElectionDc))
             .findFirst()
             .map(ZookeeperClient::getCuratorFramework);
-    String leaderPath = zookeeperPaths.inactiveTopicsLeaderPath();
+    String leaderPath = zookeeperPaths.managementLeaderPath();
     this.leaderLatch = leaderCuratorFramework.map(it -> new LeaderLatch(it, leaderPath));
   }
 
