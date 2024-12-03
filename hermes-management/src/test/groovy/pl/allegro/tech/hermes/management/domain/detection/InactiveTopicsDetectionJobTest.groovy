@@ -25,7 +25,6 @@ class InactiveTopicsDetectionJobTest extends Specification {
             Duration.ofDays(7),
             Duration.ofDays(14),
             ["group.topic3"] as Set<String>,
-            "dc",
             5
     )
 

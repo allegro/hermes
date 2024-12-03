@@ -21,7 +21,6 @@ class InactiveTopicsDetectionServiceTest extends Specification {
             Duration.ofDays(INACTIVITY_THRESHOLD),
             Duration.ofDays(NEXT_NOTIFICATION_THRESHOLD),
             [WHITELISTED_TOPIC_NAME] as Set<String>,
-            "dc",
             5
     )
 
