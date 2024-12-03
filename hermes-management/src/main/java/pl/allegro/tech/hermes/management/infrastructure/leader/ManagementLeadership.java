@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.management.infrastructure.detection;
+package pl.allegro.tech.hermes.management.infrastructure.leader;
 
 import jakarta.annotation.PostConstruct;
 import java.util.Optional;
@@ -7,22 +7,21 @@ import org.apache.curator.framework.recipes.leader.LeaderLatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
-import pl.allegro.tech.hermes.management.config.detection.InactiveTopicsDetectionProperties;
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClient;
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClientManager;
 
-public class InactiveTopicsDetectionLeader {
+public class ManagementLeadership {
 
   private final String leaderElectionDc;
   private final Optional<LeaderLatch> leaderLatch;
 
-  private static final Logger logger = LoggerFactory.getLogger(InactiveTopicsDetectionLeader.class);
+  private static final Logger logger = LoggerFactory.getLogger(ManagementLeadership.class);
 
-  public InactiveTopicsDetectionLeader(
+  public ManagementLeadership(
       ZookeeperClientManager zookeeperClientManager,
-      InactiveTopicsDetectionProperties inactiveTopicsDetectionProperties,
+      String leaderElectionDc,
       ZookeeperPaths zookeeperPaths) {
-    this.leaderElectionDc = inactiveTopicsDetectionProperties.leaderElectionZookeeperDc();
+    this.leaderElectionDc = leaderElectionDc;
     Optional<CuratorFramework> leaderCuratorFramework =
         zookeeperClientManager.getClients().stream()
             .filter(it -> it.getDatacenterName().equals(leaderElectionDc))
