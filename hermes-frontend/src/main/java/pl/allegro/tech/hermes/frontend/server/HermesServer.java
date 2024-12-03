@@ -11,7 +11,7 @@ import static org.xnio.Options.KEEP_ALIVE;
 import static org.xnio.Options.READ_TIMEOUT;
 import static org.xnio.Options.SSL_CLIENT_AUTH_MODE;
 
-import io.micrometer.prometheus.PrometheusMeterRegistry;
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
 import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.RoutingHandler;

@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.management.config;
 
-import io.micrometer.prometheus.PrometheusConfig;
+import io.micrometer.prometheusmetrics.PrometheusConfig;
 import java.time.Duration;
 
 public class PrometheusConfigAdapter implements PrometheusConfig {
