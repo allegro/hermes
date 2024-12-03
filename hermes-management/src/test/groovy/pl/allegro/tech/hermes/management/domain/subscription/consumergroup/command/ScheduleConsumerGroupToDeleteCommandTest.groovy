@@ -20,8 +20,8 @@ import java.time.ZoneId
 class ScheduleConsumerGroupToDeleteCommandTest extends MultiZookeeperIntegrationTest {
     ZookeeperClientManager zookeeperClientManager
     ZookeeperRepositoryManager repositoryManager
-    MultiDatacenterRepositoryCommandExecutor executor
     Map<String, ConsumerGroupToDeleteRepository> consumerGroupToDeleteRepositoryMap
+    MultiDatacenterRepositoryCommandExecutor executor
     MutableClock clock = new MutableClock(Instant.parse('2015-12-03T10:15:30.00Z'), ZoneId.of("UTC"))
 
 
@@ -30,14 +30,14 @@ class ScheduleConsumerGroupToDeleteCommandTest extends MultiZookeeperIntegration
         zookeeperClientManager.start()
         assertZookeeperClientsConnected(zookeeperClientManager.clients)
 
-        repositoryManager = new ZookeeperRepositoryManager(
-                zookeeperClientManager,
+        repositoryManager = new ZookeeperRepositoryManager(zookeeperClientManager,
                 new TestDatacenterNameProvider(DC_1_NAME),
                 new ObjectMapper().registerModule(new JavaTimeModule()),
-                new ZookeeperPaths('/hermes'), new DefaultZookeeperGroupRepositoryFactory())
+                new ZookeeperPaths('/hermes'),
+                new DefaultZookeeperGroupRepositoryFactory())
         repositoryManager.start()
-        executor = new MultiDatacenterRepositoryCommandExecutor(repositoryManager, true, new ModeService())
         consumerGroupToDeleteRepositoryMap = repositoryManager.getRepositoriesByType(ConsumerGroupToDeleteRepository.class)
+        executor = new MultiDatacenterRepositoryCommandExecutor(repositoryManager, true, new ModeService())
     }
 
     def cleanup() {
@@ -72,9 +72,9 @@ class ScheduleConsumerGroupToDeleteCommandTest extends MultiZookeeperIntegration
 
         then:
         consumerGroupToDeleteRepositoryMap.forEach { datacenter, repository ->
-            List<ConsumerGroupToDelete> toDelete = repository.getAllConsumerGroupsToDelete()
-            assert toDelete.size() == 1
-            with(toDelete.get(0)) {
+            List<ConsumerGroupToDelete> consumerGroupsToDelete = repository.getAllConsumerGroupsToDelete()
+            assert consumerGroupsToDelete.size() == 1
+            with(consumerGroupsToDelete.get(0)) {
                 it.subscriptionName() == SubscriptionName.fromString("group.topic1\$subscription1")
                 it.datacenter() == datacenter
                 it.requestedAt() == clock.instant()

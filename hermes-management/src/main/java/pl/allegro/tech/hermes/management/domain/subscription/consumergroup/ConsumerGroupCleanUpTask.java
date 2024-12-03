@@ -88,6 +88,7 @@ public class ConsumerGroupCleanUpTask implements Runnable {
   private boolean shouldConsumerGroupDeletionTaskBeProcessed(
       ConsumerGroupToDelete consumerGroupToDelete) {
     Duration taskAge = Duration.between(consumerGroupToDelete.requestedAt(), Instant.now(clock));
-    return taskAge.compareTo(cleanUpInitialDelay) >= 0 && taskAge.compareTo(cleanUpTimeout) <= 0;
+    return taskAge.compareTo(cleanUpInitialDelay) >= 0
+        && taskAge.compareTo(cleanUpInitialDelay.plus(cleanUpTimeout)) <= 0;
   }
 }

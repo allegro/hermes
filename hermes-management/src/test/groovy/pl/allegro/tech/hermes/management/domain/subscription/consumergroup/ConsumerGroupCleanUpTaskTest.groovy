@@ -39,22 +39,20 @@ class ConsumerGroupCleanUpTaskTest extends MultiZookeeperIntegrationTest {
         zookeeperClientManager.start()
         assertZookeeperClientsConnected(zookeeperClientManager.clients)
 
-        repositoryManager = new ZookeeperRepositoryManager(
-                zookeeperClientManager,
+        repositoryManager = new ZookeeperRepositoryManager(zookeeperClientManager,
                 new TestDatacenterNameProvider(DC_1_NAME),
                 new ObjectMapper().registerModule(new JavaTimeModule()),
-                new ZookeeperPaths('/hermes'), new DefaultZookeeperGroupRepositoryFactory())
+                new ZookeeperPaths('/hermes'),
+                new DefaultZookeeperGroupRepositoryFactory())
         repositoryManager.start()
         executor = new MultiDatacenterRepositoryCommandExecutor(repositoryManager, true, new ModeService())
         consumerGroupToDeleteRepositoryMap = repositoryManager.getRepositoriesByType(ConsumerGroupToDeleteRepository.class)
 
-        consumerGroupCleanUpTask = new ConsumerGroupCleanUpTask(
-                multiDCAwareService,
+        consumerGroupCleanUpTask = new ConsumerGroupCleanUpTask(multiDCAwareService,
                 consumerGroupToDeleteRepositoryMap,
                 subscriptionService,
                 consumerGroupCleanUpProperties,
-                clock
-        )
+                clock)
     }
 
     def cleanup() {
@@ -135,7 +133,7 @@ class ConsumerGroupCleanUpTaskTest extends MultiZookeeperIntegrationTest {
         executor.execute(new ScheduleConsumerGroupToDeleteCommand(SubscriptionName.fromString("group.topic1\$subscription1"), clock.instant()))
 
         and:
-        clock + consumerGroupCleanUpProperties.getTimeout().plusSeconds(1)
+        clock + consumerGroupCleanUpProperties.getTimeout().plus(consumerGroupCleanUpProperties.getTimeout()).plusSeconds(1)
 
         when:
         consumerGroupCleanUpTask.run()
@@ -175,9 +173,9 @@ class ConsumerGroupCleanUpTaskTest extends MultiZookeeperIntegrationTest {
 
         and:
         consumerGroupToDeleteRepositoryMap.forEach { datacenter, repository ->
-            List<ConsumerGroupToDelete> toDelete = repository.getAllConsumerGroupsToDelete()
-            assert toDelete.size() == 1
-            with(toDelete.get(0)) {
+            List<ConsumerGroupToDelete> consumerGroupsToDelete = repository.getAllConsumerGroupsToDelete()
+            assert consumerGroupsToDelete.size() == 1
+            with(consumerGroupsToDelete.get(0)) {
                 it.subscriptionName() == SubscriptionName.fromString("group.topic1\$subscription1")
                 it.datacenter() == datacenter
                 it.requestedAt() == clock.instant() - consumerGroupCleanUpProperties.getInitialDelay()

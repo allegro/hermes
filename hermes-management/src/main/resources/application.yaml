@@ -75,5 +75,6 @@ console:
     showHeadersFilter: false
     showFixedHeaders: false
 
-consumer-group-clean-up:
-  enabled: true
+consumer-group:
+  clean-up:
+    enabled: true

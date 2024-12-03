@@ -196,6 +196,7 @@ public class HermesManagementTestApp implements HermesTestApp {
     args.add("--schema.repository.type=schema_registry");
     args.add("--schema.repository.deleteSchemaPathSuffix=");
 
+    args.add("");
     return args;
   }
 
