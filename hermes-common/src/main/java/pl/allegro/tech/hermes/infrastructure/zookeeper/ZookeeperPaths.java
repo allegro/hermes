@@ -190,7 +190,7 @@ public class ZookeeperPaths {
   }
 
   public String managementLeaderPath() {
-    return Joiner.on(URL_SEPARATOR).join(MANAGEMENT_PATH, MANAGEMENT_PATH_LEADER);
+    return Joiner.on(URL_SEPARATOR).join(basePath, MANAGEMENT_PATH, MANAGEMENT_PATH_LEADER);
   }
 
   public String join(String... parts) {
