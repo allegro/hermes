@@ -10,6 +10,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.micrometer.core.instrument.MeterRegistry;
 import java.time.Clock;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -19,8 +20,11 @@ import pl.allegro.tech.hermes.common.clock.ClockFactory;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.util.InetAddressInstanceIdResolver;
 import pl.allegro.tech.hermes.common.util.InstanceIdResolver;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionLagSource;
+import pl.allegro.tech.hermes.management.infrastructure.leader.ManagementLeadership;
 import pl.allegro.tech.hermes.management.infrastructure.metrics.NoOpSubscriptionLagSource;
+import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClientManager;
 import pl.allegro.tech.hermes.metrics.PathsCompiler;
 
 @Configuration
@@ -29,7 +33,7 @@ import pl.allegro.tech.hermes.metrics.PathsCompiler;
   HttpClientProperties.class,
   ConsistencyCheckerProperties.class,
   PrometheusProperties.class,
-  MicrometerRegistryProperties.class
+  MicrometerRegistryProperties.class,
 })
 public class ManagementConfiguration {
 
@@ -84,5 +88,13 @@ public class ManagementConfiguration {
   @Bean
   public Clock clock() {
     return new ClockFactory().provide();
+  }
+
+  @Bean
+  ManagementLeadership managementLeadership(
+      ZookeeperClientManager zookeeperClientManager,
+      @Value("${management.leadership.zookeeper-dc}") String leaderElectionDc,
+      ZookeeperPaths zookeeperPaths) {
+    return new ManagementLeadership(zookeeperClientManager, leaderElectionDc, zookeeperPaths);
   }
 }
