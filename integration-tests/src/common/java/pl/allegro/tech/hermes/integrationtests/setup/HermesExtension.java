@@ -4,11 +4,13 @@ import static org.awaitility.Awaitility.waitAtMost;
 import static pl.allegro.tech.hermes.integrationtests.setup.HermesManagementTestApp.AUDIT_EVENT_PATH;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
 import java.util.stream.Stream;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.extension.AfterAllCallback;
+import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.slf4j.Logger;
@@ -34,7 +36,10 @@ import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
 import pl.allegro.tech.hermes.test.helper.environment.HermesTestApp;
 
 public class HermesExtension
-    implements BeforeAllCallback, AfterAllCallback, ExtensionContext.Store.CloseableResource {
+    implements AfterEachCallback,
+        BeforeAllCallback,
+        AfterAllCallback,
+        ExtensionContext.Store.CloseableResource {
 
   private static final Logger logger = LoggerFactory.getLogger(HermesExtension.class);
 
@@ -62,7 +67,8 @@ public class HermesExtension
   public static BrokerOperations brokerOperations;
 
   @Override
-  public void beforeAll(ExtensionContext context) {
+  public void beforeAll(ExtensionContext context) throws IOException, InterruptedException {
+
     if (!started) {
       Stream.of(hermesZookeeper, kafka).parallel().forEach(Startable::start);
       schemaRegistry.start();
@@ -178,5 +184,14 @@ public class HermesExtension
   @Override
   public void afterAll(ExtensionContext context) {
     Stream.of(management, consumers, frontend).forEach(HermesTestApp::restoreDefaultSettings);
+  }
+
+  @Override
+  public void afterEach(ExtensionContext context) throws Exception {
+    try {
+      clearManagementData();
+    } catch (Exception e) {
+      logger.error("Error during cleaning up management data", e);
+    }
   }
 }
