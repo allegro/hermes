@@ -4,7 +4,9 @@ import static org.awaitility.Awaitility.waitAtMost;
 import static pl.allegro.tech.hermes.integrationtests.setup.HermesManagementTestApp.AUDIT_EVENT_PATH;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
+import java.io.IOException;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 import org.assertj.core.api.Assertions;
@@ -110,6 +112,14 @@ public class HermesExtension
     kafka.cutOffConnectionsBetweenBrokersAndClients();
   }
 
+  public int countConsumerGroups(Topic topic) {
+    try {
+      return kafka.countConsumerGroups(topic.getQualifiedName());
+    } catch (IOException | InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   public void restoreConnectionsBetweenBrokersAndClients() {
     kafka.restoreConnectionsBetweenBrokersAndClients();
   }
@@ -172,6 +182,11 @@ public class HermesExtension
 
   public HermesExtension withFrontendProfile(String profile) {
     frontend.withSpringProfile(profile);
+    return this;
+  }
+
+  public HermesExtension withManagementArgs(String... args) {
+    management.withArgs(Arrays.asList(args));
     return this;
   }
 
