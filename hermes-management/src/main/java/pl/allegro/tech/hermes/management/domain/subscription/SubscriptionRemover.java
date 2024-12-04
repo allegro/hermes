@@ -24,6 +24,7 @@ public class SubscriptionRemover {
   private final MultiDatacenterRepositoryCommandExecutor multiDcExecutor;
   private final SubscriptionOwnerCache subscriptionOwnerCache;
   private final SubscriptionRepository subscriptionRepository;
+  private final boolean scheduleConsumerGroupRemoval;
   private final Clock clock;
 
   public SubscriptionRemover(
@@ -31,11 +32,13 @@ public class SubscriptionRemover {
       MultiDatacenterRepositoryCommandExecutor multiDcExecutor,
       SubscriptionOwnerCache subscriptionOwnerCache,
       SubscriptionRepository subscriptionRepository,
+      boolean scheduleConsumerGroupRemoval,
       Clock clock) {
     this.auditor = auditor;
     this.multiDcExecutor = multiDcExecutor;
     this.subscriptionOwnerCache = subscriptionOwnerCache;
     this.subscriptionRepository = subscriptionRepository;
+    this.scheduleConsumerGroupRemoval = scheduleConsumerGroupRemoval;
     this.clock = clock;
   }
 
@@ -47,10 +50,14 @@ public class SubscriptionRemover {
         subscriptionRepository.getSubscriptionDetails(topicName, subscriptionName);
     multiDcExecutor.executeByUser(
         new RemoveSubscriptionRepositoryCommand(topicName, subscriptionName), removedBy);
-    multiDcExecutor.executeByUser(
-        new ScheduleConsumerGroupToDeleteCommand(
-            new SubscriptionName(subscriptionName, topicName), Instant.now(clock)),
-        removedBy);
+
+    if (scheduleConsumerGroupRemoval) {
+      multiDcExecutor.executeByUser(
+          new ScheduleConsumerGroupToDeleteCommand(
+              new SubscriptionName(subscriptionName, topicName), Instant.now(clock)),
+          removedBy);
+    }
+
     auditor.objectRemoved(removedBy.getUsername(), subscription);
     subscriptionOwnerCache.onRemovedSubscription(subscriptionName, topicName);
   }

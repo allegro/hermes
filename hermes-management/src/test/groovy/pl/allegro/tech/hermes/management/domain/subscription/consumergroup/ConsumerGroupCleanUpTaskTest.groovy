@@ -144,7 +144,38 @@ class ConsumerGroupCleanUpTaskTest extends MultiZookeeperIntegrationTest {
         }
 
         and:
-        0 * subscriptionService.subscriptionExists(SubscriptionName.fromString("group.topic1\$subscription1"))
+        2 * subscriptionService.subscriptionExists(SubscriptionName.fromString("group.topic1\$subscription1")) >> false
+
+        and:
+        consumerGroupToDeleteRepositoryMap.values().every { it.getAllConsumerGroupsToDelete().size() == 0 }
+    }
+
+    def "should skip removal of consumer group - task timeout not met, without task removal"() {
+        given:
+        executor.execute(new ScheduleConsumerGroupToDeleteCommand(SubscriptionName.fromString("group.topic1\$subscription1"), clock.instant()))
+
+        and:
+        ConsumerGroupCleanUpProperties cleanUpProperties = new ConsumerGroupCleanUpProperties()
+        cleanUpProperties.removeTasksAfterTimeout = false;
+        ConsumerGroupCleanUpTask consumerGroupCleanUpTaskWithoutExpiredTaskRemoval = new ConsumerGroupCleanUpTask(multiDCAwareService,
+                consumerGroupToDeleteRepositoryMap,
+                subscriptionService,
+                cleanUpProperties,
+                clock)
+
+        and:
+        clock + cleanUpProperties.getTimeout().plus(cleanUpProperties.getTimeout()).plusSeconds(1)
+
+        when:
+        consumerGroupCleanUpTaskWithoutExpiredTaskRemoval.run()
+
+        then:
+        for (String datacenter : zookeeperClientManager.getClients().collect { it.datacenterName }) {
+            0 * multiDCAwareService.deleteConsumerGroupForDatacenter(SubscriptionName.fromString("group.topic1\$subscription1"), datacenter)
+        }
+
+        and:
+        2 * subscriptionService.subscriptionExists(SubscriptionName.fromString("group.topic1\$subscription1")) >> false
 
         and:
         consumerGroupToDeleteRepositoryMap.values().every { it.getAllConsumerGroupsToDelete().size() == 1 }

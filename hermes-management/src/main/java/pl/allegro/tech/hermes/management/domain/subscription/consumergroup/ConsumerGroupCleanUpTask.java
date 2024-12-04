@@ -11,84 +11,131 @@ import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 
 public class ConsumerGroupCleanUpTask implements Runnable {
-  private final Logger logger = LoggerFactory.getLogger(ConsumerGroupCleanUpTask.class);
+
+  private static final Logger logger = LoggerFactory.getLogger(ConsumerGroupCleanUpTask.class);
 
   private final MultiDCAwareService multiDCAwareService;
-  private final Map<String, ConsumerGroupToDeleteRepository>
-      consumerGroupToDeleteRepositoriesByDatacenter;
+  private final Map<String, ConsumerGroupToDeleteRepository> repositoriesByDatacenter;
   private final SubscriptionService subscriptionService;
   private final Clock clock;
 
-  private final Duration cleanUpInitialDelay;
-  private final Duration cleanUpTimeout;
+  private final Duration initialDelay;
+  private final Duration timeout;
+  private final boolean removeTasksAfterTimeout;
 
   public ConsumerGroupCleanUpTask(
       MultiDCAwareService multiDCAwareService,
-      Map<String, ConsumerGroupToDeleteRepository> consumerGroupToDeleteRepositoriesByDatacenter,
+      Map<String, ConsumerGroupToDeleteRepository> repositoriesByDatacenter,
       SubscriptionService subscriptionService,
       ConsumerGroupCleanUpProperties cleanUpProperties,
       Clock clock) {
+
     this.multiDCAwareService = multiDCAwareService;
-    this.consumerGroupToDeleteRepositoriesByDatacenter =
-        consumerGroupToDeleteRepositoriesByDatacenter;
+    this.repositoriesByDatacenter = repositoriesByDatacenter;
     this.subscriptionService = subscriptionService;
     this.clock = clock;
-    this.cleanUpInitialDelay = cleanUpProperties.getInitialDelay();
-    this.cleanUpTimeout = cleanUpProperties.getTimeout();
+
+    this.initialDelay = cleanUpProperties.getInitialDelay();
+    this.timeout = cleanUpProperties.getTimeout();
+    this.removeTasksAfterTimeout = cleanUpProperties.isRemoveTasksAfterTimeout();
   }
 
   @Override
   public void run() {
-    consumerGroupToDeleteRepositoriesByDatacenter.values().stream()
+    repositoriesByDatacenter.values().stream()
         .flatMap(repository -> repository.getAllConsumerGroupsToDelete().stream())
-        .filter(this::shouldConsumerGroupDeletionTaskBeProcessed)
-        .forEach(this::tryToDeleteConsumerGroup);
+        .filter(this::isTaskReadyForProcessing)
+        .forEach(this::processDeletionTask);
   }
 
-  private void tryToDeleteConsumerGroup(ConsumerGroupToDelete consumerGroupToDelete) {
-    if (subscriptionService.subscriptionExists(consumerGroupToDelete.subscriptionName())) {
-      logger.info(
-          "Subscription {} still exists, skipping deletion of consumer group in datacenter {}",
-          consumerGroupToDelete.subscriptionName().getQualifiedName(),
-          consumerGroupToDelete.datacenter());
-    } else {
-      logger.info(
-          "Deleting consumer group for subscription {} in datacenter {}",
-          consumerGroupToDelete.subscriptionName().getQualifiedName(),
-          consumerGroupToDelete.datacenter());
-
-      try {
-        multiDCAwareService.deleteConsumerGroupForDatacenter(
-            consumerGroupToDelete.subscriptionName(), consumerGroupToDelete.datacenter());
-      } catch (Exception e) {
-        logger.error(
-            "Failed to delete consumer group for subscription {} in datacenter {}",
-            consumerGroupToDelete.subscriptionName().getQualifiedName(),
-            consumerGroupToDelete.datacenter(),
-            e);
-        return;
-      }
-
-      logger.info(
-          "Successfully deleted consumer group for subscription {} in datacenter {}",
-          consumerGroupToDelete.subscriptionName().getQualifiedName(),
-          consumerGroupToDelete.datacenter());
+  private void processDeletionTask(ConsumerGroupToDelete task) {
+    if (subscriptionService.subscriptionExists(task.subscriptionName())) {
+      logSkippingDeletion(task);
+      removeDeletionTask(task);
+      return;
     }
 
-    consumerGroupToDeleteRepositoriesByDatacenter
-        .get(consumerGroupToDelete.datacenter())
-        .deleteConsumerGroupToDeleteTask(consumerGroupToDelete);
+    if (isTaskExpired(task)) {
+      logTaskExpiration(task);
+      if (removeTasksAfterTimeout) {
+        removeDeletionTask(task);
+      }
+      return;
+    }
 
-    logger.info(
-        "Deleted consumer group deletion task for subscription {} in datacenter {}",
-        consumerGroupToDelete.subscriptionName().getQualifiedName(),
-        consumerGroupToDelete.datacenter());
+    if (deleteConsumerGroup(task)) {
+      removeDeletionTask(task);
+    }
   }
 
-  private boolean shouldConsumerGroupDeletionTaskBeProcessed(
-      ConsumerGroupToDelete consumerGroupToDelete) {
-    Duration taskAge = Duration.between(consumerGroupToDelete.requestedAt(), Instant.now(clock));
-    return taskAge.compareTo(cleanUpInitialDelay) >= 0
-        && taskAge.compareTo(cleanUpInitialDelay.plus(cleanUpTimeout)) <= 0;
+  private boolean deleteConsumerGroup(ConsumerGroupToDelete task) {
+    logDeletionAttempt(task);
+    try {
+      multiDCAwareService.deleteConsumerGroupForDatacenter(
+          task.subscriptionName(), task.datacenter());
+    } catch (Exception e) {
+      logDeletionFailure(task, e);
+      return false;
+    }
+    logSuccessfulDeletion(task);
+    return true;
+  }
+
+  private void removeDeletionTask(ConsumerGroupToDelete task) {
+    repositoriesByDatacenter.get(task.datacenter()).deleteConsumerGroupToDeleteTask(task);
+    logTaskRemoval(task);
+  }
+
+  private boolean isTaskReadyForProcessing(ConsumerGroupToDelete task) {
+    Duration taskAge = Duration.between(task.requestedAt(), Instant.now(clock));
+    return !taskAge.minus(initialDelay).isNegative();
+  }
+
+  private boolean isTaskExpired(ConsumerGroupToDelete task) {
+    Duration taskAge = Duration.between(task.requestedAt(), Instant.now(clock));
+    return taskAge.compareTo(initialDelay.plus(timeout)) > 0;
+  }
+
+  private void logSkippingDeletion(ConsumerGroupToDelete task) {
+    logger.info(
+        "Skipping deletion: Subscription {} still exists in datacenter {}",
+        task.subscriptionName().getQualifiedName(),
+        task.datacenter());
+  }
+
+  private void logTaskExpiration(ConsumerGroupToDelete task) {
+    logger.warn(
+        "Task expired: Subscription {} in datacenter {}",
+        task.subscriptionName().getQualifiedName(),
+        task.datacenter());
+  }
+
+  private void logDeletionAttempt(ConsumerGroupToDelete task) {
+    logger.info(
+        "Attempting to delete consumer group for subscription {} in datacenter {}",
+        task.subscriptionName().getQualifiedName(),
+        task.datacenter());
+  }
+
+  private void logDeletionFailure(ConsumerGroupToDelete task, Exception e) {
+    logger.error(
+        "Failed to delete consumer group for subscription {} in datacenter {}",
+        task.subscriptionName().getQualifiedName(),
+        task.datacenter(),
+        e);
+  }
+
+  private void logSuccessfulDeletion(ConsumerGroupToDelete task) {
+    logger.info(
+        "Successfully deleted consumer group for subscription {} in datacenter {}",
+        task.subscriptionName().getQualifiedName(),
+        task.datacenter());
+  }
+
+  private void logTaskRemoval(ConsumerGroupToDelete task) {
+    logger.info(
+        "Removed deletion task for subscription {} in datacenter {}",
+        task.subscriptionName().getQualifiedName(),
+        task.datacenter());
   }
 }

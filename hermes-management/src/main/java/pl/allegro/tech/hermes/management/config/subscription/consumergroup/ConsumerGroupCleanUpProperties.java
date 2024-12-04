@@ -9,6 +9,7 @@ public class ConsumerGroupCleanUpProperties {
   private Duration interval = Duration.ofMinutes(5);
   private Duration initialDelay = Duration.ofMinutes(1);
   private Duration timeout = Duration.ofHours(24);
+  private boolean removeTasksAfterTimeout = true;
 
   public boolean isEnabled() {
     return enabled;
@@ -40,5 +41,13 @@ public class ConsumerGroupCleanUpProperties {
 
   public void setTimeout(Duration timeout) {
     this.timeout = timeout;
+  }
+
+  public void setRemoveTasksAfterTimeout(boolean removeTasksAfterTimeout) {
+    this.removeTasksAfterTimeout = removeTasksAfterTimeout;
+  }
+
+  public boolean isRemoveTasksAfterTimeout() {
+    return removeTasksAfterTimeout;
   }
 }
