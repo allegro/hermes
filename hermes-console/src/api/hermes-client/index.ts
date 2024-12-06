@@ -44,6 +44,7 @@ import type { Stats } from '@/api/stats';
 import type { SubscriptionHealth } from '@/api/subscription-health';
 import type { SubscriptionMetrics } from '@/api/subscription-metrics';
 import type { TopicForm } from '@/composables/topic/use-form-topic/types';
+import type { InactiveTopic } from "@/api/inactive-topics";
 
 const acceptHeader = 'Accept';
 const contentTypeHeader = 'Content-Type';
@@ -191,6 +192,10 @@ export function fetchOfflineClientsSource(
 
 export function fetchConstraints(): ResponsePromise<ConstraintsConfig> {
   return axios.get<ConstraintsConfig>('/workload-constraints');
+}
+
+export function fetchInactiveTopics(): ResponsePromise<InactiveTopic[]> {
+  return axios.get<InactiveTopic[]>('/inactive-topics'); // TODO: specify correct endpoint
 }
 
 export function fetchReadiness(): ResponsePromise<DatacenterReadiness[]> {

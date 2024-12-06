@@ -193,6 +193,18 @@ const en_US = {
       appliedFilter: '(applied filter: “{filter}”)',
     },
   },
+  inactiveTopics: {
+    heading: "Inactive Topics",
+    listing: {
+      index: '#',
+      name: 'Name',
+      lastUsed: 'Last published message',
+      lastNotified: 'Last notified',
+      howManyTimesNotified: 'How many times notified',
+      noInactiveTopics: 'No inactive topics',
+      whitelisted: 'Whitelisted'
+    }
+  },
   stats: {
     connectionError: {
       title: 'Connection error',

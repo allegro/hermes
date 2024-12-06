@@ -26,5 +26,6 @@
   "/owners/sources": "/ownerSources",
   "/owners/sources/*?search=:searchPhrase": "/topicsOwners?name_like=:searchPhrase",
   "/dashboards/topics/:topicName": "/topicDashboardUrl",
-  "/dashboards/topics/:topicName/subscriptions/:id": "/subscriptionDashboardUrl"
+  "/dashboards/topics/:topicName/subscriptions/:id": "/subscriptionDashboardUrl",
+  "/inactive-topics": "/inactiveTopics"
 }
