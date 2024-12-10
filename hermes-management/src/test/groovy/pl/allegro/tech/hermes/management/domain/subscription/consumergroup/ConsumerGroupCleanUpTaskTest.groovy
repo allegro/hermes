@@ -181,6 +181,10 @@ class ConsumerGroupCleanUpTaskTest extends MultiZookeeperIntegrationTest {
         consumerGroupToDeleteRepositoryMap.values().every { it.getAllConsumerGroupsToDelete().size() == 1 }
     }
 
+    def "Should skip removal of consumer group - not leader"() {
+        // TODO: Implement
+    }
+
     def "should properly handle exceptions"() {
         given:
         executor.execute(new ScheduleConsumerGroupToDeleteCommand(SubscriptionName.fromString("group.topic1\$subscription1"), clock.instant()))

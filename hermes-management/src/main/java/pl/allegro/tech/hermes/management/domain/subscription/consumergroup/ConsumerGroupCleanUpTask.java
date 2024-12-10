@@ -42,6 +42,7 @@ public class ConsumerGroupCleanUpTask implements Runnable {
 
   @Override
   public void run() {
+    // TODO: execute following code only on management leader instances
     repositoriesByDatacenter.values().stream()
         .flatMap(repository -> repository.getAllConsumerGroupsToDelete().stream())
         .filter(this::isTaskReadyForProcessing)
