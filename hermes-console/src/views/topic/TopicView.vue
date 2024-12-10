@@ -1,4 +1,5 @@
 <script async setup lang="ts">
+  import { copyToClipboard } from '@/utils/copy-utils';
   import { isTopicOwnerOrAdmin } from '@/utils/roles-util';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import { useDialog } from '@/composables/dialog/use-dialog/useDialog';
@@ -38,6 +39,7 @@
     offlineClientsSource,
     fetchOfflineClientsSource,
     removeTopic,
+    fetchTopicClients,
   } = useTopic(topicName);
 
   const breadcrumbsItems = [
@@ -80,6 +82,14 @@
     closeRemoveDialog();
     if (isTopicRemoved) {
       router.push({ path: `/ui/groups/${groupId}` });
+    }
+  }
+
+  async function copyClientsToClipboard() {
+    const clients = await fetchTopicClients();
+
+    if (clients != null) {
+      copyToClipboard(clients.join(','));
     }
   }
 
@@ -158,6 +168,7 @@
         :topic-name="topicName"
         :subscriptions="subscriptions ? subscriptions : []"
         :roles="roles"
+        @copyClientsClick="copyClientsToClipboard"
       />
 
       <offline-clients
