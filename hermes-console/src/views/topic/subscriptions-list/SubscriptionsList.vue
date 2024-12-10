@@ -17,6 +17,10 @@
     roles: Role[] | undefined;
   }>();
 
+  const emit = defineEmits<{
+    copyClientsClick: [];
+  }>();
+
   const statusTextColor: Record<State, String> = {
     [State.ACTIVE]: 'green',
     [State.PENDING]: 'orange',
@@ -79,6 +83,16 @@
                 v-model="filter"
                 prepend-inner-icon="mdi-magnify"
               />
+              <v-btn
+                v-if="subscriptions.length > 0"
+                :disabled="!isAny(roles)"
+                prepend-icon="mdi-content-copy"
+                density="comfortable"
+                @click="emit('copyClientsClick')"
+                style="margin-right: 10px"
+              >
+                {{ $t('topicView.subscriptions.copy') }}
+              </v-btn>
               <v-btn
                 :disabled="!isAny(roles)"
                 prepend-icon="mdi-plus"

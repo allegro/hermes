@@ -376,6 +376,7 @@ const en_US = {
       title: 'Subscriptions',
       create: 'Create subscription',
       search: 'Search...',
+      copy: 'Copy clients to clipboard',
     },
     errorMessage: {
       topicFetchFailed: 'Could not fetch {topicName} topic details',
@@ -709,6 +710,11 @@ const en_US = {
       delete: {
         success: 'Topic {topicName} successfully deleted',
         failure: "Couldn't delete topic {topicName}",
+      },
+      clients: {
+        fetch: {
+          failure: 'Failed to fetch topic clients',
+        },
       },
     },
     inconsistentTopic: {

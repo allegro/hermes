@@ -129,4 +129,32 @@ describe('SubscriptionsList', () => {
       expect(queryByText('bazbar-service')).not.toBeInTheDocument();
     },
   );
+
+  it('should render copy clients button when there are subscriptions', async () => {
+    // when
+    const { getByText } = render(SubscriptionsList, { props });
+    await fireEvent.click(getByText('topicView.subscriptions.title (2)'));
+
+    // then
+    expect(getByText('topicView.subscriptions.copy')).toBeVisible();
+  });
+
+  it('should not render copy clients button when there are no subscriptions', async () => {
+    // given
+    const propsWithoutSubscriptions = {
+      groupId: 'pl.allegro',
+      topicName: 'pl.allegro.DummyTopic',
+      subscriptions: [],
+      roles: dummyRoles,
+    };
+
+    // when
+    const { getByText, queryByText } = render(SubscriptionsList, {
+      props: propsWithoutSubscriptions,
+    });
+    await fireEvent.click(getByText('topicView.subscriptions.title (0)'));
+
+    // then
+    expect(queryByText('topicView.subscriptions.copy')).not.toBeInTheDocument();
+  });
 });
