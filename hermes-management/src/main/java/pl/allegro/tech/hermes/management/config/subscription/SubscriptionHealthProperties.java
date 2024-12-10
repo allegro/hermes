@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.management.config;
+package pl.allegro.tech.hermes.management.config.subscription;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

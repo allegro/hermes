@@ -41,6 +41,7 @@ public class HermesManagementTestApp implements HermesTestApp {
   private SpringApplicationBuilder app = null;
   private List<String> currentArgs = List.of();
   private PrometheusExtension prometheus = null;
+  private final List<String> extraArgs = new ArrayList<>();
 
   public HermesManagementTestApp(
       ZookeeperContainer hermesZookeeper,
@@ -196,6 +197,8 @@ public class HermesManagementTestApp implements HermesTestApp {
     args.add("--schema.repository.type=schema_registry");
     args.add("--schema.repository.deleteSchemaPathSuffix=");
 
+    args.addAll(extraArgs);
+
     return args;
   }
 
@@ -209,5 +212,9 @@ public class HermesManagementTestApp implements HermesTestApp {
 
   public GroupService groupService() {
     return app.context().getBean(GroupService.class);
+  }
+
+  public void withArgs(List<String> args) {
+    extraArgs.addAll(args);
   }
 }
