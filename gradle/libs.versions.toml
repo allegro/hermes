@@ -50,9 +50,13 @@ wiremock = "3.9.0"
 allure-bom = { group = "io.qameta.allure", name = "allure-bom", version.ref = "allure" }
 allure-junit-platform = { group = "io.qameta.allure", name = "allure-junit-platform" }
 allure-spock2 = { group = "io.qameta.allure", name = "allure-spock2" }
+annotations = { group = "com.google.code.findbugs", name = "annotations", version = "3.0.1" }
 assertj-core = { group = "org.assertj", name = "assertj-core", version.ref = "assertj" }
 avro = { group = "org.apache.avro", name = "avro", version.ref = "avro" }
 awaitility = { group = "org.awaitility", name = "awaitility", version.ref = "awaitility" }
+awaitility-groovy = { group = "org.awaitility", name = "awaitility-groovy", version.ref = "awaitility" }
+commons-codec = { group = "commons-codec", name = "commons-codec", version = "1.16.1" }
+commons-collections4 = { group = "org.apache.commons", name = "commons-collections4", version = "4.4" }
 commons-lang3 = { group = "org.apache.commons", name = "commons-lang3", version.ref = "commons-lang3" }
 curator-client = { group = "org.apache.curator", name = "curator-client", version.ref = "curator" }
 curator-recipes = { group = "org.apache.curator", name = "curator-recipes", version.ref = "curator" }
@@ -68,6 +72,7 @@ jackson-databind = { group = "com.fasterxml.jackson.core", name = "jackson-datab
 jackson-datatype-jsr310 = { group = "com.fasterxml.jackson.datatype", name = "jackson-datatype-jsr310", version.ref = "jackson" }
 jackson-jakarta-rs-json-provider = { group = "com.fasterxml.jackson.jakarta.rs", name = "jackson-jakarta-rs-json-provider", version.ref = "jackson" }
 jakarta-annotation-api = { group = "jakarta.annotation", name = "jakarta.annotation-api", version.ref = "jakarta-annotation-api" }
+jakarta-inject = { group = "jakarta.inject", name = "jakarta.inject-api", version = "2.0.1" }
 jakarta-servlet-api = { group = "jakarta.servlet", name = "jakarta.servlet-api", version.ref = "jakarta-servlet-api" }
 jakarta-ws-rs-api = { group = "jakarta.ws.rs", name = "jakarta.ws.rs-api", version.ref = "jakarta-ws-rs-api" }
 jakarta-xml-bind-api = { group = "jakarta.xml.bind", name = "jakarta.xml.bind-api", version.ref = "jakarta-xml-bind-api" }
@@ -91,6 +96,8 @@ junit-jupiter-api = { group = "org.junit.jupiter", name = "junit-jupiter-api", v
 junit-params = { group = "pl.pragmatists", name = "JUnitParams", version.ref = "junit-params" }
 junit-vintage-engine = { group = "org.junit.vintage", name = "junit-vintage-engine", version.ref = "junit_jupiter" }
 kafka-clients = { group = "org.apache.kafka", name = "kafka-clients", version.ref = "kafka" }
+log4j-over-slf4j = { group = "org.slf4j", name = "log4j-over-slf4j", version = "2.0.13" }
+logback-classic = { group = "ch.qos.logback", name = "logback-classic", version = "1.4.14" }
 metrics-core = { group = "io.dropwizard.metrics", name = "metrics-core", version.ref = "dropwizard_metrics" }
 micrometer-core = { group = "io.micrometer", name = "micrometer-core", version.ref = "micrometer_metrics" }
 micrometer-registry-prometheus = { group = "io.micrometer", name = "micrometer-registry-prometheus", version.ref = "micrometer_metrics" }
