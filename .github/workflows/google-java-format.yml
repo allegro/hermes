@@ -1,11 +1,11 @@
-name: Google java format
+name: Google Java Format
 
 on:
   workflow_dispatch:
   pull_request:
 
 jobs:
-  build:
+  format-check:
     runs-on: ubuntu-latest
 
     steps:
@@ -13,14 +13,13 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.ref || github.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
 
-      - name: Download and run google java format
+      - name: Download and run Google Java Format
         run: |
-          ls -la
           curl -sSLO "https://github.com/google/google-java-format/releases/download/v$VERSION/google-java-format_linux-x86-64"
           chmod a+x google-java-format_linux-x86-64
           ./.github/scripts/check-google-java-format.sh
         shell: bash
         env:
-            VERSION: 1.23.0
-
+          VERSION: 1.23.0
