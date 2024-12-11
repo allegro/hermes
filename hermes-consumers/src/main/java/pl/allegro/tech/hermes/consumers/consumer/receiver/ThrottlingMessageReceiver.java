@@ -58,6 +58,11 @@ public class ThrottlingMessageReceiver implements MessageReceiver {
   }
 
   @Override
+  public Set<Integer> getAssignedPartitions() {
+    return receiver.getAssignedPartitions();
+  }
+
+  @Override
   public void stop() {
     receiver.stop();
   }

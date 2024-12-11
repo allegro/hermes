@@ -21,4 +21,9 @@ public class UninitializedMessageReceiver implements MessageReceiver {
   public boolean moveOffset(PartitionOffset offset) {
     throw new ConsumerNotInitializedException();
   }
+
+  @Override
+  public Set<Integer> getAssignedPartitions() {
+    throw new ConsumerNotInitializedException();
+  }
 }

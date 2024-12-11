@@ -66,6 +66,10 @@ public class ConsumerPartitionAssignmentState {
             subscriptionPartition.getSubscriptionName(), subscriptionPartition.getPartition());
   }
 
+  public Set<Integer> getAssignedPartitions(SubscriptionName subscriptionName) {
+    return assigned.get(subscriptionName);
+  }
+
   private boolean isAssigned(SubscriptionName name, int partition) {
     return assigned.containsKey(name) && assigned.get(name).contains(partition);
   }
