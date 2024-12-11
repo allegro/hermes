@@ -1,7 +1,8 @@
 {
   "inactiveTopics": [
     {"topic":  "group.topic1", "lastPublishedTsMs": 1732499845200, "notificationTsMs": [1733499835210, 1733499645212], "whitelisted":  false},
-    {"topic":  "group.topic2", "lastPublishedTsMs": 1732499325200, "notificationTsMs": [], "whitelisted":  true}
+    {"topic":  "group.topic2", "lastPublishedTsMs": 1633928665148, "notificationTsMs": [], "whitelisted":  true},
+    {"topic":  "pl.allegro.public.group.DummyEvent", "lastPublishedTsMs": 1633928665148, "notificationTsMs": [1733499645212], "whitelisted":  false}
   ],
   "groups": [
     "pl.allegro.public.offer",
