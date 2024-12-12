@@ -50,12 +50,12 @@ public class GoogleBigQueryConfiguration {
         return new GoogleBigQueryAvroDataWriterPool(factory);
     }
 
-//    @Bean
-//    public GoogleBigQueryAvroToProtoConverter avroToProtoConverter() {
-//        return new GoogleBigQueryAvroToProtoConverter();
-//    }
     @Bean
-    public AllegroAvroToBigQueryRow avroToProtoConverter() {
-        return new AllegroAvroToBigQueryRow(new GenericRecordToDynamicMessageConverter());
+    public GoogleBigQueryAvroToProtoConverter avroToProtoConverter() {
+        return new GoogleBigQueryAvroToProtoConverter();
     }
+//    @Bean
+//    public AllegroAvroToBigQueryRow avroToProtoConverter() {
+//        return new AllegroAvroToBigQueryRow(new GenericRecordToDynamicMessageConverter());
+//    }
 }

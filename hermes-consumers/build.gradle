@@ -18,7 +18,6 @@ dependencies {
     api group: 'org.springframework.boot', name: 'spring-boot-starter', version: versions.spring
     api group: 'org.eclipse.jetty', name: 'jetty-alpn-java-client', version: versions.jetty
     api group: 'org.eclipse.jetty.http2', name: 'jetty-http2-client-transport', version: versions.jetty
-    implementation group: 'pl.allegro.bigdata.avro', name: 'gcp-avro-tools', version: '3.0.1'
 
     implementation group: 'org.jctools', name: 'jctools-core', version: '4.0.3'
     api group: 'jakarta.jms', name: 'jakarta.jms-api', version: '3.1.0'
