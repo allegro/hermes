@@ -56,7 +56,7 @@
 </script>
 
 <template>
-  <v-card density="compact">
+  <v-card density="compact" border flat>
     <div class="d-flex justify-end mr-4 mb-1">
       <v-dialog
         v-model="showSubscriptionEditForm"

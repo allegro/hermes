@@ -7,7 +7,7 @@
 </script>
 
 <template>
-  <v-card class="mb-2">
+  <v-card class="mb-2" border flat>
     <template #title>
       <p class="font-weight-bold">
         {{ $t('subscription.headersCard.title') }}

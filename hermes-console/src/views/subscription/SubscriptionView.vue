@@ -124,6 +124,7 @@
     },
     {
       title: subscriptionId,
+      active: true,
     },
   ];
 
@@ -229,13 +230,6 @@
             @retransmit="onRetransmit"
             @skipAllMessages="skipAllMessages"
           />
-          <last-undelivered-message
-            v-if="
-              subscriptionLastUndeliveredMessage &&
-              isSubscriptionOwnerOrAdmin(roles)
-            "
-            :last-undelivered="subscriptionLastUndeliveredMessage"
-          />
         </v-col>
         <v-col md="6">
           <properties-card v-if="subscription" :subscription="subscription" />
@@ -253,6 +247,11 @@
             v-if="!!subscription && subscription.headers.length > 0"
             :headers="subscription?.headers"
           />
+        </v-col>
+      </v-row>
+
+      <v-row dense>
+        <v-col md="7">
           <undelivered-messages-card
             v-if="
               subscriptionUndeliveredMessages &&
@@ -260,6 +259,15 @@
               isSubscriptionOwnerOrAdmin(roles)
             "
             :undelivered-messages="subscriptionUndeliveredMessages"
+          />
+        </v-col>
+        <v-col md="5">
+          <last-undelivered-message
+            v-if="
+              subscriptionLastUndeliveredMessage &&
+              isSubscriptionOwnerOrAdmin(roles)
+            "
+            :last-undelivered="subscriptionLastUndeliveredMessage"
           />
         </v-col>
       </v-row>

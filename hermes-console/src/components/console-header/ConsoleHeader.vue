@@ -29,7 +29,7 @@
 </script>
 
 <template>
-  <v-app-bar :elevation="2" density="compact">
+  <v-app-bar :elevation="0" density="compact" color="background">
     <div class="header">
       <!-- TODO: navigate to home -->
       <div class="header-left">
@@ -58,7 +58,18 @@
           "
         />
       </div>
-      <div>
+      <div class="d-flex flex-grow-1 align-center justify-center">
+        <v-btn
+          variant="outlined"
+          rounded
+          prepend-icon="mdi-magnify"
+          color="medium-emphasis"
+          min-width="400px"
+          class="text-capitalize"
+          >Press / to search
+        </v-btn>
+      </div>
+      <div class="d-flex align-center ga-2 pr-2">
         <theme-switch />
         <v-btn
           v-if="configStore.loadedConfig.auth.oauth.enabled && !isLoggedIn"
@@ -76,6 +87,7 @@
         >
           {{ t('header.logout') }}
         </v-btn>
+        <v-avatar color="grey" size="small"><span>G</span></v-avatar>
       </div>
     </div>
   </v-app-bar>

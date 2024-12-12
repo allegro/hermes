@@ -6,7 +6,7 @@
 </script>
 
 <template>
-  <v-card>
+  <v-card border flat>
     <template #title>
       <div class="d-flex justify-space-between">
         <p class="font-weight-bold">

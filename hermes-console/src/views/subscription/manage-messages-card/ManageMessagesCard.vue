@@ -87,7 +87,7 @@
     @action="skipMessages"
     @cancel="closeSkipAllMessagesDialog"
   />
-  <v-card>
+  <v-card border flat>
     <template #title>
       <p class="font-weight-bold">
         {{ $t('subscription.manageMessagesCard.title') }}

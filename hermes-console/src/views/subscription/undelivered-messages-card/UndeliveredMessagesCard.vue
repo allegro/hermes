@@ -8,7 +8,7 @@
 </script>
 
 <template>
-  <v-card class="mb-2">
+  <v-card class="mb-2" border flat>
     <template #title>
       <p class="font-weight-bold">
         {{ $t('subscription.undeliveredMessagesCard.title') }}
@@ -32,7 +32,6 @@
           <th class="text-left">
             {{ $t('subscription.undeliveredMessagesCard.timestamp') }}
           </th>
-          <th class="text-left"></th>
         </tr>
       </thead>
       <tbody>
@@ -45,14 +44,6 @@
           <td>{{ message.status }}</td>
           <td>{{ message.reason }}</td>
           <td>{{ formatTimestampMillis(message.timestamp) }}</td>
-          <td>
-            <v-btn
-              density="compact"
-              icon="mdi-magnify"
-              size="small"
-              variant="flat"
-            />
-          </td>
         </tr>
       </tbody>
     </v-table>
