@@ -1,4 +1,3 @@
-
 export interface InactiveTopic {
   topic: string;
   lastPublishedTsMs: number;

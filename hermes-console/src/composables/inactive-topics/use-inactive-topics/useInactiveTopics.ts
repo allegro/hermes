@@ -1,9 +1,7 @@
+import { fetchInactiveTopics as getInactiveTopics } from '@/api/hermes-client';
 import { ref } from 'vue';
-import {
-    fetchInactiveTopics as getInactiveTopics,
-} from '@/api/hermes-client';
+import type { InactiveTopic } from '@/api/inactive-topics';
 import type { Ref } from 'vue';
-import type {InactiveTopic} from "@/api/inactive-topics";
 
 export interface UseInactiveTopics {
   inactiveTopics: Ref<InactiveTopic[] | undefined>;

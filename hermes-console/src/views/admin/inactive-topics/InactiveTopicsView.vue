@@ -1,30 +1,22 @@
 <script setup lang="ts">
-import {useI18n} from 'vue-i18n';
-import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
-import LoadingSpinner from '@/components/loading-spinner/LoadingSpinner.vue';
-import {useInactiveTopics} from "@/composables/inactive-topics/use-inactive-topics/useInactiveTopics";
-import InactiveTopicsListing from "@/views/admin/inactive-topics/inactive-topics-listing/InactiveTopicsListing.vue";
+  import { useInactiveTopics } from '@/composables/inactive-topics/use-inactive-topics/useInactiveTopics';
+  import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
+  import InactiveTopicsListing from '@/views/admin/inactive-topics/inactive-topics-listing/InactiveTopicsListing.vue';
+  import LoadingSpinner from '@/components/loading-spinner/LoadingSpinner.vue';
 
-const {t} = useI18n();
-
-const {
-  inactiveTopics,
-  loading,
-  error,
-} = useInactiveTopics();
-
+  const { inactiveTopics, loading, error } = useInactiveTopics();
 </script>
 
 <template>
   <v-container>
     <v-row dense>
       <v-col md="12">
-        <loading-spinner v-if="loading"/>
+        <loading-spinner v-if="loading" />
         <console-alert
-            v-if="error.fetchInactiveTopics"
-            :title="$t('inactiveTopics.connectionError.title')"
-            :text="$t('inactiveTopics.connectionError.text')"
-            type="error"
+          v-if="error.fetchInactiveTopics"
+          :title="$t('inactiveTopics.connectionError.title')"
+          :text="$t('inactiveTopics.connectionError.text')"
+          type="error"
         />
       </v-col>
     </v-row>
@@ -38,8 +30,8 @@ const {
     <v-row dense>
       <v-col md="12">
         <inactive-topics-listing
-            v-if="inactiveTopics"
-            :inactive-topics="inactiveTopics"
+          v-if="inactiveTopics"
+          :inactive-topics="inactiveTopics"
         />
       </v-col>
     </v-row>

@@ -22,6 +22,7 @@ import type {
   Readiness,
 } from '@/api/datacenter-readiness';
 import type { Group } from '@/api/group';
+import type { InactiveTopic } from '@/api/inactive-topics';
 import type { InconsistentGroup } from '@/api/inconsistent-group';
 import type {
   MessageFiltersVerification,
@@ -44,7 +45,6 @@ import type { Stats } from '@/api/stats';
 import type { SubscriptionHealth } from '@/api/subscription-health';
 import type { SubscriptionMetrics } from '@/api/subscription-metrics';
 import type { TopicForm } from '@/composables/topic/use-form-topic/types';
-import type { InactiveTopic } from "@/api/inactive-topics";
 
 const acceptHeader = 'Accept';
 const contentTypeHeader = 'Content-Type';

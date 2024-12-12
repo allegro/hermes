@@ -198,7 +198,7 @@ const en_US = {
       title: 'Connection error',
       text: 'Could not fetch information about inactive topics',
     },
-    heading: "Inactive Topics",
+    heading: 'Inactive Topics',
     listing: {
       index: '#',
       name: 'Name',
@@ -206,8 +206,8 @@ const en_US = {
       lastNotified: 'Last notified',
       howManyTimesNotified: 'How many times notified',
       noInactiveTopics: 'No inactive topics',
-      whitelisted: 'Whitelisted'
-    }
+      whitelisted: 'Whitelisted',
+    },
   },
   stats: {
     connectionError: {
