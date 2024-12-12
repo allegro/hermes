@@ -7,8 +7,6 @@ import InactiveTopicsListing from "@/views/admin/inactive-topics/inactive-topics
 
 const {t} = useI18n();
 
-// TODO
-
 const {
   inactiveTopics,
   loading,
@@ -21,12 +19,11 @@ const {
   <v-container>
     <v-row dense>
       <v-col md="12">
-        <v-breadcrumbs :items="breadcrumbsItems" density="compact"/>
         <loading-spinner v-if="loading"/>
         <console-alert
-            v-if="error.fetchConstraints"
-            :title="$t('constraints.connectionError.title')"
-            :text="$t('constraints.connectionError.text')"
+            v-if="error.fetchInactiveTopics"
+            :title="$t('inactiveTopics.connectionError.title')"
+            :text="$t('inactiveTopics.connectionError.text')"
             type="error"
         />
       </v-col>

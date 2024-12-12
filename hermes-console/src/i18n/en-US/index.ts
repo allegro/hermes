@@ -194,6 +194,10 @@ const en_US = {
     },
   },
   inactiveTopics: {
+    connectionError: {
+      title: 'Connection error',
+      text: 'Could not fetch information about inactive topics',
+    },
     heading: "Inactive Topics",
     listing: {
       index: '#',
