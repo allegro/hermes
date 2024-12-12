@@ -195,7 +195,7 @@ export function fetchConstraints(): ResponsePromise<ConstraintsConfig> {
 }
 
 export function fetchInactiveTopics(): ResponsePromise<InactiveTopic[]> {
-  return axios.get<InactiveTopic[]>('/inactive-topics'); // TODO: specify correct endpoint
+  return axios.get<InactiveTopic[]>('/inactive-topics');
 }
 
 export function fetchReadiness(): ResponsePromise<DatacenterReadiness[]> {
