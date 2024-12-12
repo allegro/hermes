@@ -200,12 +200,10 @@ const en_US = {
     },
     heading: 'Inactive Topics',
     listing: {
-      index: '#',
       name: 'Name',
       lastUsed: 'Last published message',
       lastNotified: 'Last notified',
       howManyTimesNotified: 'How many times notified',
-      noInactiveTopics: 'No inactive topics',
       whitelisted: 'Whitelisted',
     },
   },
