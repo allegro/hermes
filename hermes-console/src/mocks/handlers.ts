@@ -20,6 +20,7 @@ import type { ConsumerGroup } from '@/api/consumer-group';
 import type { DashboardUrl } from '@/composables/metrics/use-metrics/useMetrics';
 import type { DatacenterReadiness } from '@/api/datacenter-readiness';
 import type { Group } from '@/api/group';
+import type { InactiveTopic } from '@/api/inactive-topics';
 import type { InconsistentGroup } from '@/api/inconsistent-group';
 import type { MessageFiltersVerificationResponse } from '@/api/message-filters-verification';
 import type {
@@ -385,6 +386,26 @@ export const fetchConstraintsErrorHandler = ({
   errorCode?: number;
 }) =>
   http.get(`${url}/workload-constraints`, () => {
+    return new HttpResponse(undefined, {
+      status: errorCode,
+    });
+  });
+
+export const fetchInactiveTopicsHandler = ({
+  inactiveTopics,
+}: {
+  inactiveTopics: InactiveTopic[];
+}) =>
+  http.get(`${url}/inactive-topics`, () => {
+    return HttpResponse.json(inactiveTopics);
+  });
+
+export const fetchInactiveTopicsErrorHandler = ({
+  errorCode = 500,
+}: {
+  errorCode?: number;
+}) =>
+  http.get(`${url}/inactive-topics`, () => {
     return new HttpResponse(undefined, {
       status: errorCode,
     });
