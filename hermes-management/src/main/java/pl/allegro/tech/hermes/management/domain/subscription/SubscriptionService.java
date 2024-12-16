@@ -475,14 +475,14 @@ public class SubscriptionService {
 
     switch (subscription.getState()) {
       case ACTIVE:
-        multiDCAwareService.consumerRetransmission(
+        multiDCAwareService.moveOffsetsForActiveConsumers(
             topic,
             subscriptionName,
             multiDCOffsetChangeSummary.getPartitionOffsetListPerBrokerName(),
             requester);
         break;
       case SUSPENDED:
-        multiDCAwareService.retransmit(
+        multiDCAwareService.moveOffsets(
             topic,
             subscriptionName,
             multiDCOffsetChangeSummary.getPartitionOffsetListPerBrokerName());

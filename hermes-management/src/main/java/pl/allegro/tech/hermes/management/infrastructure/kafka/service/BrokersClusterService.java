@@ -29,6 +29,7 @@ import pl.allegro.tech.hermes.api.ConsumerGroup;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.management.domain.message.RetransmissionService;
@@ -50,7 +51,6 @@ public class BrokersClusterService {
   private final ConsumerGroupsDescriber consumerGroupsDescriber;
   private final AdminClient adminClient;
   private final ConsumerGroupManager consumerGroupManager;
-  private final KafkaConsumerManager kafkaConsumerManager;
 
   public BrokersClusterService(
       String clusterName,
@@ -61,8 +61,7 @@ public class BrokersClusterService {
       OffsetsAvailableChecker offsetsAvailableChecker,
       LogEndOffsetChecker logEndOffsetChecker,
       AdminClient adminClient,
-      ConsumerGroupManager consumerGroupManager,
-      KafkaConsumerManager kafkaConsumerManager) {
+      ConsumerGroupManager consumerGroupManager) {
     this.clusterName = clusterName;
     this.singleMessageReader = singleMessageReader;
     this.retransmissionService = retransmissionService;
@@ -74,7 +73,6 @@ public class BrokersClusterService {
             kafkaNamesMapper, adminClient, logEndOffsetChecker, clusterName);
     this.adminClient = adminClient;
     this.consumerGroupManager = consumerGroupManager;
-    this.kafkaConsumerManager = kafkaConsumerManager;
   }
 
   public String getClusterName() {
@@ -156,39 +154,24 @@ public class BrokersClusterService {
   }
 
   public void moveOffsetsToTheEnd(Topic topic, SubscriptionName subscription) {
-    KafkaConsumer<byte[], byte[]> consumer = createKafkaConsumer(topic, subscription);
-    moveOffsets(
-        subscription, consumer, buildOffsetsMetadata(consumer.endOffsets(consumer.assignment())));
-    consumer.close();
+    List<PartitionOffset> endOffsets = retransmissionService.fetchTopicEndOffsets(topic);
+    moveOffsets(subscription, buildOffsetsMetadata(endOffsets));
   }
 
-  public void moveOffsets(
-      Topic topic, SubscriptionName subscription, List<PartitionOffset> offsets) {
-
-    KafkaConsumer<byte[], byte[]> consumer = createKafkaConsumer(topic, subscription);
-    moveOffsets(subscription, consumer, buildOffsetsMetadata(offsets));
-    consumer.close();
+  public void moveOffsets(SubscriptionName subscription, List<PartitionOffset> offsets) {
+    moveOffsets(subscription, buildOffsetsMetadata(offsets));
   }
 
   private void moveOffsets(
-      SubscriptionName subscription,
-      KafkaConsumer<byte[], byte[]> consumer,
-      Map<TopicPartition, OffsetAndMetadata> offsetAndMetadata) {
-    consumer.commitSync(offsetAndMetadata);
+      SubscriptionName subscription, Map<TopicPartition, OffsetAndMetadata> offsetAndMetadata) {
+    ConsumerGroupId consumerGroupId = kafkaNamesMapper.toConsumerGroupId(subscription);
+    adminClient.alterConsumerGroupOffsets(consumerGroupId.asString(), offsetAndMetadata).all();
 
     logger.info(
-        "Successfully moved offset to the end position for subscription {} and consumer group {}",
+        "Successfully moved offsets for subscription {} and consumer group {} to {}",
         subscription.getQualifiedName(),
-        kafkaNamesMapper.toConsumerGroupId(subscription));
-  }
-
-  private KafkaConsumer<byte[], byte[]> createKafkaConsumer(
-      Topic topic, SubscriptionName subscription) {
-    KafkaConsumer<byte[], byte[]> consumer = kafkaConsumerManager.createConsumer(subscription);
-    String kafkaTopicName = kafkaNamesMapper.toKafkaTopics(topic).getPrimary().name().asString();
-    Set<TopicPartition> topicPartitions = getTopicPartitions(consumer, kafkaTopicName);
-    consumer.assign(topicPartitions);
-    return consumer;
+        kafkaNamesMapper.toConsumerGroupId(subscription),
+        offsetAndMetadata.toString());
   }
 
   private int numberOfAssignmentsForConsumersGroups(List<String> consumerGroupsIds)
@@ -262,13 +245,6 @@ public class BrokersClusterService {
     return consumer.partitionsFor(kafkaTopicName).stream()
         .map(info -> new TopicPartition(info.topic(), info.partition()))
         .collect(toSet());
-  }
-
-  private Map<TopicPartition, OffsetAndMetadata> buildOffsetsMetadata(
-      Map<TopicPartition, Long> offsets) {
-    return offsets.entrySet().stream()
-        .map(entry -> ImmutablePair.of(entry.getKey(), new OffsetAndMetadata(entry.getValue())))
-        .collect(toMap(Pair::getKey, Pair::getValue));
   }
 
   private Map<TopicPartition, OffsetAndMetadata> buildOffsetsMetadata(

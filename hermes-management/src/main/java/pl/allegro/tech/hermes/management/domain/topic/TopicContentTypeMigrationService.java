@@ -63,7 +63,7 @@ public class TopicContentTypeMigrationService {
 
   private void notifySingleSubscription(
       Topic topic, Instant beforeMigrationInstant, String subscriptionName, RequestUser requester) {
-    multiDCAwareService.consumerRetransmission(
+    multiDCAwareService.moveOffsetsForActiveConsumers(
         topic,
         subscriptionName,
         multiDCAwareService

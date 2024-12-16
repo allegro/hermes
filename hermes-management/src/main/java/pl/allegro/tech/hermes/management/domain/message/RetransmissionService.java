@@ -8,6 +8,8 @@ public interface RetransmissionService {
 
   List<PartitionOffset> fetchTopicOffsetsAt(Topic topic, Long timestamp);
 
+  List<PartitionOffset> fetchTopicEndOffsets(Topic topic);
+
   void indicateOffsetChange(
       Topic topic,
       String subscription,

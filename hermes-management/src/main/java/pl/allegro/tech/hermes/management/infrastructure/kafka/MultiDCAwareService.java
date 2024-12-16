@@ -76,11 +76,10 @@ public class MultiDCAwareService {
     return multiDCOffsetChangeSummary;
   }
 
-  public void retransmit(
+  public void moveOffsets(
       Topic topic,
       String subscriptionName,
       Map<String, List<PartitionOffset>> brokerPartitionOffsets) {
-
     clusters.forEach(
         cluster ->
             cluster.validateIfOffsetsCanBeMoved(
@@ -89,18 +88,16 @@ public class MultiDCAwareService {
     clusters.forEach(
         cluster ->
             cluster.moveOffsets(
-                topic,
                 new SubscriptionName(subscriptionName, topic.getName()),
                 brokerPartitionOffsets.getOrDefault(
                     cluster.getClusterName(), Collections.emptyList())));
   }
 
-  public void consumerRetransmission(
+  public void moveOffsetsForActiveConsumers(
       Topic topic,
       String subscriptionName,
       Map<String, List<PartitionOffset>> brokerPartitionOffsets,
       RequestUser requester) {
-
     clusters.forEach(
         cluster ->
             cluster.validateIfOffsetsCanBeMovedByConsumers(
@@ -115,7 +112,7 @@ public class MultiDCAwareService {
                     cluster.getClusterName(), Collections.emptyList())));
 
     logger.info(
-        "Starting retransmission for subscription {}. Requested by {}. Retransmission offsets: {}",
+        "Starting offsets move for subscription {}. Requested by {}. Retransmission offsets: {}",
         topic.getQualifiedName() + "$" + subscriptionName,
         requester.getUsername(),
         brokerPartitionOffsets);

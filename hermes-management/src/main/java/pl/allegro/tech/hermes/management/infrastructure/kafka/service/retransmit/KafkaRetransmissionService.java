@@ -42,16 +42,10 @@ public class KafkaRetransmissionService implements RetransmissionService {
       String subscription,
       String brokersClusterName,
       List<PartitionOffset> partitionOffsets) {
-    kafkaNamesMapper
-        .toKafkaTopics(topic)
-        .forEach(
-            k -> {
-              for (PartitionOffset partitionOffset : partitionOffsets) {
-                if (!k.name().equals(partitionOffset.getTopic())) continue;
-                subscriptionOffsetChange.setSubscriptionOffset(
-                    topic.getName(), subscription, brokersClusterName, partitionOffset);
-              }
-            });
+    for (PartitionOffset partitionOffset : partitionOffsets) {
+      subscriptionOffsetChange.setSubscriptionOffset(
+          topic.getName(), subscription, brokersClusterName, partitionOffset);
+    }
   }
 
   @Override
@@ -71,6 +65,10 @@ public class KafkaRetransmissionService implements RetransmissionService {
     return consumerPool.get(kafkaTopic, partition);
   }
 
+  public List<PartitionOffset> fetchTopicEndOffsets(Topic topic) {
+    return fetchTopicOffsetsAt(topic, null);
+  }
+
   public List<PartitionOffset> fetchTopicOffsetsAt(Topic topic, Long timestamp) {
     List<PartitionOffset> partitionOffsetList = new ArrayList<>();
     kafkaNamesMapper
@@ -80,8 +78,7 @@ public class KafkaRetransmissionService implements RetransmissionService {
               List<Integer> partitionsIds = brokerStorage.readPartitionsIds(k.name().asString());
               for (Integer partitionId : partitionsIds) {
                 KafkaConsumer<byte[], byte[]> consumer = createKafkaConsumer(k, partitionId);
-                long offset =
-                    findClosestOffsetJustBeforeTimestamp(consumer, k, partitionId, timestamp);
+                long offset = getOffsetForTimestampOrEnd(timestamp, k, partitionId, consumer);
                 PartitionOffset partitionOffset =
                     new PartitionOffset(k.name(), offset, partitionId);
                 partitionOffsetList.add(partitionOffset);
@@ -91,19 +88,28 @@ public class KafkaRetransmissionService implements RetransmissionService {
     return partitionOffsetList;
   }
 
-  private long findClosestOffsetJustBeforeTimestamp(
+  private long getOffsetForTimestampOrEnd(
+      Long timestamp,
+      KafkaTopic kafkaTopic,
+      Integer partitionId,
+      KafkaConsumer<byte[], byte[]> consumer) {
+    long endOffset = getEndingOffset(consumer, kafkaTopic, partitionId);
+    return Optional.ofNullable(timestamp)
+        .flatMap(ts -> findClosestOffsetJustBeforeTimestamp(consumer, kafkaTopic, partitionId, ts))
+        .orElse(endOffset);
+  }
+
+  private Optional<Long> findClosestOffsetJustBeforeTimestamp(
       KafkaConsumer<byte[], byte[]> consumer,
       KafkaTopic kafkaTopic,
       int partition,
       long timestamp) {
-    long endOffset = getEndingOffset(consumer, kafkaTopic, partition);
     TopicPartition topicPartition = new TopicPartition(kafkaTopic.name().asString(), partition);
     return Optional.ofNullable(
             consumer
                 .offsetsForTimes(Collections.singletonMap(topicPartition, timestamp))
                 .get(topicPartition))
-        .orElse(new OffsetAndTimestamp(endOffset, timestamp))
-        .offset();
+        .map(OffsetAndTimestamp::offset);
   }
 
   private long getEndingOffset(
