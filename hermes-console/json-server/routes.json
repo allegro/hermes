@@ -9,6 +9,7 @@
   "/readiness/datacenters": "/readinessDatacenters",
   "/topics": "/topicNames",
   "/topics/:topicName/tracking-urls": "/topicsTrackingUrls",
+  "/topics/:topicName/subscriptions/:subscriptionName/tracking-urls": "/subscriptionsTrackingUrls",
   "/topics/:id/metrics": "/topicsMetrics/:id",
   "/topics/:id/preview": "/topicPreview",
   "/topics/:id/offline-clients-source": "/offlineClientsSource",

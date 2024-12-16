@@ -10,13 +10,13 @@ import {
   dummyTopic,
   dummyTopicMessagesPreview,
   dummyTopicMetrics,
-  dummyTrackingUrls,
 } from '@/dummy/topic';
 import { dummyRoles } from '@/dummy/roles';
 import {
   dummySubscription,
   secondDummySubscription,
 } from '@/dummy/subscription';
+import { dummyTrackingUrls } from '@/dummy/tracking-urls';
 import { fireEvent } from '@testing-library/vue';
 import { ref } from 'vue';
 import { render } from '@/utils/test-utils';
@@ -57,7 +57,7 @@ const useTopicMock: UseTopic = {
     fetchOfflineClientsSource: null,
     getTopicTrackingUrls: null,
   }),
-  topicTrackingUrls: ref(dummyTrackingUrls),
+  trackingUrls: ref(dummyTrackingUrls),
   fetchOfflineClientsSource: () => Promise.resolve(),
   removeTopic: () => Promise.resolve(true),
 };
@@ -270,6 +270,7 @@ describe('TopicView', () => {
         fetchTopicMetrics: null,
         fetchSubscriptions: null,
         fetchOfflineClientsSource: null,
+        getTopicTrackingUrls: null,
       }),
     });
     vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);

@@ -33,7 +33,7 @@ export interface UseTopic {
   metrics: Ref<TopicMetrics | undefined>;
   subscriptions: Ref<Subscription[] | undefined>;
   offlineClientsSource: Ref<OfflineClientsSource | undefined>;
-  topicTrackingUrls: Ref<TrackingUrl[] | undefined>;
+  trackingUrls: Ref<TrackingUrl[] | undefined>;
   loading: Ref<boolean>;
   error: Ref<UseTopicErrors>;
   fetchOfflineClientsSource: () => Promise<void>;
@@ -59,7 +59,7 @@ export function useTopic(topicName: string): UseTopic {
   const metrics = ref<TopicMetrics>();
   const subscriptions = ref<Subscription[]>();
   const offlineClientsSource = ref<OfflineClientsSource>();
-  const topicTrackingUrls = ref<TrackingUrl[]>();
+  const trackingUrls = ref<TrackingUrl[]>();
   const loading = ref(false);
   const error = ref<UseTopicErrors>({
     fetchTopic: null,
@@ -158,7 +158,7 @@ export function useTopic(topicName: string): UseTopic {
 
   const fetchTopicTrackingUrls = async () => {
     try {
-      topicTrackingUrls.value = (await getTopicTrackingUrls(topicName)).data;
+      trackingUrls.value = (await getTopicTrackingUrls(topicName)).data;
     } catch (e) {
       error.value.getTopicTrackingUrls = e as Error;
     }
@@ -196,7 +196,7 @@ export function useTopic(topicName: string): UseTopic {
     metrics,
     subscriptions,
     offlineClientsSource,
-    topicTrackingUrls,
+    trackingUrls,
     loading,
     error,
     fetchOfflineClientsSource,

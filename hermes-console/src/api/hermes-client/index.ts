@@ -196,6 +196,15 @@ export function getTopicTrackingUrls(
   return axios.get<TrackingUrl[]>(`/topics/${topicName}/tracking-urls`);
 }
 
+export function getSubscriptionTrackingUrls(
+  topicName: string,
+  subscriptionName: string,
+): ResponsePromise<TrackingUrl[]> {
+  return axios.get<TrackingUrl[]>(
+    `/topics/${topicName}/subscriptions/${subscriptionName}/tracking-urls`,
+  );
+}
+
 export function fetchConstraints(): ResponsePromise<ConstraintsConfig> {
   return axios.get<ConstraintsConfig>('/workload-constraints');
 }

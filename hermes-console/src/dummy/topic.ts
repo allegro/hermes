@@ -8,7 +8,6 @@ import type {
 } from '@/api/topic';
 import type { OfflineClientsSource } from '@/api/offline-clients-source';
 import type { Owner } from '@/api/owner';
-import type { TrackingUrl } from '@/api/tracking-url';
 
 export const dummyTopic: TopicWithSchema = {
   schema:
@@ -87,8 +86,3 @@ export const dummyOfflineClientsSource: OfflineClientsSource = {
   source:
     'https://www.openstreetmap.org/export/embed.html?bbox=-0.004017949104309083%2C51.47612752641776%2C0.00030577182769775396%2C51.478569861898606&layer=mapnik',
 };
-
-export const dummyTrackingUrls: TrackingUrl[] = [
-  { name: 'url1', url: 'https://test-url1' },
-  { name: 'url2', url: 'https://test-url2' },
-];

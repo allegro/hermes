@@ -37,7 +37,7 @@
     error,
     subscriptions,
     offlineClientsSource,
-    topicTrackingUrls,
+    trackingUrls,
     fetchOfflineClientsSource,
     removeTopic,
   } = useTopic(topicName);
@@ -140,7 +140,7 @@
           />
           <tracking-card
             v-if="topic?.trackingEnabled"
-            :tracking-urls="topicTrackingUrls"
+            :tracking-urls="trackingUrls"
           />
         </v-col>
         <v-col md="6">
