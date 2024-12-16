@@ -47,7 +47,7 @@ export interface UseTopicErrors {
   fetchTopicMetrics: Error | null;
   fetchSubscriptions: Error | null;
   fetchOfflineClientsSource: Error | null;
-  topicTrackingUrls: Error | null;
+  getTopicTrackingUrls: Error | null;
 }
 
 export function useTopic(topicName: string): UseTopic {
@@ -68,7 +68,7 @@ export function useTopic(topicName: string): UseTopic {
     fetchTopicMetrics: null,
     fetchSubscriptions: null,
     fetchOfflineClientsSource: null,
-    topicTrackingUrls: null,
+    getTopicTrackingUrls: null,
   });
 
   const fetchTopic = async () => {
@@ -160,7 +160,7 @@ export function useTopic(topicName: string): UseTopic {
     try {
       topicTrackingUrls.value = (await getTopicTrackingUrls(topicName)).data;
     } catch (e) {
-      error.value.topicTrackingUrls = e as Error;
+      error.value.getTopicTrackingUrls = e as Error;
     }
   };
 

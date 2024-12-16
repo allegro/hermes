@@ -10,6 +10,7 @@ import {
   dummyTopic,
   dummyTopicMessagesPreview,
   dummyTopicMetrics,
+  dummyTrackingUrls,
 } from '@/dummy/topic';
 import { dummyRoles } from '@/dummy/roles';
 import {
@@ -54,7 +55,9 @@ const useTopicMock: UseTopic = {
     fetchTopicMetrics: null,
     fetchSubscriptions: null,
     fetchOfflineClientsSource: null,
+    getTopicTrackingUrls: null,
   }),
+  topicTrackingUrls: ref(dummyTrackingUrls),
   fetchOfflineClientsSource: () => Promise.resolve(),
   removeTopic: () => Promise.resolve(true),
 };
@@ -345,5 +348,26 @@ describe('TopicView', () => {
     expect(
       getByText('topicView.confirmationDialog.remove.text'),
     ).toBeInTheDocument();
+  });
+
+  it('should render tracking card when tracking is enabled', () => {
+    // given
+    const dummyTopic2 = dummyTopic;
+    dummyTopic2.trackingEnabled = true;
+
+    // and
+    vi.mocked(useTopic).mockReturnValueOnce({
+      ...useTopicMock,
+      topic: ref(dummyTopic2),
+    });
+    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
+
+    // when
+    const { getByText } = render(TopicView, {
+      testPinia: createTestingPiniaWithState(),
+    });
+
+    // then
+    expect(getByText('trackingCard.title')).toBeVisible();
   });
 });
