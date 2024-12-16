@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.management.config.subscription.consumergroup.ConsumerGroupCleanUpProperties;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
+import pl.allegro.tech.hermes.management.infrastructure.leader.ManagementLeadership;
 
 public class ConsumerGroupCleanUpScheduler {
   private final Logger logger = LoggerFactory.getLogger(ConsumerGroupCleanUpScheduler.class);
@@ -24,6 +25,7 @@ public class ConsumerGroupCleanUpScheduler {
   private final ScheduledExecutorService scheduler =
       Executors.newSingleThreadScheduledExecutor(
           new ThreadFactoryBuilder().setNameFormat("consumer-group-clean-up-%d").build());
+  private final ManagementLeadership managementLeadership;
   private final Clock clock;
   private final boolean enabled;
   private final long cleanUpIntervalInSeconds;
@@ -34,11 +36,13 @@ public class ConsumerGroupCleanUpScheduler {
       Map<String, ConsumerGroupToDeleteRepository> consumerGroupToDeleteRepositoriesByDatacenter,
       SubscriptionService subscriptionService,
       ConsumerGroupCleanUpProperties cleanUpProperties,
+      ManagementLeadership managementLeadership,
       Clock clock) {
     this.multiDCAwareService = multiDCAwareService;
     this.consumerGroupToDeleteRepositoriesByDatacenter =
         consumerGroupToDeleteRepositoriesByDatacenter;
     this.subscriptionService = subscriptionService;
+    this.managementLeadership = managementLeadership;
     this.clock = clock;
     this.enabled = cleanUpProperties.isEnabled();
     this.cleanUpIntervalInSeconds = cleanUpProperties.getInterval().toSeconds();
@@ -55,6 +59,7 @@ public class ConsumerGroupCleanUpScheduler {
               consumerGroupToDeleteRepositoriesByDatacenter,
               subscriptionService,
               cleanUpProperties,
+              managementLeadership,
               clock);
       scheduler.scheduleAtFixedRate(
           consumerGroupCleanUpTask, 0, cleanUpIntervalInSeconds, TimeUnit.SECONDS);

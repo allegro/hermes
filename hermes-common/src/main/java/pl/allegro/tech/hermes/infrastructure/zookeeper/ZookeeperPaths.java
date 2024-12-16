@@ -32,6 +32,8 @@ public class ZookeeperPaths {
   public static final String OFFLINE_RETRANSMISSION_TASKS_PATH = "tasks";
   public static final String CONSUMER_GROUP_TO_DELETE = "consumer-group-to-delete";
   public static final String CONSUMER_GROUP_TO_DELETE_TASKS = "tasks";
+  public static final String MANAGEMENT_PATH = "management";
+  public static final String MANAGEMENT_PATH_LEADER = "leader";
 
   private final String basePath;
 
@@ -192,6 +194,10 @@ public class ZookeeperPaths {
   public String consumerGroupToDeletePath(String taskId) {
     return Joiner.on(URL_SEPARATOR)
         .join(basePath, CONSUMER_GROUP_TO_DELETE, CONSUMER_GROUP_TO_DELETE_TASKS, taskId);
+  }
+
+  public String managementLeaderPath() {
+    return Joiner.on(URL_SEPARATOR).join(basePath, MANAGEMENT_PATH, MANAGEMENT_PATH_LEADER);
   }
 
   public String join(String... parts) {

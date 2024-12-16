@@ -9,6 +9,7 @@ import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService
 import pl.allegro.tech.hermes.management.domain.subscription.consumergroup.ConsumerGroupCleanUpScheduler;
 import pl.allegro.tech.hermes.management.domain.subscription.consumergroup.ConsumerGroupToDeleteRepository;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
+import pl.allegro.tech.hermes.management.infrastructure.leader.ManagementLeadership;
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperRepositoryManager;
 
 @Configuration
@@ -22,12 +23,14 @@ public class ConsumerGroupCleanUpConfig {
       MultiDCAwareService multiDCAwareService,
       SubscriptionService subscriptionService,
       ConsumerGroupCleanUpProperties properties,
+      ManagementLeadership managementLeadership,
       Clock clock) {
     return new ConsumerGroupCleanUpScheduler(
         multiDCAwareService,
         zookeeperRepositoryManager.getRepositoriesByType(ConsumerGroupToDeleteRepository.class),
         subscriptionService,
         properties,
+        managementLeadership,
         clock);
   }
 }

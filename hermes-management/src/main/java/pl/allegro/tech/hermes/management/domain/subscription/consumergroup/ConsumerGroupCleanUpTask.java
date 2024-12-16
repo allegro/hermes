@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.management.config.subscription.consumergroup.ConsumerGroupCleanUpProperties;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
+import pl.allegro.tech.hermes.management.infrastructure.leader.ManagementLeadership;
 
 public class ConsumerGroupCleanUpTask implements Runnable {
 
@@ -17,6 +18,7 @@ public class ConsumerGroupCleanUpTask implements Runnable {
   private final MultiDCAwareService multiDCAwareService;
   private final Map<String, ConsumerGroupToDeleteRepository> repositoriesByDatacenter;
   private final SubscriptionService subscriptionService;
+  private final ManagementLeadership managementLeadership;
   private final Clock clock;
 
   private final Duration initialDelay;
@@ -28,11 +30,13 @@ public class ConsumerGroupCleanUpTask implements Runnable {
       Map<String, ConsumerGroupToDeleteRepository> repositoriesByDatacenter,
       SubscriptionService subscriptionService,
       ConsumerGroupCleanUpProperties cleanUpProperties,
+      ManagementLeadership managementLeadership,
       Clock clock) {
 
     this.multiDCAwareService = multiDCAwareService;
     this.repositoriesByDatacenter = repositoriesByDatacenter;
     this.subscriptionService = subscriptionService;
+    this.managementLeadership = managementLeadership;
     this.clock = clock;
 
     this.initialDelay = cleanUpProperties.getInitialDelay();
@@ -42,11 +46,12 @@ public class ConsumerGroupCleanUpTask implements Runnable {
 
   @Override
   public void run() {
-    // TODO: execute following code only on management leader instances
-    repositoriesByDatacenter.values().stream()
-        .flatMap(repository -> repository.getAllConsumerGroupsToDelete().stream())
-        .filter(this::isTaskReadyForProcessing)
-        .forEach(this::processDeletionTask);
+    if (managementLeadership.isLeader()) {
+      repositoriesByDatacenter.values().stream()
+          .flatMap(repository -> repository.getAllConsumerGroupsToDelete().stream())
+          .filter(this::isTaskReadyForProcessing)
+          .forEach(this::processDeletionTask);
+    }
   }
 
   private void processDeletionTask(ConsumerGroupToDelete task) {

@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.management.domain.mode.ModeService
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService
 import pl.allegro.tech.hermes.management.domain.subscription.consumergroup.command.ScheduleConsumerGroupToDeleteCommand
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService
+import pl.allegro.tech.hermes.management.infrastructure.leader.ManagementLeadership
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClientManager
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperRepositoryManager
 import pl.allegro.tech.hermes.management.utils.MultiZookeeperIntegrationTest
@@ -28,6 +29,7 @@ class ConsumerGroupCleanUpTaskTest extends MultiZookeeperIntegrationTest {
 
     MultiDCAwareService multiDCAwareService = Mock(MultiDCAwareService)
     SubscriptionService subscriptionService = Mock(SubscriptionService)
+    ManagementLeadership managementLeadership = Mock(ManagementLeadership)
     ConsumerGroupCleanUpProperties consumerGroupCleanUpProperties = new ConsumerGroupCleanUpProperties()
     MutableClock clock = new MutableClock(Instant.parse('2015-12-03T10:15:30.00Z'), ZoneId.of("UTC"))
 
@@ -52,6 +54,7 @@ class ConsumerGroupCleanUpTaskTest extends MultiZookeeperIntegrationTest {
                 consumerGroupToDeleteRepositoryMap,
                 subscriptionService,
                 consumerGroupCleanUpProperties,
+                managementLeadership,
                 clock)
     }
 
@@ -84,6 +87,9 @@ class ConsumerGroupCleanUpTaskTest extends MultiZookeeperIntegrationTest {
         2 * subscriptionService.subscriptionExists(SubscriptionName.fromString("group.topic2\$subscription1")) >> false
 
         and:
+        managementLeadership.isLeader() >> true
+
+        and:
         consumerGroupToDeleteRepositoryMap.values().every { it.getAllConsumerGroupsToDelete().size() == 0 }
     }
 
@@ -106,6 +112,9 @@ class ConsumerGroupCleanUpTaskTest extends MultiZookeeperIntegrationTest {
         2 * subscriptionService.subscriptionExists(SubscriptionName.fromString("group.topic1\$subscription1")) >> true
 
         and:
+        managementLeadership.isLeader() >> true
+
+        and:
         consumerGroupToDeleteRepositoryMap.values().every { it.getAllConsumerGroupsToDelete().size() == 0 }
     }
 
@@ -123,6 +132,9 @@ class ConsumerGroupCleanUpTaskTest extends MultiZookeeperIntegrationTest {
 
         and:
         0 * subscriptionService.subscriptionExists(SubscriptionName.fromString("group.topic1\$subscription1"))
+
+        and:
+        managementLeadership.isLeader() >> true
 
         and:
         consumerGroupToDeleteRepositoryMap.values().every { it.getAllConsumerGroupsToDelete().size() == 1 }
@@ -147,6 +159,9 @@ class ConsumerGroupCleanUpTaskTest extends MultiZookeeperIntegrationTest {
         2 * subscriptionService.subscriptionExists(SubscriptionName.fromString("group.topic1\$subscription1")) >> false
 
         and:
+        managementLeadership.isLeader() >> true
+
+        and:
         consumerGroupToDeleteRepositoryMap.values().every { it.getAllConsumerGroupsToDelete().size() == 0 }
     }
 
@@ -161,6 +176,7 @@ class ConsumerGroupCleanUpTaskTest extends MultiZookeeperIntegrationTest {
                 consumerGroupToDeleteRepositoryMap,
                 subscriptionService,
                 cleanUpProperties,
+                managementLeadership,
                 clock)
 
         and:
@@ -178,11 +194,35 @@ class ConsumerGroupCleanUpTaskTest extends MultiZookeeperIntegrationTest {
         2 * subscriptionService.subscriptionExists(SubscriptionName.fromString("group.topic1\$subscription1")) >> false
 
         and:
+        managementLeadership.isLeader() >> true
+
+        and:
         consumerGroupToDeleteRepositoryMap.values().every { it.getAllConsumerGroupsToDelete().size() == 1 }
     }
 
     def "Should skip removal of consumer group - not leader"() {
-        // TODO: Implement
+        given:
+        executor.execute(new ScheduleConsumerGroupToDeleteCommand(SubscriptionName.fromString("group.topic1\$subscription1"), clock.instant()))
+
+        and:
+        clock + consumerGroupCleanUpProperties.getInitialDelay()
+
+        when:
+        consumerGroupCleanUpTask.run()
+
+        then:
+        for (String datacenter : zookeeperClientManager.getClients().collect { it.datacenterName }) {
+            0 * multiDCAwareService.deleteConsumerGroupForDatacenter(SubscriptionName.fromString("group.topic1\$subscription1"), datacenter)
+        }
+
+        and:
+        0 * subscriptionService.subscriptionExists(SubscriptionName.fromString("group.topic1\$subscription1"))
+
+        and:
+        managementLeadership.isLeader() >> false
+
+        and:
+        consumerGroupToDeleteRepositoryMap.values().every { it.getAllConsumerGroupsToDelete().size() == 1 }
     }
 
     def "should properly handle exceptions"() {
@@ -207,6 +247,9 @@ class ConsumerGroupCleanUpTaskTest extends MultiZookeeperIntegrationTest {
         2 * subscriptionService.subscriptionExists(SubscriptionName.fromString("group.topic1\$subscription2")) >> false
 
         and:
+        managementLeadership.isLeader() >> true
+
+        and:
         consumerGroupToDeleteRepositoryMap.forEach { datacenter, repository ->
             List<ConsumerGroupToDelete> consumerGroupsToDelete = repository.getAllConsumerGroupsToDelete()
             assert consumerGroupsToDelete.size() == 1
@@ -227,6 +270,9 @@ class ConsumerGroupCleanUpTaskTest extends MultiZookeeperIntegrationTest {
 
         and:
         2 * subscriptionService.subscriptionExists(SubscriptionName.fromString("group.topic1\$subscription1")) >> false
+
+        and:
+        managementLeadership.isLeader() >> true
 
         and:
         consumerGroupToDeleteRepositoryMap.values().every { it.getAllConsumerGroupsToDelete().size() == 0 }
