@@ -5,9 +5,9 @@ import static pl.allegro.tech.hermes.api.ErrorCode.OFFSET_NOT_FOUND_EXCEPTION;
 import pl.allegro.tech.hermes.api.ErrorCode;
 import pl.allegro.tech.hermes.management.domain.ManagementException;
 
-class OffsetNotFoundException extends ManagementException {
+public class OffsetNotFoundException extends ManagementException {
 
-  OffsetNotFoundException(String message) {
+  public OffsetNotFoundException(String message) {
     super(message);
   }
 

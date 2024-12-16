@@ -51,7 +51,9 @@ import pl.allegro.tech.hermes.management.domain.subscription.commands.UpdateSubs
 import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthChecker;
 import pl.allegro.tech.hermes.management.domain.subscription.validator.SubscriptionValidator;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.MovingSubscriptionOffsetsValidationException;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCOffsetChangeSummary;
 import pl.allegro.tech.hermes.tracker.management.LogRepository;
 
 public class SubscriptionService {
@@ -460,5 +462,36 @@ public class SubscriptionService {
                   metrics, s.getName(), s.getQualifiedTopicName());
             })
         .collect(toList());
+  }
+
+  public MultiDCOffsetChangeSummary retransmit(
+      Topic topic, String subscriptionName, Long timestamp, boolean dryRun, RequestUser requester) {
+    Subscription subscription = getSubscriptionDetails(topic.getName(), subscriptionName);
+
+    MultiDCOffsetChangeSummary multiDCOffsetChangeSummary =
+        multiDCAwareService.fetchTopicOffsetsAt(topic, timestamp);
+
+    if (dryRun) return multiDCOffsetChangeSummary;
+
+    switch (subscription.getState()) {
+      case ACTIVE:
+        multiDCAwareService.consumerRetransmission(
+            topic,
+            subscriptionName,
+            multiDCOffsetChangeSummary.getPartitionOffsetListPerBrokerName(),
+            requester);
+        break;
+      case SUSPENDED:
+        multiDCAwareService.retransmit(
+            topic,
+            subscriptionName,
+            multiDCOffsetChangeSummary.getPartitionOffsetListPerBrokerName());
+        break;
+      case PENDING:
+        throw new MovingSubscriptionOffsetsValidationException(
+            "Cannot retransmit messages for subscription in PENDING state");
+    }
+
+    return multiDCOffsetChangeSummary;
   }
 }

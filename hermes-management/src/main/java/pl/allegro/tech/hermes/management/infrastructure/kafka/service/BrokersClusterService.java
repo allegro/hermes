@@ -90,10 +90,14 @@ public class BrokersClusterService {
         topic, kafkaNamesMapper.toKafkaTopics(topic).getPrimary(), partition, offset);
   }
 
-  public List<PartitionOffset> indicateOffsetChange(
-      Topic topic, String subscriptionName, Long timestamp, boolean dryRun) {
-    return retransmissionService.indicateOffsetChange(
-        topic, subscriptionName, clusterName, timestamp, dryRun);
+  public void indicateOffsetChange(
+      Topic topic, String subscriptionName, List<PartitionOffset> partitionOffsets) {
+    retransmissionService.indicateOffsetChange(
+        topic, subscriptionName, clusterName, partitionOffsets);
+  }
+
+  public List<PartitionOffset> fetchTopicOffsetsAt(Topic topic, Long timestamp) {
+    return retransmissionService.fetchTopicOffsetsAt(topic, timestamp);
   }
 
   public boolean areOffsetsAvailableOnAllKafkaTopics(Topic topic) {
@@ -152,22 +156,39 @@ public class BrokersClusterService {
   }
 
   public void moveOffsetsToTheEnd(Topic topic, SubscriptionName subscription) {
-    validateIfOffsetsCanBeMoved(topic, subscription);
-
-    KafkaConsumer<byte[], byte[]> consumer = kafkaConsumerManager.createConsumer(subscription);
-    String kafkaTopicName = kafkaNamesMapper.toKafkaTopics(topic).getPrimary().name().asString();
-    Set<TopicPartition> topicPartitions = getTopicPartitions(consumer, kafkaTopicName);
-    consumer.assign(topicPartitions);
-
-    Map<TopicPartition, Long> endOffsets = consumer.endOffsets(topicPartitions);
-    Map<TopicPartition, OffsetAndMetadata> endOffsetsMetadata = buildOffsetsMetadata(endOffsets);
-    consumer.commitSync(endOffsetsMetadata);
+    KafkaConsumer<byte[], byte[]> consumer = createKafkaConsumer(topic, subscription);
+    moveOffsets(
+        subscription, consumer, buildOffsetsMetadata(consumer.endOffsets(consumer.assignment())));
     consumer.close();
+  }
+
+  public void moveOffsets(
+      Topic topic, SubscriptionName subscription, List<PartitionOffset> offsets) {
+
+    KafkaConsumer<byte[], byte[]> consumer = createKafkaConsumer(topic, subscription);
+    moveOffsets(subscription, consumer, buildOffsetsMetadata(offsets));
+    consumer.close();
+  }
+
+  private void moveOffsets(
+      SubscriptionName subscription,
+      KafkaConsumer<byte[], byte[]> consumer,
+      Map<TopicPartition, OffsetAndMetadata> offsetAndMetadata) {
+    consumer.commitSync(offsetAndMetadata);
 
     logger.info(
         "Successfully moved offset to the end position for subscription {} and consumer group {}",
         subscription.getQualifiedName(),
         kafkaNamesMapper.toConsumerGroupId(subscription));
+  }
+
+  private KafkaConsumer<byte[], byte[]> createKafkaConsumer(
+      Topic topic, SubscriptionName subscription) {
+    KafkaConsumer<byte[], byte[]> consumer = kafkaConsumerManager.createConsumer(subscription);
+    String kafkaTopicName = kafkaNamesMapper.toKafkaTopics(topic).getPrimary().name().asString();
+    Set<TopicPartition> topicPartitions = getTopicPartitions(consumer, kafkaTopicName);
+    consumer.assign(topicPartitions);
+    return consumer;
   }
 
   private int numberOfAssignmentsForConsumersGroups(List<String> consumerGroupsIds)
@@ -182,11 +203,32 @@ public class BrokersClusterService {
         .size();
   }
 
-  private void validateIfOffsetsCanBeMoved(Topic topic, SubscriptionName subscription) {
+  public void validateIfOffsetsCanBeMovedByConsumers(Topic topic, SubscriptionName subscription) {
     describeConsumerGroup(topic, subscription.getName())
         .ifPresentOrElse(
             group -> {
-              if (!group.getMembers().isEmpty()) {
+              if (!group.isStable()) {
+                String s =
+                    format(
+                        "Consumer group %s for subscription %s is not stable.",
+                        group.getGroupId(), subscription.getQualifiedName());
+                throw new MovingSubscriptionOffsetsValidationException(s);
+              }
+            },
+            () -> {
+              String s =
+                  format(
+                      "No consumer group for subscription %s exists.",
+                      subscription.getQualifiedName());
+              throw new MovingSubscriptionOffsetsValidationException(s);
+            });
+  }
+
+  public void validateIfOffsetsCanBeMoved(Topic topic, SubscriptionName subscription) {
+    describeConsumerGroup(topic, subscription.getName())
+        .ifPresentOrElse(
+            group -> {
+              if (!group.isEmpty()) {
                 String s =
                     format(
                         "Consumer group %s for subscription %s has still active members.",
@@ -226,6 +268,17 @@ public class BrokersClusterService {
       Map<TopicPartition, Long> offsets) {
     return offsets.entrySet().stream()
         .map(entry -> ImmutablePair.of(entry.getKey(), new OffsetAndMetadata(entry.getValue())))
+        .collect(toMap(Pair::getKey, Pair::getValue));
+  }
+
+  private Map<TopicPartition, OffsetAndMetadata> buildOffsetsMetadata(
+      List<PartitionOffset> offsets) {
+    return offsets.stream()
+        .map(
+            offset ->
+                ImmutablePair.of(
+                    new TopicPartition(offset.getTopic().asString(), offset.getPartition()),
+                    new OffsetAndMetadata(offset.getOffset())))
         .collect(toMap(Pair::getKey, Pair::getValue));
   }
 }

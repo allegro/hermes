@@ -37,31 +37,21 @@ public class KafkaRetransmissionService implements RetransmissionService {
   }
 
   @Override
-  public List<PartitionOffset> indicateOffsetChange(
-      Topic topic, String subscription, String brokersClusterName, long timestamp, boolean dryRun) {
-
-    List<PartitionOffset> partitionOffsetList = new ArrayList<>();
+  public void indicateOffsetChange(
+      Topic topic,
+      String subscription,
+      String brokersClusterName,
+      List<PartitionOffset> partitionOffsets) {
     kafkaNamesMapper
         .toKafkaTopics(topic)
         .forEach(
             k -> {
-              List<Integer> partitionsIds = brokerStorage.readPartitionsIds(k.name().asString());
-
-              for (Integer partitionId : partitionsIds) {
-                KafkaConsumer<byte[], byte[]> consumer = createKafkaConsumer(k, partitionId);
-                long offset =
-                    findClosestOffsetJustBeforeTimestamp(consumer, k, partitionId, timestamp);
-                PartitionOffset partitionOffset =
-                    new PartitionOffset(k.name(), offset, partitionId);
-                partitionOffsetList.add(partitionOffset);
-                if (!dryRun) {
-                  subscriptionOffsetChange.setSubscriptionOffset(
-                      topic.getName(), subscription, brokersClusterName, partitionOffset);
-                }
+              for (PartitionOffset partitionOffset : partitionOffsets) {
+                if (!k.name().equals(partitionOffset.getTopic())) continue;
+                subscriptionOffsetChange.setSubscriptionOffset(
+                    topic.getName(), subscription, brokersClusterName, partitionOffset);
               }
             });
-
-    return partitionOffsetList;
   }
 
   @Override
@@ -79,6 +69,26 @@ public class KafkaRetransmissionService implements RetransmissionService {
 
   private KafkaConsumer<byte[], byte[]> createKafkaConsumer(KafkaTopic kafkaTopic, int partition) {
     return consumerPool.get(kafkaTopic, partition);
+  }
+
+  public List<PartitionOffset> fetchTopicOffsetsAt(Topic topic, Long timestamp) {
+    List<PartitionOffset> partitionOffsetList = new ArrayList<>();
+    kafkaNamesMapper
+        .toKafkaTopics(topic)
+        .forEach(
+            k -> {
+              List<Integer> partitionsIds = brokerStorage.readPartitionsIds(k.name().asString());
+              for (Integer partitionId : partitionsIds) {
+                KafkaConsumer<byte[], byte[]> consumer = createKafkaConsumer(k, partitionId);
+                long offset =
+                    findClosestOffsetJustBeforeTimestamp(consumer, k, partitionId, timestamp);
+                PartitionOffset partitionOffset =
+                    new PartitionOffset(k.name(), offset, partitionId);
+                partitionOffsetList.add(partitionOffset);
+              }
+            });
+
+    return partitionOffsetList;
   }
 
   private long findClosestOffsetJustBeforeTimestamp(
