@@ -3,8 +3,8 @@ package pl.allegro.tech.hermes.management.config;
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.config.MeterFilter;
 import io.micrometer.core.instrument.distribution.DistributionStatisticConfig;
-import io.micrometer.prometheus.PrometheusConfig;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
+import io.micrometer.prometheusmetrics.PrometheusConfig;
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Configuration;
 public class PrometheusConfiguration {
 
   @Bean
-  @ConditionalOnMissingBean
+  @ConditionalOnMissingBean(PrometheusMeterRegistry.class)
   public PrometheusMeterRegistry micrometerRegistry(
       MicrometerRegistryProperties properties, PrometheusConfig prometheusConfig) {
     return new PrometheusMeterRegistryFactory(properties, prometheusConfig, "hermes-management")
@@ -23,7 +23,7 @@ public class PrometheusConfiguration {
   }
 
   @Bean
-  @ConditionalOnMissingBean
+  @ConditionalOnMissingBean(PrometheusConfig.class)
   public PrometheusConfig prometheusConfig(PrometheusProperties properties) {
     return new PrometheusConfigAdapter(properties);
   }

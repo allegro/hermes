@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.consumers.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
 import java.io.IOException;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
