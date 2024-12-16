@@ -27,7 +27,7 @@
         </v-btn>
       </p>
     </v-card-item>
-    <v-card-item v-else> No tracking urls available </v-card-item>
+    <v-card-item v-else> {{ $t('trackingCard.noTrackingUrls') }} </v-card-item>
   </v-card>
 </template>
 

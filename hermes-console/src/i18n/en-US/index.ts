@@ -820,6 +820,7 @@ const en_US = {
   },
   trackingCard: {
     title: 'Tracking',
+    noTrackingUrls: 'No tracking urls available',
   },
 };
 
