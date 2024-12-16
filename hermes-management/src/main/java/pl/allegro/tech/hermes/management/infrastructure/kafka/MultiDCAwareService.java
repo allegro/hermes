@@ -105,11 +105,9 @@ public class MultiDCAwareService {
 
     clusters.forEach(
         cluster ->
-            cluster.indicateOffsetChange(
-                topic,
-                subscriptionName,
-                brokerPartitionOffsets.getOrDefault(
-                    cluster.getClusterName(), Collections.emptyList())));
+            Optional.ofNullable(brokerPartitionOffsets.get(cluster.getClusterName()))
+                .ifPresent(
+                    offsets -> cluster.indicateOffsetChange(topic, subscriptionName, offsets)));
 
     logger.info(
         "Starting offsets move for subscription {}. Requested by {}. Retransmission offsets: {}",
