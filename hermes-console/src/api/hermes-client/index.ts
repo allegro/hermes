@@ -193,7 +193,7 @@ export function fetchOfflineClientsSource(
 export function getTopicTrackingUrls(
   topicName: string,
 ): ResponsePromise<TrackingUrl[]> {
-  return axios.get<TrackingUrl[]>(`/topics/${topicName}/tracking-urls`);
+  return axios.get<TrackingUrl[]>(`/tracking-urls/topics/${topicName}`);
 }
 
 export function getSubscriptionTrackingUrls(
@@ -201,7 +201,7 @@ export function getSubscriptionTrackingUrls(
   subscriptionName: string,
 ): ResponsePromise<TrackingUrl[]> {
   return axios.get<TrackingUrl[]>(
-    `/topics/${topicName}/subscriptions/${subscriptionName}/tracking-urls`,
+    `/tracking-urls/topics/${topicName}/subscriptions/${subscriptionName}`,
   );
 }
 
