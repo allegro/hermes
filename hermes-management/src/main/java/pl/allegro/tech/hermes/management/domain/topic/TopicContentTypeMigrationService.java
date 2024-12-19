@@ -63,8 +63,13 @@ public class TopicContentTypeMigrationService {
 
   private void notifySingleSubscription(
       Topic topic, Instant beforeMigrationInstant, String subscriptionName, RequestUser requester) {
-    multiDCAwareService.retransmit(
-        topic, subscriptionName, beforeMigrationInstant.toEpochMilli(), false, requester);
+    multiDCAwareService.moveOffsetsForActiveConsumers(
+        topic,
+        subscriptionName,
+        multiDCAwareService
+            .fetchTopicOffsetsAt(topic, beforeMigrationInstant.toEpochMilli())
+            .getPartitionOffsetListPerBrokerName(),
+        requester);
   }
 
   private void waitUntilOffsetsAvailableOnAllKafkaTopics(

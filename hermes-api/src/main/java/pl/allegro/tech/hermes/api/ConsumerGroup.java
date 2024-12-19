@@ -41,6 +41,14 @@ public class ConsumerGroup {
     return members;
   }
 
+  public boolean isStable() {
+    return state.equals("Stable");
+  }
+
+  public boolean isEmpty() {
+    return state.equals("Empty");
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {

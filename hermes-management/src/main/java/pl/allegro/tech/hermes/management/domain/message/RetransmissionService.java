@@ -6,8 +6,15 @@ import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 
 public interface RetransmissionService {
 
-  List<PartitionOffset> indicateOffsetChange(
-      Topic topic, String subscription, String brokersClusterName, long timestamp, boolean dryRun);
+  List<PartitionOffset> fetchTopicOffsetsAt(Topic topic, Long timestamp);
+
+  List<PartitionOffset> fetchTopicEndOffsets(Topic topic);
+
+  void indicateOffsetChange(
+      Topic topic,
+      String subscription,
+      String brokersClusterName,
+      List<PartitionOffset> partitionOffsets);
 
   boolean areOffsetsMoved(Topic topic, String subscriptionName, String brokersClusterName);
 }
