@@ -104,14 +104,14 @@ public class ConsumerGroupCleanUpTask implements Runnable {
 
   private void logSkippingDeletion(ConsumerGroupToDelete task) {
     logger.info(
-        "Skipping deletion: Subscription {} still exists in datacenter {}",
+        "Skipping consumer group deletion: Subscription {} still exists in datacenter {}",
         task.subscriptionName().getQualifiedName(),
         task.datacenter());
   }
 
   private void logTaskExpiration(ConsumerGroupToDelete task) {
     logger.warn(
-        "Task expired: Subscription {} in datacenter {}",
+        "Consumer group deletion task expired: Subscription {} in datacenter {}",
         task.subscriptionName().getQualifiedName(),
         task.datacenter());
   }
@@ -140,7 +140,7 @@ public class ConsumerGroupCleanUpTask implements Runnable {
 
   private void logTaskRemoval(ConsumerGroupToDelete task) {
     logger.info(
-        "Removed deletion task for subscription {} in datacenter {}",
+        "Removed consumer group deletion task for subscription {} in datacenter {}",
         task.subscriptionName().getQualifiedName(),
         task.datacenter());
   }

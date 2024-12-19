@@ -1,12 +1,8 @@
 package pl.allegro.tech.hermes.management.domain.subscription.consumergroup;
 
 import static java.lang.String.format;
-import static pl.allegro.tech.hermes.api.ErrorCode.OTHER;
 
-import pl.allegro.tech.hermes.api.ErrorCode;
-import pl.allegro.tech.hermes.management.domain.ManagementException;
-
-public class ConsumerGroupAlreadyScheduledToDeleteException extends ManagementException {
+public class ConsumerGroupAlreadyScheduledToDeleteException extends RuntimeException {
 
   public ConsumerGroupAlreadyScheduledToDeleteException(
       ConsumerGroupToDelete consumerGroupToDelete, Throwable e) {
@@ -15,10 +11,5 @@ public class ConsumerGroupAlreadyScheduledToDeleteException extends ManagementEx
             "Consumer group already scheduled to delete, for subscription %s ",
             consumerGroupToDelete.subscriptionName().getQualifiedName()),
         e);
-  }
-
-  @Override
-  public ErrorCode getCode() {
-    return OTHER;
   }
 }

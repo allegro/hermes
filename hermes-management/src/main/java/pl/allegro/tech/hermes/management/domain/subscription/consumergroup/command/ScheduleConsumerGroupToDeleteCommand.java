@@ -13,8 +13,6 @@ public class ScheduleConsumerGroupToDeleteCommand
   private final SubscriptionName subscriptionName;
   private final Instant requestedAt;
 
-  private ConsumerGroupToDelete consumerGroupToDelete;
-
   public ScheduleConsumerGroupToDeleteCommand(
       SubscriptionName subscriptionName, Instant requestedAt) {
     this.subscriptionName = subscriptionName;
@@ -26,7 +24,7 @@ public class ScheduleConsumerGroupToDeleteCommand
 
   @Override
   public void execute(DatacenterBoundRepositoryHolder<ConsumerGroupToDeleteRepository> holder) {
-    consumerGroupToDelete =
+    ConsumerGroupToDelete consumerGroupToDelete =
         new ConsumerGroupToDelete(subscriptionName, holder.getDatacenterName(), requestedAt);
     try {
       holder.getRepository().scheduleConsumerGroupToDeleteTask(consumerGroupToDelete);
@@ -38,6 +36,8 @@ public class ScheduleConsumerGroupToDeleteCommand
   public void rollback(
       DatacenterBoundRepositoryHolder<ConsumerGroupToDeleteRepository> holder,
       Exception exception) {
+    ConsumerGroupToDelete consumerGroupToDelete =
+        new ConsumerGroupToDelete(subscriptionName, holder.getDatacenterName(), requestedAt);
     holder.getRepository().deleteConsumerGroupToDeleteTask(consumerGroupToDelete);
   }
 
