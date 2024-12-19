@@ -28,7 +28,10 @@ public class Retransmitter {
     try {
       PartitionOffsets offsets =
           subscriptionOffsetChangeIndicator.getSubscriptionOffsets(
-              subscriptionName.getTopicName(), subscriptionName.getName(), brokersClusterName);
+              subscriptionName.getTopicName(),
+              subscriptionName.getName(),
+              brokersClusterName,
+              consumer.getAssignedPartitions());
 
       for (PartitionOffset partitionOffset : offsets) {
         if (moveOffset(subscriptionName, consumer, partitionOffset)) {

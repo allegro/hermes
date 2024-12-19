@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.infrastructure.zookeeper
 
-import com.google.common.primitives.Longs
+
 import pl.allegro.tech.hermes.api.Topic
 import pl.allegro.tech.hermes.api.TopicName
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName
@@ -8,8 +8,6 @@ import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffsets
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionNotExistsException
 import pl.allegro.tech.hermes.test.IntegrationTest
-
-import java.nio.charset.StandardCharsets
 
 import static pl.allegro.tech.hermes.test.helper.builder.GroupBuilder.group
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription
@@ -43,7 +41,7 @@ class ZookeeperSubscriptionOffsetChangeIndicatorTest extends IntegrationTest {
         indicator.setSubscriptionOffset(TOPIC.name, 'override', 'primary', new PartitionOffset(primaryKafkaTopicName, 10, 1))
 
         then:
-        def offsets = indicator.getSubscriptionOffsets(TOPIC.name, 'override', 'primary')
+        def offsets = indicator.getSubscriptionOffsets(TOPIC.name, 'override', 'primary', [1] as Set)
         offsets.find { it.partition == 1 } == new PartitionOffset(primaryKafkaTopicName, 10, 1)
     }
 
@@ -54,7 +52,7 @@ class ZookeeperSubscriptionOffsetChangeIndicatorTest extends IntegrationTest {
         indicator.setSubscriptionOffset(TOPIC.name, 'read', 'primary', new PartitionOffset(primaryKafkaTopicName, 10, 1))
 
         when:
-        PartitionOffsets offsets = indicator.getSubscriptionOffsets(TOPIC.name, 'read', 'primary')
+        PartitionOffsets offsets = indicator.getSubscriptionOffsets(TOPIC.name, 'read', 'primary', [1] as Set)
 
         then:
         (offsets.find { it.partition == 1 } as PartitionOffset).offset == 10

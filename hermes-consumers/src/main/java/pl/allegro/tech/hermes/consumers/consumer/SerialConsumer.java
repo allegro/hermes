@@ -270,4 +270,9 @@ public class SerialConsumer implements Consumer {
   public Subscription getSubscription() {
     return subscription;
   }
+
+  @Override
+  public Set<Integer> getAssignedPartitions() {
+    return messageReceiver.getAssignedPartitions();
+  }
 }

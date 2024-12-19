@@ -2,7 +2,9 @@ package pl.allegro.tech.hermes.infrastructure.zookeeper;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Set;
 import org.apache.curator.framework.CuratorFramework;
+import org.apache.zookeeper.KeeperException.NoNodeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.TopicName;
@@ -63,7 +65,10 @@ public class ZookeeperSubscriptionOffsetChangeIndicator
 
   @Override
   public PartitionOffsets getSubscriptionOffsets(
-      TopicName topic, String subscriptionName, String brokersClusterName) {
+      TopicName topic,
+      String subscriptionName,
+      String brokersClusterName,
+      Set<Integer> partitions) {
     subscriptionRepository.ensureSubscriptionExists(topic, subscriptionName);
     String kafkaTopicsPath = paths.subscribedKafkaTopicsPath(topic, subscriptionName);
 
@@ -74,7 +79,7 @@ public class ZookeeperSubscriptionOffsetChangeIndicator
             kafkaTopic ->
                 allOffsets.addAll(
                     getOffsetsForKafkaTopic(
-                        topic, kafkaTopic, subscriptionName, brokersClusterName)));
+                        topic, kafkaTopic, subscriptionName, brokersClusterName, partitions)));
     return allOffsets;
   }
 
@@ -134,19 +139,29 @@ public class ZookeeperSubscriptionOffsetChangeIndicator
       TopicName topic,
       KafkaTopicName kafkaTopicName,
       String subscriptionName,
-      String brokersClusterName) {
-    String offsetsPath =
-        paths.offsetsPath(topic, subscriptionName, kafkaTopicName, brokersClusterName);
-
+      String brokersClusterName,
+      Set<Integer> partitions) {
     PartitionOffsets offsets = new PartitionOffsets();
-    for (String partitionAsString : getZookeeperChildrenForPath(offsetsPath)) {
-      Integer partition = Integer.valueOf(partitionAsString);
-      offsets.add(
-          new PartitionOffset(
+    for (Integer partition : partitions) {
+      try {
+        offsets.add(
+            new PartitionOffset(
+                kafkaTopicName,
+                getOffsetForPartition(
+                    topic, kafkaTopicName, subscriptionName, brokersClusterName, partition),
+                partition));
+      } catch (InternalProcessingException ex) {
+        if (ex.getCause() instanceof NoNodeException) {
+          logger.warn(
+              "No offset for partition {} in kafka topic {} for topic {} subscription {}",
+              partition,
               kafkaTopicName,
-              getOffsetForPartition(
-                  topic, kafkaTopicName, subscriptionName, brokersClusterName, partition),
-              partition));
+              topic,
+              subscriptionName);
+          continue;
+        }
+        throw ex;
+      }
     }
     return offsets;
   }
