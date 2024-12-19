@@ -205,6 +205,12 @@ export function getSubscriptionTrackingUrls(
   );
 }
 
+export function fetchTopicClients(
+  topicName: string,
+): ResponsePromise<string[]> {
+  return axios.get(`/topics/${topicName}/clients`);
+}
+
 export function fetchConstraints(): ResponsePromise<ConstraintsConfig> {
   return axios.get<ConstraintsConfig>('/workload-constraints');
 }

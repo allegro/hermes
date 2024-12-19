@@ -3,6 +3,7 @@ import {
   fetchTopic,
   fetchOfflineClientsSource as getOfflineClientsSource,
   fetchTopic as getTopic,
+  fetchTopicClients as getTopicClients,
   fetchTopicMessagesPreview as getTopicMessagesPreview,
   fetchTopicMetrics as getTopicMetrics,
   fetchOwner as getTopicOwner,
@@ -38,6 +39,7 @@ export interface UseTopic {
   error: Ref<UseTopicErrors>;
   fetchOfflineClientsSource: () => Promise<void>;
   removeTopic: () => Promise<boolean>;
+  fetchTopicClients: () => Promise<string[] | null>;
 }
 
 export interface UseTopicErrors {
@@ -186,6 +188,19 @@ export function useTopic(topicName: string): UseTopic {
     }
   };
 
+  const fetchTopicClients = async () => {
+    try {
+      return (await getTopicClients(topicName)).data;
+    } catch (e: any) {
+      dispatchErrorNotification(
+        e,
+        notificationStore,
+        useGlobalI18n().t('notifications.topic.clients.fetch.failure'),
+      );
+      return null;
+    }
+  };
+
   fetchTopic();
   fetchTopicTrackingUrls();
 
@@ -201,6 +216,7 @@ export function useTopic(topicName: string): UseTopic {
     error,
     fetchOfflineClientsSource,
     removeTopic,
+    fetchTopicClients,
   };
 }
 
