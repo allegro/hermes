@@ -44,6 +44,7 @@ import type { Stats } from '@/api/stats';
 import type { SubscriptionHealth } from '@/api/subscription-health';
 import type { SubscriptionMetrics } from '@/api/subscription-metrics';
 import type { TopicForm } from '@/composables/topic/use-form-topic/types';
+import type { TrackingUrl } from '@/api/tracking-url';
 
 const acceptHeader = 'Accept';
 const contentTypeHeader = 'Content-Type';
@@ -186,6 +187,21 @@ export function fetchOfflineClientsSource(
 ): ResponsePromise<OfflineClientsSource> {
   return axios.get<OfflineClientsSource>(
     `/topics/${topicName}/offline-clients-source`,
+  );
+}
+
+export function getTopicTrackingUrls(
+  topicName: string,
+): ResponsePromise<TrackingUrl[]> {
+  return axios.get<TrackingUrl[]>(`/tracking-urls/topics/${topicName}`);
+}
+
+export function getSubscriptionTrackingUrls(
+  topicName: string,
+  subscriptionName: string,
+): ResponsePromise<TrackingUrl[]> {
+  return axios.get<TrackingUrl[]>(
+    `/tracking-urls/topics/${topicName}/subscriptions/${subscriptionName}`,
   );
 }
 
