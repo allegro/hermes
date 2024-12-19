@@ -3,13 +3,16 @@ package pl.allegro.tech.hermes.management.infrastructure.metrics;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.atomic.DistributedAtomicLong;
 import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.apache.zookeeper.data.Stat;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.counter.ZookeeperCounterException;
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClient;
 
@@ -30,6 +33,16 @@ public class SummedSharedCounter {
   public long getValue(String path) {
     try {
       return counterAggregators.get(path).aggregate();
+    } catch (ZookeeperCounterException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new ZookeeperCounterException(path, e);
+    }
+  }
+
+  public Optional<Instant> getLastModified(String path) {
+    try {
+      return counterAggregators.get(path).getLastModified();
     } catch (ZookeeperCounterException e) {
       throw e;
     } catch (Exception e) {
@@ -87,6 +100,21 @@ public class SummedSharedCounter {
         sum += counter.get().preValue();
       }
       return sum;
+    }
+
+    Optional<Instant> getLastModified() throws Exception {
+      Instant lastModified = null;
+      for (Map.Entry<String, CuratorFramework> curatorClient : curatorPerDatacenter.entrySet()) {
+        ensureConnected(curatorClient.getKey());
+        Stat stat = curatorClient.getValue().checkExists().forPath(counterName);
+        if (stat != null) {
+          Instant nodeLastModified = Instant.ofEpochMilli(stat.getMtime());
+          if (lastModified == null || nodeLastModified.isAfter(lastModified)) {
+            lastModified = nodeLastModified;
+          }
+        }
+      }
+      return Optional.ofNullable(lastModified);
     }
 
     private void ensureConnected(String datacenter) {
