@@ -56,6 +56,12 @@ const router = createRouter({
       component: () => import('@/views/admin/constraints/ConstraintsView.vue'),
     },
     {
+      path: '/ui/inactive-topics',
+      name: 'inactiveTopics',
+      component: () =>
+        import('@/views/admin/inactive-topics/InactiveTopicsView.vue'),
+    },
+    {
       path: '/ui/consistency',
       name: 'consistency',
       component: () => import('@/views/admin/consistency/ConsistencyView.vue'),

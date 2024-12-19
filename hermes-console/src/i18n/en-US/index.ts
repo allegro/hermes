@@ -193,6 +193,20 @@ const en_US = {
       appliedFilter: '(applied filter: “{filter}”)',
     },
   },
+  inactiveTopics: {
+    connectionError: {
+      title: 'Connection error',
+      text: 'Could not fetch information about inactive topics',
+    },
+    heading: 'Inactive Topics',
+    listing: {
+      name: 'Name',
+      lastUsed: 'Last published message',
+      lastNotified: 'Last notified',
+      howManyTimesNotified: 'How many times notified',
+      whitelisted: 'Whitelisted',
+    },
+  },
   stats: {
     connectionError: {
       title: 'Connection error',

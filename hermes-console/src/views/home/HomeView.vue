@@ -8,6 +8,7 @@
     { title: 'Consistency', to: '/ui/consistency' },
     { title: 'Constraints', to: '/ui/constraints' },
     { title: 'Readiness', to: '/ui/readiness' },
+    { title: 'Inactive Topics', to: '/ui/inactive-topics' },
   ];
 
   const theme = useTheme();
