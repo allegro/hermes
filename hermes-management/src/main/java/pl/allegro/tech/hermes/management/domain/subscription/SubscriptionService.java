@@ -473,6 +473,13 @@ public class SubscriptionService {
 
     if (dryRun) return multiDCOffsetChangeSummary;
 
+    /*
+     * The subscription state is used to determine how to move the offsets.
+     * When the subscription is ACTIVE, the management instance notifies consumers to change offsets.
+     * The consumers are responsible for moving their local offsets(KafkaConsumer::seek method) as well as committed ones on Kafka (KafkaConsumer::commitSync method).
+     * When the subscription is SUSPENDED, the management instance changes the commited offsets on kafka on its own (AdminClient::alterConsumerGroupOffsets).
+     * There is no active consumer to notify in that case.
+     */
     switch (subscription.getState()) {
       case ACTIVE:
         multiDCAwareService.moveOffsetsForActiveConsumers(

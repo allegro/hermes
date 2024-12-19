@@ -283,15 +283,6 @@ export function fetchDashboardUrl(path: string): ResponsePromise<DashboardUrl> {
   return axios.get<DashboardUrl>(path);
 }
 
-export function moveSubscriptionOffsets(
-  topicName: string,
-  subscription: string,
-): ResponsePromise<null> {
-  return axios.post<null>(
-    `/topics/${topicName}/subscriptions/${subscription}/moveOffsetsToTheEnd`,
-  );
-}
-
 export function removeTopic(topic: String): ResponsePromise<void> {
   return axios.delete(`/topics/${topic}`);
 }

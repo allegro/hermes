@@ -783,24 +783,6 @@ export const switchReadinessErrorHandler = ({
     });
   });
 
-export const moveSubscriptionOffsetsHandler = ({
-  topicName,
-  subscriptionName,
-  statusCode,
-}: {
-  topicName: string;
-  subscriptionName: string;
-  statusCode: number;
-}) =>
-  http.post(
-    `${url}/topics/${topicName}/subscriptions/${subscriptionName}/moveOffsetsToTheEnd`,
-    () => {
-      return new HttpResponse(undefined, {
-        status: statusCode,
-      });
-    },
-  );
-
 export const upsertTopicConstraintHandler = ({
   statusCode,
 }: {

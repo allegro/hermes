@@ -102,8 +102,12 @@
     }
   }
 
-  const onRetransmit = async (fromDate: string) => {
-    await retransmitMessages(fromDate);
+  const onRetransmit = async (fromDate: string, onComplete: () => void) => {
+    await retransmitMessages(fromDate).finally(onComplete);
+  };
+
+  const onSkipAllMessages = async (onComplete: () => void) => {
+    await skipAllMessages().finally(onComplete);
   };
 
   const breadcrumbsItems = [
@@ -229,7 +233,7 @@
             :topic="topicId"
             :subscription="subscriptionId"
             @retransmit="onRetransmit"
-            @skipAllMessages="skipAllMessages"
+            @skipAllMessages="onSkipAllMessages"
           />
           <last-undelivered-message
             v-if="

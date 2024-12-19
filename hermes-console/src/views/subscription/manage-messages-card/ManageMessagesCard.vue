@@ -4,6 +4,7 @@
   import { useDialog } from '@/composables/dialog/use-dialog/useDialog';
   import { useI18n } from 'vue-i18n';
   import ConfirmationDialog from '@/components/confirmation-dialog/ConfirmationDialog.vue';
+  import LoadingSpinner from '@/components/loading-spinner/LoadingSpinner.vue';
 
   const { t } = useI18n();
 
@@ -13,8 +14,8 @@
   }>();
 
   const emit = defineEmits<{
-    retransmit: [fromDate: string];
-    skipAllMessages: [];
+    retransmit: [fromDate: string, onComplete: () => void];
+    skipAllMessages: [onComplete: () => void];
   }>();
 
   const retransmitFrom = ref(new Date().toISOString().slice(0, -5));
@@ -42,17 +43,20 @@
     disableActionButton: disableSkipAllMessagesActionButton,
   } = useDialog();
 
+  const retransmitting = ref(false);
+  const skippingAllMessages = ref(false);
+
   async function retransmit() {
     disableRetransmitActionButton();
-    emit('retransmit', `${retransmitFrom.value}Z`);
-    enableRetransmitActionButton();
+    retransmitting.value = true;
+    emit('retransmit', `${retransmitFrom.value}Z`, retransmissionCompleted);
     closeRetransmitDialog();
   }
 
   async function skipMessages() {
     disableSkipAllMessagesActionButton();
-    emit('skipAllMessages');
-    enableSkipAllMessagesActionButton();
+    skippingAllMessages.value = true;
+    emit('skipAllMessages', skippingAllMessagesCompleted);
     closeSkipAllMessagesDialog();
   }
 
@@ -68,6 +72,16 @@
       subscriptionFqn: subscriptionQualifiedName,
     }),
   );
+
+  function retransmissionCompleted() {
+    retransmitting.value = false;
+    enableRetransmitActionButton();
+  }
+
+  function skippingAllMessagesCompleted() {
+    skippingAllMessages.value = false;
+    enableSkipAllMessagesActionButton();
+  }
 </script>
 
 <template>
@@ -113,11 +127,15 @@
           </v-col>
           <v-col md="3">
             <v-btn
+              :disabled="retransmitting || skippingAllMessages"
               color="red"
               @click="openRetransmitDialog"
               data-testid="retransmitButton"
             >
-              {{ $t('subscription.manageMessagesCard.retransmitButton') }}
+              <loading-spinner v-if="retransmitting"></loading-spinner>
+              <span v-else>
+                {{ $t('subscription.manageMessagesCard.retransmitButton') }}
+              </span>
             </v-btn>
           </v-col>
         </v-row>
@@ -128,12 +146,16 @@
           {{ $t('subscription.manageMessagesCard.skipAllMessagesTitle') }}
         </p>
         <v-btn
+          :disabled="retransmitting || skippingAllMessages"
           color="red"
           class="mt-2"
           @click="openSkipAllMessagesDialog"
           data-testid="skipAllMessagesButton"
         >
-          {{ $t('subscription.manageMessagesCard.skipAllMessagesButton') }}
+          <loading-spinner v-if="skippingAllMessages"></loading-spinner>
+          <span v-else>
+            {{ $t('subscription.manageMessagesCard.skipAllMessagesButton') }}
+          </span>
         </v-btn>
       </v-card-item>
     </v-form>

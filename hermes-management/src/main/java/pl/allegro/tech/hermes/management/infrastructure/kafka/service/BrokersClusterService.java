@@ -153,18 +153,9 @@ public class BrokersClusterService {
     return consumerGroupsDescriber.describeConsumerGroup(topic, subscriptionName);
   }
 
-  public void moveOffsetsToTheEnd(Topic topic, SubscriptionName subscription) {
-    List<PartitionOffset> endOffsets = retransmissionService.fetchTopicEndOffsets(topic);
-    moveOffsets(subscription, buildOffsetsMetadata(endOffsets));
-  }
-
   public void moveOffsets(SubscriptionName subscription, List<PartitionOffset> offsets) {
-    moveOffsets(subscription, buildOffsetsMetadata(offsets));
-  }
-
-  private void moveOffsets(
-      SubscriptionName subscription, Map<TopicPartition, OffsetAndMetadata> offsetAndMetadata) {
     ConsumerGroupId consumerGroupId = kafkaNamesMapper.toConsumerGroupId(subscription);
+    Map<TopicPartition, OffsetAndMetadata> offsetAndMetadata = buildOffsetsMetadata(offsets);
     adminClient.alterConsumerGroupOffsets(consumerGroupId.asString(), offsetAndMetadata).all();
 
     logger.info(

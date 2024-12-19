@@ -199,9 +199,4 @@ public class MultiDCAwareService {
         .map(Optional::get)
         .collect(toList());
   }
-
-  public void moveOffsetsToTheEnd(Topic topic, SubscriptionName subscription) {
-    clusters.forEach(c -> c.validateIfOffsetsCanBeMoved(topic, subscription));
-    clusters.forEach(c -> c.moveOffsetsToTheEnd(topic, subscription));
-  }
 }
