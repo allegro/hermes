@@ -461,4 +461,9 @@ public class SubscriptionService {
             })
         .collect(toList());
   }
+
+  public boolean subscriptionExists(SubscriptionName subscriptionName) {
+    return subscriptionRepository.subscriptionExists(
+        subscriptionName.getTopicName(), subscriptionName.getName());
+  }
 }
