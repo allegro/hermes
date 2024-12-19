@@ -11,11 +11,7 @@ import org.springframework.boot.test.system.OutputCaptureRule
 import org.testcontainers.containers.KafkaContainer
 import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.spock.Testcontainers
-import pl.allegro.tech.hermes.api.ContentType
-import pl.allegro.tech.hermes.api.DeliveryType
-import pl.allegro.tech.hermes.api.Subscription
-import pl.allegro.tech.hermes.api.SubscriptionMode
-import pl.allegro.tech.hermes.api.Topic
+import pl.allegro.tech.hermes.api.*
 import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId
 import pl.allegro.tech.hermes.common.kafka.JsonToAvroMigrationKafkaNamesMapper
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper
@@ -28,9 +24,7 @@ import spock.lang.Specification
 
 import java.util.concurrent.CountDownLatch
 
-import static org.apache.kafka.clients.producer.ProducerConfig.BOOTSTRAP_SERVERS_CONFIG
-import static org.apache.kafka.clients.producer.ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG
-import static org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG
+import static org.apache.kafka.clients.producer.ProducerConfig.*
 
 @Testcontainers
 class KafkaConsumerGroupManagerSpec extends Specification {
@@ -170,7 +164,11 @@ class KafkaConsumerGroupManagerSpec extends Specification {
 
         and:
         Subscription subscriptionToDelete = createTestSubscription(topic, "test-subscription-to-delete")
+        ConsumerGroupId consumerGroupIdToDelete = kafkaNamesMapper.toConsumerGroupId(subscriptionToDelete.qualifiedName)
         consumerGroupManager.createConsumerGroup(topic, subscriptionToDelete)
+
+        and:
+        assert adminClient.listConsumerGroups().all().get().collect { it.groupId() } == [consumerGroupIdToDelete.asString(), consumerGroupId.asString()]
 
         when:
         consumerGroupManager.deleteConsumerGroup(subscriptionToDelete.getQualifiedName())
