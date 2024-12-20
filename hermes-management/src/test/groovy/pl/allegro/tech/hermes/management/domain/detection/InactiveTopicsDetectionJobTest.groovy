@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.management.domain.detection
 
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import pl.allegro.tech.hermes.api.Topic
 import pl.allegro.tech.hermes.management.config.detection.InactiveTopicsDetectionProperties
 import pl.allegro.tech.hermes.management.domain.topic.TopicService
@@ -33,6 +34,7 @@ class InactiveTopicsDetectionJobTest extends Specification {
             inactiveTopicsDetectionProperties,
             clockMock
     )
+    static def meterRegistry = new SimpleMeterRegistry()
 
     InactiveTopicsDetectionJob detectionJob = new InactiveTopicsDetectionJob(
             topicServiceMock,
@@ -40,7 +42,8 @@ class InactiveTopicsDetectionJobTest extends Specification {
             detectionService,
             Optional.of(inactiveTopicsNotifier),
             inactiveTopicsDetectionProperties,
-            clockMock
+            clockMock,
+            meterRegistry
     )
 
     def "should detect inactive topics and notify when needed"() {
@@ -89,6 +92,11 @@ class InactiveTopicsDetectionJobTest extends Specification {
                 new InactiveTopic("group.topic4", ago21days.toEpochMilli(), [now.toEpochMilli(), ago14days.toEpochMilli()], false),
                 new InactiveTopic("group.topic3", ago7days.toEpochMilli(), [], true)
         ])
+
+        and:
+        inactiveTopicsGauge(0) == 1
+        inactiveTopicsGauge(1) == 1
+        inactiveTopicsGauge(2) == 1
     }
 
     def "should not notify if there are no inactive topics"() {
@@ -119,7 +127,8 @@ class InactiveTopicsDetectionJobTest extends Specification {
                 detectionService,
                 Optional.empty(),
                 inactiveTopicsDetectionProperties,
-                clockMock
+                clockMock,
+                meterRegistry
         )
 
         and:
@@ -139,6 +148,9 @@ class InactiveTopicsDetectionJobTest extends Specification {
         1 * inactiveTopicsStorageServiceMock.markAsInactive([
                 new InactiveTopic("group.topic0", ago7days.toEpochMilli(), [], false)
         ])
+
+        and:
+        inactiveTopicsGauge(0) == 1
     }
 
     def "should not save new notification timestamp when notification did not succeed"() {
@@ -152,7 +164,8 @@ class InactiveTopicsDetectionJobTest extends Specification {
                 detectionService,
                 Optional.of(notifierMock),
                 inactiveTopicsDetectionProperties,
-                clockMock
+                clockMock,
+                meterRegistry
         )
 
         and:
@@ -176,7 +189,9 @@ class InactiveTopicsDetectionJobTest extends Specification {
                 new InactiveTopic("group.topic1", ago7days.toEpochMilli(), [], false),
         ])
 
-
+        and:
+        inactiveTopicsGauge(0) == 1
+        inactiveTopicsGauge(1) == 1
     }
 
     private def mockLastPublishedMessageTimestamp(String topicName, Instant instant) {
@@ -185,5 +200,9 @@ class InactiveTopicsDetectionJobTest extends Specification {
 
     private static Topic topic(String name) {
         return TopicBuilder.topic(name).build();
+    }
+
+    private static def inactiveTopicsGauge(int notifications) {
+        return meterRegistry.find("inactive-topics").tags("notifications", notifications.toString()).gauge().value()
     }
 }

@@ -2,9 +2,15 @@ package pl.allegro.tech.hermes.management.domain.detection;
 
 import static java.util.stream.Collectors.groupingBy;
 
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tags;
 import java.time.Clock;
 import java.time.Instant;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
@@ -24,6 +30,7 @@ public class InactiveTopicsDetectionJob {
   private final Optional<InactiveTopicsNotifier> notifier;
   private final InactiveTopicsDetectionProperties properties;
   private final Clock clock;
+  private final MeterRegistry meterRegistry;
 
   private static final Logger logger = LoggerFactory.getLogger(InactiveTopicsDetectionJob.class);
 
@@ -33,12 +40,14 @@ public class InactiveTopicsDetectionJob {
       InactiveTopicsDetectionService inactiveTopicsDetectionService,
       Optional<InactiveTopicsNotifier> notifier,
       InactiveTopicsDetectionProperties properties,
-      Clock clock) {
+      Clock clock,
+      MeterRegistry meterRegistry) {
     this.topicService = topicService;
     this.inactiveTopicsStorageService = inactiveTopicsStorageService;
     this.inactiveTopicsDetectionService = inactiveTopicsDetectionService;
     this.properties = properties;
     this.clock = clock;
+    this.meterRegistry = meterRegistry;
     if (notifier.isEmpty()) {
       logger.info("Inactive topics notifier bean is absent");
     }
@@ -61,7 +70,11 @@ public class InactiveTopicsDetectionJob {
         groupedByNeedOfNotification.getOrDefault(false, List.of());
     List<InactiveTopic> notifiedTopics = notify(enrichWithOwner(topicsToNotify, topics));
 
-    saveInactiveTopics(notifiedTopics, topicsToSkipNotification);
+    List<InactiveTopic> processedTopics =
+        limitHistory(
+            Stream.concat(notifiedTopics.stream(), topicsToSkipNotification.stream()).toList());
+    measureInactiveTopics(processedTopics);
+    inactiveTopicsStorageService.markAsInactive(processedTopics);
   }
 
   private List<InactiveTopic> detectInactiveTopics(
@@ -120,12 +133,21 @@ public class InactiveTopicsDetectionJob {
     }
   }
 
-  private void saveInactiveTopics(
-      List<InactiveTopic> notifiedTopics, List<InactiveTopic> skippedNotificationTopics) {
-    List<InactiveTopic> topicsToSave =
-        Stream.concat(notifiedTopics.stream(), skippedNotificationTopics.stream())
-            .map(topic -> topic.limitNotificationsHistory(properties.notificationsHistoryLimit()))
-            .toList();
-    inactiveTopicsStorageService.markAsInactive(topicsToSave);
+  private List<InactiveTopic> limitHistory(List<InactiveTopic> inactiveTopics) {
+    return inactiveTopics.stream()
+        .map(topic -> topic.limitNotificationsHistory(properties.notificationsHistoryLimit()))
+        .toList();
+  }
+
+  private void measureInactiveTopics(List<InactiveTopic> processedTopics) {
+    processedTopics.stream()
+        .collect(
+            Collectors.groupingBy(
+                topic -> topic.notificationTimestampsMs().size(), Collectors.counting()))
+        .forEach(
+            (notificationsCount, topicsCount) -> {
+              Tags tags = Tags.of("notifications", notificationsCount.toString());
+              meterRegistry.gauge("inactive-topics", tags, topicsCount);
+            });
   }
 }

@@ -186,6 +186,19 @@ export const fetchTopicSubscriptionDetailsErrorHandler = ({
     },
   );
 
+export const fetchTopicClientsErrorHandler = ({
+  topicName,
+  errorCode = 500,
+}: {
+  topicName: string;
+  errorCode?: number;
+}) =>
+  http.get(`${url}/topics/${topicName}/clients`, () => {
+    return new HttpResponse(undefined, {
+      status: errorCode,
+    });
+  });
+
 export const successfulTopicHandlers = [
   fetchTopicHandler({}),
   fetchOwnerHandler({}),
