@@ -625,10 +625,6 @@ const en_US = {
       reason: 'Reason',
       timestamp: 'Timestamp',
     },
-    moveOffsets: {
-      tooltip: 'Move subscription offsets to the end',
-      button: 'MOVE OFFSETS',
-    },
   },
   search: {
     collection: {

@@ -12,7 +12,7 @@
   const params = route.params as Record<string, string>;
   const { subscriptionId, topicId, groupId } = params;
 
-  const { consumerGroups, moveOffsets, loading, error } = useConsumerGroups(
+  const { consumerGroups, loading, error } = useConsumerGroups(
     topicId,
     subscriptionId,
   );
@@ -63,14 +63,6 @@
         <p class="text-h4 font-weight-bold mb-3">
           {{ $t('consumerGroups.title') }}
         </p>
-      </v-col>
-      <v-col md="2" class="text-right">
-        <v-btn color="red" @click="moveOffsets">
-          {{ $t('subscription.moveOffsets.button') }}
-          <v-tooltip activator="parent" location="left">{{
-            $t('subscription.moveOffsets.tooltip')
-          }}</v-tooltip>
-        </v-btn>
       </v-col>
     </v-row>
     <v-row dense v-if="consumerGroups">
