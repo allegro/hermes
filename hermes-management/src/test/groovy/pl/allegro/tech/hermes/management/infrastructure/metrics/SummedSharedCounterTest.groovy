@@ -30,7 +30,7 @@ class SummedSharedCounterTest extends MultiZookeeperIntegrationTest {
         def zkClientDc2 = findClientByDc(manager.clients, DC_2_NAME).curatorFramework
         sharedCounterDc2 = new SharedCounter(zkClientDc2, EXPIRE_AFTER, DISTRIBUTED_LEADER_BACKOFF, DISTRIBUTED_LEADER_RETRIES)
 
-        summedSharedCounter = new SummedSharedCounter(manager.clients, (int)  EXPIRE_AFTER.toHours(), (int) DISTRIBUTED_LEADER_BACKOFF.toMillis(), DISTRIBUTED_LEADER_RETRIES)
+        summedSharedCounter = new SummedSharedCounter(manager.clients, (int) EXPIRE_AFTER.toHours(), (int) DISTRIBUTED_LEADER_BACKOFF.toMillis(), DISTRIBUTED_LEADER_RETRIES)
     }
 
     def cleanup() {
@@ -44,5 +44,34 @@ class SummedSharedCounterTest extends MultiZookeeperIntegrationTest {
 
         expect:
         summedSharedCounter.getValue(COUNTER_PATH) == 2
+    }
+
+    def "should return last modified time of shared counters"() {
+        when:
+        sharedCounterDc1.increment(COUNTER_PATH, 1)
+        def sharedCounterDc1Mtime = getMtime(DC_1_NAME, COUNTER_PATH)
+
+        then:
+        summedSharedCounter.getLastModified(COUNTER_PATH).get().toEpochMilli() == sharedCounterDc1Mtime
+
+        when:
+        sharedCounterDc2.increment(COUNTER_PATH, 1)
+        def sharedCounterDc2Mtime = getMtime(DC_2_NAME, COUNTER_PATH)
+
+        then:
+        summedSharedCounter.getLastModified(COUNTER_PATH).get().toEpochMilli() == sharedCounterDc2Mtime
+    }
+
+    def "should return empty optional for last modified time of non existing counter"() {
+        expect:
+        summedSharedCounter.getLastModified("/does/not/exist") == Optional.empty()
+    }
+
+    private def getMtime(String dc, String counterPath) {
+        return findClientByDc(manager.clients, dc)
+                .curatorFramework
+                .checkExists()
+                .forPath(counterPath)
+                .mtime
     }
 }
