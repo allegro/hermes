@@ -33,7 +33,7 @@ import pl.allegro.tech.hermes.metrics.PathsCompiler;
   HttpClientProperties.class,
   ConsistencyCheckerProperties.class,
   PrometheusProperties.class,
-  MicrometerRegistryProperties.class
+  MicrometerRegistryProperties.class,
 })
 public class ManagementConfiguration {
 

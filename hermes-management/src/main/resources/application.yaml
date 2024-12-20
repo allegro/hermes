@@ -5,13 +5,15 @@ zookeeper:
 storage:
   pathPrefix: /run/hermes
   clusters:
-    - datacenter: dc
+    -
+      datacenter: dc
       clusterName: zk
       connectionString: localhost:2181
 
 kafka:
   clusters:
-    - datacenter: dc
+    -
+      datacenter: dc
       clusterName: primary
       connectionTimeout: 3000
       bootstrapKafkaServer: localhost:9092
@@ -74,6 +76,16 @@ console:
   subscription:
     showHeadersFilter: false
     showFixedHeaders: false
+
+detection:
+  inactive-topics:
+    enabled: false
+    inactivity-threshold: 60d
+    next-notification-threshold: 14d
+    whitelisted-qualified-topic-names: []
+    cron: "0 0 8 * * *"
+    notifications-history-limit: 5
+
 
 consumer-group:
   clean-up:
