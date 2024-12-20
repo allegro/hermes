@@ -65,6 +65,11 @@ class ConsumerStub implements Consumer {
     }
 
     @Override
+    Set<Integer> getAssignedPartitions() {
+        return null
+    }
+
+    @Override
     void updateTopic(Topic topic) {
     }
 

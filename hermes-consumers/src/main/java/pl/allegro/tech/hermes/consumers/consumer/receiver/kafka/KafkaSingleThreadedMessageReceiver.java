@@ -226,4 +226,8 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
   public boolean moveOffset(PartitionOffset offset) {
     return offsetMover.move(offset);
   }
+
+  public Set<Integer> getAssignedPartitions() {
+    return partitionAssignmentState.getAssignedPartitions(subscription.getQualifiedName());
+  }
 }
