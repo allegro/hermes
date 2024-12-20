@@ -73,3 +73,8 @@ LogRepository logRepository(Client client) {
     return new ElasticsearchLogRepository(client);
 }
 ```
+
+### UI configuration
+Ui console can be configured to show tracking urls to users for topics and subscriptions.
+To enable this, make bean implementing `pl.allegro.tech.hermes.tracker.management.TrackingUrlProvider`
+available in Spring context.

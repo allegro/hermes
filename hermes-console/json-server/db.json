@@ -213,7 +213,7 @@
       },
       "jsonToAvroDryRun": false,
       "ack": "LEADER",
-      "trackingEnabled": false,
+      "trackingEnabled": true,
       "migratedFromJsonType": false,
       "schemaIdAwareSerializationEnabled": false,
       "contentType": "AVRO",
@@ -250,6 +250,14 @@
       "subscriptions": 1,
       "throughput": "0.0"
     }
+  ],
+  "topicsTrackingUrls": [
+    {"name": "Tracking Link 1", "url": "#"},
+    {"name": "Tracking Link 2", "url": "#"}
+  ],
+  "subscriptionsTrackingUrls": [
+    {"name": "Tracking Link 1", "url": "#"},
+    {"name": "Tracking Link 2", "url": "#"}
   ],
   "topicsOwners": [
     {
@@ -393,7 +401,7 @@
         "retryClientErrors": true,
         "backoffMaxIntervalMillis": 600000
       },
-      "trackingEnabled": false,
+      "trackingEnabled": true,
       "trackingMode": "trackingOff",
       "owner": {
         "source": "Service Catalog",

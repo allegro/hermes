@@ -18,6 +18,7 @@
   import SchemaPanel from '@/views/topic/schema-panel/SchemaPanel.vue';
   import SubscriptionsList from '@/views/topic/subscriptions-list/SubscriptionsList.vue';
   import TopicHeader from '@/views/topic/topic-header/TopicHeader.vue';
+  import TrackingCard from '@/components/tracking-card/TrackingCard.vue';
 
   const router = useRouter();
 
@@ -37,6 +38,7 @@
     error,
     subscriptions,
     offlineClientsSource,
+    trackingUrls,
     fetchOfflineClientsSource,
     removeTopic,
     fetchTopicClients,
@@ -145,6 +147,10 @@
             v-if="configStore.appConfig?.costs.enabled"
             :iframe-url="costs.iframeUrl"
             :details-url="costs.detailsUrl"
+          />
+          <tracking-card
+            v-if="topic?.trackingEnabled"
+            :tracking-urls="trackingUrls"
           />
         </v-col>
         <v-col md="6">
