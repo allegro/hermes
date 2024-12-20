@@ -85,3 +85,8 @@ detection:
     whitelisted-qualified-topic-names: []
     cron: "0 0 8 * * *"
     notifications-history-limit: 5
+
+
+consumer-group:
+  clean-up:
+    enabled: true
