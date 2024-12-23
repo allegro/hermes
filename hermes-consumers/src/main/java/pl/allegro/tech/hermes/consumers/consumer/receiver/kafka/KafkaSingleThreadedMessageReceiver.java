@@ -25,7 +25,6 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopics;
-import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffsets;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
@@ -196,15 +195,24 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
 
   private Map<TopicPartition, OffsetAndMetadata> createOffset(
       Set<SubscriptionPartitionOffset> partitionOffsets) {
+    Map<TopicPartition, OffsetAndMetadata> commitedOffsetsData =
+        fetchCommitedOffsetsMetadata(partitionOffsets);
+
     Map<TopicPartition, OffsetAndMetadata> offsetsData = new LinkedHashMap<>();
     for (SubscriptionPartitionOffset partitionOffset : partitionOffsets) {
       TopicPartition topicAndPartition =
           new TopicPartition(
               partitionOffset.getKafkaTopicName().asString(), partitionOffset.getPartition());
 
+      Long commitedOffset =
+          Optional.ofNullable(commitedOffsetsData.get(topicAndPartition))
+              .map(OffsetAndMetadata::offset)
+              .orElse(Long.MIN_VALUE);
+
       if (partitionAssignmentState.isAssignedPartitionAtCurrentTerm(
           partitionOffset.getSubscriptionPartition())) {
-        if (consumer.position(topicAndPartition) >= partitionOffset.getOffset()) {
+        if (consumer.position(topicAndPartition) >= partitionOffset.getOffset()
+            && partitionOffset.getOffset() > commitedOffset) {
           offsetsData.put(topicAndPartition, new OffsetAndMetadata(partitionOffset.getOffset()));
         } else {
           skippedCounter.increment();
@@ -226,5 +234,18 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
   @Override
   public PartitionOffsets moveOffset(PartitionOffsets offsets) {
     return offsetMover.move(offsets);
+  }
+
+  private Map<TopicPartition, OffsetAndMetadata> fetchCommitedOffsetsMetadata(
+      Set<SubscriptionPartitionOffset> partitionOffsets) {
+    Set<TopicPartition> topicPartitions =
+        partitionOffsets.stream()
+            .map(
+                offset ->
+                    new TopicPartition(
+                        offset.getKafkaTopicName().asString(), offset.getPartition()))
+            .collect(Collectors.toSet());
+
+    return consumer.committed(topicPartitions);
   }
 }
