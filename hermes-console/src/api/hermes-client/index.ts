@@ -22,6 +22,7 @@ import type {
   Readiness,
 } from '@/api/datacenter-readiness';
 import type { Group } from '@/api/group';
+import type { InactiveTopic } from '@/api/inactive-topics';
 import type { InconsistentGroup } from '@/api/inconsistent-group';
 import type {
   MessageFiltersVerification,
@@ -197,6 +198,10 @@ export function fetchTopicClients(
 
 export function fetchConstraints(): ResponsePromise<ConstraintsConfig> {
   return axios.get<ConstraintsConfig>('/workload-constraints');
+}
+
+export function fetchInactiveTopics(): ResponsePromise<InactiveTopic[]> {
+  return axios.get<InactiveTopic[]>('/inactive-topics');
 }
 
 export function fetchReadiness(): ResponsePromise<DatacenterReadiness[]> {
