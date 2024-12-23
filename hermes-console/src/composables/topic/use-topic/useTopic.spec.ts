@@ -16,6 +16,7 @@ import {
 } from '@/utils/test-utils';
 import {
   fetchOwnerErrorHandler,
+  fetchTopicClientsErrorHandler,
   fetchTopicErrorHandler,
   fetchTopicMessagesPreviewErrorHandler,
   fetchTopicMetricsErrorHandler,
@@ -205,6 +206,26 @@ describe('useTopic', () => {
         type: 'error',
         title: 'notifications.topic.delete.failure',
       });
+    });
+  });
+
+  it('should show message that fetching clients was unsuccessful', async () => {
+    // given
+    server.use(fetchTopicClientsErrorHandler({ topicName: dummyTopic.name }));
+    server.listen();
+    const notificationStore = notificationStoreSpy();
+
+    const { fetchTopicClients } = useTopic(topicName);
+
+    // when
+    const clients = await fetchTopicClients();
+
+    // then
+    expect(clients).toBeNull();
+
+    expectNotificationDispatched(notificationStore, {
+      type: 'error',
+      title: 'notifications.topic.clients.fetch.failure',
     });
   });
 });
