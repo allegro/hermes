@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.BatchSubscriptionPolicy;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffsets;
 import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatch;
@@ -239,11 +239,11 @@ public class BatchConsumer implements Consumer {
   }
 
   @Override
-  public boolean moveOffset(PartitionOffset partitionOffset) {
+  public PartitionOffsets moveOffset(PartitionOffsets partitionOffsets) {
     if (receiver != null) {
-      return receiver.moveOffset(partitionOffset);
+      return receiver.moveOffset(partitionOffsets);
     }
-    return false;
+    return new PartitionOffsets();
   }
 
   @Override

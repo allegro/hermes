@@ -26,6 +26,7 @@ import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopics;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffsets;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
@@ -223,7 +224,7 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
   }
 
   @Override
-  public boolean moveOffset(PartitionOffset offset) {
-    return offsetMover.move(offset);
+  public PartitionOffsets moveOffset(PartitionOffsets offsets) {
+    return offsetMover.move(offsets);
   }
 }
