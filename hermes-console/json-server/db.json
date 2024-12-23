@@ -1,4 +1,9 @@
 {
+  "inactiveTopics": [
+    {"topic":  "group.topic1", "lastPublishedTsMs": 1732499845200, "notificationTsMs": [1733499835210, 1733499645212], "whitelisted":  false},
+    {"topic":  "group.topic2", "lastPublishedTsMs": 1633928665148, "notificationTsMs": [], "whitelisted":  true},
+    {"topic":  "pl.allegro.public.group.DummyEvent", "lastPublishedTsMs": 1633928665148, "notificationTsMs": [1733499645212], "whitelisted":  false}
+  ],
   "groups": [
     "pl.allegro.public.offer",
     "pl.allegro.public.offer.product",
@@ -138,6 +143,11 @@
   "offlineClientsSource": {
     "source": "https://www.openstreetmap.org/export/embed.html?bbox=-0.004017949104309083%2C51.47612752641776%2C0.00030577182769775396%2C51.478569861898606&layer=mapnik"
   },
+  "topicClients": [
+    "client1@allegro.com",
+    "client2@allegro.com",
+    "client3@allegro.com"
+  ],
   "inconsistentTopics": [
     "pl.allegro.group.Topic1_avro",
     "pl.allegro.group.Topic2_avro",
