@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 public class PrometheusMetricsAssertion {
 
   private static final Pattern METRIC_LINE_PATTERN =
-      Pattern.compile("^[a-z_]+\\{(.*)\\} (\\d+\\.\\d+)$");
+      Pattern.compile("^[a-z_]+\\{(.*)\\} (\\d+(\\.\\d+)?)$");
 
   private final String actualBody;
 
