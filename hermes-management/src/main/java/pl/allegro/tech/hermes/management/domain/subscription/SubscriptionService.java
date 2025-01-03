@@ -384,6 +384,11 @@ public class SubscriptionService {
     }
   }
 
+  public boolean subscriptionExists(SubscriptionName subscriptionName) {
+    return subscriptionRepository.subscriptionExists(
+        subscriptionName.getTopicName(), subscriptionName.getName());
+  }
+
   private List<CompletableFuture<UnhealthySubscription>> filterSubscriptions(
       Collection<Subscription> subscriptions,
       boolean respectMonitoringSeverity,
@@ -460,10 +465,5 @@ public class SubscriptionService {
                   metrics, s.getName(), s.getQualifiedTopicName());
             })
         .collect(toList());
-  }
-
-  public boolean subscriptionExists(SubscriptionName subscriptionName) {
-    return subscriptionRepository.subscriptionExists(
-        subscriptionName.getTopicName(), subscriptionName.getName());
   }
 }
