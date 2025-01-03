@@ -11,11 +11,13 @@
   const props = defineProps<{
     topic: string;
     subscription: string;
+    retransmitting: boolean;
+    skippingAllMessages: boolean;
   }>();
 
   const emit = defineEmits<{
-    retransmit: [fromDate: string, onComplete: () => void];
-    skipAllMessages: [onComplete: () => void];
+    retransmit: [fromDate: string];
+    skipAllMessages: [];
   }>();
 
   const retransmitFrom = ref(new Date().toISOString().slice(0, -5));
@@ -43,20 +45,17 @@
     disableActionButton: disableSkipAllMessagesActionButton,
   } = useDialog();
 
-  const retransmitting = ref(false);
-  const skippingAllMessages = ref(false);
-
   async function retransmit() {
     disableRetransmitActionButton();
-    retransmitting.value = true;
-    emit('retransmit', `${retransmitFrom.value}Z`, retransmissionCompleted);
+    emit('retransmit', `${retransmitFrom.value}Z`);
+    enableRetransmitActionButton();
     closeRetransmitDialog();
   }
 
   async function skipMessages() {
     disableSkipAllMessagesActionButton();
-    skippingAllMessages.value = true;
-    emit('skipAllMessages', skippingAllMessagesCompleted);
+    emit('skipAllMessages');
+    enableSkipAllMessagesActionButton();
     closeSkipAllMessagesDialog();
   }
 
@@ -72,16 +71,6 @@
       subscriptionFqn: subscriptionQualifiedName,
     }),
   );
-
-  function retransmissionCompleted() {
-    retransmitting.value = false;
-    enableRetransmitActionButton();
-  }
-
-  function skippingAllMessagesCompleted() {
-    skippingAllMessages.value = false;
-    enableSkipAllMessagesActionButton();
-  }
 </script>
 
 <template>

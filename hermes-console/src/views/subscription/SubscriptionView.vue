@@ -34,6 +34,8 @@
     subscriptionHealth,
     subscriptionUndeliveredMessages,
     subscriptionLastUndeliveredMessage,
+    retransmitting,
+    skippingAllMessages,
     error,
     loading,
     removeSubscription,
@@ -102,12 +104,12 @@
     }
   }
 
-  const onRetransmit = async (fromDate: string, onComplete: () => void) => {
-    await retransmitMessages(fromDate).finally(onComplete);
+  const onRetransmit = async (fromDate: string) => {
+    await retransmitMessages(fromDate);
   };
 
-  const onSkipAllMessages = async (onComplete: () => void) => {
-    await skipAllMessages().finally(onComplete);
+  const onSkipAllMessages = async () => {
+    await skipAllMessages();
   };
 
   const breadcrumbsItems = [
@@ -232,6 +234,8 @@
             v-if="isSubscriptionOwnerOrAdmin(roles)"
             :topic="topicId"
             :subscription="subscriptionId"
+            :retransmitting="retransmitting"
+            :skippingAllMessages="skippingAllMessages"
             @retransmit="onRetransmit"
             @skipAllMessages="onSkipAllMessages"
           />

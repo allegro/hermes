@@ -29,6 +29,8 @@ export interface UseSubscription {
   subscriptionUndeliveredMessages: Ref<SentMessageTrace[] | null>;
   subscriptionLastUndeliveredMessage: Ref<SentMessageTrace | null>;
   loading: Ref<boolean>;
+  retransmitting: Ref<boolean>;
+  skippingAllMessages: Ref<boolean>;
   error: Ref<UseSubscriptionsErrors>;
   removeSubscription: () => Promise<boolean>;
   suspendSubscription: () => Promise<boolean>;
@@ -67,7 +69,8 @@ export function useSubscription(
     fetchSubscriptionUndeliveredMessages: null,
     fetchSubscriptionLastUndeliveredMessage: null,
   });
-
+  const retransmitting = ref(false);
+  const skippingAllMessages = ref(false);
   const fetchSubscription = async () => {
     try {
       loading.value = true;
@@ -217,6 +220,7 @@ export function useSubscription(
   };
 
   const retransmitMessages = async (from: string): Promise<boolean> => {
+    retransmitting.value = true;
     try {
       await retransmitSubscriptionMessages(topicName, subscriptionName, {
         retransmissionDate: from,
@@ -241,10 +245,13 @@ export function useSubscription(
         }),
       );
       return false;
+    } finally {
+      retransmitting.value = false;
     }
   };
 
   const skipAllMessages = async (): Promise<boolean> => {
+    skippingAllMessages.value = true;
     const tomorrowDate = new Date();
     tomorrowDate.setDate(tomorrowDate.getDate() + 1);
     try {
@@ -274,6 +281,8 @@ export function useSubscription(
         ),
       );
       return false;
+    } finally {
+      skippingAllMessages.value = false;
     }
   };
 
@@ -287,6 +296,8 @@ export function useSubscription(
     subscriptionUndeliveredMessages,
     subscriptionLastUndeliveredMessage,
     loading,
+    retransmitting,
+    skippingAllMessages,
     error,
     removeSubscription,
     suspendSubscription,

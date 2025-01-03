@@ -956,14 +956,19 @@ export const createRetransmissionHandler = ({
   statusCode,
   topicName,
   subscriptionName,
+  delayMs,
 }: {
   statusCode: number;
   topicName: string;
   subscriptionName: string;
+  delayMs?: number;
 }) =>
   http.put(
     `${url}/topics/${topicName}/subscriptions/${subscriptionName}/retransmission`,
-    () => {
+    async () => {
+      if (delayMs && delayMs > 0) {
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+      }
       return new HttpResponse(undefined, {
         status: statusCode,
       });
