@@ -83,6 +83,7 @@ public class KafkaRetransmissionServiceTest {
 
     // then
     response.expectStatus().isOk();
+    // Check if Kafka committed offsets were moved on retransmission
     assertThat(
             hermes
                 .api()
