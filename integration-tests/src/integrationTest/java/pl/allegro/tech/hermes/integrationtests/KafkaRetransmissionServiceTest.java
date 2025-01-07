@@ -71,6 +71,9 @@ public class KafkaRetransmissionServiceTest {
     publishAndConsumeMessages(messages2, topic, subscriber);
     hermes.api().waitUntilConsumerCommitsOffset(topic.getQualifiedName(), subscription.getName());
 
+    long commitedMessages =
+        hermes.api().calculateCommittedMessages(topic.getQualifiedName(), subscription.getName());
+
     // when
     WebTestClient.ResponseSpec response =
         hermes
@@ -80,7 +83,18 @@ public class KafkaRetransmissionServiceTest {
 
     // then
     response.expectStatus().isOk();
+    assertThat(
+            hermes
+                .api()
+                .calculateCommittedMessages(topic.getQualifiedName(), subscription.getName()))
+        .isLessThan(commitedMessages);
     messages2.forEach(subscriber::waitUntilReceived);
+    hermes.api().waitUntilConsumerCommitsOffset(topic.getQualifiedName(), subscription.getName());
+    assertThat(
+            hermes
+                .api()
+                .calculateCommittedMessages(topic.getQualifiedName(), subscription.getName()))
+        .isEqualTo(commitedMessages);
   }
 
   @Test

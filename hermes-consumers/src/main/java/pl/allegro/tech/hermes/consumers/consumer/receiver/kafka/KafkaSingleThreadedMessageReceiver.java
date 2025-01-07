@@ -74,7 +74,9 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
     this.partitionAssignmentState = partitionAssignmentState;
     this.consumer = consumer;
     this.readQueue = new ArrayBlockingQueue<>(readQueueCapacity);
-    this.offsetMover = new KafkaConsumerOffsetMover(subscription.getQualifiedName(), consumer);
+    this.offsetMover =
+        new KafkaConsumerOffsetMover(
+            subscription.getQualifiedName(), consumer, partitionAssignmentState);
     Map<String, KafkaTopic> topics =
         getKafkaTopics(topic, kafkaNamesMapper).stream()
             .collect(Collectors.toMap(t -> t.name().asString(), Function.identity()));
@@ -195,8 +197,6 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
 
   private Map<TopicPartition, OffsetAndMetadata> createOffset(
       Set<SubscriptionPartitionOffset> partitionOffsets) {
-    Map<TopicPartition, OffsetAndMetadata> commitedOffsetsData =
-        fetchCommitedOffsetsMetadata(partitionOffsets);
 
     Map<TopicPartition, OffsetAndMetadata> offsetsData = new LinkedHashMap<>();
     for (SubscriptionPartitionOffset partitionOffset : partitionOffsets) {
@@ -204,15 +204,9 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
           new TopicPartition(
               partitionOffset.getKafkaTopicName().asString(), partitionOffset.getPartition());
 
-      Long commitedOffset =
-          Optional.ofNullable(commitedOffsetsData.get(topicAndPartition))
-              .map(OffsetAndMetadata::offset)
-              .orElse(Long.MIN_VALUE);
-
       if (partitionAssignmentState.isAssignedPartitionAtCurrentTerm(
           partitionOffset.getSubscriptionPartition())) {
-        if (consumer.position(topicAndPartition) >= partitionOffset.getOffset()
-            && partitionOffset.getOffset() > commitedOffset) {
+        if (consumer.position(topicAndPartition) >= partitionOffset.getOffset()) {
           offsetsData.put(topicAndPartition, new OffsetAndMetadata(partitionOffset.getOffset()));
         } else {
           skippedCounter.increment();
@@ -234,18 +228,5 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
   @Override
   public PartitionOffsets moveOffset(PartitionOffsets offsets) {
     return offsetMover.move(offsets);
-  }
-
-  private Map<TopicPartition, OffsetAndMetadata> fetchCommitedOffsetsMetadata(
-      Set<SubscriptionPartitionOffset> partitionOffsets) {
-    Set<TopicPartition> topicPartitions =
-        partitionOffsets.stream()
-            .map(
-                offset ->
-                    new TopicPartition(
-                        offset.getKafkaTopicName().asString(), offset.getPartition()))
-            .collect(Collectors.toSet());
-
-    return consumer.committed(topicPartitions);
   }
 }

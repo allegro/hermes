@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffsets;
+import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignmentState;
 
 public class KafkaConsumerOffsetMover {
 
@@ -17,10 +18,15 @@ public class KafkaConsumerOffsetMover {
 
   private final SubscriptionName subscriptionName;
   private KafkaConsumer consumer;
+  private ConsumerPartitionAssignmentState partitionAssignmentState;
 
-  public KafkaConsumerOffsetMover(SubscriptionName subscriptionName, KafkaConsumer consumer) {
+  public KafkaConsumerOffsetMover(
+      SubscriptionName subscriptionName,
+      KafkaConsumer consumer,
+      ConsumerPartitionAssignmentState partitionAssignmentState) {
     this.subscriptionName = subscriptionName;
     this.consumer = consumer;
+    this.partitionAssignmentState = partitionAssignmentState;
   }
 
   public PartitionOffsets move(PartitionOffsets offsets) {
@@ -33,6 +39,12 @@ public class KafkaConsumerOffsetMover {
     }
 
     commit(movedOffsets);
+
+    if (!movedOffsets.isEmpty()) {
+      // Incrementing assignment term ensures that currently committed offsets won't be overwritten
+      // by the events from the past which are concurrently processed by the consumer
+      partitionAssignmentState.incrementTerm(subscriptionName);
+    }
 
     return movedOffsets;
   }
