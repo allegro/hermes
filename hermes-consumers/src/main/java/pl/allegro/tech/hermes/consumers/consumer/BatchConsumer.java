@@ -251,6 +251,11 @@ public class BatchConsumer implements Consumer {
     return subscription;
   }
 
+  @Override
+  public Set<Integer> getAssignedPartitions() {
+    return receiver.getAssignedPartitions();
+  }
+
   private Retryer<MessageSendingResult> createRetryer(
       MessageBatch batch, BatchSubscriptionPolicy policy) {
     return createRetryer(

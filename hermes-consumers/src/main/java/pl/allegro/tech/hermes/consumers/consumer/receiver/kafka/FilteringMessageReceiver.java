@@ -68,4 +68,9 @@ public class FilteringMessageReceiver implements MessageReceiver {
   public boolean moveOffset(PartitionOffset offset) {
     return receiver.moveOffset(offset);
   }
+
+  @Override
+  public Set<Integer> getAssignedPartitions() {
+    return receiver.getAssignedPartitions();
+  }
 }
