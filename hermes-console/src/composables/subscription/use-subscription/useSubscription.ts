@@ -6,6 +6,7 @@ import {
   fetchSubscriptionHealth as getSubscriptionHealth,
   fetchSubscriptionLastUndeliveredMessage as getSubscriptionLastUndeliveredMessage,
   fetchSubscriptionMetrics as getSubscriptionMetrics,
+  getSubscriptionTrackingUrls,
   fetchSubscriptionUndeliveredMessages as getSubscriptionUndeliveredMessages,
   retransmitSubscriptionMessages,
   suspendSubscription as suspend,
@@ -20,6 +21,7 @@ import type { SentMessageTrace } from '@/api/subscription-undelivered';
 import type { Subscription } from '@/api/subscription';
 import type { SubscriptionHealth } from '@/api/subscription-health';
 import type { SubscriptionMetrics } from '@/api/subscription-metrics';
+import type { TrackingUrl } from '@/api/tracking-url';
 
 export interface UseSubscription {
   subscription: Ref<Subscription | undefined>;
@@ -28,6 +30,7 @@ export interface UseSubscription {
   subscriptionHealth: Ref<SubscriptionHealth | undefined>;
   subscriptionUndeliveredMessages: Ref<SentMessageTrace[] | null>;
   subscriptionLastUndeliveredMessage: Ref<SentMessageTrace | null>;
+  trackingUrls: Ref<TrackingUrl[] | undefined>;
   loading: Ref<boolean>;
   error: Ref<UseSubscriptionsErrors>;
   removeSubscription: () => Promise<boolean>;
@@ -44,6 +47,7 @@ export interface UseSubscriptionsErrors {
   fetchSubscriptionHealth: Error | null;
   fetchSubscriptionUndeliveredMessages: Error | null;
   fetchSubscriptionLastUndeliveredMessage: Error | null;
+  getSubscriptionTrackingUrls: Error | null;
 }
 
 export function useSubscription(
@@ -58,6 +62,7 @@ export function useSubscription(
   const subscriptionHealth = ref<SubscriptionHealth>();
   const subscriptionUndeliveredMessages = ref<SentMessageTrace[]>([]);
   const subscriptionLastUndeliveredMessage = ref<SentMessageTrace | null>(null);
+  const trackingUrls = ref<TrackingUrl[]>();
   const loading = ref(false);
   const error = ref<UseSubscriptionsErrors>({
     fetchSubscription: null,
@@ -66,6 +71,7 @@ export function useSubscription(
     fetchSubscriptionHealth: null,
     fetchSubscriptionUndeliveredMessages: null,
     fetchSubscriptionLastUndeliveredMessage: null,
+    getSubscriptionTrackingUrls: null,
   });
 
   const fetchSubscription = async () => {
@@ -147,6 +153,16 @@ export function useSubscription(
       ).data;
     } catch (e) {
       error.value.fetchSubscriptionLastUndeliveredMessage = e as Error;
+    }
+  };
+
+  const fetchSubscriptionTrackingUrls = async () => {
+    try {
+      trackingUrls.value = (
+        await getSubscriptionTrackingUrls(topicName, subscriptionName)
+      ).data;
+    } catch (e) {
+      error.value.getSubscriptionTrackingUrls = e as Error;
     }
   };
 
@@ -278,6 +294,7 @@ export function useSubscription(
   };
 
   fetchSubscription();
+  fetchSubscriptionTrackingUrls();
 
   return {
     subscription,
@@ -286,6 +303,7 @@ export function useSubscription(
     subscriptionHealth,
     subscriptionUndeliveredMessages,
     subscriptionLastUndeliveredMessage,
+    trackingUrls,
     loading,
     error,
     removeSubscription,
