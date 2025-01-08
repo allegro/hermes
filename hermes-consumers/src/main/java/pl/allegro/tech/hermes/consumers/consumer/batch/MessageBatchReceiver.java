@@ -183,4 +183,8 @@ public class MessageBatchReceiver {
   public PartitionOffsets moveOffset(PartitionOffsets offsets) {
     return receiver.moveOffset(offsets);
   }
+
+  public Set<Integer> getAssignedPartitions() {
+    return receiver.getAssignedPartitions();
+  }
 }

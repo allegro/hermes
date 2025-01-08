@@ -29,4 +29,6 @@ public interface Consumer {
   PartitionOffsets moveOffset(PartitionOffsets subscriptionPartitionOffsets);
 
   Subscription getSubscription();
+
+  Set<Integer> getAssignedPartitions();
 }
