@@ -834,6 +834,10 @@ const en_US = {
     title: 'Costs',
     detailsButton: 'DASHBOARD',
   },
+  trackingCard: {
+    title: 'Tracking',
+    noTrackingUrls: 'No tracking urls available',
+  },
 };
 
 export default en_US;

@@ -9,6 +9,7 @@ import {
   fetchOwner as getTopicOwner,
   fetchTopicSubscriptionDetails as getTopicSubscriptionDetails,
   fetchTopicSubscriptions as getTopicSubscriptions,
+  getTopicTrackingUrls,
 } from '@/api/hermes-client';
 import { dispatchErrorNotification } from '@/utils/notification-utils';
 import { ref } from 'vue';
@@ -24,6 +25,7 @@ import type { OfflineClientsSource } from '@/api/offline-clients-source';
 import type { Owner } from '@/api/owner';
 import type { Ref } from 'vue';
 import type { Subscription } from '@/api/subscription';
+import type { TrackingUrl } from '@/api/tracking-url';
 
 export interface UseTopic {
   topic: Ref<TopicWithSchema | undefined>;
@@ -32,6 +34,7 @@ export interface UseTopic {
   metrics: Ref<TopicMetrics | undefined>;
   subscriptions: Ref<Subscription[] | undefined>;
   offlineClientsSource: Ref<OfflineClientsSource | undefined>;
+  trackingUrls: Ref<TrackingUrl[] | undefined>;
   loading: Ref<boolean>;
   error: Ref<UseTopicErrors>;
   fetchOfflineClientsSource: () => Promise<void>;
@@ -46,6 +49,7 @@ export interface UseTopicErrors {
   fetchTopicMetrics: Error | null;
   fetchSubscriptions: Error | null;
   fetchOfflineClientsSource: Error | null;
+  getTopicTrackingUrls: Error | null;
 }
 
 export function useTopic(topicName: string): UseTopic {
@@ -57,6 +61,7 @@ export function useTopic(topicName: string): UseTopic {
   const metrics = ref<TopicMetrics>();
   const subscriptions = ref<Subscription[]>();
   const offlineClientsSource = ref<OfflineClientsSource>();
+  const trackingUrls = ref<TrackingUrl[]>();
   const loading = ref(false);
   const error = ref<UseTopicErrors>({
     fetchTopic: null,
@@ -65,6 +70,7 @@ export function useTopic(topicName: string): UseTopic {
     fetchTopicMetrics: null,
     fetchSubscriptions: null,
     fetchOfflineClientsSource: null,
+    getTopicTrackingUrls: null,
   });
 
   const fetchTopic = async () => {
@@ -152,6 +158,14 @@ export function useTopic(topicName: string): UseTopic {
     }
   };
 
+  const fetchTopicTrackingUrls = async () => {
+    try {
+      trackingUrls.value = (await getTopicTrackingUrls(topicName)).data;
+    } catch (e) {
+      error.value.getTopicTrackingUrls = e as Error;
+    }
+  };
+
   const removeTopic = async (): Promise<boolean> => {
     try {
       await deleteTopic(topicName);
@@ -188,6 +202,7 @@ export function useTopic(topicName: string): UseTopic {
   };
 
   fetchTopic();
+  fetchTopicTrackingUrls();
 
   return {
     topic,
@@ -196,6 +211,7 @@ export function useTopic(topicName: string): UseTopic {
     metrics,
     subscriptions,
     offlineClientsSource,
+    trackingUrls,
     loading,
     error,
     fetchOfflineClientsSource,
