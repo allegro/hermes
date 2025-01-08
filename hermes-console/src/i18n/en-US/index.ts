@@ -148,12 +148,14 @@ const en_US = {
       topicName: 'Topic name',
       subscriptionName: 'Subscription name',
       consumersNumber: 'Consumers count',
+      reason: 'Reason',
       save: 'Save',
       cancel: 'Cancel',
     },
     editForm: {
       title: 'Edit constraints for: “{resourceId}”',
       consumersNumber: 'Consumers count',
+      reason: 'Reason',
       save: 'Save',
       remove: 'Remove',
       cancel: 'Cancel',
@@ -189,6 +191,20 @@ const en_US = {
       noConstraints: 'No constraints found',
       consumersNumberChip: 'consumers number: ',
       appliedFilter: '(applied filter: “{filter}”)',
+    },
+  },
+  inactiveTopics: {
+    connectionError: {
+      title: 'Connection error',
+      text: 'Could not fetch information about inactive topics',
+    },
+    heading: 'Inactive Topics',
+    listing: {
+      name: 'Name',
+      lastUsed: 'Last published message',
+      lastNotified: 'Last notified',
+      howManyTimesNotified: 'How many times notified',
+      whitelisted: 'Whitelisted',
     },
   },
   stats: {
@@ -374,6 +390,7 @@ const en_US = {
       title: 'Subscriptions',
       create: 'Create subscription',
       search: 'Search...',
+      copy: 'Copy clients to clipboard',
     },
     errorMessage: {
       topicFetchFailed: 'Could not fetch {topicName} topic details',
@@ -645,6 +662,7 @@ const en_US = {
   },
   offlineRetransmission: {
     title: 'Offline retransmission',
+    titleRetransmissionFromView: 'Docs for retransmission from View',
     subtitle:
       'Offline retransmission allows retransmitting events from GCP (BigQuery) to Hermes.',
     targetTopic: 'Target topic',
@@ -706,6 +724,11 @@ const en_US = {
       delete: {
         success: 'Topic {topicName} successfully deleted',
         failure: "Couldn't delete topic {topicName}",
+      },
+      clients: {
+        fetch: {
+          failure: 'Failed to fetch topic clients',
+        },
       },
     },
     inconsistentTopic: {

@@ -76,6 +76,9 @@ function mapSerialSubscriptionPolicy(
     ),
     messageBackoff: parseFloat(String(form.subscriptionPolicy.retryBackoff)),
     messageTtl: parseFloat(String(form.subscriptionPolicy.inflightMessageTTL)),
+    inflightSize: parseFloat(
+      String(form.subscriptionPolicy.inflightMessagesCount),
+    ),
     rate: parseFloat(String(form.subscriptionPolicy.rateLimit!!)),
     requestTimeout: parseFloat(String(form.subscriptionPolicy.requestTimeout)),
     sendingDelay: parseFloat(String(form.subscriptionPolicy.sendingDelay)),

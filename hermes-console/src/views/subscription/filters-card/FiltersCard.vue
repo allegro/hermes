@@ -1,12 +1,14 @@
 <script setup lang="ts">
   import { v4 as generateUUID } from 'uuid';
-  import { PathFilter } from '@/views/subscription/subscription-form/subscription-basic-filters/types';
+  import { getAvroPaths } from '@/utils/json-avro/jsonAvroUtils';
   import SubscriptionPathFiltersDebug from '@/views/subscription/subscription-form/subscription-basic-filters/SubscriptionPathFiltersDebug.vue';
   import type { MessageFilterSpecification } from '@/api/subscription';
+  import type { PathFilter } from '@/views/subscription/subscription-form/subscription-basic-filters/types';
 
   const props = defineProps<{
     topic: string;
     filters: MessageFilterSpecification[];
+    schema?: string;
   }>();
   const pathFilters = (filters: MessageFilterSpecification[]): PathFilter[] => {
     return filters.filter((f) => f.type !== 'header').map((f) => mapFilter(f));
@@ -64,6 +66,7 @@
     <template #actions>
       <subscription-path-filters-debug
         :topic="props.topic"
+        :paths="getAvroPaths(props.schema)"
         :model-value="pathFilters(props.filters)"
         :edit-enabled="false"
       />

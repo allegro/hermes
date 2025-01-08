@@ -5,16 +5,16 @@ import pl.allegro.tech.hermes.management.domain.ManagementException;
 
 public class UnhealthySubscriptionGetException extends ManagementException {
 
-    public UnhealthySubscriptionGetException(String message) {
-        super(message);
-    }
+  public UnhealthySubscriptionGetException(String message) {
+    super(message);
+  }
 
-    public UnhealthySubscriptionGetException(String message, Throwable cause) {
-        super(message, cause);
-    }
+  public UnhealthySubscriptionGetException(String message, Throwable cause) {
+    super(message, cause);
+  }
 
-    @Override
-    public ErrorCode getCode() {
-        return ErrorCode.OTHER;
-    }
+  @Override
+  public ErrorCode getCode() {
+    return ErrorCode.OTHER;
+  }
 }

@@ -22,8 +22,8 @@ class WorkloadConstraintsTest extends Specification {
                 .withConsumersPerSubscription(DEFAULT_CONSUMERS_PER_SUBSCRIPTION)
                 .withMaxSubscriptionsPerConsumer(DEFAULT_MAX_SUBSCRIPTIONS_PER_CONSUMER)
                 .withSubscriptionConstraints([
-                        (SubscriptionName.fromString('group.topic$sub1')): new Constraints(3),
-                        (SubscriptionName.fromString('group.topic$sub2')): new Constraints(1)
+                        (SubscriptionName.fromString('group.topic$sub1')): new Constraints(3, null),
+                        (SubscriptionName.fromString('group.topic$sub2')): new Constraints(1, null)
                 ])
                 .build()
 
@@ -43,10 +43,10 @@ class WorkloadConstraintsTest extends Specification {
                 .withConsumersPerSubscription(DEFAULT_CONSUMERS_PER_SUBSCRIPTION)
                 .withMaxSubscriptionsPerConsumer(DEFAULT_MAX_SUBSCRIPTIONS_PER_CONSUMER)
                 .withSubscriptionConstraints([
-                        (SubscriptionName.fromString('group.topic$sub1')): new Constraints(3)
+                        (SubscriptionName.fromString('group.topic$sub1')): new Constraints(3, null)
                 ])
                 .withTopicConstraints([
-                        (TopicName.fromQualifiedName('group.topic')): new Constraints(2)
+                        (TopicName.fromQualifiedName('group.topic')): new Constraints(2, null)
                 ])
                 .build()
 
@@ -67,10 +67,10 @@ class WorkloadConstraintsTest extends Specification {
                 .withConsumersPerSubscription(DEFAULT_CONSUMERS_PER_SUBSCRIPTION)
                 .withMaxSubscriptionsPerConsumer(DEFAULT_MAX_SUBSCRIPTIONS_PER_CONSUMER)
                 .withSubscriptionConstraints([
-                        (SubscriptionName.fromString('group.topic1$sub')): new Constraints(AVAILABLE_CONSUMERS + 1)
+                        (SubscriptionName.fromString('group.topic1$sub')): new Constraints(AVAILABLE_CONSUMERS + 1, null)
                 ])
                 .withTopicConstraints([
-                        (TopicName.fromQualifiedName('group.topic2')): new Constraints(AVAILABLE_CONSUMERS + 1)
+                        (TopicName.fromQualifiedName('group.topic2')): new Constraints(AVAILABLE_CONSUMERS + 1, null)
                 ])
                 .build()
 
@@ -93,7 +93,7 @@ class WorkloadConstraintsTest extends Specification {
                 .withConsumersPerSubscription(DEFAULT_CONSUMERS_PER_SUBSCRIPTION)
                 .withMaxSubscriptionsPerConsumer(DEFAULT_MAX_SUBSCRIPTIONS_PER_CONSUMER)
                 .withTopicConstraints([
-                        (TopicName.fromQualifiedName('group.topic')): new Constraints(incorrectConsumersNumber)
+                        (TopicName.fromQualifiedName('group.topic')): new Constraints(incorrectConsumersNumber, null)
                 ])
                 .build()
 
@@ -113,7 +113,7 @@ class WorkloadConstraintsTest extends Specification {
                 .withConsumersPerSubscription(DEFAULT_CONSUMERS_PER_SUBSCRIPTION)
                 .withMaxSubscriptionsPerConsumer(DEFAULT_MAX_SUBSCRIPTIONS_PER_CONSUMER)
                 .withSubscriptionConstraints([
-                        (subscriptionName): new Constraints(incorrectConsumersNumber)
+                        (subscriptionName): new Constraints(incorrectConsumersNumber, null)
                 ])
                 .build()
 

@@ -7,34 +7,48 @@ import pl.allegro.tech.hermes.consumers.consumer.rate.SendCounters;
 
 public class MaxRateProviderFactory {
 
-    private final Creator providerCreator;
+  private final Creator providerCreator;
 
-    public MaxRateProviderFactory(MaxRateParameters maxRateParameters,
-                                  String nodeId,
-                                  MaxRateRegistry maxRateRegistry,
-                                  MaxRateSupervisor maxRateSupervisor) {
-        double minSignificantChange = maxRateParameters.getMinSignificantUpdatePercent() / 100;
-        checkNegotiatedSettings(minSignificantChange, maxRateParameters.getBusyTolerance());
-        providerCreator = (subscription, sendCounters, metrics) -> {
-            int historyLimit = maxRateParameters.getHistorySize();
-            double initialMaxRate = maxRateParameters.getMinMaxRate();
+  public MaxRateProviderFactory(
+      MaxRateParameters maxRateParameters,
+      String nodeId,
+      MaxRateRegistry maxRateRegistry,
+      MaxRateSupervisor maxRateSupervisor) {
+    double minSignificantChange = maxRateParameters.getMinSignificantUpdatePercent() / 100;
+    checkNegotiatedSettings(minSignificantChange, maxRateParameters.getBusyTolerance());
+    providerCreator =
+        (subscription, sendCounters, metrics) -> {
+          int historyLimit = maxRateParameters.getHistorySize();
+          double initialMaxRate = maxRateParameters.getMinMaxRate();
 
-            return new NegotiatedMaxRateProvider(nodeId, maxRateRegistry, maxRateSupervisor,
-                    subscription, sendCounters, metrics, initialMaxRate, minSignificantChange, historyLimit);
+          return new NegotiatedMaxRateProvider(
+              nodeId,
+              maxRateRegistry,
+              maxRateSupervisor,
+              subscription,
+              sendCounters,
+              metrics,
+              initialMaxRate,
+              minSignificantChange,
+              historyLimit);
         };
-    }
+  }
 
-    public MaxRateProvider create(Subscription subscription, SendCounters sendCounters, MetricsFacade metrics) {
-        return providerCreator.create(subscription, sendCounters, metrics);
-    }
+  public MaxRateProvider create(
+      Subscription subscription, SendCounters sendCounters, MetricsFacade metrics) {
+    return providerCreator.create(subscription, sendCounters, metrics);
+  }
 
-    private interface Creator {
-        MaxRateProvider create(Subscription subscription, SendCounters sendCounters, MetricsFacade metrics);
-    }
+  private interface Creator {
+    MaxRateProvider create(
+        Subscription subscription, SendCounters sendCounters, MetricsFacade metrics);
+  }
 
-    private void checkNegotiatedSettings(double minSignificantChange, double busyTolerance) {
-        Preconditions.checkArgument(busyTolerance > minSignificantChange,
-                "Significant rate change (%s) can't be higher than busy tolerance (%s)",
-                minSignificantChange, busyTolerance);
-    }
+  private void checkNegotiatedSettings(double minSignificantChange, double busyTolerance) {
+    Preconditions.checkArgument(
+        busyTolerance > minSignificantChange,
+        "Significant rate change (%s) can't be higher than busy tolerance (%s)",
+        minSignificantChange,
+        busyTolerance);
+  }
 }

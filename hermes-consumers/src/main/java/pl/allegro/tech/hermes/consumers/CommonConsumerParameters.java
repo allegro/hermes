@@ -5,11 +5,11 @@ import pl.allegro.tech.hermes.consumers.supervisor.SupervisorParameters;
 
 public interface CommonConsumerParameters {
 
-    SupervisorParameters getBackgroundSupervisor();
+  SupervisorParameters getBackgroundSupervisor();
 
-    SerialConsumerParameters getSerialConsumer();
+  SerialConsumerParameters getSerialConsumer();
 
-    int getSignalProcessingQueueSize();
+  int getSignalProcessingQueueSize();
 
-    boolean isUseTopicMessageSizeEnabled();
+  boolean isUseTopicMessageSizeEnabled();
 }

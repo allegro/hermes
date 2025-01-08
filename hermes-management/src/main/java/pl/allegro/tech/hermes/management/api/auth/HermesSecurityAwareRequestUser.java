@@ -7,29 +7,30 @@ import pl.allegro.tech.hermes.management.api.auth.SecurityProvider.OwnershipReso
 import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 
 public class HermesSecurityAwareRequestUser implements RequestUser {
-    private final String username;
-    private final boolean isAdmin;
-    private final OwnershipResolver ownershipResolver;
+  private final String username;
+  private final boolean isAdmin;
+  private final OwnershipResolver ownershipResolver;
 
-    public HermesSecurityAwareRequestUser(ContainerRequestContext requestContext) {
-        SecurityContext securityContext = requestContext.getSecurityContext();
-        username = securityContext.getUserPrincipal().getName();
-        isAdmin = securityContext.isUserInRole(Roles.ADMIN);
-        ownershipResolver = (OwnershipResolver) requestContext.getProperty(AuthorizationFilter.OWNERSHIP_RESOLVER);
-    }
+  public HermesSecurityAwareRequestUser(ContainerRequestContext requestContext) {
+    SecurityContext securityContext = requestContext.getSecurityContext();
+    username = securityContext.getUserPrincipal().getName();
+    isAdmin = securityContext.isUserInRole(Roles.ADMIN);
+    ownershipResolver =
+        (OwnershipResolver) requestContext.getProperty(AuthorizationFilter.OWNERSHIP_RESOLVER);
+  }
 
-    @Override
-    public String getUsername() {
-        return username;
-    }
+  @Override
+  public String getUsername() {
+    return username;
+  }
 
-    @Override
-    public boolean isAdmin() {
-        return isAdmin;
-    }
+  @Override
+  public boolean isAdmin() {
+    return isAdmin;
+  }
 
-    @Override
-    public boolean isOwner(OwnerId ownerId) {
-        return ownershipResolver.isUserAnOwner(ownerId);
-    }
+  @Override
+  public boolean isOwner(OwnerId ownerId) {
+    return ownershipResolver.isUserAnOwner(ownerId);
+  }
 }

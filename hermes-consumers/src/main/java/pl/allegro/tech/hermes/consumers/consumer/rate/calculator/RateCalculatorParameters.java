@@ -4,13 +4,13 @@ import java.time.Duration;
 
 public interface RateCalculatorParameters {
 
-    Duration getLimiterHeartbeatModeDelay();
+  Duration getLimiterHeartbeatModeDelay();
 
-    Duration getLimiterSlowModeDelay();
+  Duration getLimiterSlowModeDelay();
 
-    double getConvergenceFactor();
+  double getConvergenceFactor();
 
-    double getFailuresNoChangeToleranceRatio();
+  double getFailuresNoChangeToleranceRatio();
 
-    double getFailuresSpeedUpToleranceRatio();
+  double getFailuresSpeedUpToleranceRatio();
 }

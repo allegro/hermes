@@ -2,9 +2,9 @@ package pl.allegro.tech.hermes.frontend.readiness;
 
 public interface ReadinessChecker {
 
-    boolean isReady();
+  boolean isReady();
 
-    void start();
+  void start();
 
-    void stop() throws InterruptedException;
+  void stop() throws InterruptedException;
 }

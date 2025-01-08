@@ -68,6 +68,12 @@ const router = createRouter({
       component: () => import('@/views/admin/constraints/ConstraintsView.vue'),
     },
     {
+      path: '/ui/inactive-topics',
+      name: 'inactiveTopics',
+      component: () =>
+        import('@/views/admin/inactive-topics/InactiveTopicsView.vue'),
+    },
+    {
       path: '/ui/consistency',
       children: [
         {
@@ -107,6 +113,11 @@ const router = createRouter({
       path: '/ui/search',
       name: 'search',
       component: () => import('@/views/search/SearchView.vue'),
+      props: (route) => ({
+        collection: route.query.collection,
+        filter: route.query.filter,
+        pattern: route.query.pattern,
+      }),
     },
   ],
 });

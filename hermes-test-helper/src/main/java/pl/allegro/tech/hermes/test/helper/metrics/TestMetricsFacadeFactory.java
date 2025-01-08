@@ -5,7 +5,7 @@ import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 
 public class TestMetricsFacadeFactory {
 
-    public static MetricsFacade create() {
-        return new MetricsFacade(new SimpleMeterRegistry());
-    }
+  public static MetricsFacade create() {
+    return new MetricsFacade(new SimpleMeterRegistry());
+  }
 }

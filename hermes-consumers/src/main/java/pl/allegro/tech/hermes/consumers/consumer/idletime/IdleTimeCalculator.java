@@ -1,9 +1,9 @@
 package pl.allegro.tech.hermes.consumers.consumer.idletime;
 
 public interface IdleTimeCalculator {
-    long increaseIdleTime();
+  long increaseIdleTime();
 
-    long getIdleTime();
+  long getIdleTime();
 
-    void reset();
+  void reset();
 }

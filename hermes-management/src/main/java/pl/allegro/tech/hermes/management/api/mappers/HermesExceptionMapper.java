@@ -10,12 +10,11 @@ import pl.allegro.tech.hermes.common.exception.HermesException;
 @Provider
 public class HermesExceptionMapper implements ExceptionMapper<HermesException> {
 
-    @Override
-    public Response toResponse(HermesException exception) {
-        return Response
-                .status(exception.getCode().getHttpCode())
-                .type(MediaType.APPLICATION_JSON_TYPE)
-                .entity(new ErrorDescription(exception.getMessage(), exception.getCode()))
-                .build();
-    }
+  @Override
+  public Response toResponse(HermesException exception) {
+    return Response.status(exception.getCode().getHttpCode())
+        .type(MediaType.APPLICATION_JSON_TYPE)
+        .entity(new ErrorDescription(exception.getMessage(), exception.getCode()))
+        .build();
+  }
 }
