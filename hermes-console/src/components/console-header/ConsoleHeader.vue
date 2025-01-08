@@ -58,17 +58,6 @@
           "
         />
       </div>
-      <div class="d-flex flex-grow-1 align-center justify-center">
-        <v-btn
-          variant="outlined"
-          rounded
-          prepend-icon="mdi-magnify"
-          color="medium-emphasis"
-          min-width="400px"
-          class="text-capitalize"
-          >Press / to search
-        </v-btn>
-      </div>
       <div class="d-flex align-center ga-2 pr-2">
         <theme-switch />
         <v-btn
