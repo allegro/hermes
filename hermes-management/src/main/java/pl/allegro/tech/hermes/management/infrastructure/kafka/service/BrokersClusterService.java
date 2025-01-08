@@ -32,7 +32,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.management.domain.message.RetransmissionService;
-import pl.allegro.tech.hermes.management.domain.subscription.ConsumerGroupManager;
+import pl.allegro.tech.hermes.management.domain.subscription.consumergroup.ConsumerGroupManager;
 import pl.allegro.tech.hermes.management.domain.topic.BrokerTopicManagement;
 import pl.allegro.tech.hermes.management.domain.topic.SingleMessageReader;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MovingSubscriptionOffsetsValidationException;
@@ -41,6 +41,7 @@ public class BrokersClusterService {
 
   private static final Logger logger = LoggerFactory.getLogger(BrokersClusterService.class);
 
+  private final String datacenter;
   private final String clusterName;
   private final SingleMessageReader singleMessageReader;
   private final RetransmissionService retransmissionService;
@@ -53,6 +54,7 @@ public class BrokersClusterService {
   private final KafkaConsumerManager kafkaConsumerManager;
 
   public BrokersClusterService(
+      String datacenter,
       String clusterName,
       SingleMessageReader singleMessageReader,
       RetransmissionService retransmissionService,
@@ -63,6 +65,7 @@ public class BrokersClusterService {
       AdminClient adminClient,
       ConsumerGroupManager consumerGroupManager,
       KafkaConsumerManager kafkaConsumerManager) {
+    this.datacenter = datacenter;
     this.clusterName = clusterName;
     this.singleMessageReader = singleMessageReader;
     this.retransmissionService = retransmissionService;
@@ -79,6 +82,10 @@ public class BrokersClusterService {
 
   public String getClusterName() {
     return clusterName;
+  }
+
+  public String getDatacenter() {
+    return datacenter;
   }
 
   public void manageTopic(Consumer<BrokerTopicManagement> manageFunction) {
@@ -145,6 +152,10 @@ public class BrokersClusterService {
 
   public void createConsumerGroup(Topic topic, Subscription subscription) {
     consumerGroupManager.createConsumerGroup(topic, subscription);
+  }
+
+  public void deleteConsumerGroup(SubscriptionName subscriptionName) {
+    consumerGroupManager.deleteConsumerGroup(subscriptionName);
   }
 
   public Optional<ConsumerGroup> describeConsumerGroup(Topic topic, String subscriptionName) {
