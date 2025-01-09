@@ -1,9 +1,9 @@
-val versions = rootProject.extra["versions"] as Map<*, *>
-
 dependencies {
     implementation(project(":hermes-api"))
     implementation(project(":hermes-metrics"))
+
     testImplementation(project(path = ":hermes-test-helper"))
+
     testRuntimeOnly(libs.junit.vintage.engine)
 }
 

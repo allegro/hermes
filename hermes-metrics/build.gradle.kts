@@ -3,7 +3,7 @@ plugins {
 }
 
 dependencies {
-    api(group = "org.apache.commons", name = "commons-text", version = "1.12.0")
+    api(libs.commons.text)
     api(libs.metrics.core)
     api(libs.micrometer.core)
 

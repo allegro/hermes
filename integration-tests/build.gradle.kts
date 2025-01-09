@@ -20,12 +20,12 @@ val agent: Configuration by configurations.creating {
 }
 
 dependencies {
+    testImplementation(project(":hermes-client"))
     testImplementation(project(":hermes-common"))
-    testImplementation(project(":hermes-test-helper"))
-    testImplementation(project(":hermes-management"))
     testImplementation(project(":hermes-consumers"))
     testImplementation(project(":hermes-frontend"))
-    testImplementation(project(":hermes-client"))
+    testImplementation(project(":hermes-management"))
+    testImplementation(project(":hermes-test-helper"))
 
     testImplementation(group = "org.testcontainers", name = "testcontainers", version = versions["testcontainers"] as String)
     testImplementation(group = "org.testcontainers", name = "gcloud", version = versions["testcontainers"] as String)
@@ -50,6 +50,7 @@ dependencies {
     testImplementation(group = "org.assertj", name = "assertj-core", version = versions["assertj"] as String)
     testImplementation(group = "org.junit.jupiter", name = "junit-jupiter-api", version = versions["junit_jupiter"] as String)
     testImplementation(group = "org.junit.jupiter", name = "junit-jupiter-params", version = versions["junit_jupiter"] as String)
+
     testRuntimeOnly(group = "org.junit.jupiter", name = "junit-jupiter-engine", version = versions["junit_jupiter"] as String)
 }
 

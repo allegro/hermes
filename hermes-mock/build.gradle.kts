@@ -8,12 +8,13 @@ dependencies {
     api(libs.avro)
     api(libs.wiremock.standalone)
 
-    implementation (group = "org.awaitility", name = "awaitility", version = "4.2.1")
-    implementation(group = "junit", name = "junit", version = "4.13.2")
+    implementation(libs.awaitility)
     implementation(libs.json2avro.converter)
+    implementation(libs.junit)
     implementation(libs.junit.jupiter.api)
 
     testImplementation(project(":hermes-test-helper"))
+
     testImplementation(libs.groovy.json)
     testImplementation(libs.jersey.client)
     testImplementation(libs.jersey.hk2)
