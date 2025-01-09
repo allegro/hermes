@@ -34,4 +34,6 @@ public interface MessageReceiver {
   void commit(Set<SubscriptionPartitionOffset> offsets);
 
   boolean moveOffset(PartitionOffset offset);
+
+  Set<Integer> getAssignedPartitions();
 }

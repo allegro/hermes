@@ -1,4 +1,5 @@
 <script async setup lang="ts">
+  import { copyToClipboard } from '@/utils/copy-utils';
   import { isTopicOwnerOrAdmin } from '@/utils/roles-util';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import { useDialog } from '@/composables/dialog/use-dialog/useDialog';
@@ -17,6 +18,7 @@
   import SchemaPanel from '@/views/topic/schema-panel/SchemaPanel.vue';
   import SubscriptionsList from '@/views/topic/subscriptions-list/SubscriptionsList.vue';
   import TopicHeader from '@/views/topic/topic-header/TopicHeader.vue';
+  import TrackingCard from '@/components/tracking-card/TrackingCard.vue';
 
   const router = useRouter();
 
@@ -36,8 +38,10 @@
     error,
     subscriptions,
     offlineClientsSource,
+    trackingUrls,
     fetchOfflineClientsSource,
     removeTopic,
+    fetchTopicClients,
   } = useTopic(topicName);
 
   const breadcrumbsItems = [
@@ -80,6 +84,14 @@
     closeRemoveDialog();
     if (isTopicRemoved) {
       router.push({ path: `/ui/groups/${groupId}` });
+    }
+  }
+
+  async function copyClientsToClipboard() {
+    const clients = await fetchTopicClients();
+
+    if (clients != null) {
+      copyToClipboard(clients.join(','));
     }
   }
 
@@ -136,6 +148,10 @@
             :iframe-url="costs.iframeUrl"
             :details-url="costs.detailsUrl"
           />
+          <tracking-card
+            v-if="topic?.trackingEnabled"
+            :tracking-urls="trackingUrls"
+          />
         </v-col>
         <v-col md="6">
           <properties-list v-if="topic" :topic="topic" />
@@ -158,6 +174,7 @@
         :topic-name="topicName"
         :subscriptions="subscriptions ? subscriptions : []"
         :roles="roles"
+        @copyClientsClick="copyClientsToClipboard"
       />
 
       <offline-clients

@@ -193,6 +193,20 @@ const en_US = {
       appliedFilter: '(applied filter: “{filter}”)',
     },
   },
+  inactiveTopics: {
+    connectionError: {
+      title: 'Connection error',
+      text: 'Could not fetch information about inactive topics',
+    },
+    heading: 'Inactive Topics',
+    listing: {
+      name: 'Name',
+      lastUsed: 'Last published message',
+      lastNotified: 'Last notified',
+      howManyTimesNotified: 'How many times notified',
+      whitelisted: 'Whitelisted',
+    },
+  },
   stats: {
     connectionError: {
       title: 'Connection error',
@@ -376,6 +390,7 @@ const en_US = {
       title: 'Subscriptions',
       create: 'Create subscription',
       search: 'Search...',
+      copy: 'Copy clients to clipboard',
     },
     errorMessage: {
       topicFetchFailed: 'Could not fetch {topicName} topic details',
@@ -710,6 +725,11 @@ const en_US = {
         success: 'Topic {topicName} successfully deleted',
         failure: "Couldn't delete topic {topicName}",
       },
+      clients: {
+        fetch: {
+          failure: 'Failed to fetch topic clients',
+        },
+      },
     },
     inconsistentTopic: {
       delete: {
@@ -817,6 +837,10 @@ const en_US = {
   costsCard: {
     title: 'Costs',
     detailsButton: 'DASHBOARD',
+  },
+  trackingCard: {
+    title: 'Tracking',
+    noTrackingUrls: 'No tracking urls available',
   },
 };
 
