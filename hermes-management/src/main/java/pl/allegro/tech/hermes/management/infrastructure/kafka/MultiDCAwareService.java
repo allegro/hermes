@@ -200,10 +200,6 @@ public class MultiDCAwareService {
         .collect(toList());
   }
 
-  public void moveOffsetsToTheEnd(Topic topic, SubscriptionName subscription) {
-    clusters.forEach(c -> c.moveOffsetsToTheEnd(topic, subscription));
-  }
-
   public void deleteConsumerGroupForDatacenter(
       SubscriptionName subscriptionName, String datacenter) {
     clusters.stream()
