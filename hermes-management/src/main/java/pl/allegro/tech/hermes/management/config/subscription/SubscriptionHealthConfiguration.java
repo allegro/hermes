@@ -1,12 +1,14 @@
-package pl.allegro.tech.hermes.management.config;
+package pl.allegro.tech.hermes.management.config.subscription;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import java.time.Clock;
 import java.util.concurrent.Executors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
+import pl.allegro.tech.hermes.management.config.subscription.consumergroup.ConsumerGroupCleanUpProperties;
 import pl.allegro.tech.hermes.management.domain.Auditor;
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryManager;
@@ -123,11 +125,15 @@ public class SubscriptionHealthConfiguration {
       Auditor auditor,
       MultiDatacenterRepositoryCommandExecutor multiDatacenterRepositoryCommandExecutor,
       SubscriptionOwnerCache subscriptionOwnerCache,
-      SubscriptionRepository subscriptionRepository) {
+      SubscriptionRepository subscriptionRepository,
+      ConsumerGroupCleanUpProperties consumerGroupCleanUpProperties,
+      Clock clock) {
     return new SubscriptionRemover(
         auditor,
         multiDatacenterRepositoryCommandExecutor,
         subscriptionOwnerCache,
-        subscriptionRepository);
+        subscriptionRepository,
+        consumerGroupCleanUpProperties.isEnabled(),
+        clock);
   }
 }

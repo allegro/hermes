@@ -199,4 +199,20 @@ public class MultiDCAwareService {
         .map(Optional::get)
         .collect(toList());
   }
+
+  public void moveOffsetsToTheEnd(Topic topic, SubscriptionName subscription) {
+    clusters.forEach(c -> c.moveOffsetsToTheEnd(topic, subscription));
+  }
+
+  public void deleteConsumerGroupForDatacenter(
+      SubscriptionName subscriptionName, String datacenter) {
+    clusters.stream()
+        .filter(cluster -> cluster.getDatacenter().equals(datacenter))
+        .findFirst()
+        .ifPresentOrElse(
+            cluster -> cluster.deleteConsumerGroup(subscriptionName),
+            () -> {
+              throw new BrokersClusterNotFoundException(datacenter);
+            });
+  }
 }
