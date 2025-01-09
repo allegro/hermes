@@ -5,8 +5,6 @@ plugins {
     idea
 }
 
-val versions = rootProject.extra["versions"] as Map<*, *>
-
 repositories {
     mavenCentral()
     maven {
@@ -27,31 +25,31 @@ dependencies {
     testImplementation(project(":hermes-management"))
     testImplementation(project(":hermes-test-helper"))
 
-    testImplementation(group = "org.testcontainers", name = "testcontainers", version = versions["testcontainers"] as String)
-    testImplementation(group = "org.testcontainers", name = "gcloud", version = versions["testcontainers"] as String)
-    testImplementation(group = "com.squareup.okhttp3", name = "okhttp", version = versions["okhttp"] as String)
-    testImplementation(group = "org.springframework", name = "spring-webflux", version = versions["spring_web"] as String)
-    testImplementation(group = "org.springframework", name = "spring-test", version = versions["spring_web"] as String)
-    testImplementation(group = "org.eclipse.jetty", name = "jetty-reactive-httpclient", version = "4.0.3")
-    testImplementation(group = "org.awaitility", name = "awaitility", version = "4.2.0")
-    testImplementation(group = "org.reactivestreams", name = "reactive-streams", version = "1.0.4")
-    // TODO: can we update it? Which version of server do our clients use?
-    testImplementation(group = "org.hornetq", name = "hornetq-jms-server", version = "2.4.1.Final") {
+    testImplementation(libs.awaitility)
+    testImplementation(libs.jetty.reactive.httpclient)
+    testImplementation(libs.okhttp)
+    testImplementation(libs.reactive.streams)
+    testImplementation(libs.spring.test)
+    testImplementation(libs.spring.webflux)
+    testImplementation(libs.testcontainers)
+    testImplementation(libs.testcontainers.gcloud)
+
+    testImplementation(libs.hornetq.jms.server) {
         exclude(module = "hornetq-native")
     }
 
     // Import allure-bom to ensure correct versions of all the dependencies are used
-    testImplementation(platform("io.qameta.allure:allure-bom:${versions["allure"] as String}"))
+    testImplementation(platform(libs.allure.bom))
     // Add necessary Allure dependencies to dependencies section
-    testImplementation("io.qameta.allure:allure-junit5")
+    testImplementation(libs.allure.junit5)
 
-    agent("org.aspectj:aspectjweaver:1.9.21")
+    agent(libs.aspectj.weaver)
 
-    testImplementation(group = "org.assertj", name = "assertj-core", version = versions["assertj"] as String)
-    testImplementation(group = "org.junit.jupiter", name = "junit-jupiter-api", version = versions["junit_jupiter"] as String)
-    testImplementation(group = "org.junit.jupiter", name = "junit-jupiter-params", version = versions["junit_jupiter"] as String)
+    testImplementation(libs.assertj.core)
+    testImplementation(libs.junit.jupiter.api)
+    testImplementation(libs.junit.jupiter.params)
 
-    testRuntimeOnly(group = "org.junit.jupiter", name = "junit-jupiter-engine", version = versions["junit_jupiter"] as String)
+    testRuntimeOnly(libs.junit.jupiter.engine)
 }
 
 val chronicleMapJvmArgs = listOf<String>()

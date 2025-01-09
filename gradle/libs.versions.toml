@@ -47,8 +47,10 @@ wiremock = "3.9.0"
 agrona = { group = "org.agrona", name = "agrona", version = "1.21.1" }
 allure-bom = { group = "io.qameta.allure", name = "allure-bom", version = "2.24.0" }
 allure-junit-platform = { group = "io.qameta.allure", name = "allure-junit-platform" }
+allure-junit5 = { group = "io.qameta.allure", name = "allure-junit5" }
 allure-spock2 = { group = "io.qameta.allure", name = "allure-spock2" }
 annotations = { group = "com.google.code.findbugs", name = "annotations", version = "3.0.1" }
+aspectj-weaver = { group = "org.aspectj", name = "aspectjweaver", version = "1.9.21" }
 assertj-core = { group = "org.assertj", name = "assertj-core", version.ref = "assertj" }
 avro = { group = "org.apache.avro", name = "avro", version.ref = "avro" }
 awaitility = { group = "org.awaitility", name = "awaitility", version.ref = "awaitility" }
@@ -72,6 +74,7 @@ guava-retrying = { group = "com.github.rholder", name = "guava-retrying", versio
 handy-uri-templates = { group = "com.damnhandy", name = "handy-uri-templates", version.ref = "handy-uri-templates" }
 hibernate-validator = { group = "org.hibernate.validator", name = "hibernate-validator", version.ref = "hibernate-validator" }
 hornetq-jms-client = { group = "org.hornetq", name = "hornetq-jms-client", version = "2.4.1.Final" } # TODO: can we update it? Which version of server do our clients use?
+hornetq-jms-server = { group = "org.hornetq", name = "hornetq-jms-server", version = "2.4.1.Final" } # TODO: can we update it? Which version of server do our clients use?
 http-async-client = { group = "org.apache.httpcomponents", name = "httpasyncclient", version.ref = "http-async-client" }
 httpclient5 = { group = "org.apache.httpcomponents.client5", name = "httpclient5", version = "5.3.1" }
 httpcore5 = { group = "org.apache.httpcomponents.core5", name = "httpcore5", version = "5.2.4" }
@@ -97,6 +100,7 @@ jersey-mvc-freemarker = { group = "org.glassfish.jersey.ext", name = "jersey-mvc
 jersey-proxy-client = { group = "org.glassfish.jersey.ext", name = "jersey-proxy-client", version.ref = "jersey" }
 jetty-alpn-java-client = { group = "org.eclipse.jetty", name = "jetty-alpn-java-client", version.ref = "jetty" }
 jetty-http2-client-transport = { group = "org.eclipse.jetty.http2", name = "jetty-http2-client-transport", version.ref = "jetty" }
+jetty-reactive-httpclient = { group = "org.eclipse.jetty", name = "jetty-reactive-httpclient", version = "4.0.3" }
 jmh-core = { group = "org.openjdk.jmh", name = "jmh-core", version.ref = "jmh" }
 jmh-generator-annprocess = { group = "org.openjdk.jmh", name = "jmh-generator-annprocess", version.ref = "jmh" }
 joda-time = { group = "joda-time", name = "joda-time", version = "2.12.7" }
@@ -109,6 +113,8 @@ junit = { group = "junit", name = "junit", version.ref = "junit" }
 junit-dataprovider = { group = "com.tngtech.java", name = "junit-dataprovider", version.ref = "junit-dataprovider" }
 junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junit_jupiter" }
 junit-jupiter-api = { group = "org.junit.jupiter", name = "junit-jupiter-api", version.ref = "junit_jupiter" }
+junit-jupiter-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "junit_jupiter" }
+junit-jupiter-params = { group = "org.junit.jupiter", name = "junit-jupiter-params", version.ref = "junit_jupiter" }
 junit-params = { group = "pl.pragmatists", name = "JUnitParams", version.ref = "junit-params" }
 junit-vintage-engine = { group = "org.junit.vintage", name = "junit-vintage-engine", version.ref = "junit_jupiter" }
 kafka-clients = { group = "org.apache.kafka", name = "kafka-clients", version.ref = "kafka" }
@@ -119,6 +125,7 @@ micrometer-core = { group = "io.micrometer", name = "micrometer-core", version.r
 micrometer-registry-prometheus = { group = "io.micrometer", name = "micrometer-registry-prometheus", version.ref = "micrometer_metrics" }
 mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
+reactive-streams = { group = "org.reactivestreams", name = "reactive-streams", version = "1.0.4" }
 reactor-core = { group = "io.projectreactor", name = "reactor-core", version.ref = "reactor" }
 reactor-netty = { group = "io.projectreactor.netty", name = "reactor-netty", version.ref = "reactor-netty" }
 reactor-test = { group = "io.projectreactor", name = "reactor-test", version.ref = "reactor" }

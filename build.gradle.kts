@@ -52,32 +52,6 @@ allprojects {
     group = "pl.allegro.tech.hermes"
     version = versionValue
 
-    extra["versions"] = mapOf(
-        "kafka" to "2.8.2",
-        "guava" to "33.1.0-jre",
-        "jackson" to "2.17.0",
-        "jersey" to "3.1.6",
-        "jetty" to "12.0.8",
-        "curator" to "5.4.0",
-        "dropwizard_metrics" to "4.2.25",
-        "micrometer_metrics" to "1.13.0",
-        "wiremock" to "3.9.0",
-        "spock" to "2.4-M4-groovy-4.0",
-        "groovy" to "4.0.21",
-        "avro" to "1.11.3",
-        "json2avro" to "0.2.14",
-        // TODO: newest version requires subject alternative name in a certificate during host verification, current test cert does not have one
-        "okhttp" to "3.9.1",
-        "undertow" to "2.3.12.Final",
-        "spring_web" to "6.1.6",
-        "failsafe" to "2.4.4",
-        "junit_jupiter" to "5.10.2",
-        "testcontainers" to "1.19.8",
-        "spring" to "3.2.4",
-        "assertj" to "3.25.3",
-        "allure" to "2.24.0"
-    )
-
     // https://chronicle.software/chronicle-support-java-17/
     extra["chronicleMapJvmArgs"] = listOf(
         "--add-exports=java.base/jdk.internal.ref=ALL-UNNAMED",
