@@ -1,5 +1,4 @@
 [versions]
-allure = "2.24.0"
 assertj = "3.25.3"
 avro = "1.11.3"
 awaitility = "4.2.1"
@@ -8,6 +7,7 @@ commons-lang3 = "3.14.0"
 curator = "5.4.0"
 dropwizard_metrics = "4.2.25"
 failsafe = "2.4.4"
+google-cloud-pubsub = "1.128.1"
 groovy = "4.0.21"
 guava = "33.1.0-jre"
 handy-uri-templates = "2.1.8"
@@ -15,7 +15,6 @@ hibernate-validator = "8.0.1.Final"
 http-async-client = "4.1.5"
 jackson = "2.17.0"
 jakarta-annotation-api = "3.0.0"
-jakarta-servlet-api = "6.0.0"
 jakarta-ws-rs-api = "3.1.0"
 jakarta-xml-bind-api = "4.0.0"
 jaxb = "4.0.5"
@@ -47,7 +46,8 @@ undertow = "2.3.12.Final"
 wiremock = "3.9.0"
 
 [libraries]
-allure-bom = { group = "io.qameta.allure", name = "allure-bom", version.ref = "allure" }
+agrona = { group = "org.agrona", name = "agrona", version = "1.21.1" }
+allure-bom = { group = "io.qameta.allure", name = "allure-bom", version = "2.24.0" }
 allure-junit-platform = { group = "io.qameta.allure", name = "allure-junit-platform" }
 allure-spock2 = { group = "io.qameta.allure", name = "allure-spock2" }
 annotations = { group = "com.google.code.findbugs", name = "annotations", version = "3.0.1" }
@@ -62,22 +62,28 @@ curator-client = { group = "org.apache.curator", name = "curator-client", versio
 curator-recipes = { group = "org.apache.curator", name = "curator-recipes", version.ref = "curator" }
 curator-test = { group = "org.apache.curator", name = "curator-test", version.ref = "curator" }
 failsafe = { group = "net.jodah", name = "failsafe", version.ref = "failsafe" }
+google-cloud-pubsub = { group = "com.google.cloud", name = "google-cloud-pubsub", version.ref = "google-cloud-pubsub" }
 groovy-json = { group = "org.apache.groovy", name = "groovy-json", version.ref = "groovy" }
 guava = { group = "com.google.guava", name = "guava", version.ref = "guava" }
+guava-retrying = { group = "com.github.rholder", name = "guava-retrying", version = "2.0.0" }
 handy-uri-templates = { group = "com.damnhandy", name = "handy-uri-templates", version.ref = "handy-uri-templates" }
 hibernate-validator = { group = "org.hibernate.validator", name = "hibernate-validator", version.ref = "hibernate-validator" }
+hornetq-jms-client = { group = "org.hornetq", name = "hornetq-jms-client", version = "2.4.1.Final" } # TODO: can we update it? Which version of server do our clients use?
 http-async-client = { group = "org.apache.httpcomponents", name = "httpasyncclient", version.ref = "http-async-client" }
+httpcore5 = { group = "org.apache.httpcomponents.core5", name = "httpcore5", version = "5.2.4" }
 jackson-annotations = { group = "com.fasterxml.jackson.core", name = "jackson-annotations", version.ref = "jackson" }
 jackson-databind = { group = "com.fasterxml.jackson.core", name = "jackson-databind", version.ref = "jackson" }
 jackson-datatype-jsr310 = { group = "com.fasterxml.jackson.datatype", name = "jackson-datatype-jsr310", version.ref = "jackson" }
 jackson-jakarta-rs-json-provider = { group = "com.fasterxml.jackson.jakarta.rs", name = "jackson-jakarta-rs-json-provider", version.ref = "jackson" }
 jakarta-annotation-api = { group = "jakarta.annotation", name = "jakarta.annotation-api", version.ref = "jakarta-annotation-api" }
 jakarta-inject = { group = "jakarta.inject", name = "jakarta.inject-api", version = "2.0.1" }
-jakarta-servlet-api = { group = "jakarta.servlet", name = "jakarta.servlet-api", version.ref = "jakarta-servlet-api" }
+jakarta-jms-api = { group = "jakarta.jms", name = "jakarta.jms-api", version = "3.1.0" }
+jakarta-servlet-api = { group = "jakarta.servlet", name = "jakarta.servlet-api", version = "6.0.0" }
 jakarta-ws-rs-api = { group = "jakarta.ws.rs", name = "jakarta.ws.rs-api", version.ref = "jakarta-ws-rs-api" }
 jakarta-xml-bind-api = { group = "jakarta.xml.bind", name = "jakarta.xml.bind-api", version.ref = "jakarta-xml-bind-api" }
 jaxb-core = { group = "com.sun.xml.bind", name = "jaxb-core", version.ref = "jaxb" }
 jaxb-impl = { group = "com.sun.xml.bind", name = "jaxb-impl", version.ref = "jaxb" }
+jctools-core = { group = "org.jctools", name = "jctools-core", version = "4.0.3" }
 jersey-bean-validation = { group = "org.glassfish.jersey.ext", name = "jersey-bean-validation", version.ref = "jersey" }
 jersey-client = { group = "org.glassfish.jersey.core", name = "jersey-client", version.ref = "jersey" }
 jersey-hk2 = { group = "org.glassfish.jersey.inject", name = "jersey-hk2", version.ref = "jersey" }
@@ -87,6 +93,7 @@ jetty-alpn-java-client = { group = "org.eclipse.jetty", name = "jetty-alpn-java-
 jetty-http2-client-transport = { group = "org.eclipse.jetty.http2", name = "jetty-http2-client-transport", version.ref = "jetty" }
 jmh-core = { group = "org.openjdk.jmh", name = "jmh-core", version.ref = "jmh" }
 jmh-generator-annprocess = { group = "org.openjdk.jmh", name = "jmh-generator-annprocess", version.ref = "jmh" }
+joda-time = { group = "joda-time", name = "joda-time", version = "2.12.7" }
 json-path = { group = "com.jayway.jsonpath", name = "json-path", version.ref = "json-path" }
 json2avro-converter = { group = "tech.allegro.schema.json2avro", name = "converter", version.ref = "json2avro" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -106,6 +113,7 @@ okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhtt
 reactor-core = { group = "io.projectreactor", name = "reactor-core", version.ref = "reactor" }
 reactor-netty = { group = "io.projectreactor.netty", name = "reactor-netty", version.ref = "reactor-netty" }
 reactor-test = { group = "io.projectreactor", name = "reactor-test", version.ref = "reactor" }
+sbe-all = { group = "uk.co.real-logic", name = "sbe-all", version = "1.31.1" }
 slf4j-api = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j-api" }
 spock-bom = { group = "org.spockframework", name = "spock-bom", version.ref = "spock" }
 spock-core = { group = "org.spockframework", name = "spock-core", version.ref = "spock" }

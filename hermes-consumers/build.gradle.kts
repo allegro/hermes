@@ -10,42 +10,42 @@ application {
 val sbeClasspath: Configuration by configurations.creating
 
 dependencies {
-    implementation(project(":hermes-common"))
     api(project(":hermes-tracker"))
+
+    api(libs.google.cloud.pubsub)
+    api(libs.httpcore5)
+    api(libs.jakarta.jms.api)
+    api(libs.jetty.alpn.java.client)
+    api(libs.jetty.http2.client.transport)
+    api(libs.spring.boot.starter)
+
+    implementation(project(":hermes-common"))
     implementation(project(":hermes-metrics"))
     implementation(project(":hermes-schema"))
 
-    api(libs.spring.boot.starter)
-    api(libs.jetty.alpn.java.client)
-    api(libs.jetty.http2.client.transport)
-    implementation(group = "org.jctools", name = "jctools-core", version = "4.0.3")
-    api(group = "jakarta.jms", name = "jakarta.jms-api", version = "3.1.0")
-    implementation(group = "joda-time", name = "joda-time", version = "2.12.7")
-    implementation(group = "com.github.rholder", name = "guava-retrying", version = "2.0.0") {
+    implementation(libs.agrona)
+    implementation(libs.guava.retrying) {
         exclude(module = "guava")
     }
-    implementation(group = "org.agrona", name = "agrona", version = "1.21.1")
-    // TODO: can we update it? Which version of server do our clients use?
-    implementation(group = "org.hornetq", name = "hornetq-jms-client", version = "2.4.1.Final") {
+    implementation(libs.hornetq.jms.client) {
         exclude(module = "hornetq-native")
     }
-    api(group = "com.google.cloud", name = "google-cloud-pubsub", version = "1.128.1")
-    api(group = "org.apache.httpcomponents.core5", name = "httpcore5", version = "5.2.4")
-
-    testImplementation(project(":hermes-test-helper"))
-    testImplementation(libs.curator.test)
-    testImplementation(group = "jakarta.servlet", name = "jakarta.servlet-api", version = "6.0.0")
+    implementation(libs.jctools.core)
+    implementation(libs.joda.time)
 
     testImplementation(project(":hermes-common"))
+    testImplementation(project(":hermes-test-helper"))
 
-    testImplementation(group = "org.awaitility", name = "awaitility-groovy", version = "4.2.1")
+    testImplementation(libs.awaitility.groovy)
+    testImplementation(libs.curator.test)
+    testImplementation(libs.jakarta.servlet.api)
     testImplementation(libs.json2avro.converter)
-
     testImplementation(libs.spock.core)
     testImplementation(libs.spock.junit4)
+
     testRuntimeOnly(libs.junit.vintage.engine)
 
-    sbeClasspath(group = "uk.co.real-logic", name = "sbe-all", version = "1.31.1")
+    sbeClasspath(libs.sbe.all)
 }
 
 val generatedPath = layout.buildDirectory.dir("generated/java").get()
