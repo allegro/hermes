@@ -32,7 +32,6 @@ junit_jupiter = "5.10.2"
 kafka = "2.8.2"
 micrometer_metrics = "1.13.0"
 mockito = "5.11.0"
-node-gradle = "7.0.2"
 okhttp = "3.9.1" # TODO: newest version requires subject alternative name in a certificate during host verification current test cert does not have one
 publish-plugin = "1.0.0"
 reactor = "3.6.5"
@@ -55,8 +54,11 @@ assertj-core = { group = "org.assertj", name = "assertj-core", version.ref = "as
 avro = { group = "org.apache.avro", name = "avro", version.ref = "avro" }
 awaitility = { group = "org.awaitility", name = "awaitility", version.ref = "awaitility" }
 awaitility-groovy = { group = "org.awaitility", name = "awaitility-groovy", version.ref = "awaitility" }
+chronicle-map = { group = "net.openhft", name = "chronicle-map", version = "3.25ea6" } # Did not update that as we're trying to abandon buffers
 commons-codec = { group = "commons-codec", name = "commons-codec", version = "1.16.1" }
 commons-collections4 = { group = "org.apache.commons", name = "commons-collections4", version = "4.4" }
+commons-io = { group = "commons-io", name = "commons-io", version = "2.16.1" }
+commons-jxpath = { group = "commons-jxpath", name = "commons-jxpath", version = "1.3" }
 commons-lang3 = { group = "org.apache.commons", name = "commons-lang3", version.ref = "commons-lang3" }
 curator-client = { group = "org.apache.curator", name = "curator-client", version.ref = "curator" }
 curator-recipes = { group = "org.apache.curator", name = "curator-recipes", version.ref = "curator" }
@@ -70,6 +72,7 @@ handy-uri-templates = { group = "com.damnhandy", name = "handy-uri-templates", v
 hibernate-validator = { group = "org.hibernate.validator", name = "hibernate-validator", version.ref = "hibernate-validator" }
 hornetq-jms-client = { group = "org.hornetq", name = "hornetq-jms-client", version = "2.4.1.Final" } # TODO: can we update it? Which version of server do our clients use?
 http-async-client = { group = "org.apache.httpcomponents", name = "httpasyncclient", version.ref = "http-async-client" }
+httpclient5 = { group = "org.apache.httpcomponents.client5", name = "httpclient5", version = "5.3.1" }
 httpcore5 = { group = "org.apache.httpcomponents.core5", name = "httpcore5", version = "5.2.4" }
 jackson-annotations = { group = "com.fasterxml.jackson.core", name = "jackson-annotations", version.ref = "jackson" }
 jackson-databind = { group = "com.fasterxml.jackson.core", name = "jackson-databind", version.ref = "jackson" }
@@ -81,6 +84,7 @@ jakarta-jms-api = { group = "jakarta.jms", name = "jakarta.jms-api", version = "
 jakarta-servlet-api = { group = "jakarta.servlet", name = "jakarta.servlet-api", version = "6.0.0" }
 jakarta-ws-rs-api = { group = "jakarta.ws.rs", name = "jakarta.ws.rs-api", version.ref = "jakarta-ws-rs-api" }
 jakarta-xml-bind-api = { group = "jakarta.xml.bind", name = "jakarta.xml.bind-api", version.ref = "jakarta-xml-bind-api" }
+javers-core = { group = "org.javers", name = "javers-core", version = "7.4.2" }
 jaxb-core = { group = "com.sun.xml.bind", name = "jaxb-core", version.ref = "jaxb" }
 jaxb-impl = { group = "com.sun.xml.bind", name = "jaxb-impl", version.ref = "jaxb" }
 jctools-core = { group = "org.jctools", name = "jctools-core", version = "4.0.3" }
@@ -94,7 +98,9 @@ jetty-http2-client-transport = { group = "org.eclipse.jetty.http2", name = "jett
 jmh-core = { group = "org.openjdk.jmh", name = "jmh-core", version.ref = "jmh" }
 jmh-generator-annprocess = { group = "org.openjdk.jmh", name = "jmh-generator-annprocess", version.ref = "jmh" }
 joda-time = { group = "joda-time", name = "joda-time", version = "2.12.7" }
+jopt-simple = { group = "net.sf.jopt-simple", name = "jopt-simple", version = "5.0.4" }
 json-path = { group = "com.jayway.jsonpath", name = "json-path", version.ref = "json-path" }
+json-schema-validator = { group = "com.github.java-json-tools", name = "json-schema-validator", version = "2.2.14" }
 json2avro-converter = { group = "tech.allegro.schema.json2avro", name = "converter", version.ref = "json2avro" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 junit-dataprovider = { group = "com.tngtech.java", name = "junit-dataprovider", version.ref = "junit-dataprovider" }
@@ -129,6 +135,7 @@ spring-context = { group = "org.springframework", name = "spring-context", versi
 spring-test = { group = "org.springframework", name = "spring-test", version.ref = "spring_web" }
 spring-web = { group = "org.springframework", name = "spring-web", version.ref = "spring_web" }
 spring-webflux = { group = "org.springframework", name = "spring-webflux", version.ref = "spring_web" }
+swagger-jersey2-jaxrs = { group = "io.swagger", name = "swagger-jersey2-jaxrs", version = "1.6.14" }
 testcontainers-kafka = { group = "org.testcontainers", name = "kafka", version.ref = "testcontainers" }
 testcontainers-spock = { group = "org.testcontainers", name = "spock", version.ref = "testcontainers" }
 undertow-core = { group = "io.undertow", name = "undertow-core", version.ref = "undertow" }
@@ -140,5 +147,5 @@ jmh = ["jmh-core", "jmh-generator-annprocess"]
 [plugins]
 axion-release = { id = "pl.allegro.tech.build.axion-release", version.ref = "axion-release" }
 jmh = { id = "me.champeau.jmh", version.ref = "jmh-plugin" }
-node-gradle = { id = "com.github.node-gradle.node", version.ref = "node-gradle" }
+node-gradle = { id = "com.github.node-gradle.node", version = "7.0.2" }
 publish-plugin = { id = "io.github.gradle-nexus.publish-plugin", version.ref = "publish-plugin" }

@@ -14,39 +14,34 @@ dependencies {
     api(project(":hermes-api"))
     api(project(":hermes-common"))
     api(project(":hermes-tracker"))
-    implementation(project(":hermes-schema"))
 
+    api(libs.javers.core)
     api(libs.spring.boot.starter.actuator)
     api(libs.spring.boot.starter.jersey)
     api(libs.spring.boot.starter.web)
 
-    implementation(group = "net.sf.jopt-simple", name = "jopt-simple", version = "5.0.4")
-    implementation(libs.jersey.mvc.freemarker)
+    implementation(project(":hermes-schema"))
 
-    implementation(group = "io.swagger", name = "swagger-jersey2-jaxrs", version = "1.6.14") {
+    implementation(libs.commons.codec)
+    implementation(libs.commons.io)
+    implementation(libs.commons.jxpath)
+    implementation(libs.httpclient5)
+    implementation(libs.jackson.datatype.jsr310)
+    implementation(libs.jersey.mvc.freemarker)
+    implementation(libs.jopt.simple)
+    implementation(libs.json.schema.validator)
+    implementation(libs.kafka.clients)
+    implementation(libs.swagger.jersey2.jaxrs) {
         exclude(group = "javax.validation", module = "validation-api")
     }
 
-    implementation(libs.kafka.clients)
-
-    implementation(group = "commons-codec", name = "commons-codec", version = "1.16.1")
-    implementation(group = "com.github.java-json-tools", name = "json-schema-validator", version = "2.2.14")
-
-    implementation(group = "commons-jxpath", name = "commons-jxpath", version = "1.3")
-    implementation(group = "org.apache.httpcomponents.client5", name = "httpclient5", version = "5.3.1")
-
-    api(group = "org.javers", name = "javers-core", version = "7.4.2")
-
-    implementation(libs.jackson.datatype.jsr310)
-    implementation(group = "commons-io", name = "commons-io", version = "2.16.1")
-
     testImplementation(project(":hermes-test-helper"))
-    testImplementation(libs.spring.boot.starter.test)
 
     testImplementation(libs.groovy.json)
     testImplementation(libs.spock.core)
     testImplementation(libs.spock.junit4)
     testImplementation(libs.spock.spring)
+    testImplementation(libs.spring.boot.starter.test)
     testImplementation(libs.testcontainers.kafka)
     testImplementation(libs.testcontainers.spock)
 }
