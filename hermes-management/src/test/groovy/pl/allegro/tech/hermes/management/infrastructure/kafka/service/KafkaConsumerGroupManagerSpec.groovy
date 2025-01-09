@@ -20,7 +20,7 @@ import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId
 import pl.allegro.tech.hermes.common.kafka.JsonToAvroMigrationKafkaNamesMapper
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper
 import pl.allegro.tech.hermes.management.config.kafka.KafkaProperties
-import pl.allegro.tech.hermes.management.domain.subscription.ConsumerGroupManager
+import pl.allegro.tech.hermes.management.domain.subscription.consumergroup.ConsumerGroupManager
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder
 import pl.allegro.tech.hermes.test.helper.containers.ImageTags
 import spock.lang.Shared
@@ -69,7 +69,7 @@ class KafkaConsumerGroupManagerSpec extends Specification {
     }
 
     def setup() {
-        consumerGroupManager = new KafkaConsumerGroupManager(kafkaNamesMapper, "primary", kafkaContainer.bootstrapServers, new KafkaProperties())
+        consumerGroupManager = new KafkaConsumerGroupManager(kafkaNamesMapper, "primary", kafkaContainer.bootstrapServers, new KafkaProperties(), adminClient)
     }
 
     def "should create consumer group with offset equal to last topic offset"() {
@@ -100,6 +100,9 @@ class KafkaConsumerGroupManagerSpec extends Specification {
         and:
         output.toString().contains 'Creating consumer group for subscription pl.allegro.test.Foo$test-subscription, cluster: primary'
         output.toString().contains 'Successfully created consumer group for subscription pl.allegro.test.Foo$test-subscription, cluster: primary'
+
+        cleanup:
+        deleteKafkaTopic(kafkaTopicName)
     }
 
     def "should override existing consumer group using offsets from the old consumer group"() {
@@ -131,6 +134,9 @@ class KafkaConsumerGroupManagerSpec extends Specification {
         topicPartitionOffsets.get(new TopicPartition(kafkaTopicName, 0)).offset() == 10
         topicPartitionOffsets.get(new TopicPartition(kafkaTopicName, 1)).offset() == 20
         topicPartitionOffsets.get(new TopicPartition(kafkaTopicName, 2)).offset() == 15
+
+        cleanup:
+        deleteKafkaTopic(kafkaTopicName)
     }
 
     def "should not create consumer group and log exception in case of request timeout"() {
@@ -149,6 +155,72 @@ class KafkaConsumerGroupManagerSpec extends Specification {
 
         cleanup:
         kafkaContainer.dockerClient.unpauseContainerCmd(containerId).exec()
+    }
+
+    def "Should delete specified consumer group and retain others"() {
+        given:
+        Topic topic = createAvroTopic("pl.allegro.test.DeletionOfConsumerGroup")
+        String kafkaTopicName = kafkaNamesMapper.toKafkaTopics(topic).primary.name().asString()
+        createTopicInKafka(kafkaTopicName, 3)
+
+        and:
+        Subscription subscription = createTestSubscription(topic, "test-subscription")
+        ConsumerGroupId consumerGroupId = kafkaNamesMapper.toConsumerGroupId(subscription.qualifiedName)
+        consumerGroupManager.createConsumerGroup(topic, subscription)
+
+        and:
+        Subscription subscriptionToDelete = createTestSubscription(topic, "test-subscription-to-delete")
+        ConsumerGroupId consumerGroupIdToDelete = kafkaNamesMapper.toConsumerGroupId(subscriptionToDelete.qualifiedName)
+        consumerGroupManager.createConsumerGroup(topic, subscriptionToDelete)
+
+        and:
+        assert adminClient.listConsumerGroups().all().get().collect { it.groupId() } == [consumerGroupIdToDelete.asString(), consumerGroupId.asString()]
+
+        when:
+        consumerGroupManager.deleteConsumerGroup(subscriptionToDelete.getQualifiedName())
+
+        then:
+        adminClient.listConsumerGroups().all().get().collect { it.groupId() } == [consumerGroupId.asString()]
+
+        cleanup:
+        consumerGroupManager.deleteConsumerGroup(subscription.getQualifiedName())
+        deleteKafkaTopic(kafkaTopicName)
+    }
+
+    def "Should handle deletion attempt for non-existing consumer group gracefully"() {
+        given:
+        Topic topic = createAvroTopic("pl.allegro.test.DeletionOfNonExistingConsumerGroup")
+        String kafkaTopicName = kafkaNamesMapper.toKafkaTopics(topic).primary.name().asString()
+        createTopicInKafka(kafkaTopicName, 3)
+
+        and:
+        Subscription subscription = createTestSubscription(topic, "test-subscription")
+        ConsumerGroupId consumerGroupId = kafkaNamesMapper.toConsumerGroupId(subscription.qualifiedName)
+        consumerGroupManager.createConsumerGroup(topic, subscription)
+
+        when:
+        consumerGroupManager.deleteConsumerGroup(createTestSubscription(topic, "test-subscription-to-delete").getQualifiedName())
+
+        then:
+        noExceptionThrown()
+
+        and:
+        adminClient.listConsumerGroups().all().get().collect { it.groupId() } == [consumerGroupId.asString()]
+
+        cleanup:
+        deleteKafkaTopic(kafkaTopicName)
+    }
+
+    def "Should handle deletion attempt for non-existing topic gracefully"() {
+        given:
+        Topic topic = createAvroTopic("pl.allegro.test.Foo")
+        Subscription subscription = createTestSubscription(topic, "test-subscription-to-delete")
+
+        when:
+        consumerGroupManager.deleteConsumerGroup(subscription.getQualifiedName())
+
+        then:
+        noExceptionThrown()
     }
 
     private def publishOnPartition(String kafkaTopicName, int partition, int messages) {
@@ -188,5 +260,9 @@ class KafkaConsumerGroupManagerSpec extends Specification {
         assert describeTopicsResult[0].partitions()
                 .collect { it.partition() }
                 .containsAll(0..(partitionsNumber - 1))
+    }
+
+    private def deleteKafkaTopic(String kafkaTopicName) {
+        adminClient.deleteTopics([kafkaTopicName]).all().get()
     }
 }
