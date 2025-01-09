@@ -52,4 +52,16 @@ public class PartitionOffset {
   public int hashCode() {
     return Objects.hash(topic, partition, offset);
   }
+
+  @Override
+  public String toString() {
+    return "PartitionOffset{"
+        + "topic="
+        + topic
+        + ", partition="
+        + partition
+        + ", offset="
+        + offset
+        + '}';
+  }
 }
