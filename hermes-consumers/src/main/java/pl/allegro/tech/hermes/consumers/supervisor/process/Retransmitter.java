@@ -33,36 +33,22 @@ public class Retransmitter {
               brokersClusterName,
               consumer.getAssignedPartitions());
 
-      for (PartitionOffset partitionOffset : offsets) {
-        if (moveOffset(subscriptionName, consumer, partitionOffset)) {
-          subscriptionOffsetChangeIndicator.removeOffset(
-              subscriptionName.getTopicName(),
-              subscriptionName.getName(),
-              brokersClusterName,
-              partitionOffset.getTopic(),
-              partitionOffset.getPartition());
-          logger.info(
-              "Removed offset indicator for subscription={} and partition={}",
-              subscriptionName,
-              partitionOffset.getPartition());
-        }
+      PartitionOffsets movedOffsets = consumer.moveOffset(offsets);
+
+      for (PartitionOffset partitionOffset : movedOffsets) {
+        subscriptionOffsetChangeIndicator.removeOffset(
+            subscriptionName.getTopicName(),
+            subscriptionName.getName(),
+            brokersClusterName,
+            partitionOffset.getTopic(),
+            partitionOffset.getPartition());
+        logger.info(
+            "Removed offset indicator for subscription={} and partition={}",
+            subscriptionName,
+            partitionOffset.getPartition());
       }
     } catch (Exception ex) {
       throw new RetransmissionException(ex);
-    }
-  }
-
-  private boolean moveOffset(
-      SubscriptionName subscriptionName, Consumer consumer, PartitionOffset partitionOffset) {
-    try {
-      return consumer.moveOffset(partitionOffset);
-    } catch (IllegalStateException ex) {
-      logger.warn(
-          "Cannot move offset for subscription={} and partition={} , possibly owned by different node",
-          subscriptionName,
-          partitionOffset.getPartition(),
-          ex);
-      return false;
     }
   }
 }

@@ -75,6 +75,9 @@ public class KafkaRetransmissionServiceTest {
     publishAndConsumeMessages(messages2, topic, subscriber);
     hermes.api().waitUntilConsumerCommitsOffset(topic.getQualifiedName(), subscription.getName());
 
+    long commitedMessages =
+        hermes.api().calculateCommittedMessages(topic.getQualifiedName(), subscription.getName());
+
     if (suspendedSubscription) {
       hermes.api().suspendSubscription(topic, subscription.getName());
       hermes.api().waitUntilSubscriptionSuspended(topic.getQualifiedName(), subscription.getName());
@@ -87,14 +90,27 @@ public class KafkaRetransmissionServiceTest {
             .retransmit(
                 topic.getQualifiedName(), subscription.getName(), retransmissionDate, false);
 
+    // then
+    response.expectStatus().isOk();
+    // Check if Kafka committed offsets were moved on retransmission
+    assertThat(
+            hermes
+                .api()
+                .calculateCommittedMessages(topic.getQualifiedName(), subscription.getName()))
+        .isLessThan(commitedMessages);
+
     if (suspendedSubscription) {
       hermes.api().activateSubscription(topic, subscription.getName());
       hermes.api().waitUntilSubscriptionActivated(topic.getQualifiedName(), subscription.getName());
     }
 
-    // then
-    response.expectStatus().isOk();
     messages2.forEach(subscriber::waitUntilReceived);
+    hermes.api().waitUntilConsumerCommitsOffset(topic.getQualifiedName(), subscription.getName());
+    assertThat(
+            hermes
+                .api()
+                .calculateCommittedMessages(topic.getQualifiedName(), subscription.getName()))
+        .isEqualTo(commitedMessages);
   }
 
   @Test

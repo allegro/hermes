@@ -189,7 +189,7 @@ public class HermesTestClient {
             });
   }
 
-  private long calculateCommittedMessages(String topicQualifiedName, String subscription) {
+  public long calculateCommittedMessages(String topicQualifiedName, String subscription) {
     AtomicLong messagesCommittedCount = new AtomicLong(0);
     List<ConsumerGroup> consumerGroups =
         getConsumerGroupsDescription(topicQualifiedName, subscription)
