@@ -817,24 +817,6 @@ export const switchReadinessErrorHandler = ({
     });
   });
 
-export const moveSubscriptionOffsetsHandler = ({
-  topicName,
-  subscriptionName,
-  statusCode,
-}: {
-  topicName: string;
-  subscriptionName: string;
-  statusCode: number;
-}) =>
-  http.post(
-    `${url}/topics/${topicName}/subscriptions/${subscriptionName}/moveOffsetsToTheEnd`,
-    () => {
-      return new HttpResponse(undefined, {
-        status: statusCode,
-      });
-    },
-  );
-
 export const upsertTopicConstraintHandler = ({
   statusCode,
 }: {
@@ -974,14 +956,19 @@ export const createRetransmissionHandler = ({
   statusCode,
   topicName,
   subscriptionName,
+  delayMs,
 }: {
   statusCode: number;
   topicName: string;
   subscriptionName: string;
+  delayMs?: number;
 }) =>
   http.put(
     `${url}/topics/${topicName}/subscriptions/${subscriptionName}/retransmission`,
-    () => {
+    async () => {
+      if (delayMs && delayMs > 0) {
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+      }
       return new HttpResponse(undefined, {
         status: statusCode,
       });

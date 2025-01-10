@@ -36,7 +36,6 @@ import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareServic
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.BrokersClusterService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaBrokerTopicManagement;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaConsumerGroupManager;
-import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaConsumerManager;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaRawMessageReader;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaSingleMessageReader;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.LogEndOffsetChecker;
@@ -111,8 +110,7 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
                       new LogEndOffsetChecker(consumerPool),
                       brokerAdminClient,
                       createConsumerGroupManager(
-                          kafkaProperties, kafkaNamesMapper, brokerAdminClient),
-                      createKafkaConsumerManager(kafkaProperties, kafkaNamesMapper));
+                          kafkaProperties, kafkaNamesMapper, brokerAdminClient));
                 })
             .collect(toList());
 
@@ -136,12 +134,6 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
             kafkaProperties,
             kafkaAdminClient)
         : new NoOpConsumerGroupManager();
-  }
-
-  private KafkaConsumerManager createKafkaConsumerManager(
-      KafkaProperties kafkaProperties, KafkaNamesMapper kafkaNamesMapper) {
-    return new KafkaConsumerManager(
-        kafkaProperties, kafkaNamesMapper, kafkaProperties.getBrokerList());
   }
 
   private SubscriptionOffsetChangeIndicator getRepository(
