@@ -1,6 +1,7 @@
 import { createTestingPiniaWithState } from '@/dummy/store';
 import { dummySubscription } from '@/dummy/subscription';
 import { dummyTopic } from '@/dummy/topic';
+import { expect } from 'vitest';
 import { render } from '@/utils/test-utils';
 import ManageMessagesCard from '@/views/subscription/manage-messages-card/ManageMessagesCard.vue';
 import userEvent from '@testing-library/user-event';
@@ -15,6 +16,8 @@ describe('ManageMessagesCard', () => {
       props: {
         topic: dummyTopic.name,
         subscription: dummySubscription.name,
+        retransmitting: false,
+        skippingAllMessages: false,
       },
       testPinia: createTestingPiniaWithState(),
     });
@@ -34,6 +37,8 @@ describe('ManageMessagesCard', () => {
       props: {
         topic: dummyTopic.name,
         subscription: dummySubscription.name,
+        retransmitting: false,
+        skippingAllMessages: false,
       },
       testPinia: createTestingPiniaWithState(),
     });
@@ -43,5 +48,45 @@ describe('ManageMessagesCard', () => {
     expect(
       getByText('subscription.confirmationDialog.skipAllMessages.title'),
     ).toBeVisible();
+  });
+
+  it('should disable buttons and show spinner when retransmission is in progress', async () => {
+    // when
+    const { getByTestId } = render(ManageMessagesCard, {
+      props: {
+        topic: dummyTopic.name,
+        subscription: dummySubscription.name,
+        retransmitting: true,
+        skippingAllMessages: false,
+      },
+      testPinia: createTestingPiniaWithState(),
+    });
+
+    // then
+    expect(getByTestId('retransmitButton')).toBeDisabled();
+    expect(getByTestId('skipAllMessagesButton')).toBeDisabled();
+    expect(getByTestId('retransmitButton')).toContainElement(
+      getByTestId('loading-spinner'),
+    );
+  });
+
+  it('should disable buttons and show spinner when skipping all messages is in progress', async () => {
+    // when
+    const { getByTestId } = render(ManageMessagesCard, {
+      props: {
+        topic: dummyTopic.name,
+        subscription: dummySubscription.name,
+        retransmitting: false,
+        skippingAllMessages: true,
+      },
+      testPinia: createTestingPiniaWithState(),
+    });
+
+    // then
+    expect(getByTestId('retransmitButton')).toBeDisabled();
+    expect(getByTestId('skipAllMessagesButton')).toBeDisabled();
+    expect(getByTestId('skipAllMessagesButton')).toContainElement(
+      getByTestId('loading-spinner'),
+    );
   });
 });

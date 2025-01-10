@@ -7,7 +7,7 @@ import pl.allegro.tech.hermes.management.domain.ManagementException;
 
 class OffsetNotFoundException extends ManagementException {
 
-  OffsetNotFoundException(String message) {
+  public OffsetNotFoundException(String message) {
     super(message);
   }
 
