@@ -91,13 +91,13 @@ public class KafkaRetransmissionServiceTest {
                 topic.getQualifiedName(), subscription.getName(), retransmissionDate, false);
 
     // then
+    response.expectStatus().isOk();
     // Check if Kafka committed offsets were moved on retransmission
     assertThat(
             hermes
                 .api()
                 .calculateCommittedMessages(topic.getQualifiedName(), subscription.getName()))
         .isLessThan(commitedMessages);
-    response.expectStatus().isOk();
 
     if (suspendedSubscription) {
       hermes.api().activateSubscription(topic, subscription.getName());
