@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.OffsetRetransmissionDate;
@@ -53,8 +55,10 @@ public class KafkaRetransmissionServiceTest {
   @RegisterExtension
   public static final TestSubscribersExtension subscribers = new TestSubscribersExtension();
 
-  @Test
-  public void shouldMoveOffsetNearGivenTimestamp() throws InterruptedException {
+  @ParameterizedTest
+  @ValueSource(booleans = {false, true})
+  public void shouldMoveOffsetNearGivenTimestamp(boolean suspendedSubscription)
+      throws InterruptedException {
     // given
     final TestSubscriber subscriber = subscribers.createSubscriber();
     final Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
@@ -71,6 +75,14 @@ public class KafkaRetransmissionServiceTest {
     publishAndConsumeMessages(messages2, topic, subscriber);
     hermes.api().waitUntilConsumerCommitsOffset(topic.getQualifiedName(), subscription.getName());
 
+    long commitedMessages =
+        hermes.api().calculateCommittedMessages(topic.getQualifiedName(), subscription.getName());
+
+    if (suspendedSubscription) {
+      hermes.api().suspendSubscription(topic, subscription.getName());
+      hermes.api().waitUntilSubscriptionSuspended(topic.getQualifiedName(), subscription.getName());
+    }
+
     // when
     WebTestClient.ResponseSpec response =
         hermes
@@ -80,7 +92,25 @@ public class KafkaRetransmissionServiceTest {
 
     // then
     response.expectStatus().isOk();
+    // Check if Kafka committed offsets were moved on retransmission
+    assertThat(
+            hermes
+                .api()
+                .calculateCommittedMessages(topic.getQualifiedName(), subscription.getName()))
+        .isLessThan(commitedMessages);
+
+    if (suspendedSubscription) {
+      hermes.api().activateSubscription(topic, subscription.getName());
+      hermes.api().waitUntilSubscriptionActivated(topic.getQualifiedName(), subscription.getName());
+    }
+
     messages2.forEach(subscriber::waitUntilReceived);
+    hermes.api().waitUntilConsumerCommitsOffset(topic.getQualifiedName(), subscription.getName());
+    assertThat(
+            hermes
+                .api()
+                .calculateCommittedMessages(topic.getQualifiedName(), subscription.getName()))
+        .isEqualTo(commitedMessages);
   }
 
   @Test

@@ -37,6 +37,8 @@ const useSubscriptionStub: ReturnType<typeof useSubscription> = {
   subscriptionUndeliveredMessages: ref(dummyUndeliveredMessages),
   subscriptionLastUndeliveredMessage: ref(dummyUndeliveredMessage),
   trackingUrls: ref(dummyTrackingUrls),
+  retransmitting: computed(() => false),
+  skippingAllMessages: computed(() => false),
   error: ref({
     fetchSubscription: null,
     fetchOwner: null,

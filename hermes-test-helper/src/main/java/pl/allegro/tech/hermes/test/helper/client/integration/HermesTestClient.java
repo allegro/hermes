@@ -119,6 +119,13 @@ public class HermesTestClient {
         .is2xxSuccessful();
   }
 
+  public WebTestClient.ResponseSpec activateSubscription(Topic topic, String subscription) {
+    return managementTestClient
+        .updateSubscriptionState(topic, subscription, Subscription.State.ACTIVE)
+        .expectStatus()
+        .is2xxSuccessful();
+  }
+
   public void waitUntilSubscriptionActivated(String topicQualifiedName, String subscriptionName) {
     waitAtMost(Duration.ofSeconds(10))
         .untilAsserted(
@@ -182,7 +189,7 @@ public class HermesTestClient {
             });
   }
 
-  private long calculateCommittedMessages(String topicQualifiedName, String subscription) {
+  public long calculateCommittedMessages(String topicQualifiedName, String subscription) {
     AtomicLong messagesCommittedCount = new AtomicLong(0);
     List<ConsumerGroup> consumerGroups =
         getConsumerGroupsDescription(topicQualifiedName, subscription)
@@ -549,10 +556,5 @@ public class HermesTestClient {
 
   public List<String> getGroups() {
     return managementTestClient.getGroups();
-  }
-
-  public WebTestClient.ResponseSpec moveOffsetsToTheEnd(
-      String topicQualifiedName, String subscriptionName) {
-    return managementTestClient.moveOffsetsToTheEnd(topicQualifiedName, subscriptionName);
   }
 }

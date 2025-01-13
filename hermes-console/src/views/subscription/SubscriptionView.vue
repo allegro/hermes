@@ -36,6 +36,8 @@
     subscriptionUndeliveredMessages,
     subscriptionLastUndeliveredMessage,
     trackingUrls,
+    retransmitting,
+    skippingAllMessages,
     error,
     loading,
     removeSubscription,
@@ -106,6 +108,10 @@
 
   const onRetransmit = async (fromDate: string) => {
     await retransmitMessages(fromDate);
+  };
+
+  const onSkipAllMessages = async () => {
+    await skipAllMessages();
   };
 
   const breadcrumbsItems = [
@@ -234,8 +240,10 @@
             v-if="isSubscriptionOwnerOrAdmin(roles)"
             :topic="topicId"
             :subscription="subscriptionId"
+            :retransmitting="retransmitting"
+            :skippingAllMessages="skippingAllMessages"
             @retransmit="onRetransmit"
-            @skipAllMessages="skipAllMessages"
+            @skipAllMessages="onSkipAllMessages"
           />
           <last-undelivered-message
             v-if="
