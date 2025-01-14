@@ -17,23 +17,27 @@ val agent: Configuration by configurations.creating {
     isCanBeConsumed = true
 }
 
+// Order of the imports matters - do not reorder
 dependencies {
-    testImplementation(project(":hermes-client"))
     testImplementation(project(":hermes-common"))
+    testImplementation(project(":hermes-test-helper"))
+    testImplementation(project(":hermes-management"))
     testImplementation(project(":hermes-consumers"))
     testImplementation(project(":hermes-frontend"))
-    testImplementation(project(":hermes-management"))
-    testImplementation(project(":hermes-test-helper"))
+    testImplementation(project(":hermes-client"))
 
-    testImplementation(libs.awaitility)
-    testImplementation(libs.jetty.reactive.httpclient)
-    testImplementation(libs.okhttp)
-    testImplementation(libs.reactive.streams)
-    testImplementation(libs.spring.test)
-    testImplementation(libs.spring.webflux)
+    testImplementation(group = "org.awaitility", name = "awaitility", version = "4.2.0")
+
     testImplementation(libs.testcontainers)
     testImplementation(libs.testcontainers.gcloud)
+    testImplementation(libs.okhttp)
+    testImplementation(libs.spring.webflux)
+    testImplementation(libs.spring.test)
+    testImplementation(libs.jetty.reactive.httpclient)
+    testImplementation(libs.awaitility)
+    testImplementation(libs.reactive.streams)
 
+    // TODO: can we update it ? Which version of server our clients use?
     testImplementation(libs.hornetq.jms.server) {
         exclude(module = "hornetq-native")
     }

@@ -1,3 +1,4 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import pl.allegro.tech.build.axion.release.domain.PredefinedVersionCreator
 import pl.allegro.tech.hermes.findIntProperty
@@ -191,7 +192,7 @@ subprojects {
         }
 
         testLogging {
-            exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+            exceptionFormat = TestExceptionFormat.FULL
             events = setOf(
                 TestLogEvent.PASSED,
                 TestLogEvent.SKIPPED,
