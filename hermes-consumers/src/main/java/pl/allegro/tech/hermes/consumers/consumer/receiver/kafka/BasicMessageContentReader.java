@@ -56,7 +56,7 @@ class BasicMessageContentReader implements MessageContentReader {
       throw new RetryableReceiverError(
           String.format(
               "Requested schema not present yet for topic: %s, schemaVersion: %s, schemaId: %s",
-              topic, schemaVersion, schemaId),
+              topic.getQualifiedName(), schemaVersion, schemaId),
           ex);
     }
   }
