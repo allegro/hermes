@@ -53,7 +53,11 @@ class BasicMessageContentReader implements MessageContentReader {
         schemaExistenceEnsurer.ensureSchemaExists(topic, SchemaId.valueOf(schemaId));
       }
     } catch (SchemaExistenceEnsurer.SchemaNotLoaded ex) {
-      throw new RetryableReceiverError("Requested schema not present yet...", ex);
+      throw new RetryableReceiverError(
+          String.format(
+              "Requested schema not present yet for topic: %s, schemaVersion: %s, schemaId: %s",
+              topic, schemaVersion, schemaId),
+          ex);
     }
   }
 }
