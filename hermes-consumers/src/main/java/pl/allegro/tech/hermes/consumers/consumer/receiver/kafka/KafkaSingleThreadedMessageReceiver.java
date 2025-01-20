@@ -148,7 +148,10 @@ public class KafkaSingleThreadedMessageReceiver implements MessageReceiver {
         readQueue.poll();
         return Optional.of(message);
       } catch (RetryableReceiverError ex) {
-        logger.warn("Cannot convert record to message for subscription {}, operation will be delayed", subscription.getQualifiedName(), ex);
+        logger.warn(
+            "Cannot convert record to message for subscription {}, operation will be delayed",
+            subscription.getQualifiedName(),
+            ex);
         return Optional.empty();
       }
     }
