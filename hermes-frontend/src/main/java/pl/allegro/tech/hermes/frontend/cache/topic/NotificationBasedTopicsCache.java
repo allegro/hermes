@@ -17,8 +17,7 @@ import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 import pl.allegro.tech.hermes.frontend.metric.ThroughputRegistry;
 
-public class NotificationBasedTopicsCache
-    implements TopicCallback, TopicsCache {
+public class NotificationBasedTopicsCache implements TopicCallback, TopicsCache {
 
   private static final Logger logger = LoggerFactory.getLogger(NotificationBasedTopicsCache.class);
 
@@ -30,19 +29,20 @@ public class NotificationBasedTopicsCache
   private final KafkaNamesMapper kafkaNamesMapper;
   private final ThroughputRegistry throughputRegistry;
 
-    public NotificationBasedTopicsCache(InternalNotificationsBus notificationsBus,
-                                        GroupRepository groupRepository,
-                                        TopicRepository topicRepository,
-                                        MetricsFacade metricsFacade,
-                                        ThroughputRegistry throughputRegistry,
-                                        KafkaNamesMapper kafkaNamesMapper) {
-        this.groupRepository = groupRepository;
-        this.topicRepository = topicRepository;
-        this.metricsFacade = metricsFacade;
-        this.kafkaNamesMapper = kafkaNamesMapper;
-        this.throughputRegistry = throughputRegistry;
-        notificationsBus.registerTopicCallback(this);
-    }
+  public NotificationBasedTopicsCache(
+      InternalNotificationsBus notificationsBus,
+      GroupRepository groupRepository,
+      TopicRepository topicRepository,
+      MetricsFacade metricsFacade,
+      ThroughputRegistry throughputRegistry,
+      KafkaNamesMapper kafkaNamesMapper) {
+    this.groupRepository = groupRepository;
+    this.topicRepository = topicRepository;
+    this.metricsFacade = metricsFacade;
+    this.kafkaNamesMapper = kafkaNamesMapper;
+    this.throughputRegistry = throughputRegistry;
+    notificationsBus.registerTopicCallback(this);
+  }
 
   @Override
   public void onTopicCreated(Topic topic) {
@@ -70,10 +70,10 @@ public class NotificationBasedTopicsCache
     topicCache.put(topic.getName().qualifiedName(), cachedTopic(topic));
   }
 
-    @Override
-    public Optional<CachedTopic> getTopic(String qualifiedTopicName) {
-        return Optional.ofNullable(topicCache.get(qualifiedTopicName));
-    }
+  @Override
+  public Optional<CachedTopic> getTopic(String qualifiedTopicName) {
+    return Optional.ofNullable(topicCache.get(qualifiedTopicName));
+  }
 
   @Override
   public List<CachedTopic> getTopics() {
@@ -89,7 +89,8 @@ public class NotificationBasedTopicsCache
     }
   }
 
-    private CachedTopic cachedTopic(Topic topic) {
-        return new CachedTopic(topic, metricsFacade, throughputRegistry, kafkaNamesMapper.toKafkaTopics(topic));
-    }
+  private CachedTopic cachedTopic(Topic topic) {
+    return new CachedTopic(
+        topic, metricsFacade, throughputRegistry, kafkaNamesMapper.toKafkaTopics(topic));
+  }
 }

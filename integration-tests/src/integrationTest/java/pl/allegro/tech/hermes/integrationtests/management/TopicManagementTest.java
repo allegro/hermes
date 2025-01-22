@@ -143,11 +143,11 @@ public class TopicManagementTest {
             () -> assertThat(getGroupTopicsList(topic.getName().getGroupName())).isEmpty());
   }
 
-    @Test
-    public void shouldNotAllowOnDeletingTopicWithSubscriptions() {
-        // given
-        Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
-        hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).build());
+  @Test
+  public void shouldNotAllowOnDeletingTopicWithSubscriptions() {
+    // given
+    Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
+    hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).build());
 
     // when
     WebTestClient.ResponseSpec response = hermes.api().deleteTopic(topic.getQualifiedName());

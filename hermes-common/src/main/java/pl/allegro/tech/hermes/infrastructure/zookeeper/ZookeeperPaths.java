@@ -151,9 +151,9 @@ public class ZookeeperPaths {
     return Joiner.on(URL_SEPARATOR).join(consumersWorkloadConstraintsPath(), constraintsPath);
   }
 
-    public String oAuthProvidersPath() {
-        return Joiner.on(URL_SEPARATOR).join(basePath, OAUTH_PROVIDERS_PATH);
-    }
+  public String oAuthProvidersPath() {
+    return Joiner.on(URL_SEPARATOR).join(basePath, OAUTH_PROVIDERS_PATH);
+  }
 
   public String oAuthProviderPath(String oAuthProviderName) {
     return Joiner.on(URL_SEPARATOR).join(oAuthProvidersPath(), oAuthProviderName);

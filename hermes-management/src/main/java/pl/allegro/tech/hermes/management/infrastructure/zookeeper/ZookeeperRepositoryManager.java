@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.management.infrastructure.zookeeper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -120,9 +119,9 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
           new ZookeeperMessagePreviewRepository(zookeeper, mapper, paths);
       messagePreviewRepositoriesByDc.put(dcName, messagePreviewRepository);
 
-            WorkloadConstraintsRepository workloadConstraintsRepository =
-                    new ZookeeperWorkloadConstraintsRepository(zookeeper, mapper, paths);
-            workloadConstraintsRepositoriesByDc.put(dcName, workloadConstraintsRepository);
+      WorkloadConstraintsRepository workloadConstraintsRepository =
+          new ZookeeperWorkloadConstraintsRepository(zookeeper, mapper, paths);
+      workloadConstraintsRepositoriesByDc.put(dcName, workloadConstraintsRepository);
 
       LastUndeliveredMessageReader lastUndeliveredMessageReader =
           new ZookeeperLastUndeliveredMessageReader(zookeeper, paths, mapper);
@@ -167,7 +166,7 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
 
   public <T> List<DatacenterBoundRepositoryHolder<T>> getRepositories(Class<T> repositoryType) {
     return getRepositoriesByType(repositoryType).entrySet().stream()
-        .sorted(Comparator.comparing(Map.Entry::getKey))
+        .sorted(Map.Entry.comparingByKey())
         .map(entry -> new DatacenterBoundRepositoryHolder<>(entry.getValue(), entry.getKey()))
         .collect(Collectors.toList());
   }

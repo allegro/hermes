@@ -15,9 +15,9 @@ import pl.allegro.tech.hermes.metrics.HermesTimerContext;
 
 public class CachedTopic {
 
-    private final Topic topic;
-    private final KafkaTopics kafkaTopics;
-    private final MetricsFacade metricsFacade;
+  private final Topic topic;
+  private final KafkaTopics kafkaTopics;
+  private final MetricsFacade metricsFacade;
 
   private final HermesTimer topicProducerLatencyTimer;
   private final HermesTimer globalProducerLatencyTimer;

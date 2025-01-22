@@ -1,9 +1,6 @@
 package pl.allegro.tech.hermes.management.config.storage;
 
-import static org.slf4j.LoggerFactory.getLogger;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -45,8 +42,6 @@ import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperRepos
 @Configuration
 @EnableConfigurationProperties(StorageClustersProperties.class)
 public class StorageConfiguration {
-
-  private static final Logger logger = getLogger(StorageConfiguration.class);
 
   @Autowired StorageClustersProperties storageClustersProperties;
 
@@ -148,11 +143,12 @@ public class StorageConfiguration {
         localClient.getCuratorFramework(), objectMapper, zookeeperPaths());
   }
 
-    @Bean
-    WorkloadConstraintsRepository workloadConstraintsRepository() {
-        ZookeeperClient localClient = clientManager().getLocalClient();
-        return new ZookeeperWorkloadConstraintsRepository(localClient.getCuratorFramework(), objectMapper, zookeeperPaths());
-    }
+  @Bean
+  WorkloadConstraintsRepository workloadConstraintsRepository() {
+    ZookeeperClient localClient = clientManager().getLocalClient();
+    return new ZookeeperWorkloadConstraintsRepository(
+        localClient.getCuratorFramework(), objectMapper, zookeeperPaths());
+  }
 
   @Bean
   @Primary

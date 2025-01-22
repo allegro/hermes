@@ -125,15 +125,16 @@ public class TopicService {
     createTopic(topic, createdBy, isAllowedToManage);
   }
 
-    public void removeTopicWithSchema(Topic topic, RequestUser removedBy) {
-        auditor.beforeObjectRemoval(removedBy.getUsername(), Topic.class.getSimpleName(), topic.getQualifiedName());
-        subscriptionRemover.removeSubscriptionRelatedToTopic(topic, removedBy);
-        removeSchema(topic);
-        if (!topicProperties.isAllowRemoval()) {
-            throw new TopicRemovalDisabledException(topic);
-        }
-        removeTopic(topic, removedBy);
+  public void removeTopicWithSchema(Topic topic, RequestUser removedBy) {
+    auditor.beforeObjectRemoval(
+        removedBy.getUsername(), Topic.class.getSimpleName(), topic.getQualifiedName());
+    subscriptionRemover.removeSubscriptionRelatedToTopic(topic, removedBy);
+    removeSchema(topic);
+    if (!topicProperties.isAllowRemoval()) {
+      throw new TopicRemovalDisabledException(topic);
     }
+    removeTopic(topic, removedBy);
+  }
 
   public void updateTopicWithSchema(TopicName topicName, PatchData patch, RequestUser modifiedBy) {
     Topic topic = getTopicDetails(topicName);
@@ -286,9 +287,7 @@ public class TopicService {
 
   public Optional<byte[]> preview(TopicName topicName, int idx) {
     List<byte[]> result =
-        loadMessagePreviewsFromAllDc(topicName).stream()
-            .map(MessagePreview::getContent)
-            .collect(toList());
+        loadMessagePreviewsFromAllDc(topicName).stream().map(MessagePreview::getContent).toList();
 
     if (idx >= 0 && idx < result.size()) {
       return Optional.of(result.get(idx));

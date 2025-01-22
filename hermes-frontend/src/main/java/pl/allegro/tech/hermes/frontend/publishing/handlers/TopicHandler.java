@@ -66,12 +66,12 @@ class TopicHandler implements HttpHandler {
     String topicName = exchange.getQueryParameters().get("qualifiedTopicName").getFirst();
     Optional<CachedTopic> maybeTopic = topicsCache.getTopic(topicName);
 
-    if (!maybeTopic.isPresent()) {
+    if (maybeTopic.isEmpty()) {
       unknownTopic(exchange, topicName, messageId);
       return;
     }
 
-        CachedTopic cachedTopic = maybeTopic.get();
+    CachedTopic cachedTopic = maybeTopic.get();
 
     Topic topic = cachedTopic.getTopic();
     if (topic.isAuthEnabled() && !hasPermission(exchange, topic)) {
@@ -108,13 +108,11 @@ class TopicHandler implements HttpHandler {
         UNKNOWN_TOPIC_NAME);
   }
 
-    private void requestForbidden(HttpServerExchange exchange, String messageId, String qualifiedTopicName) {
-        messageErrorProcessor.sendQuietly(
-                exchange,
-                error("Permission denied.", AUTH_ERROR),
-                messageId,
-                qualifiedTopicName);
-    }
+  private void requestForbidden(
+      HttpServerExchange exchange, String messageId, String qualifiedTopicName) {
+    messageErrorProcessor.sendQuietly(
+        exchange, error("Permission denied.", AUTH_ERROR), messageId, qualifiedTopicName);
+  }
 
   // Default Undertow's response code (200) was changed in order to avoid situations in which
   // something wrong happens and Hermes-Frontend
