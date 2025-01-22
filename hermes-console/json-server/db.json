@@ -1,4 +1,9 @@
 {
+  "inactiveTopics": [
+    {"topic":  "group.topic1", "lastPublishedTsMs": 1732499845200, "notificationTsMs": [1733499835210, 1733499645212], "whitelisted":  false},
+    {"topic":  "group.topic2", "lastPublishedTsMs": 1633928665148, "notificationTsMs": [], "whitelisted":  true},
+    {"topic":  "pl.allegro.public.group.DummyEvent", "lastPublishedTsMs": 1633928665148, "notificationTsMs": [1733499645212], "whitelisted":  false}
+  ],
   "groups": [
     "pl.allegro.public.offer",
     "pl.allegro.public.offer.product",
@@ -138,6 +143,11 @@
   "offlineClientsSource": {
     "source": "https://www.openstreetmap.org/export/embed.html?bbox=-0.004017949104309083%2C51.47612752641776%2C0.00030577182769775396%2C51.478569861898606&layer=mapnik"
   },
+  "topicClients": [
+    "client1@allegro.com",
+    "client2@allegro.com",
+    "client3@allegro.com"
+  ],
   "inconsistentTopics": [
     "pl.allegro.group.Topic1_avro",
     "pl.allegro.group.Topic2_avro",
@@ -203,7 +213,7 @@
       },
       "jsonToAvroDryRun": false,
       "ack": "LEADER",
-      "trackingEnabled": false,
+      "trackingEnabled": true,
       "migratedFromJsonType": false,
       "schemaIdAwareSerializationEnabled": false,
       "contentType": "AVRO",
@@ -240,6 +250,14 @@
       "subscriptions": 1,
       "throughput": "0.0"
     }
+  ],
+  "topicsTrackingUrls": [
+    {"name": "Tracking Link 1", "url": "#"},
+    {"name": "Tracking Link 2", "url": "#"}
+  ],
+  "subscriptionsTrackingUrls": [
+    {"name": "Tracking Link 1", "url": "#"},
+    {"name": "Tracking Link 2", "url": "#"}
   ],
   "topicsOwners": [
     {
@@ -383,7 +401,7 @@
         "retryClientErrors": true,
         "backoffMaxIntervalMillis": 600000
       },
-      "trackingEnabled": false,
+      "trackingEnabled": true,
       "trackingMode": "trackingOff",
       "owner": {
         "source": "Service Catalog",
@@ -581,7 +599,17 @@
       "title": "hermes console",
       "contactLink": "https://google.com",
       "environmentName": "LOCAL",
-      "criticalEnvironment": false
+      "criticalEnvironment": false,
+      "knownEnvironments": [
+        {
+          "name": "local",
+          "url": "localhost:5173"
+        },
+        {
+          "name": "also-local",
+          "url": "127.0.0.1:5173"
+        }
+      ]
     },
     "dashboard": {
       "metrics": "http://localhost:8082",
@@ -662,7 +690,8 @@
         }
       ],
       "offlineRetransmissionEnabled": true,
-      "offlineRetransmissionDescription": "Offline retransmission"
+      "offlineRetransmissionDescription": "Offline retransmission",
+      "offlineRetransmissionFromViewDocsUrl": "https://hermes-pubsub.rtfd.org"
     },
     "subscription": {
       "endpointAddressResolverMetadata": {

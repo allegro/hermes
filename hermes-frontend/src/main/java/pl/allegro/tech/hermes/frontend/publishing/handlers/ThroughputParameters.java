@@ -4,17 +4,17 @@ import java.time.Duration;
 
 public interface ThroughputParameters {
 
-    String getType();
+  String getType();
 
-    long getFixedMax();
+  long getFixedMax();
 
-    long getDynamicMax();
+  long getDynamicMax();
 
-    long getDynamicThreshold();
+  long getDynamicThreshold();
 
-    long getDynamicDesired();
+  long getDynamicDesired();
 
-    double getDynamicIdle();
+  double getDynamicIdle();
 
-    Duration getDynamicCheckInterval();
+  Duration getDynamicCheckInterval();
 }

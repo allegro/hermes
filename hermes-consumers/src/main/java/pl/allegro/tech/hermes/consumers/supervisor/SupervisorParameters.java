@@ -4,9 +4,9 @@ import java.time.Duration;
 
 public interface SupervisorParameters {
 
-    Duration getInterval();
+  Duration getInterval();
 
-    Duration getUnhealthyAfter();
+  Duration getUnhealthyAfter();
 
-    Duration getKillAfter();
+  Duration getKillAfter();
 }

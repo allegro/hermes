@@ -7,20 +7,23 @@ import pl.allegro.tech.hermes.schema.SchemaRepository;
 
 public class BasicMessageContentReaderFactory implements MessageContentReaderFactory {
 
-    private final CompositeMessageContentWrapper compositeMessageContentWrapper;
-    private final KafkaHeaderExtractor kafkaHeaderExtractor;
-    private final SchemaRepository schemaRepository;
+  private final CompositeMessageContentWrapper compositeMessageContentWrapper;
+  private final KafkaHeaderExtractor kafkaHeaderExtractor;
+  private final SchemaRepository schemaRepository;
 
-    public BasicMessageContentReaderFactory(CompositeMessageContentWrapper compositeMessageContentWrapper,
-                                            KafkaHeaderExtractor kafkaHeaderExtractor, SchemaRepository schemaRepository) {
-        this.compositeMessageContentWrapper = compositeMessageContentWrapper;
-        this.kafkaHeaderExtractor = kafkaHeaderExtractor;
-        this.schemaRepository = schemaRepository;
-    }
+  public BasicMessageContentReaderFactory(
+      CompositeMessageContentWrapper compositeMessageContentWrapper,
+      KafkaHeaderExtractor kafkaHeaderExtractor,
+      SchemaRepository schemaRepository) {
+    this.compositeMessageContentWrapper = compositeMessageContentWrapper;
+    this.kafkaHeaderExtractor = kafkaHeaderExtractor;
+    this.schemaRepository = schemaRepository;
+  }
 
-    @Override
-    public MessageContentReader provide(Topic topic) {
-        SchemaExistenceEnsurer schemaExistenceEnsurer = new SchemaExistenceEnsurer(schemaRepository);
-        return new BasicMessageContentReader(compositeMessageContentWrapper, kafkaHeaderExtractor, topic, schemaExistenceEnsurer);
-    }
+  @Override
+  public MessageContentReader provide(Topic topic) {
+    SchemaExistenceEnsurer schemaExistenceEnsurer = new SchemaExistenceEnsurer(schemaRepository);
+    return new BasicMessageContentReader(
+        compositeMessageContentWrapper, kafkaHeaderExtractor, topic, schemaExistenceEnsurer);
+  }
 }

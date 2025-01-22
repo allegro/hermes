@@ -10,10 +10,10 @@ import pl.allegro.tech.hermes.test.helper.endpoint.MultiUrlEndpointAddressResolv
 @Configuration
 public class EndpointAddressResolverConfiguration {
 
-    @Bean
-    @Primary
-    @Profile("integration")
-    public EndpointAddressResolver testMultiUrlEndpointAddressResolver() {
-        return new MultiUrlEndpointAddressResolver();
-    }
+  @Bean
+  @Primary
+  @Profile("integration")
+  public EndpointAddressResolver testMultiUrlEndpointAddressResolver() {
+    return new MultiUrlEndpointAddressResolver();
+  }
 }

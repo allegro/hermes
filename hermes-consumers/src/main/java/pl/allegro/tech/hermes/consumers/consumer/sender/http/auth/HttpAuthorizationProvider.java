@@ -4,5 +4,5 @@ import java.util.Optional;
 
 public interface HttpAuthorizationProvider {
 
-    Optional<String> authorizationToken();
+  Optional<String> authorizationToken();
 }

@@ -4,27 +4,27 @@ import java.time.Duration;
 
 public interface ZookeeperParameters {
 
-    String getConnectionString();
+  String getConnectionString();
 
-    Duration getBaseSleepTime();
+  Duration getBaseSleepTime();
 
-    Duration getMaxSleepTime();
+  Duration getMaxSleepTime();
 
-    int getMaxRetries();
+  int getMaxRetries();
 
-    Duration getConnectionTimeout();
+  Duration getConnectionTimeout();
 
-    Duration getSessionTimeout();
+  Duration getSessionTimeout();
 
-    String getRoot();
+  String getRoot();
 
-    int getProcessingThreadPoolSize();
+  int getProcessingThreadPoolSize();
 
-    boolean isAuthorizationEnabled();
+  boolean isAuthorizationEnabled();
 
-    String getScheme();
+  String getScheme();
 
-    String getUser();
+  String getUser();
 
-    String getPassword();
+  String getPassword();
 }

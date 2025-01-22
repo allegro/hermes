@@ -8,22 +8,19 @@ import pl.allegro.tech.hermes.metrics.HermesHistogram;
 import pl.allegro.tech.hermes.metrics.counters.HermesCounters;
 
 public class UndeliveredMessagesMetrics {
-    private final MeterRegistry meterRegistry;
+  private final MeterRegistry meterRegistry;
 
-    public UndeliveredMessagesMetrics(MeterRegistry meterRegistry) {
-        this.meterRegistry = meterRegistry;
-    }
+  public UndeliveredMessagesMetrics(MeterRegistry meterRegistry) {
+    this.meterRegistry = meterRegistry;
+  }
 
-    public HermesCounter undeliveredMessagesCounter() {
-        return HermesCounters.from(
-                meterRegistry.counter("undelivered-messages.persisted")
-        );
-    }
+  public HermesCounter undeliveredMessagesCounter() {
+    return HermesCounters.from(meterRegistry.counter("undelivered-messages.persisted"));
+  }
 
-    public HermesHistogram undeliveredMessagesSizeHistogram() {
-        return DefaultHermesHistogram.of(
-                DistributionSummary.builder("undelivered-messages.persisted.message-size.bytes")
-                        .register(meterRegistry)
-        );
-    }
+  public HermesHistogram undeliveredMessagesSizeHistogram() {
+    return DefaultHermesHistogram.of(
+        DistributionSummary.builder("undelivered-messages.persisted.message-size.bytes")
+            .register(meterRegistry));
+  }
 }

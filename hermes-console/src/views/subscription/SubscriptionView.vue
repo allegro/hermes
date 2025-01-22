@@ -6,6 +6,7 @@
   import { useRoles } from '@/composables/roles/use-roles/useRoles';
   import { useRouter } from 'vue-router';
   import { useSubscription } from '@/composables/subscription/use-subscription/useSubscription';
+  import { useTopic } from '@/composables/topic/use-topic/useTopic';
   import ConfirmationDialog from '@/components/confirmation-dialog/ConfirmationDialog.vue';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import CostsCard from '@/components/costs-card/CostsCard.vue';
@@ -18,12 +19,13 @@
   import MetricsCard from '@/views/subscription/metrics-card/MetricsCard.vue';
   import PropertiesCard from '@/views/subscription/properties-card/PropertiesCard.vue';
   import SubscriptionMetadata from '@/views/subscription/subscription-metadata/SubscriptionMetadata.vue';
+  import TrackingCard from '@/components/tracking-card/TrackingCard.vue';
   import UndeliveredMessagesCard from '@/views/subscription/undelivered-messages-card/UndeliveredMessagesCard.vue';
 
   const router = useRouter();
   const { groupId, subscriptionId, topicId } = router.currentRoute.value
     .params as Record<string, string>;
-
+  const { topic } = useTopic(topicId);
   const { t } = useI18n();
 
   const {
@@ -33,6 +35,9 @@
     subscriptionHealth,
     subscriptionUndeliveredMessages,
     subscriptionLastUndeliveredMessage,
+    trackingUrls,
+    retransmitting,
+    skippingAllMessages,
     error,
     loading,
     removeSubscription,
@@ -103,6 +108,10 @@
 
   const onRetransmit = async (fromDate: string) => {
     await retransmitMessages(fromDate);
+  };
+
+  const onSkipAllMessages = async () => {
+    await skipAllMessages();
   };
 
   const breadcrumbsItems = [
@@ -202,6 +211,7 @@
             :subscription="subscription"
             :owner="owner"
             :roles="roles"
+            :schema="topic?.schema"
             @remove="openRemoveDialog"
             @suspend="openSuspendDialog"
             @activate="openActivateDialog"
@@ -222,12 +232,18 @@
             :iframe-url="costs.iframeUrl"
             :details-url="costs.detailsUrl"
           />
+          <tracking-card
+            v-if="subscription?.trackingEnabled"
+            :tracking-urls="trackingUrls"
+          />
           <manage-messages-card
             v-if="isSubscriptionOwnerOrAdmin(roles)"
             :topic="topicId"
             :subscription="subscriptionId"
+            :retransmitting="retransmitting"
+            :skippingAllMessages="skippingAllMessages"
             @retransmit="onRetransmit"
-            @skipAllMessages="skipAllMessages"
+            @skipAllMessages="onSkipAllMessages"
           />
           <last-undelivered-message
             v-if="
@@ -247,6 +263,7 @@
           <filters-card
             v-if="subscription && subscription?.filters.length > 0"
             :filters="subscription?.filters!!"
+            :schema="topic?.schema"
             :topic="topicId"
           />
           <headers-card

@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.domain;
 
 public interface CredentialsRepository {
-    NodePassword readAdminPassword();
+  NodePassword readAdminPassword();
 
-    void overwriteAdminPassword(String password);
+  void overwriteAdminPassword(String password);
 }

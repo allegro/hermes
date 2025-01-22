@@ -8,20 +8,19 @@ import pl.allegro.tech.hermes.api.ErrorDescription;
 
 abstract class AbstractExceptionMapper<T extends Throwable> implements ExceptionMapper<T> {
 
-    @Override
-    public Response toResponse(T exception) {
-        return Response
-            .status(httpStatus())
-            .type(MediaType.APPLICATION_JSON_TYPE)
-            .entity(new ErrorDescription(errorMessage(exception), errorCode()))
-            .build();
-    }
+  @Override
+  public Response toResponse(T exception) {
+    return Response.status(httpStatus())
+        .type(MediaType.APPLICATION_JSON_TYPE)
+        .entity(new ErrorDescription(errorMessage(exception), errorCode()))
+        .build();
+  }
 
-    String errorMessage(T exception) {
-        return exception.getMessage();
-    }
+  String errorMessage(T exception) {
+    return exception.getMessage();
+  }
 
-    abstract Response.Status httpStatus();
+  abstract Response.Status httpStatus();
 
-    abstract ErrorCode errorCode();
+  abstract ErrorCode errorCode();
 }

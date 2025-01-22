@@ -4,5 +4,5 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 
 public interface TopicMessageValidator {
-    void check(Message message, Topic topic);
+  void check(Message message, Topic topic);
 }

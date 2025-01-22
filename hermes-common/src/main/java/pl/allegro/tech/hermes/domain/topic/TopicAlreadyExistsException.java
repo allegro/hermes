@@ -6,16 +6,16 @@ import pl.allegro.tech.hermes.common.exception.HermesException;
 
 public class TopicAlreadyExistsException extends HermesException {
 
-    public TopicAlreadyExistsException(TopicName topicName, Throwable cause) {
-        super(String.format("Topic %s already exists", topicName.qualifiedName()), cause);
-    }
+  public TopicAlreadyExistsException(TopicName topicName, Throwable cause) {
+    super(String.format("Topic %s already exists", topicName.qualifiedName()), cause);
+  }
 
-    public TopicAlreadyExistsException(TopicName topicName) {
-        super(String.format("Topic %s already exists", topicName.qualifiedName()));
-    }
+  public TopicAlreadyExistsException(TopicName topicName) {
+    super(String.format("Topic %s already exists", topicName.qualifiedName()));
+  }
 
-    @Override
-    public ErrorCode getCode() {
-        return ErrorCode.TOPIC_ALREADY_EXISTS;
-    }
+  @Override
+  public ErrorCode getCode() {
+    return ErrorCode.TOPIC_ALREADY_EXISTS;
+  }
 }

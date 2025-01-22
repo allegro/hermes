@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.common.kafka;
 
 public interface HTTPHeadersPropagationAsKafkaHeadersProperties {
-    boolean isEnabled();
+  boolean isEnabled();
 
-    String getPrefix();
+  String getPrefix();
 }

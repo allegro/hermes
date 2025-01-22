@@ -53,6 +53,9 @@ describe('useConstraints', () => {
       expect(topicConstraints.value?.['pl.group.Topic1'].consumersNumber).toBe(
         2,
       );
+      expect(topicConstraints.value?.['pl.group.Topic1'].reason).toBe(
+        'Some reason',
+      );
       expect(
         subscriptionConstraints.value?.['pl.group.Topic$subscription2']
           .consumersNumber,

@@ -1,11 +1,10 @@
 package pl.allegro.tech.hermes.domain.filtering;
 
+import java.util.List;
 import pl.allegro.tech.hermes.api.MessageFilterSpecification;
 
-import java.util.List;
-
 public interface MessageFilterSource {
-    MessageFilter compile(MessageFilterSpecification specification);
+  MessageFilter compile(MessageFilterSpecification specification);
 
-    List<MessageFilter> getGlobalFilters();
+  List<MessageFilter> getGlobalFilters();
 }

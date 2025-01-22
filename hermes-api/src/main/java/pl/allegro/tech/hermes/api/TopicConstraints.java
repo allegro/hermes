@@ -6,22 +6,22 @@ import jakarta.validation.Valid;
 
 public class TopicConstraints {
 
-    private final TopicName topicName;
-    @Valid
-    private final Constraints constraints;
+  private final TopicName topicName;
+  @Valid private final Constraints constraints;
 
-    @JsonCreator
-    public TopicConstraints(@JsonProperty("topicName") String topicName,
-                            @JsonProperty("constraints") Constraints constraints) {
-        this.topicName = TopicName.fromQualifiedName(topicName);
-        this.constraints = constraints;
-    }
+  @JsonCreator
+  public TopicConstraints(
+      @JsonProperty("topicName") String topicName,
+      @JsonProperty("constraints") Constraints constraints) {
+    this.topicName = TopicName.fromQualifiedName(topicName);
+    this.constraints = constraints;
+  }
 
-    public TopicName getTopicName() {
-        return topicName;
-    }
+  public TopicName getTopicName() {
+    return topicName;
+  }
 
-    public Constraints getConstraints() {
-        return constraints;
-    }
+  public Constraints getConstraints() {
+    return constraints;
+  }
 }

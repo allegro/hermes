@@ -5,12 +5,12 @@ import pl.allegro.tech.hermes.common.exception.HermesException;
 
 public class ReadingConsumerMetadataException extends HermesException {
 
-    public ReadingConsumerMetadataException(int errorCode) {
-        super(String.format("Cannot read consumer metadata, response error code: %s.", errorCode));
-    }
+  public ReadingConsumerMetadataException(int errorCode) {
+    super(String.format("Cannot read consumer metadata, response error code: %s.", errorCode));
+  }
 
-    @Override
-    public ErrorCode getCode() {
-        return ErrorCode.INTERNAL_ERROR;
-    }
+  @Override
+  public ErrorCode getCode() {
+    return ErrorCode.INTERNAL_ERROR;
+  }
 }
