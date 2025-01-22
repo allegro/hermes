@@ -277,41 +277,6 @@ public class ManagementTestClient {
     }
   }
 
-    public WebTestClient.ResponseSpec getLatestUndeliveredMessage(String topicQualifiedName, String subscriptionName) {
-        return webTestClient.get().uri(UriBuilder.fromUri(managementContainerUrl)
-                        .path(LATEST_UNDELIVERED_MESSAGE)
-                        .build(topicQualifiedName, subscriptionName))
-                .exchange();
-    }
-
-  public WebTestClient.ResponseSpec blacklistTopic(String topicQualifiedName) {
-    return webTestClient
-        .post()
-        .uri(BLACKLIST_TOPICS_PATH)
-        .body(Mono.just(List.of(topicQualifiedName)), List.class)
-        .exchange();
-  }
-
-  public WebTestClient.ResponseSpec unblacklistTopic(String topicQualifiedName) {
-    return webTestClient
-        .delete()
-        .uri(
-            UriBuilder.fromUri(managementContainerUrl)
-                .path(BLACKLIST_TOPIC_PATH)
-                .build(topicQualifiedName))
-        .exchange();
-  }
-
-  public WebTestClient.ResponseSpec isTopicBlacklisted(String topicQualifiedName) {
-    return webTestClient
-        .get()
-        .uri(
-            UriBuilder.fromUri(managementContainerUrl)
-                .path(BLACKLIST_TOPIC_PATH)
-                .build(topicQualifiedName))
-        .exchange();
-  }
-
   public WebTestClient.ResponseSpec getLatestUndeliveredMessage(
       String topicQualifiedName, String subscriptionName) {
     return webTestClient
