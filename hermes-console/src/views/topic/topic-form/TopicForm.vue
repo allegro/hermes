@@ -196,13 +196,13 @@
     />
 
     <v-switch
-        v-if="operation !== 'add' && !topic.fallbackToRemoteDatacenterEnabled"
-        v-model="form.fallbackToRemoteDatacenterEnabled"
-        :label="$t('topicForm.fields.fallbackToRemoteDatacenterEnabled')"
-        inset
-        color="success"
-        density="comfortable"
-        hide-details
+      v-if="operation !== 'add' && !topic.fallbackToRemoteDatacenterEnabled"
+      v-model="form.fallbackToRemoteDatacenterEnabled"
+      :label="$t('topicForm.fields.fallbackToRemoteDatacenterEnabled')"
+      inset
+      color="success"
+      density="comfortable"
+      hide-details
     />
 
     <console-alert
