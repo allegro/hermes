@@ -177,7 +177,7 @@
       },
       "jsonToAvroDryRun": false,
       "ack": "LEADER",
-      "fallbackToRemoteDatacenterEnabled": false,
+      "fallbackToRemoteDatacenterEnabled": true,
       "trackingEnabled": false,
       "migratedFromJsonType": false,
       "schemaIdAwareSerializationEnabled": false,

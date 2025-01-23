@@ -38,7 +38,6 @@ public class HttpClientsFactory {
         client.setMaxRequestsQueuedPerDestination(http1ClientParameters.getMaxRequestsQueuedPerDestination());
         client.setHttpCookieStore(new HttpCookieStore.Empty());
         client.setIdleTimeout(http1ClientParameters.getIdleTimeout().toMillis());
-
         client.setFollowRedirects(http1ClientParameters.isFollowRedirectsEnabled());
         client.setConnectTimeout(http1ClientParameters.getConnectionTimeout().toMillis());
         return client;
