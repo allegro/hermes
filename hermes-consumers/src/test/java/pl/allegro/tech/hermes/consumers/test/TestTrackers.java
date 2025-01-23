@@ -5,7 +5,7 @@ import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 public class TestTrackers extends Trackers {
 
-    public TestTrackers() {
-        super(ImmutableList.of());
-    }
+  public TestTrackers() {
+    super(ImmutableList.of());
+  }
 }

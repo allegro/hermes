@@ -5,7 +5,7 @@ import io.undertow.server.handlers.SetHeaderHandler;
 
 class KeepAliveHeaderHandler extends SetHeaderHandler {
 
-    KeepAliveHeaderHandler(HttpHandler next, int keepAliveTimeoutSec) {
-        super(next, "Keep-Alive", "timeout=" + keepAliveTimeoutSec);
-    }
+  KeepAliveHeaderHandler(HttpHandler next, int keepAliveTimeoutSec) {
+    super(next, "Keep-Alive", "timeout=" + keepAliveTimeoutSec);
+  }
 }

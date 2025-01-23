@@ -7,36 +7,37 @@ import pl.allegro.tech.hermes.management.domain.dc.RepositoryCommand;
 
 public class UpdateTopicRepositoryCommand extends RepositoryCommand<TopicRepository> {
 
-    private final Topic topic;
+  private final Topic topic;
 
-    private Topic backup;
+  private Topic backup;
 
-    public UpdateTopicRepositoryCommand(Topic topic) {
-        this.topic = topic;
-    }
+  public UpdateTopicRepositoryCommand(Topic topic) {
+    this.topic = topic;
+  }
 
-    @Override
-    public void backup(DatacenterBoundRepositoryHolder<TopicRepository> holder) {
-        backup = holder.getRepository().getTopicDetails(topic.getName());
-    }
+  @Override
+  public void backup(DatacenterBoundRepositoryHolder<TopicRepository> holder) {
+    backup = holder.getRepository().getTopicDetails(topic.getName());
+  }
 
-    @Override
-    public void execute(DatacenterBoundRepositoryHolder<TopicRepository> holder) {
-        holder.getRepository().updateTopic(topic);
-    }
+  @Override
+  public void execute(DatacenterBoundRepositoryHolder<TopicRepository> holder) {
+    holder.getRepository().updateTopic(topic);
+  }
 
-    @Override
-    public void rollback(DatacenterBoundRepositoryHolder<TopicRepository> holder) {
-        holder.getRepository().updateTopic(backup);
-    }
+  @Override
+  public void rollback(
+      DatacenterBoundRepositoryHolder<TopicRepository> holder, Exception exception) {
+    holder.getRepository().updateTopic(backup);
+  }
 
-    @Override
-    public Class<TopicRepository> getRepositoryType() {
-        return TopicRepository.class;
-    }
+  @Override
+  public Class<TopicRepository> getRepositoryType() {
+    return TopicRepository.class;
+  }
 
-    @Override
-    public String toString() {
-        return "UpdateTopic(" + topic.getQualifiedName() + ")";
-    }
+  @Override
+  public String toString() {
+    return "UpdateTopic(" + topic.getQualifiedName() + ")";
+  }
 }

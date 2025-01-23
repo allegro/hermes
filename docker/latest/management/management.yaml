@@ -54,6 +54,10 @@ schema.repository:
   serverUrl: http://schema-registry:8081
   validationEnabled: true
 
+prometheus:
+  client:
+    enabled: true
+
 console:
   configurationLocation: console/config-local.json
   configurationType: classpath_resource

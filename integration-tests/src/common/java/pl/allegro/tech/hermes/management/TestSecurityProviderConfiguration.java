@@ -9,10 +9,10 @@ import pl.allegro.tech.hermes.management.api.auth.SecurityProvider;
 @Configuration
 public class TestSecurityProviderConfiguration {
 
-    @Bean
-    @Primary
-    @Profile("integration")
-    SecurityProvider testAuthorization() {
-        return new TestSecurityProvider();
-    }
+  @Bean
+  @Primary
+  @Profile("integration")
+  SecurityProvider testAuthorization() {
+    return new TestSecurityProvider();
+  }
 }

@@ -4,9 +4,9 @@ import java.util.List;
 
 public interface BalancingListener {
 
-    void onBeforeBalancing(List<String> activeConsumers);
+  void onBeforeBalancing(List<String> activeConsumers);
 
-    void onAfterBalancing(WorkDistributionChanges changes);
+  void onAfterBalancing(WorkDistributionChanges changes);
 
-    void onBalancingSkipped();
+  void onBalancingSkipped();
 }

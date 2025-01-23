@@ -143,6 +143,7 @@
                     operation="add"
                     :group="groupId"
                     :topic="null"
+                    :roles="roles"
                     @created="pushToTopic"
                     @cancel="hideTopicForm"
                   />

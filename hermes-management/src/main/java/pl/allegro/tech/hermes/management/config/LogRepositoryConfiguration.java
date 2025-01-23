@@ -9,10 +9,9 @@ import pl.allegro.tech.hermes.tracker.management.LogRepository;
 @Configuration
 public class LogRepositoryConfiguration {
 
-    @Bean
-    @ConditionalOnMissingBean(LogRepository.class)
-    public LogRepository logRepository() {
-        return new NoOperationLogRepository();
-    }
-
+  @Bean
+  @ConditionalOnMissingBean(LogRepository.class)
+  public LogRepository logRepository() {
+    return new NoOperationLogRepository();
+  }
 }

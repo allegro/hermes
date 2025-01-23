@@ -4,19 +4,19 @@ import java.time.Duration;
 
 public interface KafkaReceiverParameters {
 
-    Duration getPoolTimeout();
+  Duration getPoolTimeout();
 
-    int getReadQueueCapacity();
+  int getReadQueueCapacity();
 
-    boolean isWaitBetweenUnsuccessfulPolls();
+  boolean isWaitBetweenUnsuccessfulPolls();
 
-    Duration getInitialIdleTime();
+  Duration getInitialIdleTime();
 
-    Duration getMaxIdleTime();
+  Duration getMaxIdleTime();
 
-    String getClientId();
+  String getClientId();
 
-    boolean isFilteringRateLimiterEnabled();
+  boolean isFilteringRateLimiterEnabled();
 
-    boolean isFilteringEnabled();
+  boolean isFilteringEnabled();
 }

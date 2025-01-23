@@ -13,6 +13,7 @@ import {
   dummyUndeliveredMessage,
   dummyUndeliveredMessages,
 } from '@/dummy/subscription';
+import { dummyTrackingUrls } from '@/dummy/tracking-urls';
 import { fireEvent } from '@testing-library/vue';
 import { render } from '@/utils/test-utils';
 import { Role } from '@/api/role';
@@ -35,6 +36,9 @@ const useSubscriptionStub: ReturnType<typeof useSubscription> = {
   subscriptionHealth: ref(dummySubscriptionHealth),
   subscriptionUndeliveredMessages: ref(dummyUndeliveredMessages),
   subscriptionLastUndeliveredMessage: ref(dummyUndeliveredMessage),
+  trackingUrls: ref(dummyTrackingUrls),
+  retransmitting: computed(() => false),
+  skippingAllMessages: computed(() => false),
   error: ref({
     fetchSubscription: null,
     fetchOwner: null,
@@ -42,6 +46,7 @@ const useSubscriptionStub: ReturnType<typeof useSubscription> = {
     fetchSubscriptionHealth: null,
     fetchSubscriptionUndeliveredMessages: null,
     fetchSubscriptionLastUndeliveredMessage: null,
+    getSubscriptionTrackingUrls: null,
   }),
   loading: computed(() => false),
   removeSubscription: () => Promise.resolve(true),
@@ -348,5 +353,27 @@ describe('SubscriptionView', () => {
 
     // then
     expect(queryByText('costsCard.title')).not.toBeInTheDocument();
+  });
+
+  it('should render tracking card when tracking is enabled', () => {
+    // given
+    const dummySubscription2 = dummySubscription;
+    dummySubscription2.trackingEnabled = true;
+
+    // and
+    vi.mocked(useSubscription).mockReturnValueOnce({
+      ...useSubscriptionStub,
+      subscription: ref(dummySubscription2),
+    });
+    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
+    vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
+
+    // when
+    const { getByText } = render(SubscriptionView, {
+      testPinia: createTestingPiniaWithState(),
+    });
+
+    // then
+    expect(getByText('trackingCard.title')).toBeVisible();
   });
 });

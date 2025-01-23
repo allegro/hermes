@@ -8,6 +8,7 @@
     path?: string;
     matcher?: string;
     matchingStrategy?: FilterMatchingStrategy;
+    paths?: string[];
   }>();
 
   defineEmits([
@@ -21,30 +22,34 @@
 
 <template>
   <v-row class="mt-0">
-    <v-col>
-      <text-field
+    <v-col cols="5">
+      <v-combobox
+        :items="paths"
         :model-value="props.path"
-        @input="$emit('update:path', $event.target.value)"
+        :persistent-placeholder="true"
+        density="comfortable"
         label="Path"
         placeholder="Path for filters"
-      />
+        variant="outlined"
+        @update:modelValue="$emit('update:path', $event)"
+      ></v-combobox>
     </v-col>
 
-    <v-col>
+    <v-col cols="3">
       <text-field
         :model-value="props.matcher"
-        @input="$emit('update:matcher', $event.target.value)"
         label="Matcher"
         placeholder="Matcher for filter"
+        @input="$emit('update:matcher', $event.target.value)"
       />
     </v-col>
 
-    <v-col>
+    <v-col cols="3">
       <select-field
-        :model-value="props.matchingStrategy"
-        @update:model-value="$emit('update:matchingStrategy', $event)"
-        label="Matching strategy"
         :items="['all', 'any']"
+        :model-value="props.matchingStrategy"
+        label="Matching strategy"
+        @update:model-value="$emit('update:matchingStrategy', $event)"
       />
     </v-col>
 
@@ -52,17 +57,17 @@
       <v-btn
         v-if="props.type === 'new'"
         :ripple="false"
-        variant="text"
-        icon="mdi-plus-circle"
         color="success"
+        icon="mdi-plus-circle"
+        variant="text"
         @click="$emit('add')"
       />
       <v-btn
         v-else
         :ripple="false"
-        variant="text"
-        icon="mdi-delete"
         color="error"
+        icon="mdi-delete"
+        variant="text"
         @click="$emit('remove')"
       />
     </v-col>

@@ -1,13 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.batch;
 
-import pl.allegro.tech.hermes.api.ContentType;
-import pl.allegro.tech.hermes.api.Header;
-import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.api.SubscriptionName;
-import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
-import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
-import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
-import pl.allegro.tech.hermes.tracker.consumers.MessageMetadata;
+import static com.google.common.base.Preconditions.checkState;
+import static pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset.subscriptionPartitionOffset;
 
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
@@ -17,186 +11,195 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.concurrent.NotThreadSafe;
-
-import static com.google.common.base.Preconditions.checkState;
-import static pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset.subscriptionPartitionOffset;
+import pl.allegro.tech.hermes.api.ContentType;
+import pl.allegro.tech.hermes.api.Header;
+import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionName;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
+import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
+import pl.allegro.tech.hermes.tracker.consumers.MessageMetadata;
 
 @NotThreadSafe
 public class JsonMessageBatch implements MessageBatch {
 
-    private final Clock clock;
+  private final Clock clock;
 
-    private final int maxBatchTime;
-    private final int batchSize;
+  private final int maxBatchTime;
+  private final int batchSize;
 
-    private final String id;
-    private final String topic;
-    private final SubscriptionName subscription;
-    private final boolean hasSubscriptionIdentityHeaders;
-    private final ByteBuffer byteBuffer;
-    private final List<MessageMetadata> metadata = new ArrayList<>();
-    private final List<Header> additionalHeaders;
+  private final String id;
+  private final String topic;
+  private final SubscriptionName subscription;
+  private final boolean hasSubscriptionIdentityHeaders;
+  private final ByteBuffer byteBuffer;
+  private final List<MessageMetadata> metadata = new ArrayList<>();
+  private final List<Header> additionalHeaders;
 
-    private int elements = 0;
-    private long batchStart;
-    private boolean closed = false;
-    private int retryCounter = 0;
+  private int elements = 0;
+  private long batchStart;
+  private boolean closed = false;
+  private int retryCounter = 0;
 
-    JsonMessageBatch(String id, ByteBuffer buffer, Subscription subscription, Clock clock) {
-        this.id = id;
-        this.clock = clock;
-        this.maxBatchTime = subscription.getBatchSubscriptionPolicy().getBatchTime();
-        this.batchSize = subscription.getBatchSubscriptionPolicy().getBatchSize();
-        this.byteBuffer = buffer;
-        this.additionalHeaders = subscription.getHeaders();
-        this.topic = subscription.getQualifiedTopicName();
-        this.subscription = subscription.getQualifiedName();
-        this.hasSubscriptionIdentityHeaders = subscription.isSubscriptionIdentityHeadersEnabled();
+  JsonMessageBatch(String id, ByteBuffer buffer, Subscription subscription, Clock clock) {
+    this.id = id;
+    this.clock = clock;
+    this.maxBatchTime = subscription.getBatchSubscriptionPolicy().getBatchTime();
+    this.batchSize = subscription.getBatchSubscriptionPolicy().getBatchSize();
+    this.byteBuffer = buffer;
+    this.additionalHeaders = subscription.getHeaders();
+    this.topic = subscription.getQualifiedTopicName();
+    this.subscription = subscription.getQualifiedName();
+    this.hasSubscriptionIdentityHeaders = subscription.isSubscriptionIdentityHeadersEnabled();
+  }
+
+  @Override
+  public boolean isFull() {
+    return elements >= batchSize || byteBuffer.remaining() < 2;
+  }
+
+  @Override
+  public void append(byte[] data, MessageMetadata metadata) {
+    checkState(!closed, "Batch already closed.");
+    if (!canFit(data)) {
+      throw new BufferOverflowException();
+    }
+    if (isEmpty()) {
+      batchStart = clock.millis();
     }
 
-    @Override
-    public boolean isFull() {
-        return elements >= batchSize || byteBuffer.remaining() < 2;
-    }
+    byteBuffer.put((byte) (isEmpty() ? '[' : ',')).put(data);
+    this.metadata.add(metadata);
+    elements++;
+  }
 
-    @Override
-    public void append(byte[] data, MessageMetadata metadata) {
-        checkState(!closed, "Batch already closed.");
-        if (!canFit(data)) {
-            throw new BufferOverflowException();
-        }
-        if (isEmpty()) {
-            batchStart = clock.millis();
-        }
+  @Override
+  public boolean canFit(byte[] data) {
+    return byteBuffer.remaining() >= requiredFreeSpace(data);
+  }
 
-        byteBuffer.put((byte) (isEmpty() ? '[' : ',')).put(data);
-        this.metadata.add(metadata);
-        elements++;
-    }
+  private int requiredFreeSpace(byte[] data) {
+    return data.length + 2;
+  }
 
-    @Override
-    public boolean canFit(byte[] data) {
-        return byteBuffer.remaining() >= requiredFreeSpace(data);
-    }
+  @Override
+  public boolean isExpired() {
+    return !isEmpty() && getLifetime() > maxBatchTime;
+  }
 
-    private int requiredFreeSpace(byte[] data) {
-        return data.length + 2;
-    }
+  @Override
+  public String getId() {
+    return id;
+  }
 
-    @Override
-    public boolean isExpired() {
-        return !isEmpty() && getLifetime() > maxBatchTime;
-    }
+  @Override
+  public ContentType getContentType() {
+    return ContentType.JSON;
+  }
 
-    @Override
-    public String getId() {
-        return id;
+  @Override
+  public MessageBatch close() {
+    if (!isEmpty()) {
+      byteBuffer.put((byte) ']');
     }
+    int position = byteBuffer.position();
+    byteBuffer.position(0);
+    byteBuffer.limit(position);
+    this.closed = true;
+    return this;
+  }
 
-    @Override
-    public ContentType getContentType() {
-        return ContentType.JSON;
+  @Override
+  public ByteBuffer getContent() {
+    if (closed) {
+      byteBuffer.position(0);
     }
+    return byteBuffer;
+  }
 
-    @Override
-    public MessageBatch close() {
-        if (!isEmpty()) {
-            byteBuffer.put((byte) ']');
-        }
-        int position = byteBuffer.position();
-        byteBuffer.position(0);
-        byteBuffer.limit(position);
-        this.closed = true;
-        return this;
-    }
+  @Override
+  public List<SubscriptionPartitionOffset> getPartitionOffsets() {
+    return metadata.stream()
+        .map(
+            m ->
+                subscriptionPartitionOffset(
+                    this.subscription,
+                    new PartitionOffset(
+                        KafkaTopicName.valueOf(m.getKafkaTopic()), m.getOffset(), m.getPartition()),
+                    m.getPartitionAssignmentTerm()))
+        .collect(Collectors.toList());
+  }
 
-    @Override
-    public ByteBuffer getContent() {
-        if (closed) {
-            byteBuffer.position(0);
-        }
-        return byteBuffer;
-    }
+  @Override
+  public List<MessageMetadata> getMessagesMetadata() {
+    return Collections.unmodifiableList(metadata);
+  }
 
-    @Override
-    public List<SubscriptionPartitionOffset> getPartitionOffsets() {
-        return metadata.stream()
-                .map(m -> subscriptionPartitionOffset(this.subscription,
-                        new PartitionOffset(KafkaTopicName.valueOf(m.getKafkaTopic()), m.getOffset(), m.getPartition()),
-                        m.getPartitionAssignmentTerm()))
-                .collect(Collectors.toList());
-    }
+  @Override
+  public List<Header> getAdditionalHeaders() {
+    return Collections.unmodifiableList(additionalHeaders);
+  }
 
-    @Override
-    public List<MessageMetadata> getMessagesMetadata() {
-        return Collections.unmodifiableList(metadata);
-    }
+  @Override
+  public int getMessageCount() {
+    return elements;
+  }
 
-    @Override
-    public List<Header> getAdditionalHeaders() {
-        return Collections.unmodifiableList(additionalHeaders);
-    }
+  @Override
+  public long getLifetime() {
+    return clock.millis() - batchStart;
+  }
 
-    @Override
-    public int getMessageCount() {
-        return elements;
-    }
+  @Override
+  public boolean isClosed() {
+    return closed;
+  }
 
-    @Override
-    public long getLifetime() {
-        return clock.millis() - batchStart;
-    }
+  @Override
+  public boolean isEmpty() {
+    return elements == 0;
+  }
 
-    @Override
-    public boolean isClosed() {
-        return closed;
-    }
+  @Override
+  public boolean isBiggerThanTotalCapacity(byte[] data) {
+    return requiredFreeSpace(data) > getCapacity();
+  }
 
-    @Override
-    public boolean isEmpty() {
-        return elements == 0;
-    }
+  @Override
+  public int getCapacity() {
+    return byteBuffer.capacity();
+  }
 
-    @Override
-    public boolean isBiggerThanTotalCapacity(byte[] data) {
-        return requiredFreeSpace(data) > getCapacity();
+  @Override
+  public int getSize() {
+    if (closed) {
+      return byteBuffer.limit();
     }
+    return byteBuffer.position();
+  }
 
-    @Override
-    public int getCapacity() {
-        return byteBuffer.capacity();
-    }
+  @Override
+  public void incrementRetryCounter() {
+    this.retryCounter++;
+  }
 
-    @Override
-    public int getSize() {
-        if (closed) {
-            return byteBuffer.limit();
-        }
-        return byteBuffer.position();
-    }
+  @Override
+  public int getRetryCounter() {
+    return retryCounter;
+  }
 
-    @Override
-    public void incrementRetryCounter() {
-        this.retryCounter++;
-    }
+  @Override
+  public boolean hasSubscriptionIdentityHeaders() {
+    return hasSubscriptionIdentityHeaders;
+  }
 
-    @Override
-    public int getRetryCounter() {
-        return retryCounter;
-    }
+  @Override
+  public String getTopic() {
+    return topic;
+  }
 
-    @Override
-    public boolean hasSubscriptionIdentityHeaders() {
-        return hasSubscriptionIdentityHeaders;
-    }
-
-    @Override
-    public String getTopic() {
-        return topic;
-    }
-
-    @Override
-    public SubscriptionName getSubscription() {
-        return subscription;
-    }
+  @Override
+  public SubscriptionName getSubscription() {
+    return subscription;
+  }
 }

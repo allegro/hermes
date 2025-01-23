@@ -7,36 +7,37 @@ import pl.allegro.tech.hermes.management.domain.dc.RepositoryCommand;
 
 public class RemoveTopicRepositoryCommand extends RepositoryCommand<TopicRepository> {
 
-    private final TopicName topicName;
+  private final TopicName topicName;
 
-    public RemoveTopicRepositoryCommand(TopicName topicName) {
-        this.topicName = topicName;
-    }
+  public RemoveTopicRepositoryCommand(TopicName topicName) {
+    this.topicName = topicName;
+  }
 
-    @Override
-    public void backup(DatacenterBoundRepositoryHolder<TopicRepository> holder) {}
+  @Override
+  public void backup(DatacenterBoundRepositoryHolder<TopicRepository> holder) {}
 
-    @Override
-    public void execute(DatacenterBoundRepositoryHolder<TopicRepository> holder) {
-        holder.getRepository().removeTopic(topicName);
-    }
+  @Override
+  public void execute(DatacenterBoundRepositoryHolder<TopicRepository> holder) {
+    holder.getRepository().removeTopic(topicName);
+  }
 
-    @Override
-    public void rollback(DatacenterBoundRepositoryHolder<TopicRepository> holder) {
-        /*
-        We don't want to do a rollback due to possible race conditions with creating a topic on Kafka.
-        It increases the probability of discrepancies between Kafka and Zookeeper: topic exists in Kafka,
-        but not in the Zookeeper and vice versa.
-         */
-    }
+  @Override
+  public void rollback(
+      DatacenterBoundRepositoryHolder<TopicRepository> holder, Exception exception) {
+    /*
+    We don't want to do a rollback due to possible race conditions with creating a topic on Kafka.
+    It increases the probability of discrepancies between Kafka and Zookeeper: topic exists in Kafka,
+    but not in the Zookeeper and vice versa.
+     */
+  }
 
-    @Override
-    public Class<TopicRepository> getRepositoryType() {
-        return TopicRepository.class;
-    }
+  @Override
+  public Class<TopicRepository> getRepositoryType() {
+    return TopicRepository.class;
+  }
 
-    @Override
-    public String toString() {
-        return "RemoveTopic(" + topicName + ")";
-    }
+  @Override
+  public String toString() {
+    return "RemoveTopic(" + topicName + ")";
+  }
 }

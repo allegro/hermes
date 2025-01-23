@@ -6,6 +6,7 @@
 
   const props = defineProps<{
     modelValue: PathFilter[];
+    paths: string[];
   }>();
   const emit = defineEmits(['update:modelValue']);
 
@@ -39,6 +40,7 @@
   <path-filter-row
     v-for="filter in props.modelValue"
     :key="filter.id"
+    :paths="paths"
     v-model:path="filter.path"
     v-model:matcher="filter.matcher"
     v-model:matching-strategy="filter.matchingStrategy"
@@ -47,6 +49,7 @@
   />
 
   <path-filter-row
+    :paths="paths"
     v-model:path="newFilterPath"
     v-model:matcher="newFilterMatcher"
     v-model:matchingStrategy="newFilterMatchingStrategy"

@@ -20,10 +20,6 @@ server.post('/query/subscriptions', (req, res) => {
   res.jsonp(subscriptions);
 });
 
-server.post('/topics/*/subscriptions/*/moveOffsetsToTheEnd', (req, res) => {
-  res.sendStatus(200);
-});
-
 server.post('/topicSubscriptions', (req, res) => {
   res.sendStatus(200);
 });
@@ -83,7 +79,25 @@ server.post('/offline-retransmission/tasks', (req, res) => {
 server.put(
   '/topics/:topic/subscriptions/:subscroption/retransmission',
   (req, res) => {
+    setTimeout(() => {
+      res.sendStatus(200);
+    }, 2000);
+  },
+);
+
+server.post(
+  '/consistency/sync/topics/pl.allegro.public.group.DummyEvent/subscriptions/barbaz-service*',
+  (req, res) => {
     res.sendStatus(200);
+  },
+);
+
+server.post(
+  '/consistency/sync/topics/pl.allegro.public.group.DummyEvent*',
+  (req, res) => {
+    res.status(404).jsonp({
+      message: 'Group pl.allegro.public.group not found',
+    });
   },
 );
 

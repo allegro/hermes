@@ -2,23 +2,23 @@ package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 
 public interface SslContextParameters {
 
-    boolean isEnabled();
+  boolean isEnabled();
 
-    String getProtocol();
+  String getProtocol();
 
-    String getKeystoreSource();
+  String getKeystoreSource();
 
-    String getKeystoreLocation();
+  String getKeystoreLocation();
 
-    String getKeystorePassword();
+  String getKeystorePassword();
 
-    String getKeystoreFormat();
+  String getKeystoreFormat();
 
-    String getTruststoreSource();
+  String getTruststoreSource();
 
-    String getTruststoreLocation();
+  String getTruststoreLocation();
 
-    String getTruststorePassword();
+  String getTruststorePassword();
 
-    String getTruststoreFormat();
+  String getTruststoreFormat();
 }

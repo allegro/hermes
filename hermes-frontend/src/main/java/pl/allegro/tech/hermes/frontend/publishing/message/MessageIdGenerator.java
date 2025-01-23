@@ -4,7 +4,7 @@ import java.util.UUID;
 
 public class MessageIdGenerator {
 
-    public static String generate() {
-        return UUID.randomUUID().toString();
-    }
+  public static String generate() {
+    return UUID.randomUUID().toString();
+  }
 }

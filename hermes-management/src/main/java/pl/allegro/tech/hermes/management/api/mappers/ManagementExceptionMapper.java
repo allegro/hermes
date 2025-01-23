@@ -10,12 +10,11 @@ import pl.allegro.tech.hermes.management.domain.ManagementException;
 @Provider
 public class ManagementExceptionMapper implements ExceptionMapper<ManagementException> {
 
-    @Override
-    public Response toResponse(ManagementException exception) {
-        return Response
-                .status(exception.getCode().getHttpCode())
-                .type(MediaType.APPLICATION_JSON_TYPE)
-                .entity(new ErrorDescription(exception.getMessage(), exception.getCode()))
-                .build();
-    }
+  @Override
+  public Response toResponse(ManagementException exception) {
+    return Response.status(exception.getCode().getHttpCode())
+        .type(MediaType.APPLICATION_JSON_TYPE)
+        .entity(new ErrorDescription(exception.getMessage(), exception.getCode()))
+        .build();
+  }
 }

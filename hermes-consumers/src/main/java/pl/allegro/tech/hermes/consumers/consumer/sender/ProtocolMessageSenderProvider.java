@@ -1,17 +1,16 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender;
 
+import java.util.Set;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.consumers.consumer.ResilientMessageSender;
 
-import java.util.Set;
-
 public interface ProtocolMessageSenderProvider {
 
-    MessageSender create(Subscription subscription, ResilientMessageSender resilientMessageSender);
+  MessageSender create(Subscription subscription, ResilientMessageSender resilientMessageSender);
 
-    Set<String> getSupportedProtocols();
+  Set<String> getSupportedProtocols();
 
-    void start() throws Exception;
+  void start() throws Exception;
 
-    void stop() throws Exception;
+  void stop() throws Exception;
 }
