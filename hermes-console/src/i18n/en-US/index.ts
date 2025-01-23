@@ -325,8 +325,7 @@ const en_US = {
       offlineRetention: 'Offline retention',
       creationDate: 'Creation date',
       modificationDate: 'Modification date',
-      fallbackToRemoteDatacenterEnabled:
-        'Fallback to remote DC enabled',
+      fallbackToRemoteDatacenterEnabled: 'Fallback to remote DC enabled',
       tooltips: {
         acknowledgement:
           'Specifies the strength of guarantees that acknowledged message was indeed persisted. ' +
