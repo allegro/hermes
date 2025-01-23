@@ -57,7 +57,9 @@ public class KafkaClustersProperties {
       DatacenterNameProvider datacenterNameProvider) {
     return this.clusters.stream()
         .filter(
-            cluster -> !cluster.getDatacenter().equals(datacenterNameProvider.getDatacenterName()))
+            cluster ->
+                !cluster.getDatacenter().equals(datacenterNameProvider.getDatacenterName())
+                    && !cluster.isExcludeFromFallback())
         .collect(Collectors.toList());
   }
 }

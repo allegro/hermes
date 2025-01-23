@@ -10,6 +10,8 @@ public class KafkaProperties implements KafkaParameters {
 
   private String datacenter = "dc";
 
+  private boolean excludeFromFallback = false;
+
   private String brokerList = "localhost:9092";
 
   private Duration adminRequestTimeout = Duration.ofMinutes(5);
@@ -29,6 +31,14 @@ public class KafkaProperties implements KafkaParameters {
 
   public void setDatacenter(String datacenter) {
     this.datacenter = datacenter;
+  }
+
+  public boolean isExcludeFromFallback() {
+    return excludeFromFallback;
+  }
+
+  public void setExcludeFromFallback(boolean excludeFromFallback) {
+    this.excludeFromFallback = excludeFromFallback;
   }
 
   @Override
