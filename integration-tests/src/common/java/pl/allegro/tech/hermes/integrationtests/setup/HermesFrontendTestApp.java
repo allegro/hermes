@@ -32,9 +32,9 @@ import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import pl.allegro.tech.hermes.frontend.HermesFrontend;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
+import pl.allegro.tech.hermes.test.helper.config.KafkaDatacenterDetails;
 import pl.allegro.tech.hermes.test.helper.containers.ConfluentSchemaRegistryContainer;
 import pl.allegro.tech.hermes.test.helper.containers.KafkaContainerCluster;
-import pl.allegro.tech.hermes.test.helper.containers.KafkaDatacenterDetails;
 import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
 import pl.allegro.tech.hermes.test.helper.environment.HermesTestApp;
 

@@ -26,9 +26,9 @@ import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscriber;
 import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscribersExtension;
 import pl.allegro.tech.hermes.test.helper.client.integration.HermesInitHelper;
 import pl.allegro.tech.hermes.test.helper.client.integration.HermesTestClient;
+import pl.allegro.tech.hermes.test.helper.config.KafkaDatacenterDetails;
 import pl.allegro.tech.hermes.test.helper.containers.ConfluentSchemaRegistryContainer;
 import pl.allegro.tech.hermes.test.helper.containers.KafkaContainerCluster;
-import pl.allegro.tech.hermes.test.helper.containers.KafkaDatacenterDetails;
 import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 

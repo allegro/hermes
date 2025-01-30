@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.test.helper.containers;
+package pl.allegro.tech.hermes.test.helper.config;
 
 import java.util.List;
 
