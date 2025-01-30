@@ -65,7 +65,7 @@ public class ZookeeperClientManager {
 
   private void selectLocalClient() {
     if (clients.size() == 1) {
-      localClient = clients.get(0);
+      localClient = clients.getFirst();
     } else {
       String localDcName = datacenterNameProvider.getDatacenterName();
       localClient =
