@@ -59,7 +59,7 @@ public class ZookeeperClientManager {
     clusterProperties.setConnectionString(properties.getConnectionString());
     clusterProperties.setConnectTimeout(properties.getConnectTimeout());
     clusterProperties.setSessionTimeout(properties.getSessionTimeout());
-    clusterProperties.setDatacenter(DefaultDatacenterNameProvider.LOCAL_DC);
+    clusterProperties.setDatacenter(DefaultDatacenterNameProvider.DEFAULT_DC_NAME);
     return clusterProperties;
   }
 

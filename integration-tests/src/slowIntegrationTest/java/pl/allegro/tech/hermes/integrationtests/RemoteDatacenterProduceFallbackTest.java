@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.integrationtests;
 
-import static pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProvider.LOCAL_DC;
+import static pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProvider.DEFAULT_DC_NAME;
 import static pl.allegro.tech.hermes.integrationtests.assertions.HermesAssertions.assertThatMetrics;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
@@ -58,9 +58,9 @@ public class RemoteDatacenterProduceFallbackTest {
       Map.of(
           new KafkaDatacenterDetails("dc", List.of(REMOTE_DC2)),
           dc1.kafka,
-          new KafkaDatacenterDetails(REMOTE_DC2, List.of(LOCAL_DC, REMOTE_DC3)),
+          new KafkaDatacenterDetails(REMOTE_DC2, List.of(DEFAULT_DC_NAME, REMOTE_DC3)),
           dc2.kafka,
-          new KafkaDatacenterDetails(REMOTE_DC3, List.of(LOCAL_DC, REMOTE_DC2)),
+          new KafkaDatacenterDetails(REMOTE_DC3, List.of(DEFAULT_DC_NAME, REMOTE_DC2)),
           dc3.kafka);
 
   @BeforeAll
@@ -70,13 +70,13 @@ public class RemoteDatacenterProduceFallbackTest {
     management =
         new HermesManagementTestApp(
             Map.of(
-                LOCAL_DC,
+                DEFAULT_DC_NAME,
                 dc1.hermesZookeeper,
                 REMOTE_DC2,
                 dc2.hermesZookeeper,
                 REMOTE_DC3,
                 dc3.hermesZookeeper),
-            Map.of(LOCAL_DC, dc1.kafka, REMOTE_DC2, dc2.kafka, REMOTE_DC3, dc3.kafka),
+            Map.of(DEFAULT_DC_NAME, dc1.kafka, REMOTE_DC2, dc2.kafka, REMOTE_DC3, dc3.kafka),
             schemaRegistry);
     management.start();
     frontendDC1 =
@@ -110,7 +110,7 @@ public class RemoteDatacenterProduceFallbackTest {
   @AfterEach
   public void afterEach() {
     Stream.of(dc1, dc2, dc3).forEach(dc -> dc.kafka.restoreConnectionsBetweenBrokersAndClients());
-    DC1.setReadiness(LOCAL_DC, true);
+    DC1.setReadiness(DEFAULT_DC_NAME, true);
     DC1.setReadiness(REMOTE_DC2, true);
     DC1.setReadiness(REMOTE_DC3, true);
   }
@@ -231,7 +231,7 @@ public class RemoteDatacenterProduceFallbackTest {
         initHelper.createTopic(
             topicWithRandomName()
                 .withFallbackToRemoteDatacenterEnabled()
-                .withPublishingChaosPolicy(completeWithErrorForDatacenter(LOCAL_DC))
+                .withPublishingChaosPolicy(completeWithErrorForDatacenter(DEFAULT_DC_NAME))
                 .build());
     initHelper.createSubscription(
         subscription(topic.getQualifiedName(), "subscription", subscriber.getEndpoint()).build());
