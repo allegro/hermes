@@ -55,11 +55,19 @@ public class KafkaClustersProperties {
 
   public List<KafkaParameters> toRemoteKafkaProperties(
       DatacenterNameProvider datacenterNameProvider) {
+    String currentDatacenterName = datacenterNameProvider.getDatacenterName();
+    List<String> remoteDatacenters =
+        this.clusters.stream()
+            .filter(cluster -> cluster.getDatacenter().equals(currentDatacenterName))
+            .findFirst()
+            .orElseThrow(
+                () ->
+                    new IllegalArgumentException(
+                        "No properties for datacenter: " + currentDatacenterName + " defined."))
+            .getRemoteDatacenters();
+
     return this.clusters.stream()
-        .filter(
-            cluster ->
-                !cluster.getDatacenter().equals(datacenterNameProvider.getDatacenterName())
-                    && !cluster.isExcludeFromFallback())
+        .filter(cluster -> remoteDatacenters.contains(cluster.getDatacenter()))
         .collect(Collectors.toList());
   }
 }

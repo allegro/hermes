@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.integrationtests.management;
 
 import static pl.allegro.tech.hermes.api.DatacenterReadiness.ReadinessStatus.READY;
-import static pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProvider.DEFAULT_DC_NAME;
+import static pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProvider.LOCAL_DC;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -29,6 +29,6 @@ public class ReadinessManagementTest {
         // In this test, we are just verifying if setting readiness status for the first time
         // doesn't break anything.
         .hasSize(1)
-        .contains(new DatacenterReadiness(DEFAULT_DC_NAME, READY));
+        .contains(new DatacenterReadiness(LOCAL_DC, READY));
   }
 }

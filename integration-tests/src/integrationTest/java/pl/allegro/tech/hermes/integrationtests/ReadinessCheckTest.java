@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.integrationtests;
 
 import static org.awaitility.Awaitility.waitAtMost;
-import static pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProvider.DEFAULT_DC_NAME;
+import static pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProvider.LOCAL_DC;
 
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
@@ -15,7 +15,7 @@ public class ReadinessCheckTest {
   @Test
   public void shouldRespectReadinessStatusSetByAdmin() {
     // when
-    hermes.api().setReadiness(DEFAULT_DC_NAME, false).expectStatus().isAccepted();
+    hermes.api().setReadiness(LOCAL_DC, false).expectStatus().isAccepted();
 
     // then
     waitAtMost(Duration.ofSeconds(5))
@@ -30,7 +30,7 @@ public class ReadinessCheckTest {
                     .isEqualTo("NOT_READY"));
 
     // when
-    hermes.api().setReadiness(DEFAULT_DC_NAME, true).expectStatus().isAccepted();
+    hermes.api().setReadiness(LOCAL_DC, true).expectStatus().isAccepted();
 
     // then
     waitAtMost(Duration.ofSeconds(5))

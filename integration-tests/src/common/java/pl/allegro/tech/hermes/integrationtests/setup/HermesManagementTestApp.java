@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.integrationtests.setup;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.waitAtMost;
-import static pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProvider.DEFAULT_DC_NAME;
+import static pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProvider.LOCAL_DC;
 import static pl.allegro.tech.hermes.test.helper.endpoint.TimeoutAdjuster.adjust;
 
 import java.io.IOException;
@@ -47,7 +47,7 @@ public class HermesManagementTestApp implements HermesTestApp {
       ZookeeperContainer hermesZookeeper,
       KafkaContainerCluster kafka,
       ConfluentSchemaRegistryContainer schemaRegistry) {
-    this(Map.of(DEFAULT_DC_NAME, hermesZookeeper), Map.of(DEFAULT_DC_NAME, kafka), schemaRegistry);
+    this(Map.of(LOCAL_DC, hermesZookeeper), Map.of(LOCAL_DC, kafka), schemaRegistry);
   }
 
   public HermesManagementTestApp(

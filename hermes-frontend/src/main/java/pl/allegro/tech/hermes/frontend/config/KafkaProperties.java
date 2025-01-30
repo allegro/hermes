@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.frontend.config;
 
 import java.time.Duration;
+import java.util.List;
 import pl.allegro.tech.hermes.common.config.KafkaAuthenticationProperties;
 import pl.allegro.tech.hermes.common.kafka.KafkaParameters;
 
@@ -10,7 +11,7 @@ public class KafkaProperties implements KafkaParameters {
 
   private String datacenter = "dc";
 
-  private boolean excludeFromFallback = false;
+  private List<String> remoteDatacenters = List.of();
 
   private String brokerList = "localhost:9092";
 
@@ -33,12 +34,12 @@ public class KafkaProperties implements KafkaParameters {
     this.datacenter = datacenter;
   }
 
-  public boolean isExcludeFromFallback() {
-    return excludeFromFallback;
+  public List<String> getRemoteDatacenters() {
+    return remoteDatacenters;
   }
 
-  public void setExcludeFromFallback(boolean excludeFromFallback) {
-    this.excludeFromFallback = excludeFromFallback;
+  public void setRemoteDatacenters(List<String> remoteDatacenters) {
+    this.remoteDatacenters = remoteDatacenters;
   }
 
   @Override

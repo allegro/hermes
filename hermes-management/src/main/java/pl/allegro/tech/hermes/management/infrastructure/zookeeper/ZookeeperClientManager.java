@@ -59,13 +59,13 @@ public class ZookeeperClientManager {
     clusterProperties.setConnectionString(properties.getConnectionString());
     clusterProperties.setConnectTimeout(properties.getConnectTimeout());
     clusterProperties.setSessionTimeout(properties.getSessionTimeout());
-    clusterProperties.setDatacenter(DefaultDatacenterNameProvider.DEFAULT_DC_NAME);
+    clusterProperties.setDatacenter(DefaultDatacenterNameProvider.LOCAL_DC);
     return clusterProperties;
   }
 
   private void selectLocalClient() {
     if (clients.size() == 1) {
-      localClient = clients.get(0);
+      localClient = clients.getFirst();
     } else {
       String localDcName = datacenterNameProvider.getDatacenterName();
       localClient =

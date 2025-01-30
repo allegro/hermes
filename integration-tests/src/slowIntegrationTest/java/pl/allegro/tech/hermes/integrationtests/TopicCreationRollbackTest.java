@@ -3,7 +3,7 @@ package pl.allegro.tech.hermes.integrationtests;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.waitAtMost;
 import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
-import static pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProvider.DEFAULT_DC_NAME;
+import static pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProvider.LOCAL_DC;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 import java.time.Duration;
@@ -44,8 +44,8 @@ public class TopicCreationRollbackTest {
     schemaRegistry.start();
     management =
         new HermesManagementTestApp(
-            Map.of(DEFAULT_DC_NAME, hermesZookeeper),
-            Map.of(DEFAULT_DC_NAME, kafka1, "dc2", kafka2),
+            Map.of(LOCAL_DC, hermesZookeeper),
+            Map.of(LOCAL_DC, kafka1, "dc2", kafka2),
             schemaRegistry);
     management.start();
     hermesApi =

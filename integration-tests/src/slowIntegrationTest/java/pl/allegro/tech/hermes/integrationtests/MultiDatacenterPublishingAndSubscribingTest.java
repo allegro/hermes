@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.integrationtests;
 
-import static pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProvider.DEFAULT_DC_NAME;
+import static pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProvider.LOCAL_DC;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
 
@@ -44,8 +44,8 @@ public class MultiDatacenterPublishingAndSubscribingTest {
     schemaRegistry.start();
     management =
         new HermesManagementTestApp(
-            Map.of(DEFAULT_DC_NAME, dc1.hermesZookeeper, "dc2", dc2.hermesZookeeper),
-            Map.of(DEFAULT_DC_NAME, dc1.kafka, "dc2", dc2.kafka),
+            Map.of(LOCAL_DC, dc1.hermesZookeeper, "dc2", dc2.hermesZookeeper),
+            Map.of(LOCAL_DC, dc1.kafka, "dc2", dc2.kafka),
             schemaRegistry);
     management.start();
     initHelper = new HermesInitHelper(management.getPort());
