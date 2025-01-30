@@ -8,6 +8,7 @@ import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithR
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -26,7 +27,6 @@ import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscriber;
 import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscribersExtension;
 import pl.allegro.tech.hermes.test.helper.client.integration.HermesInitHelper;
 import pl.allegro.tech.hermes.test.helper.client.integration.HermesTestClient;
-import pl.allegro.tech.hermes.test.helper.config.KafkaDatacenterDetails;
 import pl.allegro.tech.hermes.test.helper.containers.ConfluentSchemaRegistryContainer;
 import pl.allegro.tech.hermes.test.helper.containers.KafkaContainerCluster;
 import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
@@ -54,14 +54,14 @@ public class RemoteDatacenterProduceFallbackTest {
   private static final String REMOTE_DC2 = "dc2";
   private static final String REMOTE_DC3 = "dc3";
 
-  private static final Map<KafkaDatacenterDetails, KafkaContainerCluster> kafkaConfiguration =
+  private static final Map<String, Pair<KafkaContainerCluster, List<String>>> kafkaConfiguration =
       Map.of(
-          new KafkaDatacenterDetails("dc", List.of(REMOTE_DC2)),
-          dc1.kafka,
-          new KafkaDatacenterDetails(REMOTE_DC2, List.of(DEFAULT_DC_NAME, REMOTE_DC3)),
-          dc2.kafka,
-          new KafkaDatacenterDetails(REMOTE_DC3, List.of(DEFAULT_DC_NAME, REMOTE_DC2)),
-          dc3.kafka);
+          "dc",
+          Pair.of(dc1.kafka, List.of(REMOTE_DC2)),
+          REMOTE_DC2,
+          Pair.of(dc2.kafka, List.of(DEFAULT_DC_NAME, REMOTE_DC3)),
+          REMOTE_DC3,
+          Pair.of(dc3.kafka, List.of(DEFAULT_DC_NAME, REMOTE_DC2)));
 
   @BeforeAll
   public static void setup() {
