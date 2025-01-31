@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.stream.Stream;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.extension.AfterAllCallback;
+import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.slf4j.Logger;
@@ -36,22 +37,24 @@ import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
 import pl.allegro.tech.hermes.test.helper.environment.HermesTestApp;
 
 public class HermesExtension
-    implements BeforeAllCallback, AfterAllCallback, ExtensionContext.Store.CloseableResource {
+    implements AfterEachCallback,
+        BeforeAllCallback,
+        AfterAllCallback,
+        ExtensionContext.Store.CloseableResource {
 
   private static final Logger logger = LoggerFactory.getLogger(HermesExtension.class);
 
   public static final TestSubscribersExtension auditEventsReceiver = new TestSubscribersExtension();
 
-  private static final ZookeeperContainer hermesZookeeper =
-      new ZookeeperContainer("HermesZookeeper");
-  private static final KafkaContainerCluster kafka = new KafkaContainerCluster(1);
-  public static final ConfluentSchemaRegistryContainer schemaRegistry =
+  private static ZookeeperContainer hermesZookeeper = new ZookeeperContainer("HermesZookeeper");
+  private static KafkaContainerCluster kafka = new KafkaContainerCluster(1);
+  public static ConfluentSchemaRegistryContainer schemaRegistry =
       new ConfluentSchemaRegistryContainer().withKafkaCluster(kafka);
-  private static final HermesConsumersTestApp consumers =
+  private static HermesConsumersTestApp consumers =
       new HermesConsumersTestApp(hermesZookeeper, kafka, schemaRegistry);
-  private static final HermesManagementTestApp management =
+  private static HermesManagementTestApp management =
       new HermesManagementTestApp(hermesZookeeper, kafka, schemaRegistry);
-  private static final HermesFrontendTestApp frontend =
+  private static HermesFrontendTestApp frontend =
       new HermesFrontendTestApp(hermesZookeeper, kafka, schemaRegistry);
   private HermesTestClient hermesTestClient;
   private HermesInitHelper hermesInitHelper;
@@ -65,6 +68,7 @@ public class HermesExtension
 
   @Override
   public void beforeAll(ExtensionContext context) {
+
     if (!started) {
       Stream.of(hermesZookeeper, kafka).parallel().forEach(Startable::start);
       schemaRegistry.start();
@@ -83,7 +87,7 @@ public class HermesExtension
             });
     hermesTestClient =
         new HermesTestClient(management.getPort(), frontend.getPort(), consumers.getPort());
-    hermesInitHelper = new HermesInitHelper(management.getPort());
+    hermesInitHelper = new HermesInitHelper(management.getPort(), frontend);
     auditEvents = auditEventsReceiver.createSubscriberWithStrictPath(200, AUDIT_EVENT_PATH);
     brokerOperations =
         new BrokerOperations(kafka.getBootstrapServersForExternalClients(), "itTest");
@@ -91,9 +95,11 @@ public class HermesExtension
 
   @Override
   public void close() {
-    Stream.of(management, consumers, frontend).parallel().forEach(HermesTestApp::stop);
-    Stream.of(hermesZookeeper, kafka, schemaRegistry).parallel().forEach(Startable::stop);
-    started = false;
+    if (started) {
+      Stream.of(management, consumers, frontend).parallel().forEach(HermesTestApp::stop);
+      Stream.of(hermesZookeeper, kafka, schemaRegistry).parallel().forEach(Startable::stop);
+      started = false;
+    }
   }
 
   public int getFrontendPort() {
@@ -193,5 +199,14 @@ public class HermesExtension
   @Override
   public void afterAll(ExtensionContext context) {
     Stream.of(management, consumers, frontend).forEach(HermesTestApp::restoreDefaultSettings);
+  }
+
+  @Override
+  public void afterEach(ExtensionContext context) throws Exception {
+    try {
+      clearManagementData();
+    } catch (Exception e) {
+      logger.error("Error during cleaning up management data", e);
+    }
   }
 }

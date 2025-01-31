@@ -10,10 +10,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 
-public class ModelAwareZookeeperNotifyingCache {
+public class PathDepthAwareZookeeperCallbackRegistrar {
 
   private static final Logger logger =
-      LoggerFactory.getLogger(ModelAwareZookeeperNotifyingCache.class);
+      LoggerFactory.getLogger(PathDepthAwareZookeeperCallbackRegistrar.class);
 
   private static final int GROUP_LEVEL = 0;
 
@@ -24,15 +24,15 @@ public class ModelAwareZookeeperNotifyingCache {
   private final HierarchicalCache cache;
   private final ExecutorService executor;
 
-  public ModelAwareZookeeperNotifyingCache(
-      CuratorFramework curator, ExecutorService executor, String rootPath) {
+  public PathDepthAwareZookeeperCallbackRegistrar(
+      CuratorFramework curator, ExecutorService executor, String rootPath, String module) {
     List<String> levelPrefixes =
         Arrays.asList(
             ZookeeperPaths.GROUPS_PATH,
             ZookeeperPaths.TOPICS_PATH,
             ZookeeperPaths.SUBSCRIPTIONS_PATH);
     this.executor = executor;
-    this.cache = new HierarchicalCache(curator, executor, rootPath, 3, levelPrefixes, true);
+    this.cache = new HierarchicalCache(curator, executor, rootPath, 3, levelPrefixes, true, module);
   }
 
   public void start() throws Exception {

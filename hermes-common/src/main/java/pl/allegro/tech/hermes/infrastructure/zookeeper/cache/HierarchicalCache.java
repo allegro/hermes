@@ -32,19 +32,23 @@ public class HierarchicalCache {
 
   private HierarchicalCacheLevel rootCache;
 
+  private String module;
+
   public HierarchicalCache(
       CuratorFramework curatorFramework,
       ExecutorService executorService,
       String basePath,
       int maxDepth,
       List<String> levelPrefixes,
-      boolean removeNodesWithNoData) {
+      boolean removeNodesWithNoData,
+      String module) {
     this.curatorFramework = curatorFramework;
     this.executorService = executorService;
     this.basePath = basePath;
     this.removeNodesWithNoData = removeNodesWithNoData;
     this.levelPrefixes.addAll(levelPrefixes);
     this.maxDepth = maxDepth;
+    this.module = module;
 
     for (int i = 0; i < maxDepth; ++i) {
       levelCallbacks.add(new CacheListeners());
@@ -65,7 +69,7 @@ public class HierarchicalCache {
   }
 
   private HierarchicalCacheLevel createLevelCache(int depth, String path) {
-    BiFunction<Integer, String, HierarchicalCacheLevel> function =
+    BiFunction<Integer, String, HierarchicalCacheLevel> nextLevelFactory =
         depth + 1 < maxDepth ? this::createLevelCache : null;
     HierarchicalCacheLevel levelCache =
         new HierarchicalCacheLevel(
@@ -74,8 +78,9 @@ public class HierarchicalCache {
             path(depth, path),
             depth,
             levelCallbacks.get(depth),
-            Optional.ofNullable(function),
-            removeNodesWithNoData);
+            Optional.ofNullable(nextLevelFactory),
+            removeNodesWithNoData,
+            module);
     try {
       logger.debug("Starting hierarchical cache level for path  {} and depth {}", path, depth);
       levelCache.start();
