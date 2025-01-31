@@ -82,11 +82,11 @@ public class TopicValidator {
     checkOwner(updated);
     checkTopicLabels(updated);
 
-    if ((previous.isFallbackToRemoteDatacenterEnabled()
-            != updated.isFallbackToRemoteDatacenterEnabled())
+    if (previous.isFallbackToRemoteDatacenterEnabled()
+        && !updated.isFallbackToRemoteDatacenterEnabled()
         && !modifiedBy.isAdmin()) {
       throw new TopicValidationException(
-          "User is not allowed to update fallback to remote datacenter for this topic");
+          "User is not allowed to disable fallback to remote datacenter for this topic");
     }
 
     if (!previous.getChaos().equals(updated.getChaos()) && !modifiedBy.isAdmin()) {

@@ -823,7 +823,7 @@ public class TopicManagementTest {
   }
 
   @Test
-  public void shouldNotAllowNonAdminUserToChangeFallbackToRemoteDatacenter() {
+  public void shouldNotAllowNonAdminUserToDisableFallbackToRemoteDatacenter() {
     // given
     Topic topic =
         hermes
@@ -840,11 +840,27 @@ public class TopicManagementTest {
     // then
     response.expectStatus().isBadRequest();
     assertThat(response.expectBody(String.class).returnResult().getResponseBody())
-        .contains("User is not allowed to update fallback to remote datacenter for this topic");
+        .contains("User is not allowed to disable fallback to remote datacenter for this topic");
   }
 
   @Test
-  public void shouldAllowAdminUserToChangeFallbackToRemoteDatacenter() {
+  public void shouldAllowNonAdminUserToEnableFallbackToRemoteDatacenter() {
+    // given
+    Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
+    TestSecurityProvider.setUserIsAdmin(false);
+    PatchData patchData =
+        PatchData.from(ImmutableMap.of("fallbackToRemoteDatacenterEnabled", true));
+
+    // when
+    WebTestClient.ResponseSpec response =
+        hermes.api().updateTopic(topic.getQualifiedName(), patchData);
+
+    // then
+    response.expectStatus().isOk();
+  }
+
+  @Test
+  public void shouldAllowAdminUserToDisableFallbackToRemoteDatacenter() {
     // given
     Topic topic =
         hermes

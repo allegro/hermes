@@ -347,6 +347,7 @@ const en_US = {
       offlineRetention: 'Offline retention',
       creationDate: 'Creation date',
       modificationDate: 'Modification date',
+      fallbackToRemoteDatacenterEnabled: 'Fallback to remote DC enabled',
       tooltips: {
         acknowledgement:
           'Specifies the strength of guarantees that acknowledged message was indeed persisted. ' +
@@ -366,6 +367,8 @@ const en_US = {
           'Should data from this topic be stored in offline storage (e.g. HDFS).',
         offlineRetention:
           'For how long should this topic be stored in offline storage.',
+        fallbackToRemoteDatacenterEnabled:
+          'In case of message publishing failure, Hermes fallback to a remote DC instead of store unsent messages in offline storage. Enabling fallback to remote DC increase your messages durability but may impact publishing latency.',
       },
       ackText: {
         all: 'All brokers',
