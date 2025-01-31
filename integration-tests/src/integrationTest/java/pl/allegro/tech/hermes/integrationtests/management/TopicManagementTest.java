@@ -849,7 +849,7 @@ public class TopicManagementTest {
     Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
     TestSecurityProvider.setUserIsAdmin(false);
     PatchData patchData =
-        PatchData.from(ImmutableMap.of("fallbackToRemoteDatacenterEnabled", false));
+        PatchData.from(ImmutableMap.of("fallbackToRemoteDatacenterEnabled", true));
 
     // when
     WebTestClient.ResponseSpec response =
