@@ -856,9 +856,7 @@ public class TopicManagementTest {
         hermes.api().updateTopic(topic.getQualifiedName(), patchData);
 
     // then
-    response.expectStatus().isBadRequest();
-    assertThat(response.expectBody(String.class).returnResult().getResponseBody())
-        .contains("User is not allowed to disable fallback to remote datacenter for this topic");
+    response.expectStatus().isOk();
   }
 
   @Test
