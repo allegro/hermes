@@ -50,7 +50,7 @@ allprojects {
     version = scmVersion.version
 
     project.ext.versions = [
-            kafka             : '2.8.2',
+            kafka             : '3.7.1',
             guava             : '33.1.0-jre',
             jackson           : '2.17.0',
             jersey            : '3.1.6',
