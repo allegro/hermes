@@ -16,6 +16,7 @@
     "ack": "LEADER",
     "trackingEnabled": false,
     "migratedFromJsonType": false,
+    "fallbackToRemoteDatacenterEnabled": true,
     "schemaIdAwareSerializationEnabled": false,
     "contentType": "AVRO",
     "maxMessageSize": 10240,
