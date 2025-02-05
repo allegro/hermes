@@ -368,7 +368,7 @@ const en_US = {
         offlineRetention:
           'For how long should this topic be stored in offline storage.',
         fallbackToRemoteDatacenterEnabled:
-          'In case of message publishing failure, Hermes fallback to a remote DC instead of store unsent messages in offline storage. Enabling fallback to remote DC increase your messages durability but may impact publishing latency.',
+          'In the event of a message publishing failure, Hermes falls back to a remote data center instead of storing unsent messages on local disk. Enabling fallback to the remote data center increases the durability of your messages but may impact the publishing latency and increase number of duplicated messages.',
       },
       ackText: {
         all: 'All brokers',
