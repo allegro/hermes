@@ -23,6 +23,8 @@ server:
 spring:
   jersey:
     type: filter
+    filter:
+      order: 2147483647
 
 management:
   endpoints:
