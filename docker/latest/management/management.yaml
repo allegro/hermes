@@ -39,6 +39,8 @@ management:
     enabled: true
   consumer-groups:
     create-manually: true
+  leadership:
+    zookeeper-dc: dc
 
 
 audit.enabled: false
