@@ -19,7 +19,7 @@ const vuetify = createVuetify({
           secondary: '#144c71',
           accent: '#1c65a1',
           error: '#ff5252',
-          background: '#f5f5f5',
+          background: '#ffffff',
         },
       },
       dark: {
@@ -28,6 +28,7 @@ const vuetify = createVuetify({
           secondary: '#144c71',
           accent: '#0a3040',
           error: '#ff5252',
+          background: '#212121',
         },
       },
     },

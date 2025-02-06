@@ -33,7 +33,7 @@
 </script>
 
 <template>
-  <v-app-bar :elevation="2" density="compact">
+  <v-app-bar :elevation="0" density="compact" color="background">
     <div class="header">
       <!-- TODO: navigate to home -->
       <div class="header-left">
@@ -64,7 +64,7 @@
         <v-divider vertical v-if="knownEnvironments.length > 0"></v-divider>
         <environment-switch :known-environments="knownEnvironments" />
       </div>
-      <div>
+      <div class="d-flex align-center ga-2 pr-2">
         <theme-switch />
         <v-btn
           v-if="configStore.loadedConfig.auth.oauth.enabled && !isLoggedIn"
@@ -82,6 +82,7 @@
         >
           {{ t('header.logout') }}
         </v-btn>
+        <v-avatar color="grey" size="small"><span>G</span></v-avatar>
       </div>
     </div>
   </v-app-bar>
