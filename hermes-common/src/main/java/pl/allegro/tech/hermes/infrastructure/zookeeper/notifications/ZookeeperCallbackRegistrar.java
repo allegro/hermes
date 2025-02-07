@@ -13,29 +13,29 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.domain.notifications.AdminCallback;
-import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
+import pl.allegro.tech.hermes.domain.notifications.InternalCallbackRegistrar;
 import pl.allegro.tech.hermes.domain.notifications.SubscriptionCallback;
 import pl.allegro.tech.hermes.domain.notifications.TopicCallback;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.cache.ModelAwareZookeeperNotifyingCache;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.cache.PathDepthAwareZookeeperCallbackRegistrar;
 
-public class ZookeeperInternalNotificationBus implements InternalNotificationsBus {
+public class ZookeeperCallbackRegistrar implements InternalCallbackRegistrar {
 
-  private static final Logger logger =
-      LoggerFactory.getLogger(ZookeeperInternalNotificationBus.class);
+  private static final Logger logger = LoggerFactory.getLogger(ZookeeperCallbackRegistrar.class);
 
   private final ObjectMapper objectMapper;
 
-  private final ModelAwareZookeeperNotifyingCache modelNotifyingCache;
+  private final PathDepthAwareZookeeperCallbackRegistrar pathDepthAwareCallbackRegistrar;
 
-  public ZookeeperInternalNotificationBus(
-      ObjectMapper objectMapper, ModelAwareZookeeperNotifyingCache modelNotifyingCache) {
+  public ZookeeperCallbackRegistrar(
+      ObjectMapper objectMapper,
+      PathDepthAwareZookeeperCallbackRegistrar pathDepthAwareCallbackRegistrar) {
     this.objectMapper = objectMapper;
-    this.modelNotifyingCache = modelNotifyingCache;
+    this.pathDepthAwareCallbackRegistrar = pathDepthAwareCallbackRegistrar;
   }
 
   @Override
   public void registerSubscriptionCallback(SubscriptionCallback callback) {
-    modelNotifyingCache.registerSubscriptionCallback(
+    pathDepthAwareCallbackRegistrar.registerSubscriptionCallback(
         (e) -> {
           switch (e.getType()) {
             case CHILD_ADDED:
@@ -58,7 +58,7 @@ public class ZookeeperInternalNotificationBus implements InternalNotificationsBu
 
   @Override
   public void registerTopicCallback(TopicCallback callback) {
-    modelNotifyingCache.registerTopicCallback(
+    pathDepthAwareCallbackRegistrar.registerTopicCallback(
         (e) -> {
           switch (e.getType()) {
             case CHILD_ADDED:

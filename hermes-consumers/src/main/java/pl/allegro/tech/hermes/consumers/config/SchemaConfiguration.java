@@ -16,7 +16,7 @@ import pl.allegro.tech.hermes.common.schema.AvroCompiledSchemaRepositoryFactory;
 import pl.allegro.tech.hermes.common.schema.RawSchemaClientFactory;
 import pl.allegro.tech.hermes.common.schema.SchemaRepositoryFactory;
 import pl.allegro.tech.hermes.common.schema.SchemaVersionsRepositoryFactory;
-import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
+import pl.allegro.tech.hermes.domain.notifications.InternalCallbackRegistrar;
 import pl.allegro.tech.hermes.schema.CompiledSchemaRepository;
 import pl.allegro.tech.hermes.schema.RawSchemaClient;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
@@ -91,7 +91,7 @@ public class SchemaConfiguration {
   public SchemaVersionsRepository schemaVersionsRepositoryFactory(
       RawSchemaClient rawSchemaClient,
       SchemaProperties schemaProperties,
-      InternalNotificationsBus notificationsBus,
+      InternalCallbackRegistrar notificationsBus,
       CompiledSchemaRepository<?> compiledSchemaRepository) {
     return new SchemaVersionsRepositoryFactory(
             rawSchemaClient,

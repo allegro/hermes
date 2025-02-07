@@ -3,7 +3,7 @@ package pl.allegro.tech.hermes.consumers.subscription.id
 
 import pl.allegro.tech.hermes.api.SubscriptionName
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache
-import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus
+import pl.allegro.tech.hermes.domain.notifications.InternalCallbackRegistrar
 import pl.allegro.tech.hermes.test.helper.cache.FakeTicker
 import spock.lang.Shared
 import spock.lang.Specification
@@ -18,7 +18,7 @@ class NotificationAwareSubscriptionIdsCacheTest extends Specification {
     @Shared
     private SubscriptionNames subscriptionNames = new SubscriptionNames()
 
-    private InternalNotificationsBus notificationsBus = Mock(InternalNotificationsBus)
+    private InternalCallbackRegistrar notificationsBus = Mock(InternalCallbackRegistrar)
     private SubscriptionsCache subscriptionCache = Stub(SubscriptionsCache)
 
     private SubscriptionIdProvider subscriptionIdProvider = Stub(SubscriptionIdProvider)

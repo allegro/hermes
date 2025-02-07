@@ -28,17 +28,22 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.frontend.HermesFrontend;
+import pl.allegro.tech.hermes.frontend.cache.topic.NotificationBasedTopicsCache;
 import pl.allegro.tech.hermes.frontend.server.HermesServer;
 import pl.allegro.tech.hermes.test.helper.containers.ConfluentSchemaRegistryContainer;
 import pl.allegro.tech.hermes.test.helper.containers.KafkaContainerCluster;
 import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
+import pl.allegro.tech.hermes.test.helper.environment.FrontendNotification;
 import pl.allegro.tech.hermes.test.helper.environment.HermesTestApp;
 
-public class HermesFrontendTestApp implements HermesTestApp {
-
+public class HermesFrontendTestApp implements HermesTestApp, FrontendNotification {
+  private static final Logger logger = LoggerFactory.getLogger(HermesFrontendTestApp.class);
   private final ZookeeperContainer hermesZookeeper;
   private final Map<String, KafkaContainerCluster> kafkaClusters;
   private final ConfluentSchemaRegistryContainer schemaRegistry;
@@ -139,11 +144,31 @@ public class HermesFrontendTestApp implements HermesTestApp {
 
   @Override
   public HermesTestApp start() {
+    logger.info("Starting frontend...");
     app = new SpringApplicationBuilder(HermesFrontend.class).web(WebApplicationType.NONE);
     currentArgs = createArgs();
     app.run(currentArgs.toArray(new String[0]));
     port = app.context().getBean(HermesServer.class).getPort();
     return this;
+  }
+
+  @Override
+  public void notifyTopicCreated(Topic topic) {
+    app.context().getBean(NotificationBasedTopicsCache.class).onTopicCreated(topic);
+  }
+
+  @Override
+  public void notifyTopicBlacklisted(Topic topic) {
+    app.context()
+        .getBean(NotificationBasedTopicsCache.class)
+        .onTopicBlacklisted(topic.getQualifiedName());
+  }
+
+  @Override
+  public void notifyTopicUnblacklisted(Topic topic) {
+    app.context()
+        .getBean(NotificationBasedTopicsCache.class)
+        .onTopicUnblacklisted(topic.getQualifiedName());
   }
 
   @Override
@@ -196,8 +221,11 @@ public class HermesFrontendTestApp implements HermesTestApp {
 
   @Override
   public boolean shouldBeRestarted() {
-    List<String> args = createArgs();
-    return !args.equals(currentArgs);
+    if (!currentArgs.isEmpty()) {
+      List<String> args = createArgs();
+      return !args.equals(currentArgs);
+    }
+    return false;
   }
 
   @Override

@@ -68,7 +68,7 @@ public class PublishingAvroOnTopicWithoutSchemaTest {
             topicWithRandomName().withContentType(AVRO).build(),
             AvroUserSchemaLoader.load().toString());
 
-    Topic topic = management.initHelper().createTopicWithSchema(topicWithSchema);
+    Topic topic = management.initHelper(frontend).createTopicWithSchema(topicWithSchema);
 
     // when
     String message = new AvroUser("Bob", 50, "blue").asJson();
