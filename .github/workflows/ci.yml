@@ -44,6 +44,13 @@ jobs:
       fail-fast: false
     name: ${{ matrix.tasks.alias }}
     steps:
+      - name: Check machine stats
+        run: |
+          echo "Running on $(uname -a)"
+          echo "CPU: $(lscpu | grep 'Model name')"
+          echo "Memory: $(free -h)"
+          echo "Disk: $(df -h /)"
+          top -b -n 1 | head -n 20
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
