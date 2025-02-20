@@ -6,12 +6,12 @@ import pl.allegro.tech.hermes.common.exception.HermesException;
 
 public class TopicNotEmptyException extends HermesException {
 
-    public TopicNotEmptyException(TopicName topicName) {
-        super(String.format("Topic %s is not empty", topicName.qualifiedName()));
-    }
+  public TopicNotEmptyException(TopicName topicName) {
+    super(String.format("Topic %s is not empty", topicName.qualifiedName()));
+  }
 
-    @Override
-    public ErrorCode getCode() {
-        return ErrorCode.TOPIC_NOT_EMPTY;
-    }
+  @Override
+  public ErrorCode getCode() {
+    return ErrorCode.TOPIC_NOT_EMPTY;
+  }
 }

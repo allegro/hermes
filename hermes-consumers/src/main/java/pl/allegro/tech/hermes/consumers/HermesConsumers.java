@@ -7,9 +7,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class HermesConsumers {
 
-    public static void main(String[] args) {
-        SpringApplication application = new SpringApplication(HermesConsumers.class);
-        application.setWebApplicationType(WebApplicationType.NONE);
-        application.run(args);
-    }
+  public static void main(String[] args) {
+    SpringApplication application = new SpringApplication(HermesConsumers.class);
+    application.setWebApplicationType(WebApplicationType.NONE);
+    application.run(args);
+  }
 }

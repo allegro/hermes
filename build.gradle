@@ -20,6 +20,12 @@ scmVersion {
     versionCreator 'versionWithBranch'
 }
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
 nexusPublishing {
     connectTimeout = Duration.ofMinutes(getIntProperty('publishingTimeoutInMin', 10))
     clientTimeout = Duration.ofMinutes(getIntProperty('publishingTimeoutInMin', 10))
@@ -39,13 +45,9 @@ nexusPublishing {
 allprojects {
     apply plugin: 'java'
     apply plugin: 'groovy'
-    apply plugin: 'checkstyle'
 
     group = 'pl.allegro.tech.hermes'
     version = scmVersion.version
-
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
 
     project.ext.versions = [
             kafka             : '2.8.2',
@@ -55,7 +57,7 @@ allprojects {
             jetty             : '12.0.8',
             curator           : '5.4.0',
             dropwizard_metrics: '4.2.25',
-            micrometer_metrics: '1.12.5',
+            micrometer_metrics: '1.13.0',
             wiremock          : '3.9.0',
             spock             : '2.4-M4-groovy-4.0',
             groovy            : '4.0.21',
@@ -196,27 +198,15 @@ subprojects {
 
     test {
         reports {
-            html.enabled = false
-            junitXml.enabled = true
-            junitXml.destination = file("$buildDir/test-results/$name")
+            html.required = false
+            junitXml.required = true
+            junitXml.outputLocation = file("$buildDir/test-results/$name")
         }
 
         testLogging {
             exceptionFormat = 'full'
             events 'passed', 'skipped', 'failed'
         }
-    }
-
-    tasks.withType(Checkstyle) {
-        reports {
-            xml.required = true
-            html.required = false
-        }
-    }
-
-    checkstyle {
-        toolVersion '10.3.4'
-        maxWarnings getIntProperty('maxCheckstyleWarnings', Integer.MAX_VALUE)
     }
 }
 

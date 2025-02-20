@@ -1,10 +1,9 @@
 <script setup lang="ts">
   import { copyToClipboard } from '@/utils/copy-utils';
   import { download } from '@/utils/download-utils';
+  import { getAvroPaths } from '@/utils/json-avro/jsonAvroUtils';
   import { isAdmin, isSubscriptionOwnerOrAdmin } from '@/utils/roles-util';
-  import { Owner } from '@/api/owner';
   import { ref } from 'vue';
-  import { Role } from '@/api/role';
   import { State } from '@/api/subscription';
   import { subscriptionFqn } from '@/utils/subscription-utils/subscription-utils';
   import { useFavorites } from '@/store/favorites/useFavorites';
@@ -12,6 +11,8 @@
   import { useRoute, useRouter } from 'vue-router';
   import SubscriptionForm from '@/views/subscription/subscription-form/SubscriptionForm.vue';
   import TooltipIcon from '@/components/tooltip-icon/TooltipIcon.vue';
+  import type { Owner } from '@/api/owner';
+  import type { Role } from '@/api/role';
   import type { Subscription } from '@/api/subscription';
 
   const { t } = useI18n();
@@ -22,6 +23,7 @@
     subscription: Subscription;
     owner: Owner;
     roles: Role[] | undefined;
+    schema?: string;
   }>();
 
   const route = useRoute();
@@ -54,7 +56,6 @@
     );
   }
 </script>
-
 <template>
   <v-card density="compact">
     <div class="d-flex justify-end mr-4 mb-1">
@@ -79,6 +80,7 @@
               :subscription="subscription"
               :topic="subscription.topicName"
               :roles="roles"
+              :paths="getAvroPaths(schema)"
               @created="refreshPage"
               @cancel="hideSubscriptionForm"
             />

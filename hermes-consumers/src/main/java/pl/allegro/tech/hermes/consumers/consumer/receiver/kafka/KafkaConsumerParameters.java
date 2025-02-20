@@ -5,43 +5,43 @@ import java.util.List;
 
 public interface KafkaConsumerParameters {
 
-    int getSendBufferBytes();
+  int getSendBufferBytes();
 
-    int getReceiveBufferBytes();
+  int getReceiveBufferBytes();
 
-    int getFetchMinBytes();
+  int getFetchMinBytes();
 
-    Duration getFetchMaxWait();
+  Duration getFetchMaxWait();
 
-    Duration getReconnectBackoff();
+  Duration getReconnectBackoff();
 
-    Duration getRetryBackoff();
+  Duration getRetryBackoff();
 
-    boolean isCheckCrcs();
+  boolean isCheckCrcs();
 
-    Duration getMetricsSampleWindow();
+  Duration getMetricsSampleWindow();
 
-    int getMetricsNumSamples();
+  int getMetricsNumSamples();
 
-    Duration getRequestTimeout();
+  Duration getRequestTimeout();
 
-    Duration getConnectionsMaxIdle();
+  Duration getConnectionsMaxIdle();
 
-    int getMaxPollRecords();
+  int getMaxPollRecords();
 
-    Duration getMaxPollInterval();
+  Duration getMaxPollInterval();
 
-    String getAutoOffsetReset();
+  String getAutoOffsetReset();
 
-    Duration getSessionTimeout();
+  Duration getSessionTimeout();
 
-    Duration getHeartbeatInterval();
+  Duration getHeartbeatInterval();
 
-    Duration getMetadataMaxAge();
+  Duration getMetadataMaxAge();
 
-    int getMaxPartitionFetchMin();
+  int getMaxPartitionFetchMin();
 
-    int getMaxPartitionFetchMax();
+  int getMaxPartitionFetchMax();
 
-    List<PartitionAssignmentStrategy> getPartitionAssignmentStrategies();
+  List<PartitionAssignmentStrategy> getPartitionAssignmentStrategies();
 }

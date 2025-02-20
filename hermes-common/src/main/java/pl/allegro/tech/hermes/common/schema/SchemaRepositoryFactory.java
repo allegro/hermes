@@ -7,17 +7,18 @@ import pl.allegro.tech.hermes.schema.SchemaVersionsRepository;
 
 public class SchemaRepositoryFactory {
 
-    private final SchemaVersionsRepository schemaVersionsRepository;
+  private final SchemaVersionsRepository schemaVersionsRepository;
 
-    private final CompiledSchemaRepository<Schema> compiledAvroSchemaRepository;
+  private final CompiledSchemaRepository<Schema> compiledAvroSchemaRepository;
 
-    public SchemaRepositoryFactory(SchemaVersionsRepository schemaVersionsRepository,
-                                   CompiledSchemaRepository<Schema> compiledAvroSchemaRepository) {
-        this.schemaVersionsRepository = schemaVersionsRepository;
-        this.compiledAvroSchemaRepository = compiledAvroSchemaRepository;
-    }
+  public SchemaRepositoryFactory(
+      SchemaVersionsRepository schemaVersionsRepository,
+      CompiledSchemaRepository<Schema> compiledAvroSchemaRepository) {
+    this.schemaVersionsRepository = schemaVersionsRepository;
+    this.compiledAvroSchemaRepository = compiledAvroSchemaRepository;
+  }
 
-    public SchemaRepository provide() {
-        return new SchemaRepository(schemaVersionsRepository, compiledAvroSchemaRepository);
-    }
+  public SchemaRepository provide() {
+    return new SchemaRepository(schemaVersionsRepository, compiledAvroSchemaRepository);
+  }
 }

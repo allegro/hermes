@@ -5,12 +5,12 @@ import pl.allegro.tech.hermes.management.domain.ManagementException;
 
 public class SubscriptionValidationException extends ManagementException {
 
-    public SubscriptionValidationException(String message) {
-        super(message);
-    }
+  public SubscriptionValidationException(String message) {
+    super(message);
+  }
 
-    @Override
-    public ErrorCode getCode() {
-        return ErrorCode.VALIDATION_ERROR;
-    }
+  @Override
+  public ErrorCode getCode() {
+    return ErrorCode.VALIDATION_ERROR;
+  }
 }

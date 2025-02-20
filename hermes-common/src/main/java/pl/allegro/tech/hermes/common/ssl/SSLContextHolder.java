@@ -5,19 +5,19 @@ import javax.net.ssl.TrustManager;
 
 public final class SSLContextHolder {
 
-    private final SSLContext sslContext;
-    private final TrustManager[] trustManagers;
+  private final SSLContext sslContext;
+  private final TrustManager[] trustManagers;
 
-    public SSLContextHolder(SSLContext sslContext, TrustManager[] trustManagers) {
-        this.sslContext = sslContext;
-        this.trustManagers = trustManagers;
-    }
+  public SSLContextHolder(SSLContext sslContext, TrustManager[] trustManagers) {
+    this.sslContext = sslContext;
+    this.trustManagers = trustManagers;
+  }
 
-    public SSLContext getSslContext() {
-        return sslContext;
-    }
+  public SSLContext getSslContext() {
+    return sslContext;
+  }
 
-    public TrustManager[] getTrustManagers() {
-        return trustManagers;
-    }
+  public TrustManager[] getTrustManagers() {
+    return trustManagers;
+  }
 }

@@ -5,5 +5,5 @@ import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 
 public interface BrokerErrorListener {
 
-    void onError(Message message, Topic topic, Exception ex);
+  void onError(Message message, Topic topic, Exception ex);
 }

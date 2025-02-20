@@ -2,17 +2,17 @@ package pl.allegro.tech.hermes.frontend.buffer;
 
 public interface PersistentBufferExtensionParameters {
 
-    long getBufferedSizeBytes();
+  long getBufferedSizeBytes();
 
-    boolean isV2MigrationEnabled();
+  boolean isV2MigrationEnabled();
 
-    boolean isEnabled();
+  boolean isEnabled();
 
-    String getDirectory();
+  String getDirectory();
 
-    String getTemporaryDirectory();
+  String getTemporaryDirectory();
 
-    int getAverageMessageSize();
+  int getAverageMessageSize();
 
-    boolean isSizeReportingEnabled();
+  boolean isSizeReportingEnabled();
 }

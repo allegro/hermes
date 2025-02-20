@@ -6,22 +6,22 @@ import jakarta.validation.Valid;
 
 public class SubscriptionConstraints {
 
-    private final SubscriptionName subscriptionName;
-    @Valid
-    private final Constraints constraints;
+  private final SubscriptionName subscriptionName;
+  @Valid private final Constraints constraints;
 
-    @JsonCreator
-    public SubscriptionConstraints(@JsonProperty("subscriptionName") String subscriptionName,
-                                   @JsonProperty("constraints") Constraints constraints) {
-        this.subscriptionName = SubscriptionName.fromString(subscriptionName);
-        this.constraints = constraints;
-    }
+  @JsonCreator
+  public SubscriptionConstraints(
+      @JsonProperty("subscriptionName") String subscriptionName,
+      @JsonProperty("constraints") Constraints constraints) {
+    this.subscriptionName = SubscriptionName.fromString(subscriptionName);
+    this.constraints = constraints;
+  }
 
-    public SubscriptionName getSubscriptionName() {
-        return subscriptionName;
-    }
+  public SubscriptionName getSubscriptionName() {
+    return subscriptionName;
+  }
 
-    public Constraints getConstraints() {
-        return constraints;
-    }
+  public Constraints getConstraints() {
+    return constraints;
+  }
 }

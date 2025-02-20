@@ -1,64 +1,63 @@
 package pl.allegro.tech.hermes.consumers.consumer.batch;
 
+import java.nio.BufferOverflowException;
+import java.nio.ByteBuffer;
+import java.util.List;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Header;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 import pl.allegro.tech.hermes.tracker.consumers.MessageMetadata;
 
-import java.nio.BufferOverflowException;
-import java.nio.ByteBuffer;
-import java.util.List;
-
 public interface MessageBatch {
 
-    default boolean isReadyForDelivery() {
-        return isClosed() || isFull() || isExpired();
-    }
+  default boolean isReadyForDelivery() {
+    return isClosed() || isFull() || isExpired();
+  }
 
-    void append(byte[] data, MessageMetadata batchMessageMetadata) throws BufferOverflowException;
+  void append(byte[] data, MessageMetadata batchMessageMetadata) throws BufferOverflowException;
 
-    boolean canFit(byte[] data);
+  boolean canFit(byte[] data);
 
-    boolean isExpired();
+  boolean isExpired();
 
-    boolean isClosed();
+  boolean isClosed();
 
-    boolean isFull();
+  boolean isFull();
 
-    String getId();
+  String getId();
 
-    ContentType getContentType();
+  ContentType getContentType();
 
-    ByteBuffer getContent();
+  ByteBuffer getContent();
 
-    List<SubscriptionPartitionOffset> getPartitionOffsets();
+  List<SubscriptionPartitionOffset> getPartitionOffsets();
 
-    List<MessageMetadata> getMessagesMetadata();
+  List<MessageMetadata> getMessagesMetadata();
 
-    List<Header> getAdditionalHeaders();
+  List<Header> getAdditionalHeaders();
 
-    long getLifetime();
+  long getLifetime();
 
-    int getMessageCount();
+  int getMessageCount();
 
-    MessageBatch close();
+  MessageBatch close();
 
-    boolean isEmpty();
+  boolean isEmpty();
 
-    boolean isBiggerThanTotalCapacity(byte[] data);
+  boolean isBiggerThanTotalCapacity(byte[] data);
 
-    int getCapacity();
+  int getCapacity();
 
-    int getSize();
+  int getSize();
 
-    void incrementRetryCounter();
+  void incrementRetryCounter();
 
-    int getRetryCounter();
+  int getRetryCounter();
 
-    boolean hasSubscriptionIdentityHeaders();
+  boolean hasSubscriptionIdentityHeaders();
 
-    String getTopic();
+  String getTopic();
 
-    SubscriptionName getSubscription();
+  SubscriptionName getSubscription();
 }

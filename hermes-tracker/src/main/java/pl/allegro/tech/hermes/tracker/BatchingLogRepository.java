@@ -5,15 +5,13 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class BatchingLogRepository<T> {
 
-    protected final String clusterName;
-    protected final String hostname;
-    protected BlockingQueue<T> queue;
+  protected final String clusterName;
+  protected final String hostname;
+  protected BlockingQueue<T> queue;
 
-    public BatchingLogRepository(int queueSize,
-                                 String clusterName,
-                                 String hostname) {
-        this.queue = new LinkedBlockingQueue<>(queueSize);
-        this.clusterName = clusterName;
-        this.hostname = hostname;
-    }
+  public BatchingLogRepository(int queueSize, String clusterName, String hostname) {
+    this.queue = new LinkedBlockingQueue<>(queueSize);
+    this.clusterName = clusterName;
+    this.hostname = hostname;
+  }
 }

@@ -4,11 +4,11 @@ import java.time.Duration;
 
 public interface BackupMessagesLoaderParameters {
 
-    Duration getMaxAge();
+  Duration getMaxAge();
 
-    int getMaxResendRetries();
+  int getMaxResendRetries();
 
-    Duration getLoadingPauseBetweenResend();
+  Duration getLoadingPauseBetweenResend();
 
-    Duration getLoadingWaitForBrokerTopicInfo();
+  Duration getLoadingWaitForBrokerTopicInfo();
 }

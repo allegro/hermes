@@ -4,37 +4,37 @@ import java.time.Duration;
 
 public interface HermesServerParameters {
 
-    int getPort();
+  int getPort();
 
-    String getHost();
+  String getHost();
 
-    Duration getReadTimeout();
+  Duration getReadTimeout();
 
-    Duration getRequestParseTimeout();
+  Duration getRequestParseTimeout();
 
-    int getMaxHeaders();
+  int getMaxHeaders();
 
-    int getMaxParameters();
+  int getMaxParameters();
 
-    int getMaxCookies();
+  int getMaxCookies();
 
-    int getBacklogSize();
+  int getBacklogSize();
 
-    int getIoThreadsCount();
+  int getIoThreadsCount();
 
-    int getWorkerThreadCount();
+  int getWorkerThreadCount();
 
-    boolean isAlwaysKeepAlive();
+  boolean isAlwaysKeepAlive();
 
-    boolean isKeepAlive();
+  boolean isKeepAlive();
 
-    boolean isRequestDumperEnabled();
+  boolean isRequestDumperEnabled();
 
-    int getBufferSize();
+  int getBufferSize();
 
-    boolean isGracefulShutdownEnabled();
+  boolean isGracefulShutdownEnabled();
 
-    Duration getGracefulShutdownInitialWait();
+  Duration getGracefulShutdownInitialWait();
 
-    boolean isHttp2Enabled();
+  boolean isHttp2Enabled();
 }
