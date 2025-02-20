@@ -35,7 +35,7 @@ public class ConsumerPartitionAssignmentState {
         }));
   }
 
-  private void incrementTerm(SubscriptionName name) {
+  public void incrementTerm(SubscriptionName name) {
     terms.compute(name, ((subscriptionName, term) -> term == null ? 0L : term + 1L));
   }
 
@@ -64,6 +64,10 @@ public class ConsumerPartitionAssignmentState {
             == subscriptionPartition.getPartitionAssignmentTerm()
         && isAssigned(
             subscriptionPartition.getSubscriptionName(), subscriptionPartition.getPartition());
+  }
+
+  public Set<Integer> getAssignedPartitions(SubscriptionName subscriptionName) {
+    return assigned.get(subscriptionName);
   }
 
   private boolean isAssigned(SubscriptionName name, int partition) {

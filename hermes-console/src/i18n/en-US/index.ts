@@ -193,6 +193,20 @@ const en_US = {
       appliedFilter: '(applied filter: “{filter}”)',
     },
   },
+  inactiveTopics: {
+    connectionError: {
+      title: 'Connection error',
+      text: 'Could not fetch information about inactive topics',
+    },
+    heading: 'Inactive Topics',
+    listing: {
+      name: 'Name',
+      lastUsed: 'Last published message',
+      lastNotified: 'Last notified',
+      howManyTimesNotified: 'How many times notified',
+      whitelisted: 'Whitelisted',
+    },
+  },
   stats: {
     connectionError: {
       title: 'Connection error',
@@ -333,6 +347,7 @@ const en_US = {
       offlineRetention: 'Offline retention',
       creationDate: 'Creation date',
       modificationDate: 'Modification date',
+      fallbackToRemoteDatacenterEnabled: 'Fallback to remote DC enabled',
       tooltips: {
         acknowledgement:
           'Specifies the strength of guarantees that acknowledged message was indeed persisted. ' +
@@ -352,6 +367,8 @@ const en_US = {
           'Should data from this topic be stored in offline storage (e.g. HDFS).',
         offlineRetention:
           'For how long should this topic be stored in offline storage.',
+        fallbackToRemoteDatacenterEnabled:
+          'In the event of a message publishing failure, Hermes falls back to a remote data center instead of storing unsent messages on local disk. Enabling fallback to the remote data center increases the durability of your messages but may impact the publishing latency and increase number of duplicated messages.',
       },
       ackText: {
         all: 'All brokers',
@@ -376,6 +393,7 @@ const en_US = {
       title: 'Subscriptions',
       create: 'Create subscription',
       search: 'Search...',
+      copy: 'Copy clients to clipboard',
     },
     errorMessage: {
       topicFetchFailed: 'Could not fetch {topicName} topic details',
@@ -610,10 +628,6 @@ const en_US = {
       reason: 'Reason',
       timestamp: 'Timestamp',
     },
-    moveOffsets: {
-      tooltip: 'Move subscription offsets to the end',
-      button: 'MOVE OFFSETS',
-    },
   },
   search: {
     collection: {
@@ -709,6 +723,11 @@ const en_US = {
       delete: {
         success: 'Topic {topicName} successfully deleted',
         failure: "Couldn't delete topic {topicName}",
+      },
+      clients: {
+        fetch: {
+          failure: 'Failed to fetch topic clients',
+        },
       },
     },
     inconsistentTopic: {
@@ -817,6 +836,10 @@ const en_US = {
   costsCard: {
     title: 'Costs',
     detailsButton: 'DASHBOARD',
+  },
+  trackingCard: {
+    title: 'Tracking',
+    noTrackingUrls: 'No tracking urls available',
   },
 };
 

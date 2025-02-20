@@ -20,6 +20,7 @@ import type { ConsumerGroup } from '@/api/consumer-group';
 import type { DashboardUrl } from '@/composables/metrics/use-metrics/useMetrics';
 import type { DatacenterReadiness } from '@/api/datacenter-readiness';
 import type { Group } from '@/api/group';
+import type { InactiveTopic } from '@/api/inactive-topics';
 import type { InconsistentGroup } from '@/api/inconsistent-group';
 import type { MessageFiltersVerificationResponse } from '@/api/message-filters-verification';
 import type {
@@ -184,6 +185,19 @@ export const fetchTopicSubscriptionDetailsErrorHandler = ({
       });
     },
   );
+
+export const fetchTopicClientsErrorHandler = ({
+  topicName,
+  errorCode = 500,
+}: {
+  topicName: string;
+  errorCode?: number;
+}) =>
+  http.get(`${url}/topics/${topicName}/clients`, () => {
+    return new HttpResponse(undefined, {
+      status: errorCode,
+    });
+  });
 
 export const successfulTopicHandlers = [
   fetchTopicHandler({}),
@@ -385,6 +399,26 @@ export const fetchConstraintsErrorHandler = ({
   errorCode?: number;
 }) =>
   http.get(`${url}/workload-constraints`, () => {
+    return new HttpResponse(undefined, {
+      status: errorCode,
+    });
+  });
+
+export const fetchInactiveTopicsHandler = ({
+  inactiveTopics,
+}: {
+  inactiveTopics: InactiveTopic[];
+}) =>
+  http.get(`${url}/inactive-topics`, () => {
+    return HttpResponse.json(inactiveTopics);
+  });
+
+export const fetchInactiveTopicsErrorHandler = ({
+  errorCode = 500,
+}: {
+  errorCode?: number;
+}) =>
+  http.get(`${url}/inactive-topics`, () => {
     return new HttpResponse(undefined, {
       status: errorCode,
     });
@@ -783,24 +817,6 @@ export const switchReadinessErrorHandler = ({
     });
   });
 
-export const moveSubscriptionOffsetsHandler = ({
-  topicName,
-  subscriptionName,
-  statusCode,
-}: {
-  topicName: string;
-  subscriptionName: string;
-  statusCode: number;
-}) =>
-  http.post(
-    `${url}/topics/${topicName}/subscriptions/${subscriptionName}/moveOffsetsToTheEnd`,
-    () => {
-      return new HttpResponse(undefined, {
-        status: statusCode,
-      });
-    },
-  );
-
 export const upsertTopicConstraintHandler = ({
   statusCode,
 }: {
@@ -940,14 +956,19 @@ export const createRetransmissionHandler = ({
   statusCode,
   topicName,
   subscriptionName,
+  delayMs,
 }: {
   statusCode: number;
   topicName: string;
   subscriptionName: string;
+  delayMs?: number;
 }) =>
   http.put(
     `${url}/topics/${topicName}/subscriptions/${subscriptionName}/retransmission`,
-    () => {
+    async () => {
+      if (delayMs && delayMs > 0) {
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+      }
       return new HttpResponse(undefined, {
         status: statusCode,
       });

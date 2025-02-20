@@ -8,9 +8,12 @@
   "/owners/sources/Service%20Catalog/:id": "/topicsOwners/:id",
   "/readiness/datacenters": "/readinessDatacenters",
   "/topics": "/topicNames",
+  "/tracking-urls/topics/:topicName": "/topicsTrackingUrls",
+  "/tracking-urls/topics/:topicName/subscriptions/:subscriptionName": "/subscriptionsTrackingUrls",
   "/topics/:id/metrics": "/topicsMetrics/:id",
   "/topics/:id/preview": "/topicPreview",
   "/topics/:id/offline-clients-source": "/offlineClientsSource",
+  "/topics/:id/clients": "/topicClients",
   "/topics/:id/subscriptions": "/topicSubscriptions",
   "/topics/:topicName/subscriptions/:id": "/subscriptions/:id",
   "/topics/:topicName/subscriptions/:id/consumer-groups": "/consumerGroups",
@@ -26,5 +29,6 @@
   "/owners/sources": "/ownerSources",
   "/owners/sources/*?search=:searchPhrase": "/topicsOwners?name_like=:searchPhrase",
   "/dashboards/topics/:topicName": "/topicDashboardUrl",
-  "/dashboards/topics/:topicName/subscriptions/:id": "/subscriptionDashboardUrl"
+  "/dashboards/topics/:topicName/subscriptions/:id": "/subscriptionDashboardUrl",
+  "/inactive-topics": "/inactiveTopics"
 }

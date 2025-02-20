@@ -39,6 +39,8 @@ management:
   health:
     periodSeconds: 30
     enabled: true
+  leadership:
+    zookeeper-dc: dc
 
 audit:
   isLoggingAuditEnabled: false
@@ -74,3 +76,17 @@ console:
   subscription:
     showHeadersFilter: false
     showFixedHeaders: false
+
+detection:
+  inactive-topics:
+    enabled: false
+    inactivity-threshold: 60d
+    next-notification-threshold: 14d
+    whitelisted-qualified-topic-names: []
+    cron: "0 0 8 * * *"
+    notifications-history-limit: 5
+
+
+consumer-group:
+  clean-up:
+    enabled: true

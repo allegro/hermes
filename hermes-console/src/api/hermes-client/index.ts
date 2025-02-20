@@ -22,6 +22,7 @@ import type {
   Readiness,
 } from '@/api/datacenter-readiness';
 import type { Group } from '@/api/group';
+import type { InactiveTopic } from '@/api/inactive-topics';
 import type { InconsistentGroup } from '@/api/inconsistent-group';
 import type {
   MessageFiltersVerification,
@@ -44,6 +45,7 @@ import type { Stats } from '@/api/stats';
 import type { SubscriptionHealth } from '@/api/subscription-health';
 import type { SubscriptionMetrics } from '@/api/subscription-metrics';
 import type { TopicForm } from '@/composables/topic/use-form-topic/types';
+import type { TrackingUrl } from '@/api/tracking-url';
 
 const acceptHeader = 'Accept';
 const contentTypeHeader = 'Content-Type';
@@ -189,8 +191,33 @@ export function fetchOfflineClientsSource(
   );
 }
 
+export function getTopicTrackingUrls(
+  topicName: string,
+): ResponsePromise<TrackingUrl[]> {
+  return axios.get<TrackingUrl[]>(`/tracking-urls/topics/${topicName}`);
+}
+
+export function getSubscriptionTrackingUrls(
+  topicName: string,
+  subscriptionName: string,
+): ResponsePromise<TrackingUrl[]> {
+  return axios.get<TrackingUrl[]>(
+    `/tracking-urls/topics/${topicName}/subscriptions/${subscriptionName}`,
+  );
+}
+
+export function fetchTopicClients(
+  topicName: string,
+): ResponsePromise<string[]> {
+  return axios.get(`/topics/${topicName}/clients`);
+}
+
 export function fetchConstraints(): ResponsePromise<ConstraintsConfig> {
   return axios.get<ConstraintsConfig>('/workload-constraints');
+}
+
+export function fetchInactiveTopics(): ResponsePromise<InactiveTopic[]> {
+  return axios.get<InactiveTopic[]>('/inactive-topics');
 }
 
 export function fetchReadiness(): ResponsePromise<DatacenterReadiness[]> {
@@ -281,15 +308,6 @@ export function fetchRoles(path: string): ResponsePromise<Role[]> {
 
 export function fetchDashboardUrl(path: string): ResponsePromise<DashboardUrl> {
   return axios.get<DashboardUrl>(path);
-}
-
-export function moveSubscriptionOffsets(
-  topicName: string,
-  subscription: string,
-): ResponsePromise<null> {
-  return axios.post<null>(
-    `/topics/${topicName}/subscriptions/${subscription}/moveOffsetsToTheEnd`,
-  );
 }
 
 export function removeTopic(topic: String): ResponsePromise<void> {

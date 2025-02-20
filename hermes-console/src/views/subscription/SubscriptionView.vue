@@ -19,6 +19,7 @@
   import MetricsCard from '@/views/subscription/metrics-card/MetricsCard.vue';
   import PropertiesCard from '@/views/subscription/properties-card/PropertiesCard.vue';
   import SubscriptionMetadata from '@/views/subscription/subscription-metadata/SubscriptionMetadata.vue';
+  import TrackingCard from '@/components/tracking-card/TrackingCard.vue';
   import UndeliveredMessagesCard from '@/views/subscription/undelivered-messages-card/UndeliveredMessagesCard.vue';
 
   const router = useRouter();
@@ -34,6 +35,9 @@
     subscriptionHealth,
     subscriptionUndeliveredMessages,
     subscriptionLastUndeliveredMessage,
+    trackingUrls,
+    retransmitting,
+    skippingAllMessages,
     error,
     loading,
     removeSubscription,
@@ -104,6 +108,10 @@
 
   const onRetransmit = async (fromDate: string) => {
     await retransmitMessages(fromDate);
+  };
+
+  const onSkipAllMessages = async () => {
+    await skipAllMessages();
   };
 
   const breadcrumbsItems = [
@@ -224,12 +232,18 @@
             :iframe-url="costs.iframeUrl"
             :details-url="costs.detailsUrl"
           />
+          <tracking-card
+            v-if="subscription?.trackingEnabled"
+            :tracking-urls="trackingUrls"
+          />
           <manage-messages-card
             v-if="isSubscriptionOwnerOrAdmin(roles)"
             :topic="topicId"
             :subscription="subscriptionId"
+            :retransmitting="retransmitting"
+            :skippingAllMessages="skippingAllMessages"
             @retransmit="onRetransmit"
-            @skipAllMessages="skipAllMessages"
+            @skipAllMessages="onSkipAllMessages"
           />
           <last-undelivered-message
             v-if="

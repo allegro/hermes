@@ -51,7 +51,9 @@ import pl.allegro.tech.hermes.management.domain.subscription.commands.UpdateSubs
 import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthChecker;
 import pl.allegro.tech.hermes.management.domain.subscription.validator.SubscriptionValidator;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.MovingSubscriptionOffsetsValidationException;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCOffsetChangeSummary;
 import pl.allegro.tech.hermes.tracker.management.LogRepository;
 
 public class SubscriptionService {
@@ -384,6 +386,11 @@ public class SubscriptionService {
     }
   }
 
+  public boolean subscriptionExists(SubscriptionName subscriptionName) {
+    return subscriptionRepository.subscriptionExists(
+        subscriptionName.getTopicName(), subscriptionName.getName());
+  }
+
   private List<CompletableFuture<UnhealthySubscription>> filterSubscriptions(
       Collection<Subscription> subscriptions,
       boolean respectMonitoringSeverity,
@@ -460,5 +467,43 @@ public class SubscriptionService {
                   metrics, s.getName(), s.getQualifiedTopicName());
             })
         .collect(toList());
+  }
+
+  public MultiDCOffsetChangeSummary retransmit(
+      Topic topic, String subscriptionName, Long timestamp, boolean dryRun, RequestUser requester) {
+    Subscription subscription = getSubscriptionDetails(topic.getName(), subscriptionName);
+
+    MultiDCOffsetChangeSummary multiDCOffsetChangeSummary =
+        multiDCAwareService.fetchTopicOffsetsAt(topic, timestamp);
+
+    if (dryRun) return multiDCOffsetChangeSummary;
+
+    /*
+     * The subscription state is used to determine how to move the offsets.
+     * When the subscription is ACTIVE, the management instance notifies consumers to change offsets.
+     * The consumers are responsible for moving their local offsets(KafkaConsumer::seek method) as well as committed ones on Kafka (KafkaConsumer::commitSync method).
+     * When the subscription is SUSPENDED, the management instance changes the commited offsets on kafka on its own (AdminClient::alterConsumerGroupOffsets).
+     * There is no active consumer to notify in that case.
+     */
+    switch (subscription.getState()) {
+      case ACTIVE:
+        multiDCAwareService.moveOffsetsForActiveConsumers(
+            topic,
+            subscriptionName,
+            multiDCOffsetChangeSummary.getPartitionOffsetListPerBrokerName(),
+            requester);
+        break;
+      case SUSPENDED:
+        multiDCAwareService.moveOffsets(
+            topic,
+            subscriptionName,
+            multiDCOffsetChangeSummary.getPartitionOffsetListPerBrokerName());
+        break;
+      case PENDING:
+        throw new MovingSubscriptionOffsetsValidationException(
+            "Cannot retransmit messages for subscription in PENDING state");
+    }
+
+    return multiDCOffsetChangeSummary;
   }
 }
