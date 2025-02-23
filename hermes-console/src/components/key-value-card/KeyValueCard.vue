@@ -13,16 +13,16 @@
         <p class="font-weight-bold">
           {{ props.title }}
         </p>
-        <v-card-actions v-if="buttonHref">
-          <v-btn
-            class="text-none"
-            prepend-icon="mdi-open-in-new"
-            target="_blank"
-            :href="buttonHref!!"
-          >
-            {{ props.buttonText }}
-          </v-btn>
-        </v-card-actions>
+        <v-btn
+          v-if="buttonText"
+          class="text-capitalize"
+          prepend-icon="mdi-open-in-new"
+          target="_blank"
+          :href="buttonHref!!"
+          variant="text"
+        >
+          {{ props.buttonText }}
+        </v-btn>
       </div>
     </template>
     <v-table density="compact">

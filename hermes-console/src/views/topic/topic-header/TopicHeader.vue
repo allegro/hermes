@@ -75,7 +75,7 @@
 </script>
 
 <template>
-  <v-card density="compact">
+  <v-card density="compact" flat>
     <div class="d-flex justify-end mr-4 mb-1">
       <v-dialog v-model="showTopicEditForm" min-width="800" :persistent="true">
         <v-card>
@@ -160,7 +160,7 @@
     <v-card-actions class="d-flex justify-space-between">
       <div>
         <v-btn
-          class="text-none"
+          class="text-capitalize"
           prepend-icon="mdi-account-supervisor"
           :href="props.owner.url"
           target="_blank"
@@ -180,12 +180,14 @@
             !isTopicOwnerOrAdmin(roles)
           "
           prepend-icon="mdi-pencil"
+          class="text-capitalize"
           @click="showTopicForm"
           >{{ $t('topicView.header.actions.edit') }}
         </v-btn>
         <v-btn
           prepend-icon="mdi-export"
           :disabled="!isTopicOwnerOrAdmin(roles)"
+          class="text-capitalize"
           @click="exportTopic"
           >{{ $t('topicView.header.actions.export') }}
         </v-btn>
@@ -197,6 +199,7 @@
           "
           prepend-icon="mdi-transmission-tower"
           data-testid="offlineRetransmissionButton"
+          class="text-capitalize"
           >{{ $t('topicView.header.actions.offlineRetransmission') }}
           <OfflineRetransmissionDialog @retransmit="onRetransmit">
           </OfflineRetransmissionDialog>
@@ -204,6 +207,7 @@
         <v-btn
           color="red"
           prepend-icon="mdi-delete"
+          class="text-capitalize"
           @click="emit('remove')"
           :disabled="!isTopicOwnerOrAdmin(roles)"
           >{{ $t('topicView.header.actions.remove') }}

@@ -1,6 +1,7 @@
 <script async setup lang="ts">
   import { copyToClipboard } from '@/utils/copy-utils';
   import { isTopicOwnerOrAdmin } from '@/utils/roles-util';
+  import { ref } from 'vue';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import { useDialog } from '@/composables/dialog/use-dialog/useDialog';
   import { useI18n } from 'vue-i18n';
@@ -101,6 +102,15 @@
     iframeUrl: resolveCostsUrl(configStore.appConfig?.costs.topicIframeUrl),
     detailsUrl: resolveCostsUrl(configStore.appConfig?.costs.topicDetailsUrl),
   };
+
+  const Tab = {
+    General: 'general',
+    Schema: 'schema',
+    Subscriptions: 'subscriptions',
+    OfflineClients: 'offlineClients',
+    MessagesPreview: 'messagesPreview',
+  };
+  const currentTab = ref<string>(Tab.General);
 </script>
 
 <template>
@@ -134,51 +144,89 @@
         @remove="openRemoveDialog"
       />
 
-      <v-row dense>
-        <v-col md="6" class="d-flex flex-column row-gap-2">
-          <metrics-list
-            v-if="metrics"
-            :metrics="metrics"
-            :topic-name="topicName"
-          />
-          <costs-card
-            v-if="configStore.appConfig?.costs.enabled"
-            :iframe-url="costs.iframeUrl"
-            :details-url="costs.detailsUrl"
-          />
-        </v-col>
-        <v-col md="6">
-          <properties-list v-if="topic" :topic="topic" />
-        </v-col>
-      </v-row>
+      <v-container class="py-0">
+        <v-tabs v-model="currentTab" color="primary" class="topic-view__tabs">
+          <v-tab :value="Tab.General" class="text-capitalize">General</v-tab>
+          <v-tab :value="Tab.Schema" class="text-capitalize">Schema</v-tab>
+          <v-tab :value="Tab.Subscriptions" class="text-capitalize"
+            >Subscriptions</v-tab
+          >
+          <v-tab :value="Tab.OfflineClients" class="text-capitalize"
+            >Offline clients</v-tab
+          >
+          <v-tab :value="Tab.MessagesPreview" class="text-capitalize"
+            >Messages preview</v-tab
+          >
+        </v-tabs>
+      </v-container>
 
-      <schema-panel v-if="topic" :schema="topic.schema" />
+      <v-tabs-window v-model="currentTab">
+        <v-tabs-window-item :value="Tab.General">
+          <v-container class="py-0">
+            <v-row dense>
+              <v-col md="6" class="d-flex flex-column row-gap-2">
+                <metrics-list
+                  v-if="metrics"
+                  :metrics="metrics"
+                  :topic-name="topicName"
+                />
+                <costs-card
+                  v-if="configStore.appConfig?.costs.enabled"
+                  :iframe-url="costs.iframeUrl"
+                  :details-url="costs.detailsUrl"
+                />
+              </v-col>
+              <v-col md="6">
+                <properties-list v-if="topic" :topic="topic" />
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-tabs-window-item>
 
-      <messages-preview
-        v-if="
-          messages &&
-          configStore.appConfig?.topic.messagePreviewEnabled &&
-          isTopicOwnerOrAdmin(roles)
-        "
-        :messages="messages"
-      />
+        <v-tabs-window-item :value="Tab.Schema">
+          <v-container class="py-0">
+            <schema-panel v-if="topic" :schema="topic.schema" />
+          </v-container>
+        </v-tabs-window-item>
 
-      <subscriptions-list
-        :groupId="groupId"
-        :topic-name="topicName"
-        :subscriptions="subscriptions ? subscriptions : []"
-        :roles="roles"
-        @copyClientsClick="copyClientsToClipboard"
-      />
+        <v-tabs-window-item :value="Tab.Subscriptions">
+          <v-container class="py-0">
+            <subscriptions-list
+              :groupId="groupId"
+              :topic-name="topicName"
+              :subscriptions="subscriptions ? subscriptions : []"
+              :roles="roles"
+              @copyClientsClick="copyClientsToClipboard"
+            />
+          </v-container>
+        </v-tabs-window-item>
 
-      <offline-clients
-        v-if="
-          configStore.appConfig?.topic.offlineClientsEnabled &&
-          offlineClientsSource?.source &&
-          topic?.offlineStorage.enabled
-        "
-        :source="offlineClientsSource.source"
-      />
+        <v-tabs-window-item :value="Tab.OfflineClients">
+          <v-container class="py-0">
+            <offline-clients
+              v-if="
+                configStore.appConfig?.topic.offlineClientsEnabled &&
+                offlineClientsSource?.source &&
+                topic?.offlineStorage.enabled
+              "
+              :source="offlineClientsSource.source"
+            />
+          </v-container>
+        </v-tabs-window-item>
+
+        <v-tabs-window-item :value="Tab.MessagesPreview">
+          <v-container class="py-0">
+            <messages-preview
+              v-if="
+                messages &&
+                configStore.appConfig?.topic.messagePreviewEnabled &&
+                isTopicOwnerOrAdmin(roles)
+              "
+              :messages="messages"
+            />
+          </v-container>
+        </v-tabs-window-item>
+      </v-tabs-window>
     </template>
   </v-container>
 </template>
@@ -193,5 +241,12 @@
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     grid-gap: 8pt;
     align-items: start;
+  }
+
+  .topic-view__tabs {
+    :deep(.v-slide-group__content) {
+      border-bottom: 1px rgba(var(--v-border-color), var(--v-border-opacity))
+        solid;
+    }
   }
 </style>

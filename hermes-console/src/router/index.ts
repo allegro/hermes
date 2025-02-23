@@ -35,8 +35,7 @@ const router = createRouter({
         {
           path: ':groupId/topics/:topicId/subscriptions/:subscriptionId',
           name: 'subscription',
-          component: () =>
-            import('@/views/subscription/SubscriptionView.vue'),
+          component: () => import('@/views/subscription/SubscriptionView.vue'),
         },
         {
           path: ':groupId/topics/:topicId/subscriptions/:subscriptionId/diagnostics/',
@@ -79,7 +78,8 @@ const router = createRouter({
         {
           path: '',
           name: 'consistency',
-          component: () => import('@/views/admin/consistency/ConsistencyView.vue'),
+          component: () =>
+            import('@/views/admin/consistency/ConsistencyView.vue'),
         },
         {
           path: ':groupId',

@@ -310,7 +310,7 @@ const en_US = {
       editTopic: 'Edit topic: {topicName}',
       unauthorizedTooltip: "You don't have permissions to manage this topic",
       topic: 'TOPIC',
-      owner: 'OWNER:',
+      owner: 'Owner:',
       actions: {
         edit: 'Edit',
         export: 'Export',
@@ -322,7 +322,7 @@ const en_US = {
       },
     },
     metrics: {
-      dashboard: 'DASHBOARD',
+      dashboard: 'Dashboard',
       title: 'Metrics',
       rate: 'Rate',
       deliveryRate: 'Delivery rate',
@@ -836,7 +836,7 @@ const en_US = {
   },
   costsCard: {
     title: 'Costs',
-    detailsButton: 'DASHBOARD',
+    detailsButton: 'Dashboard',
   },
 };
 
