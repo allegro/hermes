@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.domain.notifications;
 
 /** All callbacks must be nonblocking. */
-public interface InternalNotificationsBus {
+public interface InternalCallbackRegistrar {
 
   void registerSubscriptionCallback(SubscriptionCallback callback);
 

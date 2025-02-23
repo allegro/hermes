@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.consumers.subscription.cache.SubscriptionsCache;
-import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
+import pl.allegro.tech.hermes.domain.notifications.InternalCallbackRegistrar;
 import pl.allegro.tech.hermes.domain.notifications.SubscriptionCallback;
 
 public class NotificationAwareSubscriptionIdsCache
@@ -30,7 +30,7 @@ public class NotificationAwareSubscriptionIdsCache
   private final Cache<Long, SubscriptionId> valueToIdMapOfRemoved;
 
   public NotificationAwareSubscriptionIdsCache(
-      InternalNotificationsBus notificationsBus,
+      InternalCallbackRegistrar notificationsBus,
       SubscriptionsCache subscriptionsCache,
       SubscriptionIdProvider subscriptionIdProvider,
       long removedSubscriptionsExpireAfterAccessSeconds,

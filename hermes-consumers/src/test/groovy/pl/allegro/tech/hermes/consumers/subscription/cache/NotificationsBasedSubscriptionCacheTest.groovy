@@ -4,7 +4,7 @@ import pl.allegro.tech.hermes.api.Subscription
 import pl.allegro.tech.hermes.api.SubscriptionName
 import pl.allegro.tech.hermes.api.TopicName
 import pl.allegro.tech.hermes.domain.group.GroupRepository
-import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus
+import pl.allegro.tech.hermes.domain.notifications.InternalCallbackRegistrar
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository
 import pl.allegro.tech.hermes.domain.topic.TopicRepository
 import spock.lang.Specification
@@ -13,7 +13,7 @@ import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.sub
 
 class NotificationsBasedSubscriptionCacheTest extends Specification {
 
-    private InternalNotificationsBus notificationsBus = Stub(InternalNotificationsBus)
+    private InternalCallbackRegistrar notificationsBus = Stub(InternalCallbackRegistrar)
 
     private GroupRepository groupRepository = Stub(GroupRepository)
 

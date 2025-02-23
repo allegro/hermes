@@ -61,7 +61,7 @@ import pl.allegro.tech.hermes.consumers.supervisor.workload.weighted.WeightedWor
 import pl.allegro.tech.hermes.consumers.supervisor.workload.weighted.WeightedWorkloadMetricsReporter;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.weighted.ZookeeperConsumerNodeLoadRegistry;
 import pl.allegro.tech.hermes.consumers.supervisor.workload.weighted.ZookeeperSubscriptionProfileRegistry;
-import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
+import pl.allegro.tech.hermes.domain.notifications.InternalCallbackRegistrar;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraintsRepository;
@@ -81,7 +81,7 @@ public class SupervisorConfiguration {
 
   @Bean(initMethod = "start", destroyMethod = "shutdown")
   public WorkloadSupervisor workloadSupervisor(
-      InternalNotificationsBus notificationsBus,
+      InternalCallbackRegistrar notificationsBus,
       ConsumerNodesRegistry consumerNodesRegistry,
       ConsumerAssignmentRegistry assignmentRegistry,
       ConsumerAssignmentCache consumerAssignmentCache,

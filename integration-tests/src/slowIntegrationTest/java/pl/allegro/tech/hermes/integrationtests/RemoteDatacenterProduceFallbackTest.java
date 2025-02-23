@@ -73,7 +73,7 @@ public class RemoteDatacenterProduceFallbackTest {
     consumerDC2.start();
 
     DC1 = new HermesTestClient(management.getPort(), frontendDC1.getPort(), consumerDC1.getPort());
-    initHelper = new HermesInitHelper(management.getPort());
+    initHelper = new HermesInitHelper(management.getPort(), frontendDC1);
   }
 
   @AfterAll

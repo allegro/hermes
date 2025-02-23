@@ -48,7 +48,7 @@ public class MultiDatacenterPublishingAndSubscribingTest {
             Map.of(DEFAULT_DC_NAME, dc1.kafka, "dc2", dc2.kafka),
             schemaRegistry);
     management.start();
-    initHelper = new HermesInitHelper(management.getPort());
+    initHelper = new HermesInitHelper(management.getPort(), dc1.frontendTestApp());
     dc1.startConsumersAndFrontend();
     dc2.startConsumersAndFrontend();
   }
@@ -110,6 +110,10 @@ public class MultiDatacenterPublishingAndSubscribingTest {
 
     FrontendTestClient api() {
       return frontendClient;
+    }
+
+    HermesFrontendTestApp frontendTestApp() {
+      return frontend;
     }
   }
 }
