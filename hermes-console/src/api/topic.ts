@@ -24,6 +24,7 @@ export interface Topic {
   labels: TopicLabel[];
   createdAt: number; // java.time.Instant
   modifiedAt: number; // java.time.Instant
+  fallbackToRemoteDatacenterEnabled: boolean;
 }
 
 export type TopicName = string;

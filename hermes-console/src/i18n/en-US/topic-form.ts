@@ -32,6 +32,7 @@ const messages = {
       days: 'DAYS',
     },
     ack: 'Kafka ACK level',
+    fallbackToRemoteDatacenterEnabled: 'Fallback to remote DC enabled',
     ackHelpTitle: 'ACK level is very important',
     ackHelpText:
       'Set ACK level according to your durability and latency requirements, see: ',
