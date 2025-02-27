@@ -67,7 +67,10 @@ public class KafkaClustersProperties {
             .getRemoteDatacenters();
 
     return this.clusters.stream()
-        .filter(cluster -> remoteDatacenters.contains(cluster.getDatacenter()))
+        .filter(
+            cluster ->
+                remoteDatacenters.contains(cluster.getDatacenter())
+                    && !cluster.getDatacenter().equals(currentDatacenterName))
         .collect(Collectors.toList());
   }
 }

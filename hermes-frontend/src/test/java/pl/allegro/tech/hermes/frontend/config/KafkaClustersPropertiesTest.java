@@ -130,4 +130,31 @@ public class KafkaClustersPropertiesTest {
         IllegalArgumentException.class,
         () -> kafkaClustersProperties.toRemoteKafkaProperties(datacenterNameProvider));
   }
+
+  @Test
+  public void shouldFilterOutLocalDatacenterFromRemoteDatacenters() {
+    // given
+    KafkaProperties localCluster = new KafkaProperties();
+    localCluster.setDatacenter("dc1");
+    // Misconfigured: remote datacenters list contains "dc1" itself.
+    localCluster.setRemoteDatacenters(List.of("dc1", "dc2"));
+
+    KafkaProperties remoteCluster = new KafkaProperties();
+    remoteCluster.setDatacenter("dc2");
+
+    kafkaClustersProperties.setClusters(Arrays.asList(localCluster, remoteCluster));
+    when(datacenterNameProvider.getDatacenterName()).thenReturn("dc1");
+
+    // when
+    List<KafkaParameters> remoteKafkaProperties =
+        kafkaClustersProperties.toRemoteKafkaProperties(datacenterNameProvider);
+
+    // then
+    Set<String> remoteDCs =
+        remoteKafkaProperties.stream()
+            .map(KafkaParameters::getDatacenter)
+            .collect(Collectors.toSet());
+    assertEquals(1, remoteKafkaProperties.size());
+    assertEquals(Set.of("dc2"), remoteDCs);
+  }
 }
