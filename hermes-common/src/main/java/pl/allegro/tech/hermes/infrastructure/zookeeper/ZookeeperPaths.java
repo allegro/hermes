@@ -23,7 +23,6 @@ public class ZookeeperPaths {
   public static final String ADMIN_PATH = "admin";
   public static final String PREVIEW_PATH = "preview";
   public static final String OAUTH_PROVIDERS_PATH = "oauth-providers";
-  public static final String BLACKLIST_PATH = "blacklist";
   public static final String MAX_RATE_PATH = "max-rate";
   public static final String MAX_RATE_HISTORY_PATH = "history";
   public static final String STORAGE_HEALTH_PATH = "storage-health";
@@ -150,14 +149,6 @@ public class ZookeeperPaths {
 
   public String consumersWorkloadConstraintsPath(String constraintsPath) {
     return Joiner.on(URL_SEPARATOR).join(consumersWorkloadConstraintsPath(), constraintsPath);
-  }
-
-  public String topicsBlacklistPath() {
-    return Joiner.on(URL_SEPARATOR).join(basePath, BLACKLIST_PATH, TOPICS_PATH);
-  }
-
-  public String blacklistedTopicPath(String qualifiedTopicName) {
-    return Joiner.on(URL_SEPARATOR).join(topicsBlacklistPath(), qualifiedTopicName);
   }
 
   public String oAuthProvidersPath() {
