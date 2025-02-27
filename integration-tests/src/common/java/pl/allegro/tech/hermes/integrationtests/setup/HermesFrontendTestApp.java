@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import pl.allegro.tech.hermes.frontend.HermesFrontend;
@@ -40,7 +41,7 @@ import pl.allegro.tech.hermes.test.helper.environment.HermesTestApp;
 public class HermesFrontendTestApp implements HermesTestApp {
 
   private final ZookeeperContainer hermesZookeeper;
-  private final Map<String, KafkaContainerCluster> kafkaClusters;
+  private final Map<String, Pair<KafkaContainerCluster, List<String>>> kafkaClusters;
   private final ConfluentSchemaRegistryContainer schemaRegistry;
   private SpringApplicationBuilder app;
 
@@ -58,12 +59,12 @@ public class HermesFrontendTestApp implements HermesTestApp {
       ConfluentSchemaRegistryContainer schemaRegistry) {
     this.hermesZookeeper = hermesZookeeper;
     this.schemaRegistry = schemaRegistry;
-    this.kafkaClusters = Map.of("dc", kafka);
+    this.kafkaClusters = Map.of("dc", Pair.of(kafka, List.of()));
   }
 
   public HermesFrontendTestApp(
       ZookeeperContainer hermesZookeeper,
-      Map<String, KafkaContainerCluster> kafkaClusters,
+      Map<String, Pair<KafkaContainerCluster, List<String>>> kafkaClusters,
       ConfluentSchemaRegistryContainer schemaRegistry) {
     this.hermesZookeeper = hermesZookeeper;
     this.schemaRegistry = schemaRegistry;
@@ -94,9 +95,14 @@ public class HermesFrontendTestApp implements HermesTestApp {
     var i = 0;
     for (var entry : kafkaClusters.entrySet()) {
       args.put(kafkaClusterProperty(i, "datacenter"), entry.getKey());
+      for (int j = 0; j < entry.getValue().getRight().size(); j++) {
+        args.put(
+            kafkaClusterProperty(i, "remoteDatacenters[" + j + "]"),
+            entry.getValue().getRight().get(j));
+      }
       args.put(
           kafkaClusterProperty(i, "brokerList"),
-          entry.getValue().getBootstrapServersForExternalClients());
+          entry.getValue().getLeft().getBootstrapServersForExternalClients());
       i++;
     }
 

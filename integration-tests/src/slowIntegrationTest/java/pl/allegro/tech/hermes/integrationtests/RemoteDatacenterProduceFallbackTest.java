@@ -5,8 +5,10 @@ import static pl.allegro.tech.hermes.integrationtests.assertions.HermesAssertion
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
 
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -39,32 +41,53 @@ public class RemoteDatacenterProduceFallbackTest {
       new ConfluentSchemaRegistryContainer();
   private static final HermesDatacenter dc1 = new HermesDatacenter();
   private static final HermesDatacenter dc2 = new HermesDatacenter();
+  private static final HermesDatacenter dc3 = new HermesDatacenter();
 
   private static HermesManagementTestApp management;
   private static HermesInitHelper initHelper;
   private static HermesFrontendTestApp frontendDC1;
+  private static HermesFrontendTestApp frontendDC2;
   private static HermesConsumersTestApp consumerDC1;
   private static HermesConsumersTestApp consumerDC2;
+  private static HermesConsumersTestApp consumerDC3;
 
   private static HermesTestClient DC1;
-  private static final String REMOTE_DC_NAME = "dc2";
+  private static HermesTestClient DC2;
+  private static final String REMOTE_DC2 = "dc2";
+  private static final String REMOTE_DC3 = "dc3";
+
+  private static final Map<String, Pair<KafkaContainerCluster, List<String>>> kafkaConfiguration =
+      Map.of(
+          "dc",
+          Pair.of(dc1.kafka, List.of(REMOTE_DC2)),
+          REMOTE_DC2,
+          Pair.of(dc2.kafka, List.of(DEFAULT_DC_NAME, REMOTE_DC3)),
+          REMOTE_DC3,
+          Pair.of(dc3.kafka, List.of(DEFAULT_DC_NAME, REMOTE_DC2)));
 
   @BeforeAll
   public static void setup() {
-    Stream.of(dc1, dc2).parallel().forEach(HermesDatacenter::startKafkaAndZookeeper);
+    Stream.of(dc1, dc2, dc3).parallel().forEach(HermesDatacenter::startKafkaAndZookeeper);
     schemaRegistry.start();
     management =
         new HermesManagementTestApp(
-            Map.of(DEFAULT_DC_NAME, dc1.hermesZookeeper, REMOTE_DC_NAME, dc2.hermesZookeeper),
-            Map.of(DEFAULT_DC_NAME, dc1.kafka, REMOTE_DC_NAME, dc2.kafka),
+            Map.of(
+                DEFAULT_DC_NAME,
+                dc1.hermesZookeeper,
+                REMOTE_DC2,
+                dc2.hermesZookeeper,
+                REMOTE_DC3,
+                dc3.hermesZookeeper),
+            Map.of(DEFAULT_DC_NAME, dc1.kafka, REMOTE_DC2, dc2.kafka, REMOTE_DC3, dc3.kafka),
             schemaRegistry);
     management.start();
     frontendDC1 =
-        new HermesFrontendTestApp(
-            dc1.hermesZookeeper,
-            Map.of("dc", dc1.kafka, REMOTE_DC_NAME, dc2.kafka),
-            schemaRegistry);
+        new HermesFrontendTestApp(dc1.hermesZookeeper, kafkaConfiguration, schemaRegistry);
     frontendDC1.start();
+
+    frontendDC2 =
+        new HermesFrontendTestApp(dc1.hermesZookeeper, kafkaConfiguration, schemaRegistry);
+    frontendDC2.start();
 
     consumerDC1 = new HermesConsumersTestApp(dc1.hermesZookeeper, dc1.kafka, schemaRegistry);
     consumerDC1.start();
@@ -72,7 +95,11 @@ public class RemoteDatacenterProduceFallbackTest {
     consumerDC2 = new HermesConsumersTestApp(dc2.hermesZookeeper, dc2.kafka, schemaRegistry);
     consumerDC2.start();
 
+    consumerDC3 = new HermesConsumersTestApp(dc3.hermesZookeeper, dc3.kafka, schemaRegistry);
+    consumerDC3.start();
+
     DC1 = new HermesTestClient(management.getPort(), frontendDC1.getPort(), consumerDC1.getPort());
+    DC2 = new HermesTestClient(management.getPort(), frontendDC2.getPort(), consumerDC1.getPort());
     initHelper = new HermesInitHelper(management.getPort());
   }
 
@@ -80,17 +107,23 @@ public class RemoteDatacenterProduceFallbackTest {
   public static void clean() {
     management.stop();
     consumerDC2.stop();
+    consumerDC3.stop();
     frontendDC1.stop();
+    frontendDC2.stop();
     consumerDC1.stop();
     schemaRegistry.stop();
-    Stream.of(dc1, dc2).parallel().forEach(HermesDatacenter::stop);
+    Stream.of(dc1, dc2, dc3).parallel().forEach(HermesDatacenter::stop);
   }
 
   @AfterEach
   public void afterEach() {
-    Stream.of(dc1, dc2).forEach(dc -> dc.kafka.restoreConnectionsBetweenBrokersAndClients());
+    Stream.of(dc1, dc2, dc3).forEach(dc -> dc.kafka.restoreConnectionsBetweenBrokersAndClients());
     DC1.setReadiness(DEFAULT_DC_NAME, true);
-    DC1.setReadiness(REMOTE_DC_NAME, true);
+    DC1.setReadiness(REMOTE_DC2, true);
+    DC1.setReadiness(REMOTE_DC3, true);
+    DC2.setReadiness(DEFAULT_DC_NAME, true);
+    DC2.setReadiness(REMOTE_DC2, true);
+    DC2.setReadiness(REMOTE_DC3, true);
   }
 
   @Test
@@ -127,14 +160,14 @@ public class RemoteDatacenterProduceFallbackTest {
                   .withLabels(
                       "group", topic.getName().getGroupName(),
                       "topic", topic.getName().getName(),
-                      "storageDc", REMOTE_DC_NAME)
+                      "storageDc", REMOTE_DC2)
                   .withValue(1.0);
               assertRemoteDCSendTotalMetric().withValueGreaterThan(remoteDCInitialSendTotal);
             });
   }
 
   @Test
-  public void shouldReturn500whenBothDCsAreUnavailable() {
+  public void shouldNotPublishViaRemoteDCNotListedInConfig() throws InterruptedException {
     // given
     TestSubscriber subscriber = subscribers.createSubscriber();
     Topic topic =
@@ -143,7 +176,7 @@ public class RemoteDatacenterProduceFallbackTest {
     initHelper.createSubscription(
         subscription(topic.getQualifiedName(), "subscription", subscriber.getEndpoint()).build());
 
-    // when both dcs are not available
+    // when both local and dc2 is not available, and dc3 is not listed in config
     dc1.kafka.cutOffConnectionsBetweenBrokersAndClients();
     dc2.kafka.cutOffConnectionsBetweenBrokersAndClients();
 
@@ -151,12 +184,38 @@ public class RemoteDatacenterProduceFallbackTest {
     TestMessage message = TestMessage.of("key1", "value1");
     DC1.publishUntilStatus(topic.getQualifiedName(), message.body(), 503);
 
+    // wait for a few seconds to ensure no messages are published in the background
+    Thread.sleep(5000);
+
     // then no messages are received
     subscriber.noMessagesReceived();
   }
 
   @Test
-  public void shouldNotFallBackToNotReadyDatacenter() {
+  public void shouldReturn500whenAllDCsAreUnavailable() {
+    // given
+    TestSubscriber subscriber = subscribers.createSubscriber();
+    Topic topic =
+        initHelper.createTopic(
+            topicWithRandomName().withFallbackToRemoteDatacenterEnabled().build());
+    initHelper.createSubscription(
+        subscription(topic.getQualifiedName(), "subscription", subscriber.getEndpoint()).build());
+
+    // when all dcs are not available
+    dc1.kafka.cutOffConnectionsBetweenBrokersAndClients();
+    dc2.kafka.cutOffConnectionsBetweenBrokersAndClients();
+    dc3.kafka.cutOffConnectionsBetweenBrokersAndClients();
+
+    // and message is published
+    TestMessage message = TestMessage.of("key1", "value1");
+    DC2.publishUntilStatus(topic.getQualifiedName(), message.body(), 503);
+
+    // then no messages are received
+    subscriber.noMessagesReceived();
+  }
+
+  @Test
+  public void shouldNotFallBackToNotReadyDatacenters() {
     // given
     TestSubscriber subscriber = subscribers.createSubscriber();
     Topic topic =
@@ -167,7 +226,7 @@ public class RemoteDatacenterProduceFallbackTest {
 
     // when local datacenter is not available and remote is not ready
     dc1.kafka.cutOffConnectionsBetweenBrokersAndClients();
-    DC1.setReadiness(REMOTE_DC_NAME, false);
+    DC1.setReadiness(REMOTE_DC2, false);
 
     // and message is published
     TestMessage message = TestMessage.of("key1", "value1");
@@ -210,7 +269,7 @@ public class RemoteDatacenterProduceFallbackTest {
                     .withLabels(
                         "group", topic.getName().getGroupName(),
                         "topic", topic.getName().getName(),
-                        "storageDc", REMOTE_DC_NAME)
+                        "storageDc", REMOTE_DC2)
                     .withValue(1.0));
   }
 
@@ -285,6 +344,6 @@ public class RemoteDatacenterProduceFallbackTest {
                 .returnResult()
                 .getResponseBody())
         .contains("hermes_frontend_kafka_producer_ack_leader_record_send_total")
-        .withLabels("storageDc", REMOTE_DC_NAME, "sender", "failFast");
+        .withLabels("storageDc", REMOTE_DC2, "sender", "failFast");
   }
 }
