@@ -46,11 +46,13 @@ public class RemoteDatacenterProduceFallbackTest {
   private static HermesManagementTestApp management;
   private static HermesInitHelper initHelper;
   private static HermesFrontendTestApp frontendDC1;
+  private static HermesFrontendTestApp frontendDC2;
   private static HermesConsumersTestApp consumerDC1;
   private static HermesConsumersTestApp consumerDC2;
   private static HermesConsumersTestApp consumerDC3;
 
   private static HermesTestClient DC1;
+  private static HermesTestClient DC2;
   private static final String REMOTE_DC2 = "dc2";
   private static final String REMOTE_DC3 = "dc3";
 
@@ -83,6 +85,10 @@ public class RemoteDatacenterProduceFallbackTest {
         new HermesFrontendTestApp(dc1.hermesZookeeper, kafkaConfiguration, schemaRegistry);
     frontendDC1.start();
 
+    frontendDC2 =
+        new HermesFrontendTestApp(dc1.hermesZookeeper, kafkaConfiguration, schemaRegistry);
+    frontendDC2.start();
+
     consumerDC1 = new HermesConsumersTestApp(dc1.hermesZookeeper, dc1.kafka, schemaRegistry);
     consumerDC1.start();
 
@@ -93,6 +99,7 @@ public class RemoteDatacenterProduceFallbackTest {
     consumerDC3.start();
 
     DC1 = new HermesTestClient(management.getPort(), frontendDC1.getPort(), consumerDC1.getPort());
+    DC2 = new HermesTestClient(management.getPort(), frontendDC2.getPort(), consumerDC1.getPort());
     initHelper = new HermesInitHelper(management.getPort());
   }
 
@@ -102,6 +109,7 @@ public class RemoteDatacenterProduceFallbackTest {
     consumerDC2.stop();
     consumerDC3.stop();
     frontendDC1.stop();
+    frontendDC2.stop();
     consumerDC1.stop();
     schemaRegistry.stop();
     Stream.of(dc1, dc2, dc3).parallel().forEach(HermesDatacenter::stop);
@@ -113,6 +121,9 @@ public class RemoteDatacenterProduceFallbackTest {
     DC1.setReadiness(DEFAULT_DC_NAME, true);
     DC1.setReadiness(REMOTE_DC2, true);
     DC1.setReadiness(REMOTE_DC3, true);
+    DC2.setReadiness(DEFAULT_DC_NAME, true);
+    DC2.setReadiness(REMOTE_DC2, true);
+    DC2.setReadiness(REMOTE_DC3, true);
   }
 
   @Test
@@ -156,7 +167,7 @@ public class RemoteDatacenterProduceFallbackTest {
   }
 
   @Test
-  public void shouldNotPublishViaRemoteDCNotListedInConfig() {
+  public void shouldNotPublishViaRemoteDCNotListedInConfig() throws InterruptedException {
     // given
     TestSubscriber subscriber = subscribers.createSubscriber();
     Topic topic =
@@ -172,6 +183,9 @@ public class RemoteDatacenterProduceFallbackTest {
     // and message is published
     TestMessage message = TestMessage.of("key1", "value1");
     DC1.publishUntilStatus(topic.getQualifiedName(), message.body(), 503);
+
+    // wait for a few seconds to ensure no messages are published in the background
+    Thread.sleep(5000);
 
     // then no messages are received
     subscriber.noMessagesReceived();
@@ -194,7 +208,7 @@ public class RemoteDatacenterProduceFallbackTest {
 
     // and message is published
     TestMessage message = TestMessage.of("key1", "value1");
-    DC1.publishUntilStatus(topic.getQualifiedName(), message.body(), 503);
+    DC2.publishUntilStatus(topic.getQualifiedName(), message.body(), 503);
 
     // then no messages are received
     subscriber.noMessagesReceived();
