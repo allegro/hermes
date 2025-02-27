@@ -7,7 +7,7 @@ import java.time.Instant;
 import java.util.List;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -26,8 +26,8 @@ public class OfflineRetransmissionManagementTest {
 
   private static final String GROUP = "pl.allegro.retransmission";
 
-  @BeforeAll
-  public static void setupGroup() {
+  @BeforeEach
+  public void setupGroup() {
     hermes.initHelper().createGroup(Group.from(GROUP));
   }
 
