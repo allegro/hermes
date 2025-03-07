@@ -4,7 +4,7 @@ import java.time.Duration;
 
 public class SchemaRepositoryProperties {
 
-  private String serverUrl = "http://localhost:8888/";
+  private String serverUrl = "http://localhost:8081/";
 
   private Duration httpReadTimeout = Duration.ofSeconds(2);
 
