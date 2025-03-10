@@ -1,8 +1,6 @@
 package pl.allegro.tech.hermes.common.message.converter;
 
-import java.io.ByteArrayInputStream;
-import java.io.Closeable;
-import java.io.InputStream;
+import org.apache.avro.Conversion;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericRecord;
@@ -10,6 +8,11 @@ import org.apache.avro.io.BinaryDecoder;
 import org.apache.avro.io.DecoderFactory;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import tech.allegro.schema.json2avro.converter.AvroConversionException;
+
+import java.io.ByteArrayInputStream;
+import java.io.Closeable;
+import java.io.InputStream;
+import java.util.List;
 
 public class AvroBinaryDecoders {
 
@@ -20,11 +23,13 @@ public class AvroBinaryDecoders {
       ThreadLocal.withInitial(
           () -> DecoderFactory.get().binaryDecoder(threadLocalEmptyInputStream.get(), null));
 
-  static GenericRecord decodeReusingThreadLocalBinaryDecoder(byte[] message, Schema schema) {
+  static GenericRecord decodeReusingThreadLocalBinaryDecoder(byte[] message, Schema schema, List<Conversion<?>> logicalTypeConversions) {
     try (FlushableBinaryDecoderHolder holder = new FlushableBinaryDecoderHolder()) {
       BinaryDecoder binaryDecoder =
           DecoderFactory.get().binaryDecoder(message, holder.getBinaryDecoder());
-      return new GenericDatumReader<GenericRecord>(schema).read(null, binaryDecoder);
+      GenericDatumReader<GenericRecord> genericDatumWriter = new GenericDatumReader<>(schema);
+      logicalTypeConversions.forEach(conversion ->  genericDatumWriter.getData().addLogicalTypeConversion(conversion));
+      return genericDatumWriter.read(null, binaryDecoder);
     } catch (Exception e) {
       String reason =
           e.getMessage() == null ? ExceptionUtils.getRootCauseMessage(e) : e.getMessage();

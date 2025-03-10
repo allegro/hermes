@@ -1,17 +1,25 @@
 package pl.allegro.tech.hermes.common.message.converter;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import org.apache.avro.Conversion;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.BinaryEncoder;
 import org.apache.avro.io.EncoderFactory;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+
 public interface AvroRecordToBytesConverter {
 
   static GenericRecord bytesToRecord(byte[] data, Schema schema) {
-    return AvroBinaryDecoders.decodeReusingThreadLocalBinaryDecoder(data, schema);
+    return bytesToRecord(data, schema, Collections.emptyList());
+  }
+
+  static GenericRecord bytesToRecord(byte[] data, Schema schema, List<Conversion<?>> logicalTypeConversions) {
+    return AvroBinaryDecoders.decodeReusingThreadLocalBinaryDecoder(data, schema, logicalTypeConversions);
   }
 
   static byte[] recordToBytes(GenericRecord genericRecord, Schema schema) throws IOException {
