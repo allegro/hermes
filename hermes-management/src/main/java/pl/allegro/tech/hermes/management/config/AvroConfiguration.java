@@ -8,13 +8,13 @@ import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 @Configuration
 public class AvroConfiguration {
 
-    @Bean
-    AvroJsonConverter avroJsonConverter() {
-        return new AvroJsonConverter();
-    }
+  @Bean
+  AvroJsonConverter avroJsonConverter() {
+    return new AvroJsonConverter();
+  }
 
-    @Bean
-    JsonAvroConverter jsonAvroConverter() {
-        return new JsonAvroConverter();
-    }
+  @Bean
+  JsonAvroConverter jsonAvroConverter() {
+    return new JsonAvroConverter();
+  }
 }
