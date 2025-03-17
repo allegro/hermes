@@ -9,7 +9,7 @@ dependencies {
     api group: 'org.wiremock', name: 'wiremock-standalone', version: versions.wiremock
     implementation group: 'org.awaitility', name: 'awaitility', version: '4.2.1'
     api group: 'org.apache.avro', name: 'avro', version: versions.avro
-    implementation group: 'tech.allegro.schema.json2avro', name: 'converter', version: versions.json2avro
+    implementation files('../libs/converter-0.2.16-SNAPSHOT.jar')
     implementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: versions.junit_jupiter
 
     testImplementation project(':hermes-test-helper')
