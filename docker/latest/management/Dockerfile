@@ -1,4 +1,4 @@
-FROM gradle:7.6-jdk21 AS builder
+FROM gradle:8.12-jdk21 AS builder
 
 COPY --chown=gradle:gradle . /home/gradle/src/
 WORKDIR /home/gradle/src/
