@@ -22,7 +22,7 @@ dependencies {
     api group: 'org.glassfish.jersey.media', name: 'jersey-media-json-jackson', version: versions.jersey
     api group: 'org.glassfish.jersey.ext', name: 'jersey-bean-validation', version: versions.jersey
 
-    api group: 'tech.allegro.schema.json2avro', name: 'converter', version: versions.json2avro
+    implementation files('../libs/converter-0.2.16-SNAPSHOT.jar')
 
     api group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
     implementation group: 'commons-codec', name: 'commons-codec', version: '1.16.1'
