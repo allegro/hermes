@@ -20,18 +20,9 @@ scmVersion {
     versionCreator 'versionWithBranch'
 }
 
-if (project.name == 'hermes-client') {
-    // For clients not yet migrated to java21, we need to provide bytecode backward compatibility.
-    java {
-        toolchain {
-            languageVersion = JavaLanguageVersion.of(17)
-        }
-    }
-} else {
-    java {
-        toolchain {
-            languageVersion = JavaLanguageVersion.of(21)
-        }
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
     }
 }
 
