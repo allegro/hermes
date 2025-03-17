@@ -19,7 +19,7 @@ dependencies {
     }
     implementation group: 'commons-io', name: 'commons-io', version: '2.16.1'
     implementation group: 'net.jodah', name: 'failsafe', version: versions.failsafe
-
+    implementation files('../libs/converter-0.2.16-SNAPSHOT.jar')
     testImplementation project(':hermes-test-helper')
 
     testImplementation group: 'org.spockframework', name: 'spock-core', version: versions.spock
