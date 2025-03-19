@@ -1,0 +1,6 @@
+scrape_configs:
+  - job_name: hermes_consumers
+    scrape_interval: 15s
+    static_configs:
+      - targets:
+          - http://consumers:8070/status/prometheus
