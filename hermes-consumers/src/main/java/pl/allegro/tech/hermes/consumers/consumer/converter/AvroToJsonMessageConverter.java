@@ -5,20 +5,22 @@ import static pl.allegro.tech.hermes.common.message.converter.AvroRecordToBytesC
 import static pl.allegro.tech.hermes.common.message.wrapper.AvroMetadataMarker.METADATA_MARKER;
 import static pl.allegro.tech.hermes.consumers.consumer.Message.message;
 
+import java.util.List;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.generic.GenericRecordBuilder;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
-import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
+import tech.allegro.schema.json2avro.converter.AvroJsonConverter;
+import tech.allegro.schema.json2avro.converter.conversions.DecimalAsStringConversion;
 
 public class AvroToJsonMessageConverter implements MessageConverter {
 
-  private final JsonAvroConverter converter;
+  private final AvroJsonConverter converter;
 
   public AvroToJsonMessageConverter() {
-    this.converter = new JsonAvroConverter();
+    this.converter = new AvroJsonConverter(DecimalAsStringConversion.INSTANCE);
   }
 
   @Override
@@ -35,7 +37,8 @@ public class AvroToJsonMessageConverter implements MessageConverter {
   }
 
   private GenericRecord recordWithoutMetadata(byte[] data, Schema schema) {
-    GenericRecord original = bytesToRecord(data, schema);
+    GenericRecord original =
+        bytesToRecord(data, schema, List.of(DecimalAsStringConversion.INSTANCE));
     Schema schemaWithoutMetadata = removeMetadataField(schema);
     GenericRecordBuilder builder = new GenericRecordBuilder(schemaWithoutMetadata);
     schemaWithoutMetadata

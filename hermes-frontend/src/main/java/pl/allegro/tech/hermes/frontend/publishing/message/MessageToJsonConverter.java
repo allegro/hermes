@@ -5,10 +5,10 @@ import static pl.allegro.tech.hermes.common.message.converter.AvroRecordToBytesC
 import org.apache.avro.Schema;
 import pl.allegro.tech.hermes.common.message.wrapper.SchemaAwareSerDe;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
-import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
+import tech.allegro.schema.json2avro.converter.AvroJsonConverter;
 
 public class MessageToJsonConverter {
-  private final JsonAvroConverter converter = new JsonAvroConverter();
+  private final AvroJsonConverter converter = new AvroJsonConverter();
 
   public byte[] convert(Message message, boolean schemaIdAwareSerializationEnabled) {
     try {
