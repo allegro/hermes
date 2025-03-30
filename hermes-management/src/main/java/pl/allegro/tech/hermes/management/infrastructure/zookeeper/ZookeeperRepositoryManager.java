@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.management.infrastructure.zookeeper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,14 +29,12 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperSubscriptionRepo
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperTopicRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperWorkloadConstraintsRepository;
 import pl.allegro.tech.hermes.management.config.storage.ZookeeperGroupRepositoryFactory;
-import pl.allegro.tech.hermes.management.domain.blacklist.TopicBlacklistRepository;
 import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryManager;
 import pl.allegro.tech.hermes.management.domain.detection.InactiveTopicsRepository;
 import pl.allegro.tech.hermes.management.domain.readiness.DatacenterReadinessRepository;
 import pl.allegro.tech.hermes.management.domain.retransmit.OfflineRetransmissionRepository;
 import pl.allegro.tech.hermes.management.domain.subscription.consumergroup.ConsumerGroupToDeleteRepository;
-import pl.allegro.tech.hermes.management.infrastructure.blacklist.ZookeeperTopicBlacklistRepository;
 import pl.allegro.tech.hermes.management.infrastructure.detection.ZookeeperInactiveTopicsRepository;
 import pl.allegro.tech.hermes.management.infrastructure.readiness.ZookeeperDatacenterReadinessRepository;
 import pl.allegro.tech.hermes.management.infrastructure.retransmit.ZookeeperOfflineRetransmissionRepository;
@@ -59,8 +56,6 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
   private final Map<String, SubscriptionOffsetChangeIndicator> offsetChangeIndicatorsByDc =
       new HashMap<>();
   private final Map<String, MessagePreviewRepository> messagePreviewRepositoriesByDc =
-      new HashMap<>();
-  private final Map<String, TopicBlacklistRepository> topicBlacklistRepositoriesByDc =
       new HashMap<>();
   private final Map<String, WorkloadConstraintsRepository> workloadConstraintsRepositoriesByDc =
       new HashMap<>();
@@ -124,10 +119,6 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
           new ZookeeperMessagePreviewRepository(zookeeper, mapper, paths);
       messagePreviewRepositoriesByDc.put(dcName, messagePreviewRepository);
 
-      TopicBlacklistRepository topicBlacklistRepository =
-          new ZookeeperTopicBlacklistRepository(zookeeper, mapper, paths);
-      topicBlacklistRepositoriesByDc.put(dcName, topicBlacklistRepository);
-
       WorkloadConstraintsRepository workloadConstraintsRepository =
           new ZookeeperWorkloadConstraintsRepository(zookeeper, mapper, paths);
       workloadConstraintsRepositoriesByDc.put(dcName, workloadConstraintsRepository);
@@ -175,7 +166,7 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
 
   public <T> List<DatacenterBoundRepositoryHolder<T>> getRepositories(Class<T> repositoryType) {
     return getRepositoriesByType(repositoryType).entrySet().stream()
-        .sorted(Comparator.comparing(Map.Entry::getKey))
+        .sorted(Map.Entry.comparingByKey())
         .map(entry -> new DatacenterBoundRepositoryHolder<>(entry.getValue(), entry.getKey()))
         .collect(Collectors.toList());
   }
@@ -198,7 +189,6 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
     repositoryByType.put(OAuthProviderRepository.class, oAuthProviderRepositoriesByDc);
     repositoryByType.put(SubscriptionOffsetChangeIndicator.class, offsetChangeIndicatorsByDc);
     repositoryByType.put(MessagePreviewRepository.class, messagePreviewRepositoriesByDc);
-    repositoryByType.put(TopicBlacklistRepository.class, topicBlacklistRepositoriesByDc);
     repositoryByType.put(WorkloadConstraintsRepository.class, workloadConstraintsRepositoriesByDc);
     repositoryByType.put(LastUndeliveredMessageReader.class, lastUndeliveredMessageReaderByDc);
     repositoryByType.put(AdminTool.class, adminToolByDc);
