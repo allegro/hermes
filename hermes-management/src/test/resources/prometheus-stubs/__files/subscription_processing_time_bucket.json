@@ -1,0 +1,47 @@
+{
+  "status": "success",
+  "data": {
+    "resultType": "vector",
+    "result": [
+      {
+        "metric": {
+          "__name__": "hermes_consumers_subscription_message_processing_time_seconds_bucket",
+          "group": "pl.allegro.tech.hermes",
+          "le": "+Inf",
+          "subscription": "hermesSubscription",
+          "topic": "hermesTopic"
+        },
+        "value": [
+          1730220894.432,
+          "4"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "hermes_consumers_subscription_message_processing_time_seconds_bucket",
+          "group": "pl.allegro.tech.hermes",
+          "le": "1.0",
+          "subscription": "hermesSubscription",
+          "topic": "hermesTopic"
+        },
+        "value": [
+          1730220894.432,
+          "0"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "hermes_consumers_subscription_message_processing_time_seconds_bucket",
+          "group": "pl.allegro.tech.hermes",
+          "le": "300.0",
+          "subscription": "hermesSubscription",
+          "topic": "hermesTopic"
+        },
+        "value": [
+          1730220894.432,
+          "4"
+        ]
+      }
+    ]
+  }
+}

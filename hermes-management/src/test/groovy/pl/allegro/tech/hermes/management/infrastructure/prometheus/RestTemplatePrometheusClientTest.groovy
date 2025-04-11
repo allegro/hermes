@@ -13,6 +13,7 @@ import org.junit.Rule
 import org.springframework.http.client.ClientHttpRequestFactory
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory
 import org.springframework.web.client.RestTemplate
+import pl.allegro.tech.hermes.api.MetricHistogramValue
 import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringMetricsContainer
 import pl.allegro.tech.hermes.test.helper.util.Ports
 import spock.lang.Specification
@@ -40,10 +41,11 @@ class RestTemplatePrometheusClientTest extends Specification {
     def subscription2xxStatusCodesQuery = "sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_http_status_codes_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', status_code=~'2.*', service=~'hermes'}[1m]))"
     def subscription4xxStatusCodesQuery = "sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_http_status_codes_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', status_code=~'4.*', service=~'hermes'}[1m]))"
     def subscription5xxStatusCodesQuery = "sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_http_status_codes_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', status_code=~'5.*', service=~'hermes'}[1m]))"
+    def subscriptionProcessingTimeQuery = "sum by (group, topic, subscription, le) (irate({__name__='hermes_consumers_subscription_message_processing_time_seconds_bucket', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', service=~'hermes'}[1m]))"
 
     def queries = List.of(subscriptionDeliveredQuery, subscriptionTimeoutsQuery, subscriptionRetriesQuery, subscriptionThroughputQuery,
             subscriptionErrorsQuery, subscriptionBatchesQuery, subscription2xxStatusCodesQuery, subscription4xxStatusCodesQuery,
-            subscription5xxStatusCodesQuery
+            subscription5xxStatusCodesQuery, subscriptionProcessingTimeQuery
     )
 
     @Rule
@@ -73,6 +75,7 @@ class RestTemplatePrometheusClientTest extends Specification {
                 new FileStub(subscription2xxStatusCodesQuery, "subscription_2xx_http_status_codes_total.json"),
                 new FileStub(subscription4xxStatusCodesQuery, "subscription_4xx_http_status_codes_total.json"),
                 new FileStub(subscription5xxStatusCodesQuery, "subscription_5xx_http_status_codes_total.json"),
+                new FileStub(subscriptionProcessingTimeQuery, "subscription_processing_time_bucket.json"),
         )
         mockPrometheus(queriesStubs)
 
@@ -89,6 +92,7 @@ class RestTemplatePrometheusClientTest extends Specification {
         metrics.metricValue(subscription2xxStatusCodesQuery) == of("2.0")
         metrics.metricValue(subscription4xxStatusCodesQuery) == of("1.0")
         metrics.metricValue(subscription5xxStatusCodesQuery) == of("2.0")
+        metrics.metricHistogramValue(subscriptionProcessingTimeQuery) == MetricHistogramValue.ofBuckets("+Inf", "4", "300.0", "4", "1.0", "0")
     }
 
     def "should return default value when metric has no value"() {
@@ -102,7 +106,8 @@ class RestTemplatePrometheusClientTest extends Specification {
                 emptyStub(subscriptionBatchesQuery),
                 emptyStub(subscription2xxStatusCodesQuery),
                 emptyStub(subscription4xxStatusCodesQuery),
-                emptyStub(subscription5xxStatusCodesQuery)
+                emptyStub(subscription5xxStatusCodesQuery),
+                emptyStub(subscriptionProcessingTimeQuery)
         )
         mockPrometheus(queriesStubs)
 
@@ -119,6 +124,7 @@ class RestTemplatePrometheusClientTest extends Specification {
         metrics.metricValue(subscription2xxStatusCodesQuery) == defaultValue()
         metrics.metricValue(subscription4xxStatusCodesQuery) == defaultValue()
         metrics.metricValue(subscription5xxStatusCodesQuery) == defaultValue()
+        metrics.metricHistogramValue(subscriptionProcessingTimeQuery) == MetricHistogramValue.defaultValue()
     }
 
     def "should return partial results when some of the requests fails"() {
@@ -131,6 +137,7 @@ class RestTemplatePrometheusClientTest extends Specification {
                 subscription2xxStatusCodesQuery,
                 subscription4xxStatusCodesQuery,
                 subscription5xxStatusCodesQuery,
+                subscriptionProcessingTimeQuery
         )
         def queriesToSuccess = List.of(
                 new FileStub(subscriptionTimeoutsQuery, "subscription_timeouts_total.json"),
@@ -152,6 +159,7 @@ class RestTemplatePrometheusClientTest extends Specification {
         metrics.metricValue(subscription2xxStatusCodesQuery) == unavailable()
         metrics.metricValue(subscription4xxStatusCodesQuery) == unavailable()
         metrics.metricValue(subscription5xxStatusCodesQuery) == unavailable()
+        metrics.metricHistogramValue(subscriptionProcessingTimeQuery) == MetricHistogramValue.unavailable()
     }
 
     private void mockPrometheus(List<FileStub> stubs) {

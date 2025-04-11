@@ -55,6 +55,7 @@ public class HybridSubscriptionMetricsRepository implements SubscriptionMetricsR
         .withOtherErrors(monitoringMetrics.otherErrors())
         .withThroughput(monitoringMetrics.throughput())
         .withBatchRate(monitoringMetrics.metricPathBatchRate())
+        .withMessageProcessingTime(monitoringMetrics.messageProcessingTime())
         .withDiscarded(zookeeperMetrics.discarded)
         .withDelivered(zookeeperMetrics.delivered)
         .withVolume(zookeeperMetrics.volume)

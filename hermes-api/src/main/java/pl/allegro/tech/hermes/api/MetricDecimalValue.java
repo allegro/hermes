@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Objects;
 
-public class MetricDecimalValue {
+public class MetricDecimalValue implements MetricValue {
   private static final String UNAVAILABLE_STRING = "unavailable";
   private static final MetricDecimalValue UNAVAILABLE = new MetricDecimalValue(false, "-1.0");
   private static final MetricDecimalValue DEFAULT_VALUE = new MetricDecimalValue(true, "0.0");

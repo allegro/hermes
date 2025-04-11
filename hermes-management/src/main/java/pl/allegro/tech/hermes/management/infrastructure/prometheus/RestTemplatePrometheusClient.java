@@ -21,6 +21,9 @@ import org.springframework.http.HttpMethod;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import pl.allegro.tech.hermes.api.MetricDecimalValue;
+import pl.allegro.tech.hermes.api.MetricHistogramValue;
+import pl.allegro.tech.hermes.api.MetricUnavailable;
+import pl.allegro.tech.hermes.api.MetricValue;
 import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringMetricsContainer;
 
 public class RestTemplatePrometheusClient implements PrometheusClient {
@@ -52,11 +55,11 @@ public class RestTemplatePrometheusClient implements PrometheusClient {
   }
 
   private MonitoringMetricsContainer fetchInParallelFromPrometheus(List<String> queries) {
-    CompletableFuture<Map<String, MetricDecimalValue>> aggregatedFuture =
+    CompletableFuture<Map<String, MetricValue>> aggregatedFuture =
         getAggregatedCompletableFuture(queries);
 
     try {
-      Map<String, MetricDecimalValue> metrics =
+      Map<String, MetricValue> metrics =
           aggregatedFuture.get(fetchingTimeout.toMillis(), TimeUnit.MILLISECONDS);
       return MonitoringMetricsContainer.initialized(metrics);
     } catch (InterruptedException e) {
@@ -70,10 +73,10 @@ public class RestTemplatePrometheusClient implements PrometheusClient {
     }
   }
 
-  private CompletableFuture<Map<String, MetricDecimalValue>> getAggregatedCompletableFuture(
+  private CompletableFuture<Map<String, MetricValue>> getAggregatedCompletableFuture(
       List<String> queries) {
     // has to be collected to run in parallel
-    List<CompletableFuture<Pair<String, MetricDecimalValue>>> futures =
+    List<CompletableFuture<Pair<String, MetricValue>>> futures =
         queries.stream().map(this::readSingleMetric).toList();
 
     return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
@@ -84,11 +87,11 @@ public class RestTemplatePrometheusClient implements PrometheusClient {
                     .collect(Collectors.toMap(Pair::getKey, Pair::getValue)));
   }
 
-  private CompletableFuture<Pair<String, MetricDecimalValue>> readSingleMetric(String query) {
+  private CompletableFuture<Pair<String, MetricValue>> readSingleMetric(String query) {
     return CompletableFuture.supplyAsync(() -> queryPrometheus(query), executorService);
   }
 
-  private Pair<String, MetricDecimalValue> queryPrometheus(String query) {
+  private Pair<String, MetricValue> queryPrometheus(String query) {
     try {
       URI queryUri =
           URI.create(prometheusUri.toString() + "/api/v1/query?query=" + encode(query, UTF_8));
@@ -101,7 +104,7 @@ public class RestTemplatePrometheusClient implements PrometheusClient {
       Preconditions.checkState(
           response.isSuccess(), "Prometheus response does not contain valid data");
 
-      MetricDecimalValue result = parseResponse(response);
+      MetricValue result = parseResponse(response);
       meterRegistry.counter("read-metric-from-prometheus.success").increment();
       return Pair.of(query, result);
     } catch (HttpStatusCodeException ex) {
@@ -111,18 +114,42 @@ public class RestTemplatePrometheusClient implements PrometheusClient {
           ex.getStatusCode(),
           ex.getResponseBodyAsString(),
           ex);
-      return Pair.of(query, MetricDecimalValue.unavailable());
+      return Pair.of(query, MetricUnavailable.INSTANCE);
     } catch (Exception ex) {
       logger.warn("Unable to read from Prometheus. Query: {}", query, ex);
       meterRegistry.counter("read-metric-from-prometheus.error").increment();
-      return Pair.of(query, MetricDecimalValue.unavailable());
+      return Pair.of(query, MetricUnavailable.INSTANCE);
     }
   }
 
-  private MetricDecimalValue parseResponse(PrometheusResponse response) {
-    return response.data().results().stream()
+  private MetricValue parseResponse(PrometheusResponse response) {
+    List<PrometheusResponse.VectorResult> results = response.data().results();
+
+    boolean isHistogram = response.data().isHistogram();
+    return isHistogram ? parseHistogram(results) : parseDecimal(results);
+  }
+
+  private static MetricHistogramValue parseHistogram(
+      List<PrometheusResponse.VectorResult> results) {
+    Map<String, String> buckets =
+        results.stream()
+            .collect(
+                Collectors.toMap(
+                    vectorResult -> vectorResult.metric().le(),
+                    vectorResult ->
+                        vectorResult
+                            .getLongValue()
+                            .map(Object::toString)
+                            .orElse(MetricHistogramValue.defaultBucketValue())));
+    return buckets.isEmpty()
+        ? MetricHistogramValue.defaultValue()
+        : MetricHistogramValue.ofBuckets(buckets);
+  }
+
+  private static MetricDecimalValue parseDecimal(List<PrometheusResponse.VectorResult> results) {
+    return results.stream()
         .findFirst()
-        .flatMap(PrometheusResponse.VectorResult::getValue)
+        .flatMap(PrometheusResponse.VectorResult::getDoubleValue)
         .map(value -> MetricDecimalValue.of(value.toString()))
         .orElse(MetricDecimalValue.defaultValue());
   }

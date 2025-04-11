@@ -4,6 +4,7 @@ import static java.lang.Integer.MAX_VALUE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.waitAtMost;
 import static pl.allegro.tech.hermes.api.BatchSubscriptionPolicy.Builder.batchSubscriptionPolicy;
+import static pl.allegro.tech.hermes.api.PatchData.patchData;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
 import static pl.allegro.tech.hermes.integrationtests.assertions.HermesAssertions.assertThatMetrics;
 import static pl.allegro.tech.hermes.integrationtests.prometheus.SubscriptionMetrics.subscriptionMetrics;
@@ -24,11 +25,16 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.MessageFilterSpecification;
 import pl.allegro.tech.hermes.api.MetricDecimalValue;
+import pl.allegro.tech.hermes.api.MetricHistogramValue;
+import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicMetrics;
 import pl.allegro.tech.hermes.api.TopicName;
+import pl.allegro.tech.hermes.api.subscription.metrics.MessageProcessingDurationMetricOptions;
+import pl.allegro.tech.hermes.api.subscription.metrics.SubscriptionMetricConfig;
+import pl.allegro.tech.hermes.api.subscription.metrics.SubscriptionMetricsConfig;
 import pl.allegro.tech.hermes.integrationtests.prometheus.PrometheusExtension;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesExtension;
 import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscriber;
@@ -230,6 +236,124 @@ public class MetricsTest {
                         "subscription", subscription.getName(),
                         "topic", topic.getName().getName())
                     .withValue(1.0));
+  }
+
+  @Test
+  public void shouldReportMessageProcessingTimeMetrics() {
+    // given
+    TestSubscriber subscriber = subscribers.createSubscriber();
+    Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
+    Subscription subscription =
+        hermes
+            .initHelper()
+            .createSubscription(
+                subscription(topic, "subscription")
+                    .withEndpoint(subscriber.getEndpoint())
+                    .withSubscriptionPolicy(
+                        subscriptionPolicy().applyDefaults().withMessageTtl(0).build())
+                    .withMetricsConfig(
+                        new SubscriptionMetricsConfig(
+                            SubscriptionMetricConfig.enabled(
+                                new MessageProcessingDurationMetricOptions(new long[] {60_000}))))
+                    .build());
+    TestMessage message = TestMessage.simple();
+
+    // when
+    hermes.api().publishUntilSuccess(topic.getQualifiedName(), message.body());
+
+    // then
+    subscriber.waitUntilReceived(message.body());
+    hermes
+        .api()
+        .getConsumersMetrics()
+        .expectStatus()
+        .isOk()
+        .expectBody(String.class)
+        .value(
+            (body) -> {
+              assertThatMetrics(body)
+                  .contains("hermes_consumers_subscription_message_processing_time_seconds_bucket")
+                  .withLabels(
+                      "group", topic.getName().getGroupName(),
+                      "le", "+Inf",
+                      "subscription", subscription.getName(),
+                      "topic", topic.getName().getName())
+                  .withValue(1.0);
+              assertThatMetrics(body)
+                  .contains("hermes_consumers_subscription_message_processing_time_seconds_bucket")
+                  .withLabels(
+                      "group", topic.getName().getGroupName(),
+                      "le", "60.0",
+                      "subscription", subscription.getName(),
+                      "topic", topic.getName().getName())
+                  .withValue(1.0);
+            });
+  }
+
+  @Test
+  public void shouldReportMessageProcessingTimeMetricsWithUpdatedThresholds() {
+    // given
+    TestSubscriber subscriber = subscribers.createSubscriber();
+    Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
+    Subscription subscription =
+        hermes
+            .initHelper()
+            .createSubscription(
+                subscription(topic, "subscription")
+                    .withEndpoint(subscriber.getEndpoint())
+                    .withSubscriptionPolicy(
+                        subscriptionPolicy().applyDefaults().withMessageTtl(0).build())
+                    .withMetricsConfig(
+                        new SubscriptionMetricsConfig(
+                            SubscriptionMetricConfig.enabled(
+                                new MessageProcessingDurationMetricOptions(new long[] {60_000}))))
+                    .build());
+    PatchData patchData =
+        patchData()
+            .set(
+                "metricsConfig",
+                Map.of(
+                    "messageProcessingDuration",
+                    Map.of(
+                        "enabled",
+                        true,
+                        "options",
+                        Map.of("thresholdsMilliseconds", new String[] {"120000"}))))
+            .build();
+
+    // when
+    WebTestClient.ResponseSpec response =
+        hermes.api().updateSubscription(topic, subscription.getName(), patchData);
+    response.expectStatus().isOk();
+    TestMessage message = TestMessage.simple();
+    hermes.api().publishUntilSuccess(topic.getQualifiedName(), message.body());
+
+    // then
+    subscriber.waitUntilReceived(message.body());
+    hermes
+        .api()
+        .getConsumersMetrics()
+        .expectStatus()
+        .isOk()
+        .expectBody(String.class)
+        .value(
+            (body) -> {
+              assertThatMetrics(body)
+                  .contains("hermes_consumers_subscription_message_processing_time_seconds_bucket")
+                  .withLabels(
+                      "group", topic.getName().getGroupName(),
+                      "le", "120.0",
+                      "subscription", subscription.getName(),
+                      "topic", topic.getName().getName())
+                  .withValue(1.0);
+              assertThatMetrics(body)
+                  .contains("hermes_consumers_subscription_message_processing_time_seconds_bucket")
+                  .withoutLabels(
+                      "group", topic.getName().getGroupName(),
+                      "le", "60.0",
+                      "subscription", subscription.getName(),
+                      "topic", topic.getName().getName());
+            });
   }
 
   @Test
@@ -502,7 +626,11 @@ public class MetricsTest {
             .createSubscription(
                 subscriptionWithRandomName(topic.getName(), "http://endpoint2").build());
     prometheus.stubSubscriptionMetrics(
-        subscriptionMetrics(subscription.getQualifiedName()).withRate(15).build());
+        subscriptionMetrics(subscription.getQualifiedName())
+            .withRate(15)
+            .withMessageProcessingTime("+Inf", "4")
+            .withMessageProcessingTime("60.0", "2")
+            .build());
 
     // when
     WebTestClient.ResponseSpec response =
@@ -514,6 +642,8 @@ public class MetricsTest {
         response.expectBody(SubscriptionMetrics.class).returnResult().getResponseBody();
     assertThat(metrics).isNotNull();
     assertThat(metrics.getRate()).isEqualTo(MetricDecimalValue.of("15.0"));
+    assertThat(metrics.getMessageProcessingTime())
+        .isEqualTo(MetricHistogramValue.ofBuckets("+Inf", "4", "60.0", "2"));
   }
 
   private static HttpHeaders header(String key, String value) {

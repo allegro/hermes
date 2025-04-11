@@ -4,10 +4,18 @@ import static pl.allegro.tech.hermes.common.metric.SubscriptionTagsFactory.subsc
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.DistributionSummary;
+import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Tags;
+import io.micrometer.core.instrument.Timer;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.ToDoubleFunction;
+import java.util.stream.Stream;
 import pl.allegro.tech.hermes.api.SubscriptionName;
+import pl.allegro.tech.hermes.api.subscription.metrics.MessageProcessingDurationMetricOptions;
+import pl.allegro.tech.hermes.api.subscription.metrics.SubscriptionMetricConfig;
 import pl.allegro.tech.hermes.metrics.HermesCounter;
 import pl.allegro.tech.hermes.metrics.HermesHistogram;
 import pl.allegro.tech.hermes.metrics.HermesTimer;
@@ -121,8 +129,31 @@ public class SubscriptionMetrics {
             .record(value / 1000d);
   }
 
+  public HermesTimer messageProcessingTimeInMillisHistogram(
+      SubscriptionName subscriptionName,
+      SubscriptionMetricConfig<MessageProcessingDurationMetricOptions> metricConfig) {
+    Set<Tag> subscriptionTags = subscriptionTags(subscriptionName);
+    removeExistingMeter(SubscriptionMetricsNames.SUBSCRIPTION_PROCESSING_TIME, subscriptionTags);
+    if (metricConfig.enabled() && metricConfig.options().hasThresholds()) {
+      return HermesTimer.from(
+          Timer.builder(SubscriptionMetricsNames.SUBSCRIPTION_PROCESSING_TIME)
+              .tags(subscriptionTags)
+              .serviceLevelObjectives(metricConfig.options().getThresholdsDurations())
+              .register(meterRegistry));
+    } else {
+      return null;
+    }
+  }
+
   private Counter micrometerCounter(String metricName, SubscriptionName subscription) {
     return meterRegistry.counter(metricName, subscriptionTags(subscription));
+  }
+
+  private void removeExistingMeter(String metricName, Set<Tag> tags) {
+    Stream<Meter> existingMeters =
+        meterRegistry.find(metricName).meters().stream()
+            .filter(it -> new HashSet<>(it.getId().getTags()).equals(tags));
+    existingMeters.forEach(it -> meterRegistry.remove(it.getId()));
   }
 
   public static class SubscriptionMetricsNames {
@@ -143,5 +174,7 @@ public class SubscriptionMetrics {
     public static final String SUBSCRIPTION_OTHER_ERRORS = "subscription.other-errors";
     public static final String SUBSCRIPTION_FAILURES = "subscription.failures";
     public static final String SUBSCRIPTION_INFLIGHT_TIME = "subscription.inflight-time-seconds";
+    public static final String SUBSCRIPTION_PROCESSING_TIME =
+        "subscription.message-processing-time";
   }
 }

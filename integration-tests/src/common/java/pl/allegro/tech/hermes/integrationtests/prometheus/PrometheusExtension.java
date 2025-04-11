@@ -5,6 +5,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static pl.allegro.tech.hermes.management.infrastructure.prometheus.PrometheusClient.forSubscription;
+import static pl.allegro.tech.hermes.management.infrastructure.prometheus.PrometheusClient.forSubscriptionHistogram;
 import static pl.allegro.tech.hermes.management.infrastructure.prometheus.PrometheusClient.forSubscriptionStatusCode;
 import static pl.allegro.tech.hermes.management.infrastructure.prometheus.PrometheusClient.forTopic;
 
@@ -73,6 +74,9 @@ public class PrometheusExtension
     String statusCodes5xxQuery =
         forSubscriptionStatusCode(
             "hermes_consumers_subscription_http_status_codes_total", subName, "5.*", "");
+    String messageProcessingTimeHistogramQuery =
+        forSubscriptionHistogram(
+            "hermes_consumers_subscription_message_processing_time_seconds_bucket", subName, "");
 
     stub(deliveredQuery, metrics.toPrometheusRateResponse());
     stub(timeoutsQuery, metrics.toPrometheusDefaultResponse());
@@ -83,6 +87,9 @@ public class PrometheusExtension
     stub(statusCodes2xxQuery, metrics.toPrometheusStatusCodesResponse());
     stub(statusCodes4xxQuery, metrics.toPrometheusStatusCodesResponse());
     stub(statusCodes5xxQuery, metrics.toPrometheusStatusCodesResponse());
+    stub(
+        messageProcessingTimeHistogramQuery,
+        metrics.toPrometheusMessageProcessingTimeHistogramResponse());
   }
 
   private void stub(String query, PrometheusResponse response) {
