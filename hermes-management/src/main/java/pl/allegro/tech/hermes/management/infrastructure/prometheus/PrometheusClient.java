@@ -12,7 +12,7 @@ public interface PrometheusClient {
 
   String SUBSCRIPTION_QUERY_FORMAT_HISTOGRAM =
       "sum by (group, topic, subscription, le)"
-          + " (irate({__name__='%s', group='%s', topic='%s', subscription='%s', %s}[1m]))";
+          + " (increase({__name__='%s', group='%s', topic='%s', subscription='%s', %s}[1d]))";
 
   String SUBSCRIPTION_QUERY_FORMAT_STATUS_CODE =
       "sum by (group, topic, subscription)"

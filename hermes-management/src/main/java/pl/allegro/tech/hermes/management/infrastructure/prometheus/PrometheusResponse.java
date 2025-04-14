@@ -39,10 +39,6 @@ record PrometheusResponse(@JsonProperty("status") String status, @JsonProperty("
       return getValue(Double::parseDouble);
     }
 
-    Optional<Long> getLongValue() {
-      return getValue(Long::parseLong);
-    }
-
     private <T> Optional<T> getValue(Function<String, T> parser) {
       if (vector.size() != VALID_VECTOR_LENGTH) {
         return Optional.empty();

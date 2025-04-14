@@ -138,7 +138,7 @@ public class RestTemplatePrometheusClient implements PrometheusClient {
                     vectorResult -> vectorResult.metric().le(),
                     vectorResult ->
                         vectorResult
-                            .getLongValue()
+                            .getDoubleValue()
                             .map(Object::toString)
                             .orElse(MetricHistogramValue.defaultBucketValue())));
     return buckets.isEmpty()

@@ -31,7 +31,7 @@ class HybridPrometheusBasedSubscriptionMetricsRepositoryTest extends Specificati
             summedSharedCounter, zookeeperPaths, lagSource)
 
     private final static String subscriptionQuery = "sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_%s_total', group='group', topic='topic', subscription='subscription', service=~'hermes'}[1m]))"
-    private final static String subscriptionHistogramQuery = "sum by (group, topic, subscription, le) (irate({__name__='hermes_consumers_subscription_%s_seconds_bucket', group='group', topic='topic', subscription='subscription', service=~'hermes'}[1m]))"
+    private final static String subscriptionHistogramQuery = "sum by (group, topic, subscription, le) (increase({__name__='hermes_consumers_subscription_%s_seconds_bucket', group='group', topic='topic', subscription='subscription', service=~'hermes'}[1d]))"
     private final static String deliveredQuery = String.format(subscriptionQuery, "delivered")
     private final static String timeoutsQuery = String.format(subscriptionQuery, "timeouts")
     private final static String retriesQuery = String.format(subscriptionQuery, "retries")
@@ -56,7 +56,7 @@ class HybridPrometheusBasedSubscriptionMetricsRepositoryTest extends Specificati
                 .addMetricValue(timeoutsQuery, of('100'))
                 .addMetricValue(retriesQuery, of('20'))
                 .addMetricValue(otherErrorsQuery, of('1000'))
-                .addMetricValue(messageProcessingTimeQuery, ofBuckets('+Inf', '3', '60.0', '2'))
+                .addMetricValue(messageProcessingTimeQuery, ofBuckets('+Inf', '3', '60.0', '2.1'))
         summedSharedCounter.getValue('/hermes/groups/group/topics/topic/subscriptions/subscription/metrics/delivered') >> 100
         summedSharedCounter.getValue('/hermes/groups/group/topics/topic/subscriptions/subscription/metrics/discarded') >> 1
         summedSharedCounter.getValue('/hermes/groups/group/topics/topic/subscriptions/subscription/metrics/volume') >> 16
@@ -74,7 +74,7 @@ class HybridPrometheusBasedSubscriptionMetricsRepositoryTest extends Specificati
         metrics.retries == of("20")
         metrics.otherErrors == of("1000")
         metrics.lag == MetricLongValue.of(-1)
-        metrics.messageProcessingTime == ofBuckets('+Inf', '3', '60.0', '2')
+        metrics.messageProcessingTime == ofBuckets('+Inf', '3', '60.0', '2.1')
     }
 
     def "should read subscription metrics for all http status codes"() {

@@ -41,7 +41,7 @@ class RestTemplatePrometheusClientTest extends Specification {
     def subscription2xxStatusCodesQuery = "sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_http_status_codes_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', status_code=~'2.*', service=~'hermes'}[1m]))"
     def subscription4xxStatusCodesQuery = "sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_http_status_codes_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', status_code=~'4.*', service=~'hermes'}[1m]))"
     def subscription5xxStatusCodesQuery = "sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_http_status_codes_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', status_code=~'5.*', service=~'hermes'}[1m]))"
-    def subscriptionProcessingTimeQuery = "sum by (group, topic, subscription, le) (irate({__name__='hermes_consumers_subscription_message_processing_time_seconds_bucket', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', service=~'hermes'}[1m]))"
+    def subscriptionProcessingTimeQuery = "sum by (group, topic, subscription, le) (increase({__name__='hermes_consumers_subscription_message_processing_time_seconds_bucket', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', service=~'hermes'}[1d]))"
 
     def queries = List.of(subscriptionDeliveredQuery, subscriptionTimeoutsQuery, subscriptionRetriesQuery, subscriptionThroughputQuery,
             subscriptionErrorsQuery, subscriptionBatchesQuery, subscription2xxStatusCodesQuery, subscription4xxStatusCodesQuery,
@@ -92,7 +92,7 @@ class RestTemplatePrometheusClientTest extends Specification {
         metrics.metricValue(subscription2xxStatusCodesQuery) == of("2.0")
         metrics.metricValue(subscription4xxStatusCodesQuery) == of("1.0")
         metrics.metricValue(subscription5xxStatusCodesQuery) == of("2.0")
-        metrics.metricHistogramValue(subscriptionProcessingTimeQuery) == MetricHistogramValue.ofBuckets("+Inf", "4", "300.0", "4", "1.0", "0")
+        metrics.metricHistogramValue(subscriptionProcessingTimeQuery) == MetricHistogramValue.ofBuckets("+Inf", "4.0", "300.0", "3.9", "1.0", "0.0")
     }
 
     def "should return default value when metric has no value"() {
