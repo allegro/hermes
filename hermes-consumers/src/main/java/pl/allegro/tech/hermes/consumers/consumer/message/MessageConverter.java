@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.consumers.consumer.message;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.tracker.consumers.MessageMetadata;
+import pl.allegro.tech.hermes.tracker.consumers.deadletters.DeadMessage;
 
 public class MessageConverter {
 
@@ -32,5 +33,35 @@ public class MessageConverter {
         message.getKafkaTopic().asString(),
         message.getPublishingTimestamp(),
         message.getReadingTimestamp());
+  }
+
+  public static DeadMessage toDeadMessage(Message message, Subscription subscription) {
+    return new DeadMessage(
+            message.getId(),
+            message.getOffset(),
+            message.getPartition(),
+            message.getPartitionAssignmentTerm(),
+            message.getTopic(),
+            subscription.getName(),
+            message.getKafkaTopic().asString(),
+            message.getPublishingTimestamp(),
+            message.getReadingTimestamp(),
+            message.getData());
+  }
+
+  public static DeadMessage toDeadMessage(
+          Message message, Subscription subscription, String batchId) {
+    return new DeadMessage(
+            message.getId(),
+            batchId,
+            message.getOffset(),
+            message.getPartition(),
+            message.getPartitionAssignmentTerm(),
+            subscription.getQualifiedTopicName(),
+            subscription.getName(),
+            message.getKafkaTopic().asString(),
+            message.getPublishingTimestamp(),
+            message.getReadingTimestamp(),
+            message.getData());
   }
 }

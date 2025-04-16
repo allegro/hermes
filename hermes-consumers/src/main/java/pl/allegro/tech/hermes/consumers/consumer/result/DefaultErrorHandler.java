@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.consumers.consumer.result;
 
 import static pl.allegro.tech.hermes.api.SentMessageTrace.Builder.undeliveredMessage;
 import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
+import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toDeadMessage;
 
 import java.time.Clock;
 import java.util.Map;
@@ -17,6 +18,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.metrics.HermesCounter;
 import pl.allegro.tech.hermes.metrics.HermesHistogram;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
+import pl.allegro.tech.hermes.tracker.consumers.deadletters.DeadLetters;
 
 public class DefaultErrorHandler implements ErrorHandler {
 
@@ -26,6 +28,7 @@ public class DefaultErrorHandler implements ErrorHandler {
   private final UndeliveredMessageLog undeliveredMessageLog;
   private final Clock clock;
   private final Trackers trackers;
+  private final DeadLetters deadLetters;
   private final String cluster;
   private final SubscriptionName subscriptionName;
   private final HermesCounter failures;
@@ -41,12 +44,14 @@ public class DefaultErrorHandler implements ErrorHandler {
       UndeliveredMessageLog undeliveredMessageLog,
       Clock clock,
       Trackers trackers,
+      DeadLetters deadLetters,
       String cluster,
       SubscriptionName subscriptionName) {
     this.metrics = metrics;
     this.undeliveredMessageLog = undeliveredMessageLog;
     this.clock = clock;
     this.trackers = trackers;
+    this.deadLetters = deadLetters;
     this.cluster = cluster;
     this.subscriptionName = subscriptionName;
     this.failures = metrics.subscriptions().failuresCounter(subscriptionName);
@@ -66,6 +71,8 @@ public class DefaultErrorHandler implements ErrorHandler {
     inflightTime.record(System.currentTimeMillis() - message.getReadingTimestamp());
 
     addToMessageLog(message, subscription, result);
+
+    deadLetters.send(toDeadMessage(message, subscription), result.getRootCause());
 
     trackers
         .get(subscription)

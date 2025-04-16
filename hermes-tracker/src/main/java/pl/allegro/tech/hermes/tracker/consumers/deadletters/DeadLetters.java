@@ -1,0 +1,30 @@
+package pl.allegro.tech.hermes.tracker.consumers.deadletters;
+
+import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.tracker.consumers.*;
+
+import java.time.Clock;
+import java.util.List;
+
+public class DeadLetters {
+    private final List<DeadRepository> repositories;
+
+    public DeadLetters(List<DeadRepository> repositories) {
+        this.repositories = repositories;
+    }
+
+    public void send(DeadMessage message, String reason) {
+        for (DeadRepository repository : repositories) {
+            try {
+                repository.logDeadLetter(message, reason);
+            } catch (Exception e) {
+                // Log the error and continue to the next repository
+                System.err.println("Failed to send to repository: " + e.getMessage());
+            }
+        }
+    }
+
+    public void close() {
+        repositories.forEach(DeadRepository::close);
+    }
+}

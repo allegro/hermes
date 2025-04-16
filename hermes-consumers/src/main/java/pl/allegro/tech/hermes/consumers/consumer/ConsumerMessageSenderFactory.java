@@ -18,12 +18,14 @@ import pl.allegro.tech.hermes.consumers.consumer.result.SuccessHandler;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
+import pl.allegro.tech.hermes.tracker.consumers.deadletters.DeadLetters;
 
 public class ConsumerMessageSenderFactory {
 
   private final String kafkaClusterName;
   private final MessageSenderFactory messageSenderFactory;
   private final Trackers trackers;
+  private final DeadLetters deadLetters;
   private final FutureAsyncTimeout futureAsyncTimeout;
   private final UndeliveredMessageLog undeliveredMessageLog;
   private final Clock clock;
@@ -35,6 +37,7 @@ public class ConsumerMessageSenderFactory {
       String kafkaClusterName,
       MessageSenderFactory messageSenderFactory,
       Trackers trackers,
+      DeadLetters deadLetters,
       FutureAsyncTimeout futureAsyncTimeout,
       UndeliveredMessageLog undeliveredMessageLog,
       Clock clock,
@@ -47,6 +50,7 @@ public class ConsumerMessageSenderFactory {
     this.kafkaClusterName = kafkaClusterName;
     this.messageSenderFactory = messageSenderFactory;
     this.trackers = trackers;
+    this.deadLetters = deadLetters;
     this.futureAsyncTimeout = futureAsyncTimeout;
     this.undeliveredMessageLog = undeliveredMessageLog;
     this.clock = clock;
@@ -79,6 +83,7 @@ public class ConsumerMessageSenderFactory {
                 undeliveredMessageLog,
                 clock,
                 trackers,
+                deadLetters,
                 kafkaClusterName,
                 subscription.getQualifiedName()));
 
