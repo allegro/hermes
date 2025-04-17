@@ -8,6 +8,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.Descriptors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.consumers.consumer.bigquery.GoogleBigQueryStreamWriterFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.SenderClient;
 

@@ -5,7 +5,7 @@ import org.apache.avro.generic.GenericRecord;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.common.message.converter.AvroRecordToBytesConverter;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.GoogleBigQueryMessageTransformer;
+import pl.allegro.tech.hermes.consumers.consumer.bigquery.GoogleBigQueryMessageTransformer;
 
 public class GoogleBigQueryAvroMessageTransformer implements GoogleBigQueryMessageTransformer<GenericRecord> {
     @Override

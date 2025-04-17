@@ -1,6 +1,5 @@
-package pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery;
+package pl.allegro.tech.hermes.consumers.consumer.bigquery;
 
-import org.json.JSONObject;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 
 public interface GoogleBigQueryMessageTransformer<T> {

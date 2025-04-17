@@ -193,8 +193,4 @@ public class ConsumerConfiguration {
     return new Trackers(repositories);
   }
 
-  @Bean(destroyMethod = "close")
-  public DeadLetters deadLetters(List<DeadRepository> repositories){
-    return new DeadLetters(repositories);
-  }
 }

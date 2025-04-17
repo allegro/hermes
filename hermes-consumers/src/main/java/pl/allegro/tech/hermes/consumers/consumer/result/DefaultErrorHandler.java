@@ -72,7 +72,7 @@ public class DefaultErrorHandler implements ErrorHandler {
 
     addToMessageLog(message, subscription, result);
 
-    deadLetters.send(toDeadMessage(message, subscription), result.getRootCause());
+    deadLetters.send(subscription, toDeadMessage(message, subscription), result.getRootCause());
 
     trackers
         .get(subscription)

@@ -76,6 +76,9 @@ allprojects {
     ]
 
     repositories {
+        maven{url = uri("https://artifactory.allegrogroup.com/artifactory/group-allegro/") }
+        maven{url = uri("https://oss.sonatype.org/content/repositories/releases/") }
+        maven{url = uri("https://oss.sonatype.org/content/repositories/snapshots/") }
         mavenCentral()
     }
 

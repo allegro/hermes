@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery;
+package pl.allegro.tech.hermes.consumers.consumer.bigquery;
 
 public interface GoogleBigQueryStreamWriterFactory<T> {
 

@@ -34,6 +34,8 @@ dependencies {
     api group: 'org.apache.httpcomponents.core5', name: 'httpcore5', version: '5.2.4'
     api(group: 'com.google.cloud', name: 'google-cloud-bigquery', version: '2.27.0')
 
+    api  group : "pl.allegro.bigdata.hadoop", name : "vault-gcp-java", version : "0.3.1"
+
     testImplementation project(':hermes-test-helper')
     testImplementation group: 'org.apache.curator', name: 'curator-test', version: versions.curator
     testImplementation group: 'jakarta.servlet', name: 'jakarta.servlet-api', version: '6.0.0'

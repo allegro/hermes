@@ -31,25 +31,28 @@ public class GoogleBigQueryAvroToProtoConverter implements ToProtoConverter<Gene
 
     private void convertSimpleField(GenericRecord inputObject, Descriptors.FieldDescriptor field, Message.Builder messageBuilder) {
         String fieldName = field.getName();
-        Object fieldValue = inputObject.get(fieldName);
+        if (inputObject.hasField(fieldName)){
 
-        if (fieldValue != null) {
-            if (field.isRepeated()) {
-                if (!(fieldValue instanceof Map<?, ?>)) {
-                    for (Object el : (Iterable<?>) fieldValue) {
-                        messageBuilder.addRepeatedField(field, toProtobufValue(field, el));
+            Object fieldValue = inputObject.get(fieldName);
+
+            if (fieldValue != null) {
+                if (field.isRepeated()) {
+                    if (!(fieldValue instanceof Map<?, ?>)) {
+                        for (Object el : (Iterable<?>) fieldValue) {
+                            messageBuilder.addRepeatedField(field, toProtobufValue(field, el));
+                        }
+                    } else {
+                        for (Map.Entry<?, ?> el : ((Map<?, ?>) fieldValue).entrySet()) {
+                            DynamicMessage.Builder entryBuilder = DynamicMessage.newBuilder(field.getMessageType());
+                            Descriptors.FieldDescriptor valueField = field.getMessageType().findFieldByName("value");
+                            entryBuilder.setField(field.getMessageType().findFieldByName("key"), el.getKey().toString());
+                            entryBuilder.setField(valueField, toProtobufValue(valueField, el.getValue()));
+                            messageBuilder.addRepeatedField(field, entryBuilder.build());
+                        }
                     }
                 } else {
-                    for (Map.Entry<?, ?> el : ((Map<?, ?>) fieldValue).entrySet()) {
-                        DynamicMessage.Builder entryBuilder = DynamicMessage.newBuilder(field.getMessageType());
-                        Descriptors.FieldDescriptor valueField = field.getMessageType().findFieldByName("value");
-                        entryBuilder.setField(field.getMessageType().findFieldByName("key"), el.getKey().toString());
-                        entryBuilder.setField(valueField, toProtobufValue(valueField, el.getValue()));
-                        messageBuilder.addRepeatedField(field, entryBuilder.build());
-                    }
+                    messageBuilder.setField(field, toProtobufValue(field, fieldValue));
                 }
-            } else {
-                messageBuilder.setField(field, toProtobufValue(field, fieldValue));
             }
         }
     }

@@ -8,6 +8,7 @@ import pl.allegro.tech.hermes.consumers.consumer.Message
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult
 import pl.allegro.tech.hermes.consumers.test.MessageBuilder
 import pl.allegro.tech.hermes.tracker.consumers.Trackers
+import pl.allegro.tech.hermes.tracker.consumers.deadletters.DeadLetters
 import spock.lang.Specification
 
 import java.time.Clock
@@ -22,11 +23,13 @@ class DefaultErrorHandlerTest extends Specification {
 
     private Trackers trackers = new Trackers([sendingTracker])
 
+    private DeadLetters deadLetters = new DeadLetters([])
+
     private Subscription subscription = subscription('group.topic', 'subscription')
             .withTrackingMode(TrackingMode.TRACK_ALL).build()
 
     private DefaultErrorHandler handler = new DefaultErrorHandler(
-            Stub(MetricsFacade), undeliveredLog, Clock.systemUTC(), trackers, "cluster", subscription.qualifiedName)
+            Stub(MetricsFacade), undeliveredLog, Clock.systemUTC(), trackers, deadLetters, "cluster", subscription.qualifiedName)
 
     def "should save tracking information on message failure"() {
         given:

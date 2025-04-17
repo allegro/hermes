@@ -54,8 +54,4 @@ public class GoogleBigQueryConfiguration {
     public GoogleBigQueryAvroToProtoConverter avroToProtoConverter() {
         return new GoogleBigQueryAvroToProtoConverter();
     }
-//    @Bean
-//    public AllegroAvroToBigQueryRow avroToProtoConverter() {
-//        return new AllegroAvroToBigQueryRow(new GenericRecordToDynamicMessageConverter());
-//    }
 }
