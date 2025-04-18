@@ -643,7 +643,7 @@ public class MetricsTest {
     assertThat(metrics).isNotNull();
     assertThat(metrics.getRate()).isEqualTo(MetricDecimalValue.of("15.0"));
     assertThat(metrics.getMessageProcessingTime())
-        .isEqualTo(MetricHistogramValue.ofBuckets("+Inf", "4", "60.0", "2"));
+        .isEqualTo(MetricHistogramValue.ofBuckets("+Inf", "4.0", "60.0", "2.0"));
   }
 
   private static HttpHeaders header(String key, String value) {
