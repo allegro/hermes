@@ -37,10 +37,19 @@ public class PrometheusMetricsAssertion {
       return withLabels(new String[] {label0, label1}, new String[] {value0, value1});
     }
 
+    public void withoutLabels(String label0, String value0, String label1, String value1) {
+      withoutLabels(new String[] {label0, label1}, new String[] {value0, value1});
+    }
+
     public PrometheusMetricAssertion withLabels(
         String label0, String value0, String label1, String value1, String label2, String value2) {
       return withLabels(
           new String[] {label0, label1, label2}, new String[] {value0, value1, value2});
+    }
+
+    public void withoutLabels(
+        String label0, String value0, String label1, String value1, String label2, String value2) {
+      withoutLabels(new String[] {label0, label1, label2}, new String[] {value0, value1, value2});
     }
 
     public PrometheusMetricAssertion withLabels(
@@ -57,26 +66,22 @@ public class PrometheusMetricsAssertion {
           new String[] {value0, value1, value2, value3});
     }
 
+    public void withoutLabels(
+        String label0,
+        String value0,
+        String label1,
+        String value1,
+        String label2,
+        String value2,
+        String label3,
+        String value3) {
+      withoutLabels(
+          new String[] {label0, label1, label2, label3},
+          new String[] {value0, value1, value2, value3});
+    }
+
     private PrometheusMetricAssertion withLabels(String[] names, String[] values) {
-      List<String> matchedLines =
-          actualMetrics.stream()
-              .filter(
-                  line -> {
-                    Matcher matcher = METRIC_LINE_PATTERN.matcher(line);
-                    String labels;
-                    if (matcher.matches()) {
-                      labels = matcher.group(1);
-                    } else {
-                      throw new IllegalStateException("Unexpected line: " + line);
-                    }
-                    for (int i = 0; i < names.length; i++) {
-                      if (!labels.contains(names[i] + "=\"" + values[i] + "\"")) {
-                        return false;
-                      }
-                    }
-                    return true;
-                  })
-              .toList();
+      List<String> matchedLines = getMatchedLines(names, values);
       assertThat(matchedLines)
           .overridingErrorMessage("There is no metric with provided labels")
           .isNotEmpty();
@@ -84,6 +89,34 @@ public class PrometheusMetricsAssertion {
           .overridingErrorMessage("Found more than one metric with provided labels")
           .hasSize(1);
       return new PrometheusMetricAssertion(matchedLines.get(0));
+    }
+
+    private void withoutLabels(String[] names, String[] values) {
+      List<String> matchedLines = getMatchedLines(names, values);
+      assertThat(matchedLines)
+          .overridingErrorMessage("Found metric with provided labels")
+          .isEmpty();
+    }
+
+    private List<String> getMatchedLines(String[] names, String[] values) {
+      return actualMetrics.stream()
+          .filter(
+              line -> {
+                Matcher matcher = METRIC_LINE_PATTERN.matcher(line);
+                String labels;
+                if (matcher.matches()) {
+                  labels = matcher.group(1);
+                } else {
+                  throw new IllegalStateException("Unexpected line: " + line);
+                }
+                for (int i = 0; i < names.length; i++) {
+                  if (!labels.contains(names[i] + "=\"" + values[i] + "\"")) {
+                    return false;
+                  }
+                }
+                return true;
+              })
+          .toList();
     }
   }
 

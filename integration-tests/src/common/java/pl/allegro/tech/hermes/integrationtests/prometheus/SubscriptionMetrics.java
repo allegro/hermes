@@ -7,7 +7,11 @@ import java.util.Map;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 
 public record SubscriptionMetrics(
-    SubscriptionName name, int rate, int throughput, Map<String, Integer> ratePerStatusCode) {
+    SubscriptionName name,
+    int rate,
+    int throughput,
+    Map<String, Integer> ratePerStatusCode,
+    Map<String, String> messageProcessingTime) {
 
   private static final String TIMESTAMP = "1396860420";
 
@@ -35,6 +39,16 @@ public record SubscriptionMetrics(
     return new PrometheusResponse("success", new PrometheusResponse.Data("vector", results));
   }
 
+  PrometheusResponse toPrometheusMessageProcessingTimeHistogramResponse() {
+    List<PrometheusResponse.Result> results = new ArrayList<>();
+    messageProcessingTime.forEach(
+        (bucket, count) ->
+            results.add(
+                new PrometheusResponse.Result(
+                    new PrometheusResponse.Metric(bucket), List.of(TIMESTAMP, count))));
+    return new PrometheusResponse("success", new PrometheusResponse.Data("vector", results));
+  }
+
   PrometheusResponse toPrometheusDefaultResponse() {
     List<PrometheusResponse.Result> results = new ArrayList<>();
     ratePerStatusCode.forEach(
@@ -47,6 +61,7 @@ public record SubscriptionMetrics(
     private int rate = 0;
     private int throughput = 0;
     private final Map<String, Integer> ratePerStatusCode = new HashMap<>();
+    private final Map<String, String> messageProcessingTime = new HashMap<>();
 
     private SubscriptionMetricsBuilder(SubscriptionName name) {
       this.name = name;
@@ -67,8 +82,14 @@ public record SubscriptionMetrics(
       return this;
     }
 
+    public SubscriptionMetricsBuilder withMessageProcessingTime(String bucket, String count) {
+      messageProcessingTime.put(bucket, count);
+      return this;
+    }
+
     public SubscriptionMetrics build() {
-      return new SubscriptionMetrics(name, rate, throughput, ratePerStatusCode);
+      return new SubscriptionMetrics(
+          name, rate, throughput, ratePerStatusCode, messageProcessingTime);
     }
   }
 }

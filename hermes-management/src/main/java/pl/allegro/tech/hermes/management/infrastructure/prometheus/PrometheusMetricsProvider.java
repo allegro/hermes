@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.management.infrastructure.prometheus;
 
 import static pl.allegro.tech.hermes.management.infrastructure.prometheus.PrometheusClient.forSubscription;
+import static pl.allegro.tech.hermes.management.infrastructure.prometheus.PrometheusClient.forSubscriptionHistogram;
 import static pl.allegro.tech.hermes.management.infrastructure.prometheus.PrometheusClient.forSubscriptionStatusCode;
 import static pl.allegro.tech.hermes.management.infrastructure.prometheus.PrometheusClient.forTopic;
 
@@ -20,6 +21,8 @@ public class PrometheusMetricsProvider
   private static final String SUBSCRIPTION_BATCHES = "subscription_batches_total";
   private static final String SUBSCRIPTION_STATUS_CODES = "subscription_http_status_codes_total";
   private static final String SUBSCRIPTION_RETRIES = "subscription_retries_total";
+  private static final String SUBSCRIPTION_MESSAGE_PROCESSING_TIME =
+      "subscription_message_processing_time_seconds_bucket";
 
   private static final String TOPIC_RATE = "topic_requests_total";
   private static final String TOPIC_DELIVERY_RATE = "subscription_delivered_total";
@@ -80,6 +83,11 @@ public class PrometheusMetricsProvider
             subscriptionName,
             "5.*",
             additionalFilters);
+    String subscriptionMessageProcessingTimeQuery =
+        forSubscriptionHistogram(
+            consumerMetricName(SUBSCRIPTION_MESSAGE_PROCESSING_TIME),
+            subscriptionName,
+            additionalFilters);
 
     MonitoringMetricsContainer prometheusMetricsContainer =
         prometheusClient.readMetrics(
@@ -91,7 +99,8 @@ public class PrometheusMetricsProvider
             subscriptionBatchesQuery,
             subscription2xx,
             subscription4xx,
-            subscription5xx);
+            subscription5xx,
+            subscriptionMessageProcessingTimeQuery);
     return MonitoringSubscriptionMetricsProvider.metricsBuilder()
         .withRate(prometheusMetricsContainer.metricValue(subscriptionDeliveredQuery))
         .withTimeouts(prometheusMetricsContainer.metricValue(subscriptionTimeoutsQuery))
@@ -102,6 +111,8 @@ public class PrometheusMetricsProvider
         .withCode4xx(prometheusMetricsContainer.metricValue(subscription4xx))
         .withCode5xx(prometheusMetricsContainer.metricValue(subscription5xx))
         .withRetries(prometheusMetricsContainer.metricValue(subscriptionRetriesQuery))
+        .withMessageProcessingTime(
+            prometheusMetricsContainer.metricHistogramValue(subscriptionMessageProcessingTimeQuery))
         .build();
   }
 

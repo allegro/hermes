@@ -30,6 +30,7 @@ import pl.allegro.tech.hermes.consumers.consumer.profiling.Measurement;
 import pl.allegro.tech.hermes.consumers.consumer.profiling.NoOpConsumerProfiler;
 import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.result.ErrorHandler;
+import pl.allegro.tech.hermes.consumers.consumer.result.SubscriptionChangeListener;
 import pl.allegro.tech.hermes.consumers.consumer.result.SuccessHandler;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
@@ -200,6 +201,8 @@ public class ConsumerMessageSender {
             newSubscription.getEndpointAddressResolverMetadata());
     boolean oAuthPolicyChanged =
         !Objects.equals(this.subscription.getOAuthPolicy(), newSubscription.getOAuthPolicy());
+    boolean subscriptionMetricsConfigChanged =
+        !Objects.equals(this.subscription.getMetricsConfig(), newSubscription.getMetricsConfig());
 
     this.subscription = newSubscription;
 
@@ -213,6 +216,12 @@ public class ConsumerMessageSender {
         || httpClientChanged) {
       this.messageSender.stop();
       this.messageSender = messageSender(newSubscription);
+    }
+    if (subscriptionMetricsConfigChanged) {
+      this.successHandlers.stream()
+          .filter(SubscriptionChangeListener.class::isInstance)
+          .map(SubscriptionChangeListener.class::cast)
+          .forEach(successHandler -> successHandler.updateSubscription(newSubscription));
     }
   }
 
