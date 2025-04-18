@@ -1,9 +1,8 @@
 package pl.allegro.tech.hermes.api;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.Map;
 
-public record MetricHistogramValue(@JsonIgnore boolean available, Map<String, String> buckets)
+public record MetricHistogramValue(boolean available, Map<String, String> buckets)
     implements MetricValue {
 
   private static final MetricHistogramValue UNAVAILABLE =
