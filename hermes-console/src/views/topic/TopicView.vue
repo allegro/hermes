@@ -19,6 +19,7 @@
   import SubscriptionsList from '@/views/topic/subscriptions-list/SubscriptionsList.vue';
   import TopicHeader from '@/views/topic/topic-header/TopicHeader.vue';
   import TrackingCard from '@/components/tracking-card/TrackingCard.vue';
+  import OfflineRetransmissionInfo from "@/views/topic/offline-retransmission/OfflineRetransmissionInfo.vue";
 
   const router = useRouter();
 
@@ -42,6 +43,7 @@
     fetchOfflineClientsSource,
     removeTopic,
     fetchTopicClients,
+    fetchActiveOfflineRetransmissions,
   } = useTopic(topicName);
 
   const breadcrumbsItems = [
@@ -103,6 +105,16 @@
     iframeUrl: resolveCostsUrl(configStore.appConfig?.costs.topicIframeUrl),
     detailsUrl: resolveCostsUrl(configStore.appConfig?.costs.topicDetailsUrl),
   };
+
+  const sampleTasks = [
+    { kibana: 'https://kibana.example.com/task1', gcp: 'GCP Task 1' },
+    { kibana: 'https://kibana.example.com/task2', gcp: 'GCP Task 2' },
+  ];
+
+  const headers = [
+    { title: 'Kibana' },
+    { title: 'GCP Metrics' },
+  ];
 </script>
 
 <template>
@@ -185,6 +197,7 @@
         "
         :source="offlineClientsSource.source"
       />
+      <OfflineRetransmissionInfo v-if="topic?.offlineStorage.enabled" :tasks="sampleTasks" :headers="headers" />
     </template>
   </v-container>
 </template>
