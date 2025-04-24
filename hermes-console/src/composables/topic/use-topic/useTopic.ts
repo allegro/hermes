@@ -9,7 +9,7 @@ import {
   fetchOwner as getTopicOwner,
   fetchTopicSubscriptionDetails as getTopicSubscriptionDetails,
   fetchTopicSubscriptions as getTopicSubscriptions,
-  getTopicTrackingUrls,
+  getTopicTrackingUrls, getActiveRetransmissions,
 } from '@/api/hermes-client';
 import { dispatchErrorNotification } from '@/utils/notification-utils';
 import { ref } from 'vue';
@@ -26,6 +26,7 @@ import type { Owner } from '@/api/owner';
 import type { Ref } from 'vue';
 import type { Subscription } from '@/api/subscription';
 import type { TrackingUrl } from '@/api/tracking-url';
+import type {OfflineRetransmissionActiveTask, OfflineRetransmissionCreateTask} from "@/api/offline-retransmission";
 
 export interface UseTopic {
   topic: Ref<TopicWithSchema | undefined>;
@@ -40,6 +41,7 @@ export interface UseTopic {
   fetchOfflineClientsSource: () => Promise<void>;
   removeTopic: () => Promise<boolean>;
   fetchTopicClients: () => Promise<string[] | null>;
+  fetchActiveOfflineRetransmissions: () => Promise<void>;
 }
 
 export interface UseTopicErrors {
@@ -62,6 +64,7 @@ export function useTopic(topicName: string): UseTopic {
   const subscriptions = ref<Subscription[]>();
   const offlineClientsSource = ref<OfflineClientsSource>();
   const trackingUrls = ref<TrackingUrl[]>();
+  const activeRetransmissions = ref<OfflineRetransmissionActiveTask[]>();
   const loading = ref(false);
   const error = ref<UseTopicErrors>({
     fetchTopic: null,
@@ -83,6 +86,7 @@ export function useTopic(topicName: string): UseTopic {
           fetchTopicMessagesPreview(),
           fetchTopicMetrics(),
           fetchSubscriptions(),
+          fetchActiveOfflineRetransmissions()
         ]);
       }
     } finally {
@@ -201,6 +205,18 @@ export function useTopic(topicName: string): UseTopic {
     }
   };
 
+  const fetchActiveOfflineRetransmissions = async () => {
+    try {
+      activeRetransmissions.value = (await getActiveRetransmissions(topicName)).data;
+    } catch (e: any) {
+      dispatchErrorNotification(
+        e,
+        notificationStore,
+        useGlobalI18n().t('notifications.offlineRetransmission.fetchActive.failure'),
+      );
+    }
+  };
+
   fetchTopic();
   fetchTopicTrackingUrls();
 
@@ -217,6 +233,7 @@ export function useTopic(topicName: string): UseTopic {
     fetchOfflineClientsSource,
     removeTopic,
     fetchTopicClients,
+    fetchActiveOfflineRetransmissions
   };
 }
 

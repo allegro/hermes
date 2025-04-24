@@ -667,6 +667,13 @@ const en_US = {
     targetTopic: 'Target topic',
     startTimestamp: 'Start timestamp (UTC)',
     endTimestamp: 'End timestamp (UTC)',
+    infoView: {
+      title: 'Active offline retransmissions',
+      kibanaLinkTitle: 'Kibana',
+      gcpMetricsLinkTitle: 'GCP Metrics',
+      gcpJobLinkTitle: 'GCP Metrics',
+      allTasksLinkTitle: 'Hermes retransmission global queue',
+    }
   },
   notifications: {
     dashboardUrl: {
@@ -809,6 +816,9 @@ const en_US = {
         failure:
           'Failed to create retransmission task from topic: “{sourceTopic}“ to topic: “{targetTopic}“',
       },
+      fetchActive: {
+        failure: 'Failed to fetch active retransmission tasks',
+      }
     },
     subscriptionFiltersDebug: {
       fetchTopicContentType: {
