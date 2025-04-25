@@ -99,6 +99,9 @@ public class ManagementTestClient {
 
   private static final String OFFLINE_RETRANSMISSION_TASKS = "/offline-retransmission/tasks";
 
+  private static final String OFFLINE_RETRANSMISSION_TOPIC_TASKS_MONITORING_INFO =
+      "/offline-retransmission/topics/{topicName}/tasks";
+
   private static final String OFFLINE_RETRANSMISSION_TASK =
       "/offline-retransmission/tasks/{taskId}";
 
@@ -699,6 +702,17 @@ public class ManagementTestClient {
     return webTestClient
         .get()
         .uri(UriBuilder.fromUri(managementContainerUrl).path(OFFLINE_RETRANSMISSION_TASKS).build())
+        .exchange();
+  }
+
+  public WebTestClient.ResponseSpec getTopicActiveRetransmissionsMonitoringInfo(
+      String qualifiedTopicName) {
+    return webTestClient
+        .get()
+        .uri(
+            UriBuilder.fromUri(managementContainerUrl)
+                .path(OFFLINE_RETRANSMISSION_TOPIC_TASKS_MONITORING_INFO)
+                .build(qualifiedTopicName))
         .exchange();
   }
 

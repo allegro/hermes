@@ -672,9 +672,9 @@ const en_US = {
       allTasksLinkTitle: 'Hermes retransmission global queue',
       idHeader: 'ID',
       typeHeader: 'Type',
-      kibanaLinkHeader: 'Kibana',
-      gcpMetricsLinkHeader: 'GCP Metrics',
-      gcpJobLinkHeader: 'GCP Job Details',
+      logsLinkHeader: 'Kibana',
+      metricsLinkHeader: 'Metrics',
+      jobLinkHeader: 'Job Details',
       allTasksLinkHeader: 'Hermes retransmission global queue',
     }
   },
