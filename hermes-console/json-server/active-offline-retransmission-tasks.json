@@ -1,0 +1,16 @@
+[
+  {
+    "type": "TOPIC",
+    "taskId": "550e8400-e29b-41d4-a716-446655440000",
+    "kibana": "https://kibana.example.com/app/kibana#/discover",
+    "gcpMetrics": "https://console.cloud.google.com/monitoring/alerting?project=your-project-id",
+    "gcpJobDetails": "https://console.cloud.google.com/dataflow/jobs/us-central1/your-job-id?project=your-project-id"
+  },
+  {
+    "type": "VIEW",
+    "taskId": "123e4567-e89b-12d3-a456-42661417400",
+    "kibana": "https://kibana.example.com/app/kibana#/discover",
+    "gcpMetrics": "https://console.cloud.google.com/monitoring/alerting?project=your-project-id",
+    "gcpJobDetails": "https://console.cloud.google.com/dataflow/jobs/us-central1/your-job-id?project=your-project-id"
+  }
+]

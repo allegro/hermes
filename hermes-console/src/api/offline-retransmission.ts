@@ -9,10 +9,7 @@ export interface OfflineRetransmissionCreateTask {
 export interface OfflineRetransmissionActiveTask {
   type: string;
   taskId: string;
-  sourceViewPath: string | null;
-  sourceTopic: string | null;
-  targetTopic: string;
-  startTimestamp: string;
-  endTimestamp: string;
-  createdAt: string;
+  kibana: string,
+  gcpMetrics: string,
+  gcpJobDetails: string
 }

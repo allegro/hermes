@@ -91,6 +91,7 @@ export interface TopicViewConfiguration {
   offlineRetransmissionEnabled: boolean;
   offlineRetransmissionDescription: string;
   offlineRetransmissionFromViewDocsUrl: string;
+  offlineRetransmissionGlobalTaskQueueUrl: string;
 }
 
 export interface DefaultTopicViewConfiguration {

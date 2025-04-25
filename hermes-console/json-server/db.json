@@ -692,7 +692,8 @@
       ],
       "offlineRetransmissionEnabled": true,
       "offlineRetransmissionDescription": "Offline retransmission",
-      "offlineRetransmissionFromViewDocsUrl": "https://hermes-pubsub.rtfd.org"
+      "offlineRetransmissionFromViewDocsUrl": "https://hermes-pubsub.rtfd.org",
+      "offlineRetransmissionGlobalTaskQueueUrl": "http://localhost:8090/offline-retransmission/tasks"
     },
     "subscription": {
       "endpointAddressResolverMetadata": {

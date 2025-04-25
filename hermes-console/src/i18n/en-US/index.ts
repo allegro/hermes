@@ -669,10 +669,13 @@ const en_US = {
     endTimestamp: 'End timestamp (UTC)',
     infoView: {
       title: 'Active offline retransmissions',
-      kibanaLinkTitle: 'Kibana',
-      gcpMetricsLinkTitle: 'GCP Metrics',
-      gcpJobLinkTitle: 'GCP Metrics',
       allTasksLinkTitle: 'Hermes retransmission global queue',
+      idHeader: 'ID',
+      typeHeader: 'Type',
+      kibanaLinkHeader: 'Kibana',
+      gcpMetricsLinkHeader: 'GCP Metrics',
+      gcpJobLinkHeader: 'GCP Job Details',
+      allTasksLinkHeader: 'Hermes retransmission global queue',
     }
   },
   notifications: {
