@@ -41,7 +41,7 @@ export interface UseTopic {
   fetchOfflineClientsSource: () => Promise<void>;
   removeTopic: () => Promise<boolean>;
   fetchTopicClients: () => Promise<string[] | null>;
-  fetchActiveOfflineRetransmissions: () => Promise<void>;
+  activeRetransmissions: Ref<OfflineRetransmissionActiveTask>;
 }
 
 export interface UseTopicErrors {
@@ -233,7 +233,7 @@ export function useTopic(topicName: string): UseTopic {
     fetchOfflineClientsSource,
     removeTopic,
     fetchTopicClients,
-    fetchActiveOfflineRetransmissions
+    activeRetransmissions,
   };
 }
 

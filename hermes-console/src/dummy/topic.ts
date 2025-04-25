@@ -8,6 +8,7 @@ import type {
 } from '@/api/topic';
 import type { OfflineClientsSource } from '@/api/offline-clients-source';
 import type { Owner } from '@/api/owner';
+import type {OfflineRetransmissionActiveTask} from "@/api/offline-retransmission";
 
 export const dummyTopic: TopicWithSchema = {
   schema:
@@ -87,3 +88,20 @@ export const dummyOfflineClientsSource: OfflineClientsSource = {
   source:
     'https://www.openstreetmap.org/export/embed.html?bbox=-0.004017949104309083%2C51.47612752641776%2C0.00030577182769775396%2C51.478569861898606&layer=mapnik',
 };
+
+export const dummyActiveOfflineRetransmissions: OfflineRetransmissionActiveTask[] = [
+  {
+    type: "TOPIC",
+    taskId: "550e8400-e29b-41d4-a716-446655440000",
+    kibana: "https://kibana.example.com/app/kibana#/discover",
+    gcpMetrics: "https://console.cloud.google.com/monitoring/alerting?project=your-project-id",
+    gcpJobDetails: "https://console.cloud.google.com/dataflow/jobs/us-central1/your-job-id?project=your-project-id"
+  }
+  , {
+    type: "VIEW",
+    taskId: "123e4567-e89b-12d3-a456-42661417400",
+    kibana: "https://kibana.example.com/app/kibana#/discover",
+    gcpMetrics: "https://console.cloud.google.com/monitoring/alerting?project=your-project-id",
+    gcpJobDetails: "https://console.cloud.google.com/dataflow/jobs/us-central1/your-job-id?project=your-project-id"
+  }
+];

@@ -3,6 +3,7 @@ import {
   dummyTopic,
   dummyTopicMessagesPreview,
   dummyTopicMetrics,
+  dummyActiveOfflineRetransmissions,
 } from '@/dummy/topic';
 import {
   dummySubscription,
@@ -36,6 +37,7 @@ import type { Stats } from '@/api/stats';
 import type { Subscription } from '@/api/subscription';
 import type { SubscriptionHealth } from '@/api/subscription-health';
 import type { SubscriptionMetrics } from '@/api/subscription-metrics';
+import type {OfflineRetransmissionActiveTask} from "@/api/offline-retransmission";
 
 const url = 'http://localhost:3000';
 
@@ -199,6 +201,20 @@ export const fetchTopicClientsErrorHandler = ({
     });
   });
 
+export const fetchActiveOfflineRetransmissionTasksHandler =
+  ({
+     topicName,
+     tasks,
+   }: {
+    topicName: string,
+    tasks: Array<OfflineRetransmissionActiveTask> | null
+  }) =>
+    http.post(`${url}/offline-retransmission/topics/${topicName}/tasks`, () => {
+      return HttpResponse.json(tasks, {
+        status: 200,
+      });
+    });
+
 export const successfulTopicHandlers = [
   fetchTopicHandler({}),
   fetchOwnerHandler({}),
@@ -209,6 +225,7 @@ export const successfulTopicHandlers = [
   fetchTopicSubscriptionDetailsHandler({
     subscription: secondDummySubscription,
   }),
+  fetchActiveOfflineRetransmissionTasksHandler({topicName: dummyTopic.name, tasks: dummyActiveOfflineRetransmissions})
 ];
 
 export const fetchSubscriptionHandler = ({
