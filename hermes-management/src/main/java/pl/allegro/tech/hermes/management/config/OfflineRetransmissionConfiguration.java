@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
 import pl.allegro.tech.hermes.management.domain.retransmit.DcAwareOfflineRetransmissionRepository;
+import pl.allegro.tech.hermes.management.domain.retransmit.DefaultRetransmissionMonitoringUrlProvider;
 import pl.allegro.tech.hermes.management.domain.retransmit.OfflineRetransmissionRepository;
 import pl.allegro.tech.hermes.management.domain.retransmit.OfflineRetransmissionService;
 
@@ -26,6 +27,7 @@ public class OfflineRetransmissionConfiguration {
       @Qualifier("dcAwareOfflineRetransmissionRepository")
           OfflineRetransmissionRepository taskRepository,
       TopicRepository topicRepository) {
-    return new OfflineRetransmissionService(taskRepository, topicRepository);
+    return new OfflineRetransmissionService(
+        taskRepository, topicRepository, new DefaultRetransmissionMonitoringUrlProvider());
   }
 }

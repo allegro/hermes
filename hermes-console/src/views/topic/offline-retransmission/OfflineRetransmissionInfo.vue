@@ -8,9 +8,9 @@ const props = defineProps<{
   tasks: Array<{
     taskId: string,
     type: string;
-    kibana: string;
-    gcpMetrics: string;
-    gcpJobDetails: string;
+    logsUrl: string;
+    metricsUrl: string;
+    jobDetailsUrl: string;
   }>;
 }>();
 
@@ -30,9 +30,9 @@ const configStore = useAppConfigStore();
           <tr>
             <th>{{ $t('offlineRetransmission.infoView.idHeader') }}</th>
             <th>{{ $t('offlineRetransmission.infoView.typeHeader') }}</th>
-            <th>{{ $t('offlineRetransmission.infoView.kibanaLinkHeader') }}</th>
-            <th>{{ $t('offlineRetransmission.infoView.gcpMetricsLinkHeader') }}</th>
-            <th>{{ $t('offlineRetransmission.infoView.gcpJobLinkHeader') }}</th>
+            <th>{{ $t('offlineRetransmission.infoView.logsLinkHeader') }}</th>
+            <th>{{ $t('offlineRetransmission.infoView.metricsLinkHeader') }}</th>
+            <th>{{ $t('offlineRetransmission.infoView.jobLinkHeader') }}</th>
           </tr>
           </thead>
           <tr v-for="task in props.tasks">
@@ -44,7 +44,7 @@ const configStore = useAppConfigStore();
             </td>
             <td class="font-weight-medium">
               <v-btn
-                  :href="task.kibana"
+                  :href="task.logsUrl"
                   target="_blank"
                   variant="text"
                   color="blue"
@@ -54,7 +54,7 @@ const configStore = useAppConfigStore();
             </td>
             <td class="font-weight-medium">
               <v-btn
-                  :href="task.gcpMetrics"
+                  :href="task.metricsUrl"
                   target="_blank"
                   variant="text"
                   color="blue"
@@ -64,7 +64,7 @@ const configStore = useAppConfigStore();
             </td>
             <td class="font-weight-medium">
               <v-btn
-                  :href="task.gcpJobDetails"
+                  :href="task.jobDetailsUrl"
                   target="_blank"
                   variant="text"
                   color="blue"

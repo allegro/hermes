@@ -511,6 +511,11 @@ public class HermesTestClient {
     return managementTestClient.getOfflineRetransmissionTasks();
   }
 
+  public WebTestClient.ResponseSpec getTopicActiveRetransmissionsMonitoringInfo(
+      String qualifiedTopicName) {
+    return managementTestClient.getTopicActiveRetransmissionsMonitoringInfo(qualifiedTopicName);
+  }
+
   public WebTestClient.ResponseSpec deleteOfflineRetransmissionTask(String taskId) {
     return managementTestClient.deleteOfflineRetransmissionTask(taskId);
   }
