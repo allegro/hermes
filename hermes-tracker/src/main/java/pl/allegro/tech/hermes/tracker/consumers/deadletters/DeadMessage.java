@@ -12,6 +12,7 @@ public class DeadMessage {
     private final long publishingTimestamp;
     private final long readingTimestamp;
     private final byte[] body;
+    private final String rootCause;
 
     public DeadMessage(
             String messageId,
@@ -24,7 +25,8 @@ public class DeadMessage {
             String kafkaTopic,
             long publishingTimestamp,
             long readingTimestamp,
-            byte[] body) {
+            byte[] body,
+            String rootCause) {
         this.messageId = messageId;
         this.batchId = batchId;
         this.offset = offset;
@@ -36,6 +38,7 @@ public class DeadMessage {
         this.publishingTimestamp = publishingTimestamp;
         this.readingTimestamp = readingTimestamp;
         this.body = body;
+        this.rootCause = rootCause;
     }
 
 
@@ -49,7 +52,8 @@ public class DeadMessage {
             String kafkaTopic,
             long publishingTimestamp,
             long readingTimestamp,
-            byte[] body) {
+            byte[] body,
+            String rootCause) {
         this(
                 messageId,
                 "",
@@ -61,7 +65,8 @@ public class DeadMessage {
                 kafkaTopic,
                 publishingTimestamp,
                 readingTimestamp,
-                body);
+                body,
+                rootCause);
     }
 
     public String getMessageId() {
@@ -107,4 +112,10 @@ public class DeadMessage {
     public byte[] getBody() {
         return body;
     }
+
+    public String getRootCause() {
+        return rootCause;
+    }
+
+
 }

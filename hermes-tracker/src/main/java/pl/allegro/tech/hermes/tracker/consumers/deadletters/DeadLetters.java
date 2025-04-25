@@ -13,12 +13,12 @@ public class DeadLetters {
         this.repositories = repositories;
     }
 
-    public void send(Subscription subscription, DeadMessage message, String reason) {
+    public void send(Subscription subscription, DeadMessage message) {
         for (DeadRepository repository : repositories) {
             if (repository.supports(subscription))
             {
                 try {
-                    repository.logDeadLetter(message, reason);
+                    repository.logDeadLetter(message);
                 } catch (Exception e) {
                     // Log the error and continue to the next repository
                     System.err.println("Failed to send to repository: " + e.getMessage());

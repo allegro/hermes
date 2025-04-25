@@ -35,7 +35,7 @@ public class MessageConverter {
         message.getReadingTimestamp());
   }
 
-  public static DeadMessage toDeadMessage(Message message, Subscription subscription) {
+  public static DeadMessage toDeadMessage(Message message, Subscription subscription, String rootCause) {
     return new DeadMessage(
             message.getId(),
             message.getOffset(),
@@ -46,11 +46,13 @@ public class MessageConverter {
             message.getKafkaTopic().asString(),
             message.getPublishingTimestamp(),
             message.getReadingTimestamp(),
-            message.getData());
+            message.getData(),
+            rootCause
+            );
   }
 
   public static DeadMessage toDeadMessage(
-          Message message, Subscription subscription, String batchId) {
+          Message message, Subscription subscription, String rootCause, String batchId) {
     return new DeadMessage(
             message.getId(),
             batchId,
@@ -62,6 +64,7 @@ public class MessageConverter {
             message.getKafkaTopic().asString(),
             message.getPublishingTimestamp(),
             message.getReadingTimestamp(),
-            message.getData());
+            message.getData(),
+            rootCause);
   }
 }
