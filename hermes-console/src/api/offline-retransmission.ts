@@ -9,7 +9,7 @@ export interface OfflineRetransmissionCreateTask {
 export interface OfflineRetransmissionActiveTask {
   type: string;
   taskId: string;
-  logsUrl: string,
-  metricsUrl: string,
-  jobDetailsUrl: string
+  logsUrl: string;
+  metricsUrl: string;
+  jobDetailsUrl: string;
 }

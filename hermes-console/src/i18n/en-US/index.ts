@@ -669,14 +669,15 @@ const en_US = {
     endTimestamp: 'End timestamp (UTC)',
     infoView: {
       title: 'Active offline retransmissions',
-      allTasksLinkTitle: 'Hermes retransmission global queue',
+      allTasksLinkTitle: 'Offline retransmission global queue',
+      monitoringLinkTitle: 'Offline retransmission monitoring docs',
       idHeader: 'ID',
       typeHeader: 'Type',
       logsLinkHeader: 'Kibana',
       metricsLinkHeader: 'Metrics',
       jobLinkHeader: 'Job Details',
       allTasksLinkHeader: 'Hermes retransmission global queue',
-    }
+    },
   },
   notifications: {
     dashboardUrl: {
@@ -821,7 +822,7 @@ const en_US = {
       },
       fetchActive: {
         failure: 'Failed to fetch active retransmission tasks',
-      }
+      },
     },
     subscriptionFiltersDebug: {
       fetchTopicContentType: {

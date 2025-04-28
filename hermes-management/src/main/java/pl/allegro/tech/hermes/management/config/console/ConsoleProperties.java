@@ -382,6 +382,9 @@ public class ConsoleProperties {
     private boolean offlineRetransmissionEnabled = false;
     private String offlineRetransmissionDescription = "Offline retransmission";
     private String offlineRetransmissionFromViewDocsUrl = "https://hermes-pubsub.rtfd.org";
+    private String offlineRetransmissionGlobalTaskQueueUrl =
+        "http://localhost:8090/offline-retransmission/tasks";
+    private String offlineRetransmissionMonitoringUrl = "https://hermes-pubsub.rtfd.org";
 
     public boolean isMessagePreviewEnabled() {
       return messagePreviewEnabled;
@@ -502,6 +505,23 @@ public class ConsoleProperties {
     public void setOfflineRetransmissionFromViewDocsUrl(
         String offlineRetransmissionFromViewDocsUrl) {
       this.offlineRetransmissionFromViewDocsUrl = offlineRetransmissionFromViewDocsUrl;
+    }
+
+    public String getOfflineRetransmissionGlobalTaskQueueUrl() {
+      return offlineRetransmissionGlobalTaskQueueUrl;
+    }
+
+    public void setOfflineRetransmissionGlobalTaskQueueUrl(
+        String offlineRetransmissionGlobalTaskQueueUrl) {
+      this.offlineRetransmissionGlobalTaskQueueUrl = offlineRetransmissionGlobalTaskQueueUrl;
+    }
+
+    public String getOfflineRetransmissionMonitoringUrl() {
+      return offlineRetransmissionMonitoringUrl;
+    }
+
+    public void setOfflineRetransmissionMonitoringUrl(String offlineRetransmissionMonitoringUrl) {
+      this.offlineRetransmissionMonitoringUrl = offlineRetransmissionMonitoringUrl;
     }
   }
 

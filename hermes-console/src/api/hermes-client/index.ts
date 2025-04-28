@@ -35,7 +35,10 @@ import type {
   TopicWithSchema,
 } from '@/api/topic';
 import type { OfflineClientsSource } from '@/api/offline-clients-source';
-import type {OfflineRetransmissionActiveTask, OfflineRetransmissionCreateTask} from '@/api/offline-retransmission';
+import type {
+  OfflineRetransmissionActiveTask,
+  OfflineRetransmissionCreateTask,
+} from '@/api/offline-retransmission';
 import type { Owner, OwnerSource } from '@/api/owner';
 import type { ResponsePromise } from '@/utils/axios/axios-utils';
 import type { RetransmissionDate } from '@/api/OffsetRetransmissionDate';
@@ -409,13 +412,17 @@ export function retransmitSubscriptionMessages(
   );
 }
 
-export function createRetransmissionTask(task: OfflineRetransmissionCreateTask) {
+export function createRetransmissionTask(
+  task: OfflineRetransmissionCreateTask,
+) {
   return axios.post(`/offline-retransmission/tasks`, task, {
     headers: { 'Content-Type': 'application/json' },
   });
 }
 
-export function getActiveRetransmissions(topicName: String): ResponsePromise<Array<OfflineRetransmissionActiveTask>> {
+export function getActiveRetransmissions(
+  topicName: String,
+): ResponsePromise<Array<OfflineRetransmissionActiveTask>> {
   return axios.get(`/offline-retransmission/topics/${topicName}/tasks/`);
 }
 
