@@ -77,9 +77,12 @@ server.post('/offline-retransmission/tasks', (req, res) => {
   res.sendStatus(200);
 });
 
-server.get('/offline-retransmission/topics/pl.allegro.public.group.DummyEvent/tasks/', (req, res) => {
-  res.jsonp(activeOfflineRetransmissionTasks);
-});
+server.get(
+  '/offline-retransmission/topics/pl.allegro.public.group.DummyEvent/tasks/',
+  (req, res) => {
+    res.jsonp(activeOfflineRetransmissionTasks);
+  },
+);
 
 server.put(
   '/topics/:topic/subscriptions/:subscroption/retransmission',

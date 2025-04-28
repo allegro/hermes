@@ -65,7 +65,7 @@ public class OfflineRetransmissionManagementTest {
   }
 
   @Test
-  public void shouldListActiveRetransmissionMonitoringInfoForTopic() {
+  public void shouldListActiveTopicRetransmissionMonitoringInfoForSourceAndTargetTopic() {
     // given
     Topic sourceTopic = hermes.initHelper().createTopic(topicWithRandomName().build());
     Topic targetTopic = hermes.initHelper().createTopic(topicWithRandomName().build());
@@ -78,16 +78,56 @@ public class OfflineRetransmissionManagementTest {
     response.expectStatus().isCreated();
 
     // when
-    List<OfflineRetransmissionTaskMonitoringInfo> activeTasks =
+    List<OfflineRetransmissionTaskMonitoringInfo> activeTasksForSourceTopic =
         getActiveRetransmissionsMonitoringInfo(sourceTopic.getQualifiedName());
+
+    List<OfflineRetransmissionTaskMonitoringInfo> activeTasksForTargetTopic =
+        getActiveRetransmissionsMonitoringInfo(targetTopic.getQualifiedName());
+
+    // and
+    String taskId = activeTasksForSourceTopic.get(0).taskId();
+    assertThat(activeTasksForSourceTopic.size()).isEqualTo(1);
+    assertThat(activeTasksForSourceTopic.get(0).type()).isEqualTo(RetransmissionType.TOPIC);
+    assertThat(activeTasksForSourceTopic.get(0).logsUrl())
+        .isEqualTo("https://kibana.com/?query=" + taskId);
+    assertThat(activeTasksForSourceTopic.get(0).jobDetailsUrl())
+        .isEqualTo("https://job-details.com?query=" + taskId);
+    assertThat(activeTasksForSourceTopic.get(0).metricsUrl())
+        .isEqualTo("https://monitoring.com?query=" + taskId);
+
+    // and when
+    String targetTaskId = activeTasksForTargetTopic.get(0).taskId();
+    assertThat(activeTasksForTargetTopic.size()).isEqualTo(1);
+    assertThat(activeTasksForTargetTopic.get(0).type()).isEqualTo(RetransmissionType.TOPIC);
+    assertThat(activeTasksForTargetTopic.get(0).logsUrl())
+        .isEqualTo("https://kibana.com/?query=" + taskId);
+    assertThat(activeTasksForTargetTopic.get(0).jobDetailsUrl())
+        .isEqualTo("https://job-details.com?query=" + taskId);
+    assertThat(activeTasksForTargetTopic.get(0).metricsUrl())
+        .isEqualTo("https://monitoring.com?query=" + taskId);
+  }
+
+  @Test
+  public void shouldListActiveViewRetransmissionMonitoringInfoForTargetTopic() {
+    // given
+    var targetTopic = hermes.initHelper().createTopic(topicWithRandomName().build());
+    var request =
+        new OfflineRetransmissionFromViewRequest("testViewPath", targetTopic.getQualifiedName());
+    WebTestClient.ResponseSpec response = hermes.api().createOfflineRetransmissionTask(request);
+    response.expectStatus().isCreated();
+
+    // when
+    List<OfflineRetransmissionTaskMonitoringInfo> activeTasks =
+        getActiveRetransmissionsMonitoringInfo(targetTopic.getQualifiedName());
 
     // and
     String taskId = activeTasks.get(0).taskId();
     assertThat(activeTasks.size()).isEqualTo(1);
-    assertThat(activeTasks.get(0).type()).isEqualTo(RetransmissionType.TOPIC);
-    assertThat(activeTasks.get(0).jobDetailsUrl()).isEqualTo("http://joburl/" + taskId);
-    assertThat(activeTasks.get(0).logsUrl()).isEqualTo("http://logsurl/" + taskId);
-    assertThat(activeTasks.get(0).metricsUrl()).isEqualTo("http://metricsurl/" + taskId);
+    assertThat(activeTasks.get(0).type()).isEqualTo(RetransmissionType.VIEW);
+    assertThat(activeTasks.get(0).logsUrl()).isEqualTo("https://kibana.com/?query=" + taskId);
+    assertThat(activeTasks.get(0).jobDetailsUrl())
+        .isEqualTo("https://job-details.com?query=" + taskId);
+    assertThat(activeTasks.get(0).metricsUrl()).isEqualTo("https://monitoring.com?query=" + taskId);
   }
 
   @Test

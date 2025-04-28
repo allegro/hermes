@@ -14,12 +14,12 @@
   import MessagesPreview from '@/views/topic/messages-preview/MessagesPreview.vue';
   import MetricsList from '@/views/topic/metrics-list/MetricsList.vue';
   import OfflineClients from '@/views/topic/offline-clients/OfflineClients.vue';
+  import OfflineRetransmissionInfo from '@/views/topic/offline-retransmission/OfflineRetransmissionInfo.vue';
   import PropertiesList from '@/views/topic/properties-list/PropertiesList.vue';
   import SchemaPanel from '@/views/topic/schema-panel/SchemaPanel.vue';
   import SubscriptionsList from '@/views/topic/subscriptions-list/SubscriptionsList.vue';
   import TopicHeader from '@/views/topic/topic-header/TopicHeader.vue';
   import TrackingCard from '@/components/tracking-card/TrackingCard.vue';
-  import OfflineRetransmissionInfo from "@/views/topic/offline-retransmission/OfflineRetransmissionInfo.vue";
 
   const router = useRouter();
 
@@ -162,7 +162,10 @@
 
       <schema-panel v-if="topic" :schema="topic.schema" />
 
-      <offline-retransmission-info v-if="topic?.offlineStorage.enabled" :tasks="activeRetransmissions" />
+      <offline-retransmission-info
+        v-if="topic?.offlineStorage.enabled"
+        :tasks="activeRetransmissions"
+      />
 
       <messages-preview
         v-if="
