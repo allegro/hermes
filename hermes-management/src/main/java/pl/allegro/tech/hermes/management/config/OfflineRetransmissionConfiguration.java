@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.management.config;
 
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
@@ -34,7 +33,6 @@ public class OfflineRetransmissionConfiguration {
   }
 
   @Bean
-  @ConditionalOnMissingBean(RetransmissionMonitoringUrlProvider.class)
   RetransmissionMonitoringUrlProvider retransmissionMonitoringUrlProvider() {
     return new DefaultRetransmissionMonitoringUrlProvider();
   }
