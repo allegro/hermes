@@ -1,6 +1,7 @@
 import { afterEach, describe, expect } from 'vitest';
 import { createTestingPinia } from '@pinia/testing';
 import {
+  dummyActiveOfflineRetransmissions,
   dummyOwner,
   dummyTopic,
   dummyTopicMessagesPreview,
@@ -55,8 +56,16 @@ describe('useTopic', () => {
     server.listen();
 
     // when
-    const { topic, owner, metrics, messages, subscriptions, loading, error } =
-      useTopic(topicName);
+    const {
+      topic,
+      owner,
+      metrics,
+      messages,
+      subscriptions,
+      activeRetransmissions,
+      loading,
+      error,
+    } = useTopic(topicName);
 
     // and: correct data was returned
     await waitFor(() => {
@@ -68,6 +77,9 @@ describe('useTopic', () => {
         dummySubscription,
         secondDummySubscription,
       ]);
+      expect(activeRetransmissions.value).toEqual(
+        dummyActiveOfflineRetransmissions,
+      );
     });
 
     // and: correct loading and error states were indicated
@@ -92,30 +104,35 @@ describe('useTopic', () => {
       expectedMessages: undefined,
       expectedMetrics: undefined,
       expectedSubscriptions: undefined,
+      expectedRetransmissions: undefined,
     },
     {
       mockHandler: fetchOwnerErrorHandler({ owner: topicOwner }),
       expectedErrors: { fetchOwner: true },
       ...expectedDataForErrorTest,
       expectedOwner: undefined,
+      expectedRetransmissions: dummyActiveOfflineRetransmissions,
     },
     {
       mockHandler: fetchTopicMessagesPreviewErrorHandler({ topicName }),
       expectedErrors: { fetchTopicMessagesPreview: true },
       ...expectedDataForErrorTest,
       expectedMessages: undefined,
+      expectedRetransmissions: dummyActiveOfflineRetransmissions,
     },
     {
       mockHandler: fetchTopicMetricsErrorHandler({ topicName }),
       expectedErrors: { fetchTopicMetrics: true },
       ...expectedDataForErrorTest,
       expectedMetrics: undefined,
+      expectedRetransmissions: dummyActiveOfflineRetransmissions,
     },
     {
       mockHandler: fetchTopicSubscriptionsErrorHandler({ topicName }),
       expectedErrors: { fetchSubscriptions: true },
       ...expectedDataForErrorTest,
       expectedSubscriptions: undefined,
+      expectedRetransmissions: dummyActiveOfflineRetransmissions,
     },
     {
       mockHandler: fetchTopicSubscriptionDetailsErrorHandler({
@@ -125,6 +142,7 @@ describe('useTopic', () => {
       expectedErrors: { fetchSubscriptions: true },
       ...expectedDataForErrorTest,
       expectedSubscriptions: [secondDummySubscription],
+      expectedRetransmissions: dummyActiveOfflineRetransmissions,
     },
     {
       mockHandler: fetchTopicSubscriptionDetailsErrorHandler({
@@ -134,6 +152,7 @@ describe('useTopic', () => {
       expectedErrors: { fetchSubscriptions: true },
       ...expectedDataForErrorTest,
       expectedSubscriptions: [dummySubscription],
+      expectedRetransmissions: dummyActiveOfflineRetransmissions,
     },
   ])(
     'should indicate appropriate error',
@@ -145,14 +164,23 @@ describe('useTopic', () => {
       expectedMessages,
       expectedMetrics,
       expectedSubscriptions,
+      expectedRetransmissions
     }) => {
       // given
       server.use(mockHandler);
       server.listen();
 
       // when
-      const { topic, owner, metrics, messages, subscriptions, loading, error } =
-        useTopic(topicName);
+      const {
+        topic,
+        owner,
+        metrics,
+        messages,
+        subscriptions,
+        activeRetransmissions,
+        loading,
+        error,
+      } = useTopic(topicName);
 
       // then
       await waitFor(() => {
@@ -163,6 +191,7 @@ describe('useTopic', () => {
         expect(subscriptions.value).toEqual(expectedSubscriptions);
         expect(loading.value).toBeFalsy();
         expectErrors(error.value, expectedErrors);
+        expect(activeRetransmissions.value).toEqual(expectedRetransmissions);
       });
     },
   );

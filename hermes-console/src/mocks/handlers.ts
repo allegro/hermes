@@ -203,12 +203,12 @@ export const fetchTopicClientsErrorHandler = ({
 
 export const fetchActiveOfflineRetransmissionTasksHandler = ({
   topicName,
-  tasks,
+  tasks = dummyActiveOfflineRetransmissions,
 }: {
   topicName: string;
-  tasks: Array<OfflineRetransmissionActiveTask> | null;
+  tasks?: Array<OfflineRetransmissionActiveTask> | null;
 }) =>
-  http.post(`${url}/offline-retransmission/topics/${topicName}/tasks`, () => {
+  http.get(`${url}/offline-retransmission/topics/${topicName}/tasks`, () => {
     return HttpResponse.json(tasks, {
       status: 200,
     });
@@ -224,10 +224,7 @@ export const successfulTopicHandlers = [
   fetchTopicSubscriptionDetailsHandler({
     subscription: secondDummySubscription,
   }),
-  fetchActiveOfflineRetransmissionTasksHandler({
-    topicName: dummyTopic.name,
-    tasks: dummyActiveOfflineRetransmissions,
-  }),
+  fetchActiveOfflineRetransmissionTasksHandler({ topicName: dummyTopic.name }),
 ];
 
 export const fetchSubscriptionHandler = ({

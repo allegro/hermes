@@ -32,7 +32,7 @@ import pl.allegro.tech.hermes.management.domain.retransmit.OfflineRetransmission
 
 @Component
 @Path("offline-retransmission")
-@Api(value = "offline-retransmission/tasks", description = "Offline retransmission operations")
+@Api(value = "offline-retransmission", description = "Offline retransmission operations")
 public class OfflineRetransmissionEndpoint {
 
   private final OfflineRetransmissionService retransmissionService;
