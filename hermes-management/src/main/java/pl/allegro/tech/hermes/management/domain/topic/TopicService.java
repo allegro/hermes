@@ -52,8 +52,6 @@ import pl.allegro.tech.hermes.management.domain.topic.schema.SchemaService;
 import pl.allegro.tech.hermes.management.domain.topic.validator.TopicValidator;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 
-import static net.logstash.logback.argument.StructuredArguments.v;
-
 @Component
 public class TopicService {
 
