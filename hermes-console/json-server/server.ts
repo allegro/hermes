@@ -85,7 +85,7 @@ server.get(
 );
 
 server.put(
-  '/topics/:topic/subscriptions/:subscroption/retransmission',
+  '/topics/:topic/subscriptions/:subscription/retransmission',
   (req, res) => {
     setTimeout(() => {
       res.sendStatus(200);
