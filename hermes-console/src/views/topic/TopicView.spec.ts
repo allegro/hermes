@@ -2,8 +2,6 @@ import { beforeEach, describe, expect } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
 import { createTestingPinia } from '@pinia/testing';
 import { createTestingPiniaWithState } from '@/dummy/store';
-import { dummyAppConfig } from '@/dummy/app-config';
-import { dummyMetricsDashboardUrl } from '@/dummy/metricsDashboardUrl';
 import {
   dummyActiveOfflineRetransmissions,
   dummyOfflineClientsSource,
@@ -12,6 +10,8 @@ import {
   dummyTopicMessagesPreview,
   dummyTopicMetrics,
 } from '@/dummy/topic';
+import { dummyAppConfig } from '@/dummy/app-config';
+import { dummyMetricsDashboardUrl } from '@/dummy/metricsDashboardUrl';
 import { dummyRoles } from '@/dummy/roles';
 import {
   dummySubscription,
