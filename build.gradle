@@ -68,11 +68,11 @@ allprojects {
             // TODO: newest version requires subject alternative name in a certificate during host verification, current test cert does not have a one
             okhttp            : '3.9.1',
             undertow          : '2.3.12.Final',
-            spring_web        : '6.1.6',
+            spring_web        : '6.2.6',
             failsafe          : '2.4.4',
             junit_jupiter     : '5.10.2',
             testcontainers    : '1.19.8',
-            spring            : '3.2.4',
+            spring            : '3.4.5',
             assertj           : '3.25.3',
             allure            : '2.24.0'
     ]
@@ -83,6 +83,7 @@ allprojects {
 
     dependencies {
         implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.4'
+        implementation group: 'net.logstash.logback', name: 'logstash-logback-encoder', version: '7.4'
         implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.14.0'
 
         // Allure Spock adapter
