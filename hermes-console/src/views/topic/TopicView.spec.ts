@@ -5,6 +5,7 @@ import { createTestingPiniaWithState } from '@/dummy/store';
 import { dummyAppConfig } from '@/dummy/app-config';
 import { dummyMetricsDashboardUrl } from '@/dummy/metricsDashboardUrl';
 import {
+  dummyActiveOfflineRetransmissions,
   dummyOfflineClientsSource,
   dummyOwner,
   dummyTopic,
@@ -60,6 +61,7 @@ const useTopicMock: UseTopic = {
   trackingUrls: ref(dummyTrackingUrls),
   fetchOfflineClientsSource: () => Promise.resolve(),
   removeTopic: () => Promise.resolve(true),
+  activeRetransmissions: ref(dummyActiveOfflineRetransmissions),
 };
 
 vi.mock('@/composables/metrics/use-metrics/useMetrics');

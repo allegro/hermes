@@ -162,10 +162,7 @@
 
       <schema-panel v-if="topic" :schema="topic.schema" />
 
-      <offline-retransmission-info
-        v-if="topic?.offlineStorage.enabled"
-        :tasks="activeRetransmissions"
-      />
+      <offline-retransmission-info :tasks="activeRetransmissions" />
 
       <messages-preview
         v-if="

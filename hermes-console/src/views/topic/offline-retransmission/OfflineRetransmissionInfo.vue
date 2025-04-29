@@ -20,7 +20,7 @@
 <template>
   <v-expansion-panels>
     <v-expansion-panel
-      :title="`${t('offlineRetransmission.infoView.title')} (${props.tasks.length})`"
+      :title="`${t('offlineRetransmission.monitoringView.title')} (${props.tasks.length})`"
     >
       <v-expansion-panel-text>
         <v-btn
@@ -31,28 +31,38 @@
           "
           target="_blank"
         >
-          {{ $t('offlineRetransmission.infoView.allTasksLinkTitle') }}
+          {{ $t('offlineRetransmission.monitoringView.allTasksLinkTitle') }}
         </v-btn>
         <v-btn
           class="mt-2"
           :href="
-            configStore.loadedConfig.topic.offlineRetransmissionMonitoringUrl
+            configStore.loadedConfig.topic
+              .offlineRetransmissionMonitoringDocsUrl
           "
           target="_blank"
         >
-          {{ $t('offlineRetransmission.infoView.monitoringLinkTitle') }}
+          {{
+            $t('offlineRetransmission.monitoringView.monitoringDocsLinkTitle')
+          }}
         </v-btn>
         <v-table density="comfortable" hover>
           <thead>
             <tr>
-              <th>{{ $t('offlineRetransmission.infoView.idHeader') }}</th>
-              <th>{{ $t('offlineRetransmission.infoView.typeHeader') }}</th>
-              <th>{{ $t('offlineRetransmission.infoView.logsLinkHeader') }}</th>
+              <th>{{ $t('offlineRetransmission.monitoringView.idHeader') }}</th>
               <th>
-                {{ $t('offlineRetransmission.infoView.metricsLinkHeader') }}
+                {{ $t('offlineRetransmission.monitoringView.typeHeader') }}
               </th>
-              <th>{{ $t('offlineRetransmission.infoView.monitoring') }}</th>
-              <th>{{ $t('offlineRetransmission.infoView.jobLinkHeader') }}</th>
+              <th>
+                {{ $t('offlineRetransmission.monitoringView.logsLinkHeader') }}
+              </th>
+              <th>
+                {{
+                  $t('offlineRetransmission.monitoringView.metricsLinkHeader')
+                }}
+              </th>
+              <th>
+                {{ $t('offlineRetransmission.monitoringView.jobLinkHeader') }}
+              </th>
             </tr>
           </thead>
           <tr v-for="task in props.tasks" v-bind:key="task.taskId">

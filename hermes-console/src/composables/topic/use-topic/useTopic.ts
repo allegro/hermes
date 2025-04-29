@@ -1,7 +1,7 @@
 import {
   removeTopic as deleteTopic,
   fetchTopic,
-  getActiveRetransmissions,
+  getActiveOfflineRetransmissions,
   fetchOfflineClientsSource as getOfflineClientsSource,
   fetchTopic as getTopic,
   fetchTopicClients as getTopicClients,
@@ -42,7 +42,7 @@ export interface UseTopic {
   fetchOfflineClientsSource: () => Promise<void>;
   removeTopic: () => Promise<boolean>;
   fetchTopicClients: () => Promise<string[] | null>;
-  activeRetransmissions: Ref<OfflineRetransmissionActiveTask>;
+  activeRetransmissions: Ref<OfflineRetransmissionActiveTask[] | undefined>;
 }
 
 export interface UseTopicErrors {
@@ -209,7 +209,7 @@ export function useTopic(topicName: string): UseTopic {
   const fetchActiveOfflineRetransmissions = async () => {
     try {
       activeRetransmissions.value = (
-        await getActiveRetransmissions(topicName)
+        await getActiveOfflineRetransmissions(topicName)
       ).data;
     } catch (e: any) {
       dispatchErrorNotification(
