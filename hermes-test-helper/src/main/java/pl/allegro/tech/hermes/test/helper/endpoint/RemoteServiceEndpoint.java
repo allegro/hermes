@@ -204,7 +204,9 @@ public class RemoteServiceEndpoint {
 
   public void makeSureNoneReceived() {
     logger.info("Expecting to receive no messages");
-    assertThat(receivedRequests).isEmpty();
+    synchronized (receivedRequests) {
+      assertThat(receivedRequests).isEmpty();
+    }
   }
 
   public LoggedRequest getLastReceivedRequest() {
@@ -214,11 +216,13 @@ public class RemoteServiceEndpoint {
   }
 
   public LoggedRequest getFirstReceivedRequest() {
-    LoggedRequest item = Iterables.getFirst(receivedRequests, null);
-    if (item == null) {
-      throw new NoSuchElementException();
+    synchronized (receivedRequests) {
+      LoggedRequest item = Iterables.getFirst(receivedRequests, null);
+      if (item == null) {
+        throw new NoSuchElementException();
+      }
+      return item;
     }
-    return item;
   }
 
   public boolean receivedMessageWithHeader(String header, String value) {
@@ -244,6 +248,7 @@ public class RemoteServiceEndpoint {
     receivedRequests.clear();
     listener.resetMappings();
     service.resetMappings();
+    service.resetRequests();
   }
 
   public RemoteServiceEndpoint setDelay(int delay) {
