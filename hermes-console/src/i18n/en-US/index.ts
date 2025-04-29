@@ -667,10 +667,10 @@ const en_US = {
     targetTopic: 'Target topic',
     startTimestamp: 'Start timestamp (UTC)',
     endTimestamp: 'End timestamp (UTC)',
-    infoView: {
+    monitoringView: {
       title: 'Active offline retransmissions',
       allTasksLinkTitle: 'Offline retransmission global queue',
-      monitoringLinkTitle: 'Offline retransmission monitoring docs',
+      monitoringDocsLinkTitle: 'Offline retransmission monitoring docs',
       idHeader: 'ID',
       typeHeader: 'Type',
       logsLinkHeader: 'Kibana',

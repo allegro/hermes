@@ -420,7 +420,7 @@ export function createRetransmissionTask(
   });
 }
 
-export function getActiveRetransmissions(
+export function getActiveOfflineRetransmissions(
   topicName: String,
 ): ResponsePromise<Array<OfflineRetransmissionActiveTask>> {
   return axios.get(`/offline-retransmission/topics/${topicName}/tasks/`);

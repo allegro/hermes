@@ -23,7 +23,7 @@ class HierarchicalCacheTest extends IntegrationTest {
     private Set calledCallbacks = [] as Set
 
     private Closure loggingCallback = { e ->
-        calledCallbacks.add(new Tuple(e.type(), e.data.path, new String(e.data.data)))
+        calledCallbacks.add(new Tuple(e.getType(), e.data.path, new String(e.data.data)))
     }
 
     void setupSpec() {

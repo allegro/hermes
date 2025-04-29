@@ -91,7 +91,7 @@ export const dummyAppConfig: AppConfiguration = {
     offlineRetransmissionFromViewDocsUrl: 'https://hermes-pubsub.rtfd.org',
     offlineRetransmissionGlobalTaskQueueUrl:
       'http://localhost:8090/offline-retransmission/tasks',
-    offlineRetransmissionMonitoringUrl: 'https://hermes-pubsub.rtfd.org',
+    offlineRetransmissionMonitoringDocsUrl: 'https://hermes-pubsub.rtfd.org',
   },
   subscription: {
     endpointAddressResolverMetadata: {
