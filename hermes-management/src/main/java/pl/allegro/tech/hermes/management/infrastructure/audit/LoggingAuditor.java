@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.management.infrastructure.audit;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static net.logstash.logback.argument.StructuredArguments.kv;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.javers.core.Javers;
@@ -30,7 +29,7 @@ public class LoggingAuditor implements Auditor {
             logger.info(
                 "User {} tries creating new {} {}.",
                 username,
-                kv("topicName", createdObject.getClass().getSimpleName()),
+                createdObject.getClass().getSimpleName(),
                 objectMapper.writeValueAsString(createdObject)));
   }
 
