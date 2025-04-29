@@ -164,7 +164,7 @@ describe('useTopic', () => {
       expectedMessages,
       expectedMetrics,
       expectedSubscriptions,
-      expectedRetransmissions
+      expectedRetransmissions,
     }) => {
       // given
       server.use(mockHandler);
