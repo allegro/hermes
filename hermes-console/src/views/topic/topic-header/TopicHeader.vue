@@ -44,7 +44,7 @@
     startTimestamp: string,
     endTimestamp: string,
   ) => {
-    await offlineRetransmission.retransmit({
+    let retransmitted = await offlineRetransmission.retransmit({
       type: TOPIC_RETRANSMISSION,
       sourceTopic: props.topic.name,
       targetTopic,
@@ -53,10 +53,12 @@
     });
 
     /*
-      This is needed as we want to refresh an active offline retransmissions component
-      so it fetches newest monitoring info from management.
-     */
-    refreshPage();
+    This is needed as we want to refresh an active offline retransmissions component
+    so it fetches newest monitoring info from management.
+   */
+    if (retransmitted) {
+      refreshPage();
+    }
   };
 
   const showTopicEditForm = ref(false);
