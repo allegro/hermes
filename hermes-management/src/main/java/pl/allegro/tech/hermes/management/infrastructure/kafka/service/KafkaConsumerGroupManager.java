@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.management.infrastructure.kafka.service;
 
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
+import static net.logstash.logback.argument.StructuredArguments.kv;
 
 import java.util.Collections;
 import java.util.Map;
@@ -50,7 +51,7 @@ public class KafkaConsumerGroupManager implements ConsumerGroupManager {
   public void createConsumerGroup(Topic topic, Subscription subscription) {
     logger.info(
         "Creating consumer group for subscription {}, cluster: {}",
-        subscription.getQualifiedName(),
+        kv("subscriptionName", subscription.getQualifiedName()),
         qualifiedClusterName);
 
     KafkaConsumer<byte[], byte[]> kafkaConsumer =
@@ -80,12 +81,12 @@ public class KafkaConsumerGroupManager implements ConsumerGroupManager {
 
       logger.info(
           "Successfully created consumer group for subscription {}, cluster: {}",
-          subscription.getQualifiedName(),
+          kv("subscriptionName", subscription.getQualifiedName()),
           qualifiedClusterName);
     } catch (Exception e) {
       logger.error(
           "Failed to create consumer group for subscription {}, cluster: {}",
-          subscription.getQualifiedName(),
+          kv("subscriptionName", subscription.getQualifiedName()),
           qualifiedClusterName,
           e);
     }
@@ -96,7 +97,7 @@ public class KafkaConsumerGroupManager implements ConsumerGroupManager {
       throws ConsumerGroupDeletionException {
     logger.info(
         "Deleting consumer group for subscription {}, cluster: {}",
-        subscriptionName,
+        kv("subscriptionName", subscriptionName),
         qualifiedClusterName);
 
     try {
@@ -108,21 +109,21 @@ public class KafkaConsumerGroupManager implements ConsumerGroupManager {
 
       logger.info(
           "Successfully deleted consumer group for subscription {}, cluster: {}",
-          subscriptionName,
+          kv("subscriptionName", subscriptionName),
           qualifiedClusterName);
 
     } catch (ExecutionException | InterruptedException e) {
       if (e.getCause() instanceof GroupIdNotFoundException) {
         logger.info(
             "Consumer group for subscription {} not found, cluster: {}",
-            subscriptionName,
+            kv("subscriptionName", subscriptionName),
             qualifiedClusterName);
         return;
       }
 
       logger.error(
           "Failed to delete consumer group for subscription {}, cluster: {}",
-          subscriptionName,
+          kv("subscriptionName", subscriptionName),
           qualifiedClusterName,
           e);
       throw new ConsumerGroupDeletionException(subscriptionName, e);
