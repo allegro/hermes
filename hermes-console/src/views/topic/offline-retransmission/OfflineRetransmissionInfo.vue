@@ -26,8 +26,8 @@
         <v-btn
           class="mt-2"
           :href="
-            configStore.loadedConfig.topic
-              .offlineRetransmissionGlobalTaskQueueUrl
+            configStore.loadedConfig.topic.offlineRetransmission
+              .globalTaskQueueUrl
           "
           target="_blank"
         >
@@ -36,8 +36,8 @@
         <v-btn
           class="mt-2"
           :href="
-            configStore.loadedConfig.topic
-              .offlineRetransmissionMonitoringDocsUrl
+            configStore.loadedConfig.topic.offlineRetransmission
+              .monitoringDocsUrl
           "
           target="_blank"
         >

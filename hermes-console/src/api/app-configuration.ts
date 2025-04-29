@@ -88,11 +88,7 @@ export interface TopicViewConfiguration {
   readOnlyModeEnabled: boolean;
   allowedTopicLabels: string[];
   retentionUnits: RetentionUnit[];
-  offlineRetransmissionEnabled: boolean;
-  offlineRetransmissionDescription: string;
-  offlineRetransmissionFromViewDocsUrl: string;
-  offlineRetransmissionGlobalTaskQueueUrl: string;
-  offlineRetransmissionMonitoringDocsUrl: string;
+  offlineRetransmission: OfflineRetransmission;
 }
 
 export interface DefaultTopicViewConfiguration {
@@ -171,4 +167,12 @@ export interface CostsConfiguration {
   topicDetailsUrl: string;
   subscriptionIframeUrl: string;
   subscriptionDetailsUrl: string;
+}
+
+export interface OfflineRetransmission {
+  enabled: boolean;
+  description: string;
+  fromViewDocsUrl: string;
+  globalTaskQueueUrl: string;
+  monitoringDocsUrl: string;
 }
