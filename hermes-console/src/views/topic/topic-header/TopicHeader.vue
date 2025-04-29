@@ -39,18 +39,23 @@
 
   const offlineRetransmission = useOfflineRetransmission();
 
-  const onRetransmit = (
+  const onRetransmit = async (
     targetTopic: string,
     startTimestamp: string,
     endTimestamp: string,
   ) => {
-    offlineRetransmission.retransmit({
+    await offlineRetransmission.retransmit({
       type: TOPIC_RETRANSMISSION,
       sourceTopic: props.topic.name,
       targetTopic,
       startTimestamp,
       endTimestamp,
     });
+    /*
+      This is needed as we want to refresh an active offline retransmissions component
+      so it fetches newest monitoring info from management.
+     */
+    refreshPage();
   };
 
   const showTopicEditForm = ref(false);
