@@ -54,9 +54,11 @@
   };
 
   const showTopicEditForm = ref(false);
+
   function showTopicForm() {
     showTopicEditForm.value = true;
   }
+
   function hideTopicForm() {
     showTopicEditForm.value = false;
   }
@@ -191,7 +193,7 @@
         </v-btn>
         <v-btn
           v-if="
-            configStore.loadedConfig.topic.offlineRetransmissionEnabled &&
+            configStore.loadedConfig.topic.offlineRetransmission.enabled &&
             topic.offlineStorage.enabled &&
             isTopicOwnerOrAdmin(roles)
           "

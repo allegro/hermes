@@ -10,8 +10,10 @@ vi.mock('@/store/app-config/useAppConfigStore', () => ({
   useAppConfigStore: vi.fn(() => ({
     loadedConfig: {
       topic: {
-        offlineRetransmissionGlobalTaskQueueUrl: 'https://mocked-url.com',
-        offlineRetransmissionMonitoringDocsUrl: 'https://docs-url.com',
+        offlineRetransmission: {
+          globalTaskQueueUrl: 'https://mocked-url.com',
+          monitoringDocsUrl: 'https://docs-url.com',
+        },
       },
     },
   })),
