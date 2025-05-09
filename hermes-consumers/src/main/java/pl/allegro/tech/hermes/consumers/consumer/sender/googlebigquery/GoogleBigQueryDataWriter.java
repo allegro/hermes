@@ -47,7 +47,7 @@ public abstract class GoogleBigQueryDataWriter<
 
             resultFuture.complete(MessageSendingResult.failedResult(new GoogleBigQueryFailedAppendException(e)));
         } catch (Exception e) {
-            logger.warn("Writer {} has failed to append rows to stream {}", getWriterId(), getStreamName(), e);
+            logger.warn("Writer {} has failed to append rows to stream {} because of {}", getWriterId(), getStreamName(), e.getMessage(), e);
             resultFuture.complete(MessageSendingResult.failedResult(e));
         }
     }
