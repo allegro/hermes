@@ -301,6 +301,18 @@ is growing. First things first, you should check subscription metrics for signs 
 
 If you want to know the exact algorithm, check [rate limiting configuration page](../configuration/rate-limiting.md).
 
+### Rate limiting vs filtering
+By default, rate limiting is applied only to messages being sent. Rate limiting can also be optionally applied to [filtering mechanism](#message-filtering) by
+setting `consumer.receiver.filteringRateLimiterEnabled` to `true`. 
+
+Filtering rate limit value is taken from the same subscription configuration setting (`subscriptionPolicy.rateLimit`) as regular limit but is applied differently.
+Regular rate limit is applied to all messages across all consumers serving the same subscription. Filtering rate limit is applied individually to each consumer. Depending 
+on the ratio of filtered to sent messages either the filtering rate or the send rate could be throttled.
+
+For example, for subscription with rate limit of 100 Hermes will send at most 100 messages per second to the subscriber - regardless of the number of consumers
+serving the subscription. With filtering rate limiter enabled, each consumer for this subscription will be able to filter 100 messages per second. If there are 10 consumers 
+serving the subscription then the total filtering rate limit would be 1000 messages per second.
+
 ## Additional headers
 
 Each subscription can define a number of additional `headers` that will be added to every HTTP request when sending messages.
