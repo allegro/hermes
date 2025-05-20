@@ -41,7 +41,7 @@ public class MonitoringMetricsContainer {
     return this;
   }
 
-  public MetricDecimalValue metricValue(String query) {
+  public MetricDecimalValue metricDecimalValue(String query) {
     return getMetricValueOfType(
         query, MetricDecimalValue.class, DEFAULT_VALUE, MetricDecimalValue.unavailable());
   }

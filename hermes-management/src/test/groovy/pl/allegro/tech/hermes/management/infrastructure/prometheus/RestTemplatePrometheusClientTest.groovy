@@ -83,15 +83,15 @@ class RestTemplatePrometheusClientTest extends Specification {
         MonitoringMetricsContainer metrics = client.readMetrics(queries)
 
         then:
-        metrics.metricValue(subscriptionDeliveredQuery) == of("1.0")
-        metrics.metricValue(subscriptionTimeoutsQuery) == of("2.0")
-        metrics.metricValue(subscriptionRetriesQuery) == of("1.0")
-        metrics.metricValue(subscriptionThroughputQuery) == of("3.0")
-        metrics.metricValue(subscriptionErrorsQuery) == of("4.0")
-        metrics.metricValue(subscriptionBatchesQuery) == of("5.0")
-        metrics.metricValue(subscription2xxStatusCodesQuery) == of("2.0")
-        metrics.metricValue(subscription4xxStatusCodesQuery) == of("1.0")
-        metrics.metricValue(subscription5xxStatusCodesQuery) == of("2.0")
+        metrics.metricDecimalValue(subscriptionDeliveredQuery) == of("1.0")
+        metrics.metricDecimalValue(subscriptionTimeoutsQuery) == of("2.0")
+        metrics.metricDecimalValue(subscriptionRetriesQuery) == of("1.0")
+        metrics.metricDecimalValue(subscriptionThroughputQuery) == of("3.0")
+        metrics.metricDecimalValue(subscriptionErrorsQuery) == of("4.0")
+        metrics.metricDecimalValue(subscriptionBatchesQuery) == of("5.0")
+        metrics.metricDecimalValue(subscription2xxStatusCodesQuery) == of("2.0")
+        metrics.metricDecimalValue(subscription4xxStatusCodesQuery) == of("1.0")
+        metrics.metricDecimalValue(subscription5xxStatusCodesQuery) == of("2.0")
         metrics.metricHistogramValue(subscriptionProcessingTimeQuery) == MetricHistogramValue.ofBuckets("+Inf", "4.0", "300.0", "3.9", "1.0", "0.0")
     }
 
@@ -115,15 +115,15 @@ class RestTemplatePrometheusClientTest extends Specification {
         MonitoringMetricsContainer metrics = client.readMetrics(queries)
 
         then:
-        metrics.metricValue(subscriptionDeliveredQuery) == defaultValue()
-        metrics.metricValue(subscriptionTimeoutsQuery) == of("2.0")
-        metrics.metricValue(subscriptionRetriesQuery) == of("1.0")
-        metrics.metricValue(subscriptionThroughputQuery) == defaultValue()
-        metrics.metricValue(subscriptionErrorsQuery) == defaultValue()
-        metrics.metricValue(subscriptionBatchesQuery) == defaultValue()
-        metrics.metricValue(subscription2xxStatusCodesQuery) == defaultValue()
-        metrics.metricValue(subscription4xxStatusCodesQuery) == defaultValue()
-        metrics.metricValue(subscription5xxStatusCodesQuery) == defaultValue()
+        metrics.metricDecimalValue(subscriptionDeliveredQuery) == defaultValue()
+        metrics.metricDecimalValue(subscriptionTimeoutsQuery) == of("2.0")
+        metrics.metricDecimalValue(subscriptionRetriesQuery) == of("1.0")
+        metrics.metricDecimalValue(subscriptionThroughputQuery) == defaultValue()
+        metrics.metricDecimalValue(subscriptionErrorsQuery) == defaultValue()
+        metrics.metricDecimalValue(subscriptionBatchesQuery) == defaultValue()
+        metrics.metricDecimalValue(subscription2xxStatusCodesQuery) == defaultValue()
+        metrics.metricDecimalValue(subscription4xxStatusCodesQuery) == defaultValue()
+        metrics.metricDecimalValue(subscription5xxStatusCodesQuery) == defaultValue()
         metrics.metricHistogramValue(subscriptionProcessingTimeQuery) == MetricHistogramValue.defaultValue()
     }
 
@@ -150,15 +150,15 @@ class RestTemplatePrometheusClientTest extends Specification {
         MonitoringMetricsContainer metrics = client.readMetrics(queries)
 
         then:
-        metrics.metricValue(subscriptionDeliveredQuery) == unavailable()
-        metrics.metricValue(subscriptionTimeoutsQuery) == of("2.0")
-        metrics.metricValue(subscriptionRetriesQuery) == of("1.0")
-        metrics.metricValue(subscriptionThroughputQuery) == unavailable()
-        metrics.metricValue(subscriptionErrorsQuery) == unavailable()
-        metrics.metricValue(subscriptionBatchesQuery) == unavailable()
-        metrics.metricValue(subscription2xxStatusCodesQuery) == unavailable()
-        metrics.metricValue(subscription4xxStatusCodesQuery) == unavailable()
-        metrics.metricValue(subscription5xxStatusCodesQuery) == unavailable()
+        metrics.metricDecimalValue(subscriptionDeliveredQuery) == unavailable()
+        metrics.metricDecimalValue(subscriptionTimeoutsQuery) == of("2.0")
+        metrics.metricDecimalValue(subscriptionRetriesQuery) == of("1.0")
+        metrics.metricDecimalValue(subscriptionThroughputQuery) == unavailable()
+        metrics.metricDecimalValue(subscriptionErrorsQuery) == unavailable()
+        metrics.metricDecimalValue(subscriptionBatchesQuery) == unavailable()
+        metrics.metricDecimalValue(subscription2xxStatusCodesQuery) == unavailable()
+        metrics.metricDecimalValue(subscription4xxStatusCodesQuery) == unavailable()
+        metrics.metricDecimalValue(subscription5xxStatusCodesQuery) == unavailable()
         metrics.metricHistogramValue(subscriptionProcessingTimeQuery) == MetricHistogramValue.unavailable()
     }
 

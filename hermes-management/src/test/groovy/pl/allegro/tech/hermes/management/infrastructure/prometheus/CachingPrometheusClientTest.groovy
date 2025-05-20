@@ -31,8 +31,8 @@ class CachingPrometheusClientTest extends Specification {
         def metrics = cachingClient.readMetrics(queries)
 
         then:
-        metrics.metricValue("metric_1") == of("1")
-        metrics.metricValue("metric_2") == of("2")
+        metrics.metricDecimalValue("metric_1") == of("1")
+        metrics.metricDecimalValue("metric_2") == of("2")
     }
 
     def "should return metrics from cache while TTL has not expired"() {

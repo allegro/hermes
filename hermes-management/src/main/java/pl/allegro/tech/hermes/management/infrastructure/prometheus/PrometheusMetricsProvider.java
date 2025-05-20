@@ -102,15 +102,17 @@ public class PrometheusMetricsProvider
             subscription5xx,
             subscriptionMessageProcessingTimeQuery);
     return MonitoringSubscriptionMetricsProvider.metricsBuilder()
-        .withRate(prometheusMetricsContainer.metricValue(subscriptionDeliveredQuery))
-        .withTimeouts(prometheusMetricsContainer.metricValue(subscriptionTimeoutsQuery))
-        .withThroughput(prometheusMetricsContainer.metricValue(subscriptionThroughputQuery))
-        .withOtherErrors(prometheusMetricsContainer.metricValue(subscriptionOtherErrorsQuery))
-        .withMetricPathBatchRate(prometheusMetricsContainer.metricValue(subscriptionBatchesQuery))
-        .withCodes2xx(prometheusMetricsContainer.metricValue(subscription2xx))
-        .withCode4xx(prometheusMetricsContainer.metricValue(subscription4xx))
-        .withCode5xx(prometheusMetricsContainer.metricValue(subscription5xx))
-        .withRetries(prometheusMetricsContainer.metricValue(subscriptionRetriesQuery))
+        .withRate(prometheusMetricsContainer.metricDecimalValue(subscriptionDeliveredQuery))
+        .withTimeouts(prometheusMetricsContainer.metricDecimalValue(subscriptionTimeoutsQuery))
+        .withThroughput(prometheusMetricsContainer.metricDecimalValue(subscriptionThroughputQuery))
+        .withOtherErrors(
+            prometheusMetricsContainer.metricDecimalValue(subscriptionOtherErrorsQuery))
+        .withMetricPathBatchRate(
+            prometheusMetricsContainer.metricDecimalValue(subscriptionBatchesQuery))
+        .withCodes2xx(prometheusMetricsContainer.metricDecimalValue(subscription2xx))
+        .withCode4xx(prometheusMetricsContainer.metricDecimalValue(subscription4xx))
+        .withCode5xx(prometheusMetricsContainer.metricDecimalValue(subscription5xx))
+        .withRetries(prometheusMetricsContainer.metricDecimalValue(subscriptionRetriesQuery))
         .withMessageProcessingTime(
             prometheusMetricsContainer.metricHistogramValue(subscriptionMessageProcessingTimeQuery))
         .build();
@@ -127,9 +129,9 @@ public class PrometheusMetricsProvider
     MonitoringMetricsContainer prometheusMetricsContainer =
         prometheusClient.readMetrics(topicRateQuery, topicDeliveryRateQuery, topicThroughputQuery);
     return MonitoringTopicMetricsProvider.metricsBuilder()
-        .withRate(prometheusMetricsContainer.metricValue(topicRateQuery))
-        .withDeliveryRate(prometheusMetricsContainer.metricValue(topicDeliveryRateQuery))
-        .withThroughput(prometheusMetricsContainer.metricValue(topicThroughputQuery))
+        .withRate(prometheusMetricsContainer.metricDecimalValue(topicRateQuery))
+        .withDeliveryRate(prometheusMetricsContainer.metricDecimalValue(topicDeliveryRateQuery))
+        .withThroughput(prometheusMetricsContainer.metricDecimalValue(topicThroughputQuery))
         .build();
   }
 
