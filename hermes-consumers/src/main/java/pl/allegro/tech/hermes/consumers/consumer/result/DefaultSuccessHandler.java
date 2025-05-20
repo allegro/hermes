@@ -18,7 +18,8 @@ import pl.allegro.tech.hermes.metrics.HermesHistogram;
 import pl.allegro.tech.hermes.metrics.HermesTimer;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
-public class DefaultSuccessHandler implements SuccessHandler, SubscriptionChangeListener {
+public class DefaultSuccessHandler
+    implements SuccessHandler, SubscriptionChangeAwareSuccessHandler {
 
   private static final Logger logger = LoggerFactory.getLogger(DefaultSuccessHandler.class);
 
