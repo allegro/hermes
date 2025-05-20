@@ -291,12 +291,8 @@ public class SubscriptionManagementTest {
             .set(
                 "metricsConfig",
                 Map.of(
-                    "messageProcessingDuration",
-                    Map.of(
-                        "enabled",
-                        true,
-                        "options",
-                        Map.of("thresholdsMilliseconds", new String[] {"60000"}))))
+                    "messageProcessing",
+                    Map.of("enabled", true, "thresholdsMilliseconds", new String[] {"60000"})))
             .build();
 
     // when
@@ -310,8 +306,8 @@ public class SubscriptionManagementTest {
             .api()
             .getSubscription(topic.getQualifiedName(), subscription.getName())
             .getMetricsConfig();
-    assertThat(metricsConfig.messageProcessingDuration().enabled()).isTrue();
-    assertThat(metricsConfig.messageProcessingDuration().options().getThresholdsDurations())
+    assertThat(metricsConfig.messageProcessing().enabled()).isTrue();
+    assertThat(metricsConfig.messageProcessing().getThresholdsDurations())
         .containsExactly(Duration.ofMillis(60000));
   }
 
@@ -327,14 +323,10 @@ public class SubscriptionManagementTest {
                 "metricsConfig",
                 ImmutableMap.builder()
                     .put(
-                        "messageProcessingDuration",
+                        "messageProcessing",
                         ImmutableMap.builder()
                             .put("enabled", true)
-                            .put(
-                                "options",
-                                ImmutableMap.builder()
-                                    .put("thresholdsMilliseconds", new String[] {})
-                                    .build())
+                            .put("thresholdsMilliseconds", new String[] {})
                             .build())
                     .build())
             .build();
@@ -350,8 +342,7 @@ public class SubscriptionManagementTest {
             .api()
             .getSubscription(topic.getQualifiedName(), subscription.getName())
             .getMetricsConfig();
-    assertThat(metricsConfig.messageProcessingDuration().options().thresholdsMilliseconds())
-        .isEmpty();
+    assertThat(metricsConfig.messageProcessing().thresholdsMilliseconds()).isEmpty();
   }
 
   @Test

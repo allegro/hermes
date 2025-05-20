@@ -310,12 +310,8 @@ public class MetricsTest {
             .set(
                 "metricsConfig",
                 Map.of(
-                    "messageProcessingDuration",
-                    Map.of(
-                        "enabled",
-                        true,
-                        "options",
-                        Map.of("thresholdsMilliseconds", new String[] {"120000"}))))
+                    "messageProcessing",
+                    Map.of("enabled", true, "thresholdsMilliseconds", new String[] {"120000"})))
             .build();
 
     // when

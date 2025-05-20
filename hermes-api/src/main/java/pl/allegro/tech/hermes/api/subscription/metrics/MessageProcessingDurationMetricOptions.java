@@ -28,6 +28,6 @@ public record MessageProcessingDurationMetricOptions(
   }
 
   public boolean hasThresholds() {
-    return thresholdsMilliseconds.isEmpty();
+    return !thresholdsMilliseconds.isEmpty();
   }
 }

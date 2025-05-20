@@ -20,7 +20,9 @@ public class PrometheusMetricsAssertion {
   public PrometheusMetricWithNameAssertion contains(String metricName) {
     List<String> matchedLines =
         actualBody.lines().filter(line -> line.startsWith(metricName + "{")).toList();
-    assertThat(matchedLines).overridingErrorMessage("Metric %s doesn't exist").isNotEmpty();
+    assertThat(matchedLines)
+        .overridingErrorMessage("Metric %s doesn't exist", metricName)
+        .isNotEmpty();
     return new PrometheusMetricWithNameAssertion(matchedLines);
   }
 
