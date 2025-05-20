@@ -37,19 +37,10 @@ public class PrometheusMetricsAssertion {
       return withLabels(new String[] {label0, label1}, new String[] {value0, value1});
     }
 
-    public void withoutLabels(String label0, String value0, String label1, String value1) {
-      withoutLabels(new String[] {label0, label1}, new String[] {value0, value1});
-    }
-
     public PrometheusMetricAssertion withLabels(
         String label0, String value0, String label1, String value1, String label2, String value2) {
       return withLabels(
           new String[] {label0, label1, label2}, new String[] {value0, value1, value2});
-    }
-
-    public void withoutLabels(
-        String label0, String value0, String label1, String value1, String label2, String value2) {
-      withoutLabels(new String[] {label0, label1, label2}, new String[] {value0, value1, value2});
     }
 
     public PrometheusMetricAssertion withLabels(
