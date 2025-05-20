@@ -30,7 +30,7 @@ record PrometheusResponse(@JsonProperty("status") String status, @JsonProperty("
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   record VectorResult(
-      @JsonProperty("metric") Metric metric, @JsonProperty("value") List<String> vector) {
+      @JsonProperty("metric") BucketMetric metric, @JsonProperty("value") List<String> vector) {
 
     private static final int VALID_VECTOR_LENGTH = 2;
     private static final int SCALAR_INDEX_VALUE = 1;
@@ -46,6 +46,6 @@ record PrometheusResponse(@JsonProperty("status") String status, @JsonProperty("
       return Optional.of(parser.apply(vector.get(SCALAR_INDEX_VALUE)));
     }
 
-    record Metric(@JsonProperty("le") String le) {}
+    record BucketMetric(@JsonProperty("le") String le) {}
   }
 }
