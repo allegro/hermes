@@ -33,7 +33,6 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicMetrics;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.api.subscription.metrics.MessageProcessingDurationMetricOptions;
-import pl.allegro.tech.hermes.api.subscription.metrics.SubscriptionMetricConfig;
 import pl.allegro.tech.hermes.api.subscription.metrics.SubscriptionMetricsConfig;
 import pl.allegro.tech.hermes.integrationtests.prometheus.PrometheusExtension;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesExtension;
@@ -253,8 +252,7 @@ public class MetricsTest {
                         subscriptionPolicy().applyDefaults().withMessageTtl(0).build())
                     .withMetricsConfig(
                         new SubscriptionMetricsConfig(
-                            SubscriptionMetricConfig.enabled(
-                                new MessageProcessingDurationMetricOptions(new long[] {60_000}))))
+                            MessageProcessingDurationMetricOptions.of(60_000L)))
                     .build());
     TestMessage message = TestMessage.simple();
 
@@ -305,8 +303,7 @@ public class MetricsTest {
                         subscriptionPolicy().applyDefaults().withMessageTtl(0).build())
                     .withMetricsConfig(
                         new SubscriptionMetricsConfig(
-                            SubscriptionMetricConfig.enabled(
-                                new MessageProcessingDurationMetricOptions(new long[] {60_000}))))
+                            MessageProcessingDurationMetricOptions.of(60_000L)))
                     .build());
     PatchData patchData =
         patchData()

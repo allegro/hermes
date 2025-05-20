@@ -1,25 +1,33 @@
 package pl.allegro.tech.hermes.api.subscription.metrics;
 
+import static java.util.Collections.emptyList;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.Size;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.List;
 
 public record MessageProcessingDurationMetricOptions(
-    @Size(max = 10) long[] thresholdsMilliseconds) {
-  @JsonIgnore
-  public Duration[] getThresholdsDurations() {
-    return Arrays.stream(thresholdsMilliseconds)
-        .mapToObj(Duration::ofMillis)
-        .toArray(Duration[]::new);
+    @Size(max = 10) List<Long> thresholdsMilliseconds, boolean enabled) {
+
+  public static MessageProcessingDurationMetricOptions DISABLED =
+      MessageProcessingDurationMetricOptions.disabled();
+
+  public static MessageProcessingDurationMetricOptions of(Long... thresholdsMilliseconds) {
+    return new MessageProcessingDurationMetricOptions(Arrays.asList(thresholdsMilliseconds), true);
   }
 
-  @Override
-  public String toString() {
-    return "{thresholdsMilliseconds=" + Arrays.toString(thresholdsMilliseconds) + '}';
+  public static MessageProcessingDurationMetricOptions disabled() {
+    return new MessageProcessingDurationMetricOptions(emptyList(), false);
+  }
+
+  @JsonIgnore
+  public Duration[] getThresholdsDurations() {
+    return thresholdsMilliseconds.stream().map(Duration::ofMillis).toArray(Duration[]::new);
   }
 
   public boolean hasThresholds() {
-    return thresholdsMilliseconds.length > 0;
+    return thresholdsMilliseconds.isEmpty();
   }
 }

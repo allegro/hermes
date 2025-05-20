@@ -47,7 +47,7 @@ public class DefaultSuccessHandler
         this.metrics
             .subscriptions()
             .messageProcessingTimeInMillisHistogram(
-                this.subscriptionName, metricsConfig.messageProcessingDuration());
+                this.subscriptionName, metricsConfig.messageProcessing());
   }
 
   @Override
@@ -69,7 +69,7 @@ public class DefaultSuccessHandler
         metrics
             .subscriptions()
             .messageProcessingTimeInMillisHistogram(
-                this.subscriptionName, subscription.getMetricsConfig().messageProcessingDuration());
+                this.subscriptionName, subscription.getMetricsConfig().messageProcessing());
   }
 
   private void markSuccess(Message message, MessageSendingResult result) {
