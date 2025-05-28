@@ -11,14 +11,15 @@ import tech.allegro.schema.json2avro.converter.AvroJsonConverter;
 import tech.allegro.schema.json2avro.converter.conversions.DecimalAsStringConversion;
 
 public class MessageToJsonConverter {
-  private final List<Conversion<?>> defaultConversions = List.of(DecimalAsStringConversion.INSTANCE);
+  private final List<Conversion<?>> defaultConversions =
+      List.of(DecimalAsStringConversion.INSTANCE);
   private final AvroJsonConverter converter;
 
-    public MessageToJsonConverter() {
-        this.converter = new AvroJsonConverter(defaultConversions.toArray(new Conversion[0]));
-    }
+  public MessageToJsonConverter() {
+    this.converter = new AvroJsonConverter(defaultConversions.toArray(new Conversion[0]));
+  }
 
-    public byte[] convert(Message message, boolean schemaIdAwareSerializationEnabled) {
+  public byte[] convert(Message message, boolean schemaIdAwareSerializationEnabled) {
     try {
       return message
           .<Schema>getCompiledSchema()
@@ -36,6 +37,7 @@ public class MessageToJsonConverter {
         schemaIdAwareSerializationEnabled
             ? SchemaAwareSerDe.trimMagicByteAndSchemaVersion(avro)
             : avro;
-    return converter.convertToJson(bytesToRecord(schemaAwareAvro, schema.getSchema(), defaultConversions));
+    return converter.convertToJson(
+        bytesToRecord(schemaAwareAvro, schema.getSchema(), defaultConversions));
   }
 }
