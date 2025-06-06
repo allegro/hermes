@@ -13,7 +13,6 @@ import org.junit.Rule
 import org.springframework.http.client.ClientHttpRequestFactory
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory
 import org.springframework.web.client.RestTemplate
-import pl.allegro.tech.hermes.api.MetricHistogramValue
 import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringMetricsContainer
 import pl.allegro.tech.hermes.test.helper.util.Ports
 import spock.lang.Specification
@@ -41,11 +40,10 @@ class RestTemplatePrometheusClientTest extends Specification {
     def subscription2xxStatusCodesQuery = "sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_http_status_codes_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', status_code=~'2.*', service=~'hermes'}[1m]))"
     def subscription4xxStatusCodesQuery = "sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_http_status_codes_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', status_code=~'4.*', service=~'hermes'}[1m]))"
     def subscription5xxStatusCodesQuery = "sum by (group, topic, subscription) (irate({__name__='hermes_consumers_subscription_http_status_codes_total', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', status_code=~'5.*', service=~'hermes'}[1m]))"
-    def subscriptionProcessingTimeQuery = "sum by (group, topic, subscription, le) (increase({__name__='hermes_consumers_subscription_message_processing_time_seconds_bucket', group='pl.allegro.tech.hermes', topic='Monitor', subscription='consumer1', service=~'hermes'}[1d]))"
 
     def queries = List.of(subscriptionDeliveredQuery, subscriptionTimeoutsQuery, subscriptionRetriesQuery, subscriptionThroughputQuery,
             subscriptionErrorsQuery, subscriptionBatchesQuery, subscription2xxStatusCodesQuery, subscription4xxStatusCodesQuery,
-            subscription5xxStatusCodesQuery, subscriptionProcessingTimeQuery
+            subscription5xxStatusCodesQuery
     )
 
     @Rule
@@ -75,7 +73,6 @@ class RestTemplatePrometheusClientTest extends Specification {
                 new FileStub(subscription2xxStatusCodesQuery, "subscription_2xx_http_status_codes_total.json"),
                 new FileStub(subscription4xxStatusCodesQuery, "subscription_4xx_http_status_codes_total.json"),
                 new FileStub(subscription5xxStatusCodesQuery, "subscription_5xx_http_status_codes_total.json"),
-                new FileStub(subscriptionProcessingTimeQuery, "subscription_processing_time_bucket.json"),
         )
         mockPrometheus(queriesStubs)
 
@@ -83,16 +80,15 @@ class RestTemplatePrometheusClientTest extends Specification {
         MonitoringMetricsContainer metrics = client.readMetrics(queries)
 
         then:
-        metrics.metricDecimalValue(subscriptionDeliveredQuery) == of("1.0")
-        metrics.metricDecimalValue(subscriptionTimeoutsQuery) == of("2.0")
-        metrics.metricDecimalValue(subscriptionRetriesQuery) == of("1.0")
-        metrics.metricDecimalValue(subscriptionThroughputQuery) == of("3.0")
-        metrics.metricDecimalValue(subscriptionErrorsQuery) == of("4.0")
-        metrics.metricDecimalValue(subscriptionBatchesQuery) == of("5.0")
-        metrics.metricDecimalValue(subscription2xxStatusCodesQuery) == of("2.0")
-        metrics.metricDecimalValue(subscription4xxStatusCodesQuery) == of("1.0")
-        metrics.metricDecimalValue(subscription5xxStatusCodesQuery) == of("2.0")
-        metrics.metricHistogramValue(subscriptionProcessingTimeQuery) == MetricHistogramValue.ofBuckets("+Inf", "4.0", "300.0", "3.9", "1.0", "0.0")
+        metrics.metricValue(subscriptionDeliveredQuery) == of("1.0")
+        metrics.metricValue(subscriptionTimeoutsQuery) == of("2.0")
+        metrics.metricValue(subscriptionRetriesQuery) == of("1.0")
+        metrics.metricValue(subscriptionThroughputQuery) == of("3.0")
+        metrics.metricValue(subscriptionErrorsQuery) == of("4.0")
+        metrics.metricValue(subscriptionBatchesQuery) == of("5.0")
+        metrics.metricValue(subscription2xxStatusCodesQuery) == of("2.0")
+        metrics.metricValue(subscription4xxStatusCodesQuery) == of("1.0")
+        metrics.metricValue(subscription5xxStatusCodesQuery) == of("2.0")
     }
 
     def "should return default value when metric has no value"() {
@@ -106,8 +102,7 @@ class RestTemplatePrometheusClientTest extends Specification {
                 emptyStub(subscriptionBatchesQuery),
                 emptyStub(subscription2xxStatusCodesQuery),
                 emptyStub(subscription4xxStatusCodesQuery),
-                emptyStub(subscription5xxStatusCodesQuery),
-                emptyStub(subscriptionProcessingTimeQuery)
+                emptyStub(subscription5xxStatusCodesQuery)
         )
         mockPrometheus(queriesStubs)
 
@@ -115,16 +110,15 @@ class RestTemplatePrometheusClientTest extends Specification {
         MonitoringMetricsContainer metrics = client.readMetrics(queries)
 
         then:
-        metrics.metricDecimalValue(subscriptionDeliveredQuery) == defaultValue()
-        metrics.metricDecimalValue(subscriptionTimeoutsQuery) == of("2.0")
-        metrics.metricDecimalValue(subscriptionRetriesQuery) == of("1.0")
-        metrics.metricDecimalValue(subscriptionThroughputQuery) == defaultValue()
-        metrics.metricDecimalValue(subscriptionErrorsQuery) == defaultValue()
-        metrics.metricDecimalValue(subscriptionBatchesQuery) == defaultValue()
-        metrics.metricDecimalValue(subscription2xxStatusCodesQuery) == defaultValue()
-        metrics.metricDecimalValue(subscription4xxStatusCodesQuery) == defaultValue()
-        metrics.metricDecimalValue(subscription5xxStatusCodesQuery) == defaultValue()
-        metrics.metricHistogramValue(subscriptionProcessingTimeQuery) == MetricHistogramValue.defaultValue()
+        metrics.metricValue(subscriptionDeliveredQuery) == defaultValue()
+        metrics.metricValue(subscriptionTimeoutsQuery) == of("2.0")
+        metrics.metricValue(subscriptionRetriesQuery) == of("1.0")
+        metrics.metricValue(subscriptionThroughputQuery) == defaultValue()
+        metrics.metricValue(subscriptionErrorsQuery) == defaultValue()
+        metrics.metricValue(subscriptionBatchesQuery) == defaultValue()
+        metrics.metricValue(subscription2xxStatusCodesQuery) == defaultValue()
+        metrics.metricValue(subscription4xxStatusCodesQuery) == defaultValue()
+        metrics.metricValue(subscription5xxStatusCodesQuery) == defaultValue()
     }
 
     def "should return partial results when some of the requests fails"() {
@@ -137,7 +131,6 @@ class RestTemplatePrometheusClientTest extends Specification {
                 subscription2xxStatusCodesQuery,
                 subscription4xxStatusCodesQuery,
                 subscription5xxStatusCodesQuery,
-                subscriptionProcessingTimeQuery
         )
         def queriesToSuccess = List.of(
                 new FileStub(subscriptionTimeoutsQuery, "subscription_timeouts_total.json"),
@@ -150,16 +143,15 @@ class RestTemplatePrometheusClientTest extends Specification {
         MonitoringMetricsContainer metrics = client.readMetrics(queries)
 
         then:
-        metrics.metricDecimalValue(subscriptionDeliveredQuery) == unavailable()
-        metrics.metricDecimalValue(subscriptionTimeoutsQuery) == of("2.0")
-        metrics.metricDecimalValue(subscriptionRetriesQuery) == of("1.0")
-        metrics.metricDecimalValue(subscriptionThroughputQuery) == unavailable()
-        metrics.metricDecimalValue(subscriptionErrorsQuery) == unavailable()
-        metrics.metricDecimalValue(subscriptionBatchesQuery) == unavailable()
-        metrics.metricDecimalValue(subscription2xxStatusCodesQuery) == unavailable()
-        metrics.metricDecimalValue(subscription4xxStatusCodesQuery) == unavailable()
-        metrics.metricDecimalValue(subscription5xxStatusCodesQuery) == unavailable()
-        metrics.metricHistogramValue(subscriptionProcessingTimeQuery) == MetricHistogramValue.unavailable()
+        metrics.metricValue(subscriptionDeliveredQuery) == unavailable()
+        metrics.metricValue(subscriptionTimeoutsQuery) == of("2.0")
+        metrics.metricValue(subscriptionRetriesQuery) == of("1.0")
+        metrics.metricValue(subscriptionThroughputQuery) == unavailable()
+        metrics.metricValue(subscriptionErrorsQuery) == unavailable()
+        metrics.metricValue(subscriptionBatchesQuery) == unavailable()
+        metrics.metricValue(subscription2xxStatusCodesQuery) == unavailable()
+        metrics.metricValue(subscription4xxStatusCodesQuery) == unavailable()
+        metrics.metricValue(subscription5xxStatusCodesQuery) == unavailable()
     }
 
     private void mockPrometheus(List<FileStub> stubs) {

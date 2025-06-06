@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.management.infrastructure.metrics;
 
 import pl.allegro.tech.hermes.api.MetricDecimalValue;
-import pl.allegro.tech.hermes.api.MetricHistogramValue;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 
 public interface MonitoringSubscriptionMetricsProvider {
@@ -16,8 +15,7 @@ public interface MonitoringSubscriptionMetricsProvider {
       MetricDecimalValue code4xx,
       MetricDecimalValue code5xx,
       MetricDecimalValue retries,
-      MetricDecimalValue metricPathBatchRate,
-      MetricHistogramValue messageProcessingTime) {}
+      MetricDecimalValue metricPathBatchRate) {}
 
   static MetricsBuilder metricsBuilder() {
     return new MetricsBuilder();
@@ -33,7 +31,6 @@ public interface MonitoringSubscriptionMetricsProvider {
     private MetricDecimalValue code5xx;
     private MetricDecimalValue retries;
     private MetricDecimalValue metricPathBatchRate;
-    private MetricHistogramValue messageProcessingTime;
 
     public MetricsBuilder withRate(MetricDecimalValue rate) {
       this.rate = rate;
@@ -80,11 +77,6 @@ public interface MonitoringSubscriptionMetricsProvider {
       return this;
     }
 
-    public MetricsBuilder withMessageProcessingTime(MetricHistogramValue messageProcessingTime) {
-      this.messageProcessingTime = messageProcessingTime;
-      return this;
-    }
-
     public MonitoringSubscriptionMetrics build() {
       return new MonitoringSubscriptionMetrics(
           rate,
@@ -95,8 +87,7 @@ public interface MonitoringSubscriptionMetricsProvider {
           code4xx,
           code5xx,
           retries,
-          metricPathBatchRate,
-          messageProcessingTime);
+          metricPathBatchRate);
     }
   }
 }

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 
 record PrometheusResponse(@JsonProperty("status") String status, @JsonProperty("data") Data data) {
 
@@ -18,34 +17,19 @@ record PrometheusResponse(@JsonProperty("status") String status, @JsonProperty("
     boolean isVector() {
       return resultType.equals("vector");
     }
-
-    public boolean isHistogram() {
-      return !results.isEmpty()
-          && results.stream()
-              .allMatch(
-                  vectorResult ->
-                      vectorResult.metric() != null && vectorResult.metric().le() != null);
-    }
   }
 
   @JsonIgnoreProperties(ignoreUnknown = true)
-  record VectorResult(
-      @JsonProperty("metric") BucketMetric metric, @JsonProperty("value") List<String> vector) {
+  record VectorResult(@JsonProperty("value") List<String> vector) {
 
     private static final int VALID_VECTOR_LENGTH = 2;
     private static final int SCALAR_INDEX_VALUE = 1;
 
-    Optional<Double> getDoubleValue() {
-      return getValue(Double::parseDouble);
-    }
-
-    private <T> Optional<T> getValue(Function<String, T> parser) {
+    Optional<Double> getValue() {
       if (vector.size() != VALID_VECTOR_LENGTH) {
         return Optional.empty();
       }
-      return Optional.of(parser.apply(vector.get(SCALAR_INDEX_VALUE)));
+      return Optional.of(Double.parseDouble(vector.get(SCALAR_INDEX_VALUE)));
     }
-
-    record BucketMetric(@JsonProperty("le") String le) {}
   }
 }

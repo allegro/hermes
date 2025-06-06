@@ -10,10 +10,6 @@ public interface PrometheusClient {
       "sum by (group, topic, subscription)"
           + " (irate({__name__='%s', group='%s', topic='%s', subscription='%s', %s}[1m]))";
 
-  String SUBSCRIPTION_QUERY_FORMAT_HISTOGRAM =
-      "sum by (group, topic, subscription, le)"
-          + " (increase({__name__='%s', group='%s', topic='%s', subscription='%s', %s}[1d]))";
-
   String SUBSCRIPTION_QUERY_FORMAT_STATUS_CODE =
       "sum by (group, topic, subscription)"
           + " (irate({__name__='%s', group='%s', topic='%s', subscription='%s', status_code=~'%s', %s}[1m]))";
@@ -31,17 +27,6 @@ public interface PrometheusClient {
       String name, SubscriptionName subscriptionName, String additionalFilters) {
     return String.format(
         SUBSCRIPTION_QUERY_FORMAT,
-        name,
-        subscriptionName.getTopicName().getGroupName(),
-        subscriptionName.getTopicName().getName(),
-        subscriptionName.getName(),
-        additionalFilters);
-  }
-
-  static String forSubscriptionHistogram(
-      String name, SubscriptionName subscriptionName, String additionalFilters) {
-    return String.format(
-        SUBSCRIPTION_QUERY_FORMAT_HISTOGRAM,
         name,
         subscriptionName.getTopicName().getGroupName(),
         subscriptionName.getTopicName().getName(),

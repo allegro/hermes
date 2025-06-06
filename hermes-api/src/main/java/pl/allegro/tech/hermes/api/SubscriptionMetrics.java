@@ -18,7 +18,6 @@ public class SubscriptionMetrics {
   private MetricDecimalValue rate;
   private MetricDecimalValue throughput;
   private MetricDecimalValue batchRate;
-  private MetricHistogramValue messageProcessingTime;
 
   private SubscriptionMetrics() {}
 
@@ -36,8 +35,7 @@ public class SubscriptionMetrics {
       @JsonProperty("Subscription") Subscription.State state,
       @JsonProperty("rate") MetricDecimalValue rate,
       @JsonProperty("throughput") MetricDecimalValue throughput,
-      @JsonProperty("batchRate") MetricDecimalValue batchRate,
-      @JsonProperty("messageProcessingTime") MetricHistogramValue messageProcessingTime) {
+      @JsonProperty("batchRate") MetricDecimalValue batchRate) {
     this.delivered = delivered;
     this.discarded = discarded;
     this.volume = volume;
@@ -51,7 +49,6 @@ public class SubscriptionMetrics {
     this.rate = rate;
     this.throughput = throughput;
     this.batchRate = batchRate;
-    this.messageProcessingTime = messageProcessingTime;
   }
 
   public long getDelivered() {
@@ -108,10 +105,6 @@ public class SubscriptionMetrics {
 
   public long getVolume() {
     return volume;
-  }
-
-  public MetricHistogramValue getMessageProcessingTime() {
-    return messageProcessingTime;
   }
 
   public static class Builder {
@@ -188,11 +181,6 @@ public class SubscriptionMetrics {
 
     public Builder withBatchRate(MetricDecimalValue batchRate) {
       subscriptionMetrics.batchRate = batchRate;
-      return this;
-    }
-
-    public Builder withMessageProcessingTime(MetricHistogramValue messageProcessingTime) {
-      subscriptionMetrics.messageProcessingTime = messageProcessingTime;
       return this;
     }
 

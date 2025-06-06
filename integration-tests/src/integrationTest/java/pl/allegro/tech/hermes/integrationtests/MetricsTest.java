@@ -25,7 +25,6 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.MessageFilterSpecification;
 import pl.allegro.tech.hermes.api.MetricDecimalValue;
-import pl.allegro.tech.hermes.api.MetricHistogramValue;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
@@ -619,11 +618,7 @@ public class MetricsTest {
             .createSubscription(
                 subscriptionWithRandomName(topic.getName(), "http://endpoint2").build());
     prometheus.stubSubscriptionMetrics(
-        subscriptionMetrics(subscription.getQualifiedName())
-            .withRate(15)
-            .withMessageProcessingTime("+Inf", "4")
-            .withMessageProcessingTime("60.0", "2")
-            .build());
+        subscriptionMetrics(subscription.getQualifiedName()).withRate(15).build());
 
     // when
     WebTestClient.ResponseSpec response =
@@ -635,8 +630,6 @@ public class MetricsTest {
         response.expectBody(SubscriptionMetrics.class).returnResult().getResponseBody();
     assertThat(metrics).isNotNull();
     assertThat(metrics.getRate()).isEqualTo(MetricDecimalValue.of("15.0"));
-    assertThat(metrics.getMessageProcessingTime())
-        .isEqualTo(MetricHistogramValue.ofBuckets("+Inf", "4.0", "60.0", "2.0"));
   }
 
   private static HttpHeaders header(String key, String value) {
