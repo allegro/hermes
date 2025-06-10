@@ -64,7 +64,7 @@ allprojects {
             spock             : '2.4-M4-groovy-4.0',
             groovy            : '4.0.21',
             avro              : '1.11.3',
-            json2avro         : '0.2.16',
+            json2avro         : '0.2.16-SNAPSHOT',
             // TODO: newest version requires subject alternative name in a certificate during host verification, current test cert does not have a one
             okhttp            : '3.9.1',
             undertow          : '2.3.12.Final',
@@ -79,6 +79,14 @@ allprojects {
 
     repositories {
         mavenCentral()
+        maven {
+            name = 'Central Portal Snapshots'
+            url = 'https://central.sonatype.com/repository/maven-snapshots/'
+
+            content {
+                includeModule("tech.allegro.schema.json2avro", "converter")
+            }
+        }
     }
 
     dependencies {

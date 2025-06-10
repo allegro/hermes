@@ -39,7 +39,7 @@ dependencies {
     testImplementation project(':hermes-common')
 
     testImplementation(group: 'org.awaitility', name: 'awaitility-groovy', version: '4.2.1')
-    implementation files('../libs/converter-0.2.16-SNAPSHOT.jar')
+    testImplementation group: 'tech.allegro.schema.json2avro', name: 'converter', version: versions.json2avro
 
     testImplementation group: 'org.spockframework', name: 'spock-core', version: versions.spock
     testImplementation group: 'org.spockframework', name: 'spock-junit4', version: versions.spock
