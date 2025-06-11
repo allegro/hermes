@@ -1,4 +1,5 @@
 consumer:
+  healthCheckPort: 8070
   zookeeper:
     clusters:
       - datacenter: "dc"
