@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.metrics;
 
 import io.micrometer.core.instrument.Timer;
-
 import java.time.Duration;
 
 public class HermesTimer {
