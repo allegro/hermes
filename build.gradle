@@ -31,6 +31,8 @@ nexusPublishing {
     clientTimeout = Duration.ofMinutes(getIntProperty('publishingTimeoutInMin', 10))
     repositories {
         sonatype {
+            nexusUrl.set(uri("https://ossrh-staging-api.central.sonatype.com/service/local/"))Add commentMore actions
+            snapshotRepositoryUrl.set(uri("https://central.sonatype.com/repository/maven-snapshots/"))
             stagingProfileId = '19d6feb4b1fb3' // id for group 'pl.allegro.tech.hermes'
             username = System.getenv("SONATYPE_USERNAME")
             password = System.getenv("SONATYPE_PASSWORD")
