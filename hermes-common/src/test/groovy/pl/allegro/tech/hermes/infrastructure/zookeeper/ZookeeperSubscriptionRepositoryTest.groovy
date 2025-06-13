@@ -26,7 +26,7 @@ class ZookeeperSubscriptionRepositoryTest extends IntegrationTest {
     private ZookeeperSubscriptionRepository repository = new ZookeeperSubscriptionRepository(zookeeper(), mapper, paths, topicRepository)
 
     void setup() {
-        if(!groupRepository.groupExists(GROUP)) {
+        if (!groupRepository.groupExists(GROUP)) {
             groupRepository.createGroup(Group.from(GROUP))
             topicRepository.createTopic(topic(TOPIC).build())
         }

@@ -219,7 +219,7 @@ class ZookeeperTopicRepositoryTest extends IntegrationTest {
 
         and: "preview in zk for that topic"
         String previewPath = paths.topicPreviewPath(topic.getName())
-        zookeeper().create().creatingParentsIfNeeded().forPath(previewPath , '1'.bytes)
+        zookeeper().create().creatingParentsIfNeeded().forPath(previewPath, '1'.bytes)
         wait.untilZookeeperPathIsCreated(previewPath)
 
         when:
