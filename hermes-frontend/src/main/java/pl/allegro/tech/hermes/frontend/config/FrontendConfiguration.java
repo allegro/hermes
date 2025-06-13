@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.frontend.config;
 import jakarta.inject.Named;
 import java.time.Clock;
 import java.util.List;
-import org.apache.curator.framework.CuratorFramework;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,7 +11,6 @@ import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
 import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
-import pl.allegro.tech.hermes.frontend.blacklist.BlacklistZookeeperNotifyingCache;
 import pl.allegro.tech.hermes.frontend.buffer.BackupMessagesLoader;
 import pl.allegro.tech.hermes.frontend.buffer.PersistentBufferExtension;
 import pl.allegro.tech.hermes.frontend.cache.topic.NotificationBasedTopicsCache;
@@ -22,7 +20,6 @@ import pl.allegro.tech.hermes.frontend.metric.ThroughputRegistry;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.validator.MessageValidators;
 import pl.allegro.tech.hermes.frontend.validator.TopicMessageValidator;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.schema.SchemaExistenceEnsurer;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
@@ -43,12 +40,10 @@ public class FrontendConfiguration {
       TopicRepository topicRepository,
       MetricsFacade metricsFacade,
       ThroughputRegistry throughputRegistry,
-      KafkaNamesMapper kafkaNamesMapper,
-      BlacklistZookeeperNotifyingCache blacklistZookeeperNotifyingCache) {
+      KafkaNamesMapper kafkaNamesMapper) {
 
     return new NotificationBasedTopicsCache(
         internalNotificationsBus,
-        blacklistZookeeperNotifyingCache,
         groupRepository,
         topicRepository,
         metricsFacade,
@@ -84,12 +79,6 @@ public class FrontendConfiguration {
       MetricsFacade metricsFacade) {
     return new PersistentBufferExtension(
         localMessageStorageProperties, clock, listeners, backupMessagesLoader, metricsFacade);
-  }
-
-  @Bean(initMethod = "startup")
-  public BlacklistZookeeperNotifyingCache blacklistZookeeperNotifyingCache(
-      CuratorFramework curator, ZookeeperPaths zookeeperPaths) {
-    return new BlacklistZookeeperNotifyingCache(curator, zookeeperPaths);
   }
 
   @Bean

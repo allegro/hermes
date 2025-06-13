@@ -18,7 +18,6 @@ public class CachedTopic {
   private final Topic topic;
   private final KafkaTopics kafkaTopics;
   private final MetricsFacade metricsFacade;
-  private final boolean blacklisted;
 
   private final HermesTimer topicProducerLatencyTimer;
   private final HermesTimer globalProducerLatencyTimer;
@@ -47,19 +46,9 @@ public class CachedTopic {
       MetricsFacade metricsFacade,
       ThroughputRegistry throughputRegistry,
       KafkaTopics kafkaTopics) {
-    this(topic, metricsFacade, throughputRegistry, kafkaTopics, false);
-  }
-
-  public CachedTopic(
-      Topic topic,
-      MetricsFacade metricsFacade,
-      ThroughputRegistry throughputRegistry,
-      KafkaTopics kafkaTopics,
-      boolean blacklisted) {
     this.topic = topic;
     this.kafkaTopics = kafkaTopics;
     this.metricsFacade = metricsFacade;
-    this.blacklisted = blacklisted;
 
     globalRequestMeter = metricsFacade.topics().topicGlobalRequestCounter();
     topicRequestMeter = metricsFacade.topics().topicRequestCounter(topic.getName());
@@ -102,10 +91,6 @@ public class CachedTopic {
 
   public KafkaTopics getKafkaTopics() {
     return kafkaTopics;
-  }
-
-  public boolean isBlacklisted() {
-    return blacklisted;
   }
 
   public StartedTimersPair startProducerLatencyTimers() {
