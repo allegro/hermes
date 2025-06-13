@@ -23,7 +23,7 @@ import pl.allegro.tech.hermes.api.constraints.ValidContentType;
 @JsonIgnoreProperties(
     value = {"createdAt", "modifiedAt"},
     allowGetters = true)
-public class Subscription implements Anonymizable {
+public class  Subscription implements Anonymizable {
 
   @NotNull private final MonitoringDetails monitoringDetails;
   private final SubscriptionName subscriptionName;

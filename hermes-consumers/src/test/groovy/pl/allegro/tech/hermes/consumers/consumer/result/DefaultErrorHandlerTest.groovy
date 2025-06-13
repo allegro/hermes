@@ -53,5 +53,6 @@ class DefaultErrorHandlerTest extends Specification {
 
         then:
         sendingTracker.hasDiscardedLog('kafka_topic', 0, 123L)
+        trackers
     }
 }
