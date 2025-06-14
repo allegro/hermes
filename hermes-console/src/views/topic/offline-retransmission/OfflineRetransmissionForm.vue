@@ -33,15 +33,15 @@
           prepend-icon="mdi-open-in-new"
           target="_blank"
           :href="
-            configStore.loadedConfig.topic.offlineRetransmissionFromViewDocsUrl
+            configStore.loadedConfig.topic.offlineRetransmission.fromViewDocsUrl
           "
         >
-          {{ $t('offlineRetransmission.titleRetransmissionFromView') }}</v-btn
-        >
+          {{ $t('offlineRetransmission.titleRetransmissionFromView') }}
+        </v-btn>
       </v-card-title>
-      <v-card-subtitle>{{
-        $t('offlineRetransmission.subtitle')
-      }}</v-card-subtitle>
+      <v-card-subtitle
+        >{{ $t('offlineRetransmission.subtitle') }}
+      </v-card-subtitle>
       <v-card-item>
         <v-text-field
           :label="$t('offlineRetransmission.targetTopic')"

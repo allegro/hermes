@@ -22,7 +22,8 @@ console:
       adminHeader: Hermes-Admin-Password
   topic:
     messagePreviewEnabled: true
-    offlineRetransmissionEnabled: true
+    offline-retransmission:
+      enabled: true
     offlineClientsEnabled: false
     readOnlyModeEnabled: false
     retentionUnits:

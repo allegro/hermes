@@ -667,6 +667,17 @@ const en_US = {
     targetTopic: 'Target topic',
     startTimestamp: 'Start timestamp (UTC)',
     endTimestamp: 'End timestamp (UTC)',
+    monitoringView: {
+      title: 'Active offline retransmissions',
+      allTasksLinkTitle: 'Offline retransmission global queue',
+      monitoringDocsLinkTitle: 'Offline retransmission monitoring docs',
+      idHeader: 'ID',
+      typeHeader: 'Type',
+      logsLinkHeader: 'Kibana',
+      metricsLinkHeader: 'Metrics',
+      jobLinkHeader: 'Job Details',
+      allTasksLinkHeader: 'Hermes retransmission global queue',
+    },
   },
   notifications: {
     dashboardUrl: {
@@ -808,6 +819,9 @@ const en_US = {
           'Successfully created retransmission task from topic: “{sourceTopic}“ to topic: “{targetTopic}“',
         failure:
           'Failed to create retransmission task from topic: “{sourceTopic}“ to topic: “{targetTopic}“',
+      },
+      fetchActive: {
+        failure: 'Failed to fetch active retransmission tasks',
       },
     },
     subscriptionFiltersDebug: {
