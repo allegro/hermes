@@ -17,6 +17,8 @@ public interface TopicRepository {
 
   void createTopic(Topic topic);
 
+  void ensureTopicCanBeCreated(TopicName topicName);
+
   void removeTopic(TopicName topicName);
 
   void updateTopic(Topic topic);
