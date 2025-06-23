@@ -16,6 +16,7 @@ import pl.allegro.tech.hermes.api.OfflineRetransmissionFromTopicRequest;
 import pl.allegro.tech.hermes.api.OfflineRetransmissionFromViewRequest;
 import pl.allegro.tech.hermes.api.OfflineRetransmissionRequest.RetransmissionType;
 import pl.allegro.tech.hermes.api.OfflineRetransmissionTask;
+import pl.allegro.tech.hermes.api.OfflineRetransmissionTaskMonitoringInfo;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesExtension;
 import pl.allegro.tech.hermes.management.TestSecurityProvider;
@@ -61,6 +62,72 @@ public class OfflineRetransmissionManagementTest {
     assertThat(allTasks.get(0).getSourceTopic()).hasValue(request.getSourceTopic());
     assertThat(allTasks.get(0).getTargetTopic()).isEqualTo(request.getTargetTopic());
     assertThat(allTasks.get(0).getCreatedAt()).isBefore(now);
+  }
+
+  @Test
+  public void shouldListActiveTopicRetransmissionMonitoringInfoForSourceAndTargetTopic() {
+    // given
+    Topic sourceTopic = hermes.initHelper().createTopic(topicWithRandomName().build());
+    Topic targetTopic = hermes.initHelper().createTopic(topicWithRandomName().build());
+
+    OfflineRetransmissionFromTopicRequest request =
+        createSampleTopicRetransmissionRequest(
+            sourceTopic.getQualifiedName(), targetTopic.getQualifiedName());
+    WebTestClient.ResponseSpec response = hermes.api().createOfflineRetransmissionTask(request);
+
+    response.expectStatus().isCreated();
+
+    // when
+    List<OfflineRetransmissionTaskMonitoringInfo> activeTasksForSourceTopic =
+        getActiveRetransmissionsMonitoringInfo(sourceTopic.getQualifiedName());
+
+    List<OfflineRetransmissionTaskMonitoringInfo> activeTasksForTargetTopic =
+        getActiveRetransmissionsMonitoringInfo(targetTopic.getQualifiedName());
+
+    // and
+    String taskId = activeTasksForSourceTopic.get(0).taskId();
+    assertThat(activeTasksForSourceTopic.size()).isEqualTo(1);
+    assertThat(activeTasksForSourceTopic.get(0).type()).isEqualTo(RetransmissionType.TOPIC);
+    assertThat(activeTasksForSourceTopic.get(0).logsUrl())
+        .isEqualTo("https://kibana.com/?query=" + taskId);
+    assertThat(activeTasksForSourceTopic.get(0).jobDetailsUrl())
+        .isEqualTo("https://job-details.com?query=" + taskId);
+    assertThat(activeTasksForSourceTopic.get(0).metricsUrl())
+        .isEqualTo("https://monitoring.com?query=" + taskId);
+
+    // and when
+    String targetTaskId = activeTasksForTargetTopic.get(0).taskId();
+    assertThat(activeTasksForTargetTopic.size()).isEqualTo(1);
+    assertThat(activeTasksForTargetTopic.get(0).type()).isEqualTo(RetransmissionType.TOPIC);
+    assertThat(activeTasksForTargetTopic.get(0).logsUrl())
+        .isEqualTo("https://kibana.com/?query=" + taskId);
+    assertThat(activeTasksForTargetTopic.get(0).jobDetailsUrl())
+        .isEqualTo("https://job-details.com?query=" + taskId);
+    assertThat(activeTasksForTargetTopic.get(0).metricsUrl())
+        .isEqualTo("https://monitoring.com?query=" + taskId);
+  }
+
+  @Test
+  public void shouldListActiveViewRetransmissionMonitoringInfoForTargetTopic() {
+    // given
+    var targetTopic = hermes.initHelper().createTopic(topicWithRandomName().build());
+    var request =
+        new OfflineRetransmissionFromViewRequest("testViewPath", targetTopic.getQualifiedName());
+    WebTestClient.ResponseSpec response = hermes.api().createOfflineRetransmissionTask(request);
+    response.expectStatus().isCreated();
+
+    // when
+    List<OfflineRetransmissionTaskMonitoringInfo> activeTasks =
+        getActiveRetransmissionsMonitoringInfo(targetTopic.getQualifiedName());
+
+    // and
+    String taskId = activeTasks.get(0).taskId();
+    assertThat(activeTasks.size()).isEqualTo(1);
+    assertThat(activeTasks.get(0).type()).isEqualTo(RetransmissionType.VIEW);
+    assertThat(activeTasks.get(0).logsUrl()).isEqualTo("https://kibana.com/?query=" + taskId);
+    assertThat(activeTasks.get(0).jobDetailsUrl())
+        .isEqualTo("https://job-details.com?query=" + taskId);
+    assertThat(activeTasks.get(0).metricsUrl()).isEqualTo("https://monitoring.com?query=" + taskId);
   }
 
   @Test
@@ -372,6 +439,19 @@ public class OfflineRetransmissionManagementTest {
         .expectStatus()
         .isOk()
         .expectBodyList(OfflineRetransmissionTask.class)
+        .returnResult()
+        .getResponseBody();
+  }
+
+  @Nullable
+  private static List<OfflineRetransmissionTaskMonitoringInfo>
+      getActiveRetransmissionsMonitoringInfo(String qualifiedTopicName) {
+    return hermes
+        .api()
+        .getTopicActiveRetransmissionsMonitoringInfo(qualifiedTopicName)
+        .expectStatus()
+        .isOk()
+        .expectBodyList(OfflineRetransmissionTaskMonitoringInfo.class)
         .returnResult()
         .getResponseBody();
   }

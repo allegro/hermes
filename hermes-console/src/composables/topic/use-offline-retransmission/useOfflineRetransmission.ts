@@ -2,15 +2,15 @@ import { createRetransmissionTask } from '@/api/hermes-client';
 import { dispatchErrorNotification } from '@/utils/notification-utils';
 import { useGlobalI18n } from '@/i18n';
 import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
-import type { OfflineRetransmissionTask } from '@/api/offline-retransmission';
+import type { OfflineRetransmissionCreateTask } from '@/api/offline-retransmission';
 
 export interface UseOfflineRetransmission {
-  retransmit: (task: OfflineRetransmissionTask) => Promise<boolean>;
+  retransmit: (task: OfflineRetransmissionCreateTask) => Promise<boolean>;
 }
 
 export function useOfflineRetransmission(): UseOfflineRetransmission {
   const retransmit = async (
-    task: OfflineRetransmissionTask,
+    task: OfflineRetransmissionCreateTask,
   ): Promise<boolean> => {
     const notificationsStore = useNotificationsStore();
     try {
