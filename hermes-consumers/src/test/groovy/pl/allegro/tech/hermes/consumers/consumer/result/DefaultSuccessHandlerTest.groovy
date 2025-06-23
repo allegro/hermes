@@ -21,7 +21,7 @@ class DefaultSuccessHandlerTest extends Specification {
     private Subscription subscription = subscription('group.topic', 'subscription')
             .withTrackingMode(TrackingMode.TRACK_ALL).build()
 
-    private DefaultSuccessHandler handler = new DefaultSuccessHandler(Stub(MetricsFacade), trackers, subscription.qualifiedName)
+    private DefaultSuccessHandler handler = new DefaultSuccessHandler(Stub(MetricsFacade), trackers, subscription.qualifiedName, subscription.getMetricsConfig())
 
     def "should save tracking information on message success"() {
         given:
