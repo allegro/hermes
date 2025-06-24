@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.infrastructure.zookeeper
 
 import pl.allegro.tech.hermes.api.Group
+import pl.allegro.tech.hermes.api.TopicName
 import pl.allegro.tech.hermes.domain.group.GroupNotEmptyException
 import pl.allegro.tech.hermes.domain.group.GroupNotExistsException
 import pl.allegro.tech.hermes.infrastructure.MalformedDataException
@@ -81,6 +82,23 @@ class ZookeeperGroupRepositoryTest extends IntegrationTest {
         
         then:
         thrown(GroupNotEmptyException)
+    }
+
+    def "should remove group when recently deleted a topic"() {
+        given:
+         Group group = group('removeGroup').build()
+        repository.createGroup(group)
+        wait.untilGroupCreated('removeGroup')
+        topicRepository.createTopic(topic('removeGroup', 'remove').build())
+        wait.untilTopicCreated('removeGroup', 'remove')
+        topicRepository.removeTopic(new TopicName('removeGroup', 'remove'))
+        wait.untilTopicRemoved('removeGroup', 'remove')
+
+        when:
+        repository.removeGroup('removeGroup')
+
+        then:
+        !repository.listGroupNames().contains('removeGroup')
     }
 
     def "should not throw exception on malformed topic when reading list of all topics"() {
