@@ -13,7 +13,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.util.MultiValueMap;
-import pl.allegro.tech.hermes.api.BlacklistStatus;
 import pl.allegro.tech.hermes.api.ConsumerGroup;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.MessageFiltersVerificationInput;
@@ -292,32 +291,6 @@ public class HermesTestClient {
       throws IOException, InterruptedException {
     return publishSlowly(
         clientTimeout, pauseTimeBetweenChunks, delayBeforeSendingFirstData, topicName, false);
-  }
-
-  public void blacklistTopic(String topicQualifiedName) {
-    managementTestClient.blacklistTopic(topicQualifiedName).expectStatus().is2xxSuccessful();
-  }
-
-  public WebTestClient.ResponseSpec blacklistTopicResponse(String topicQualifiedName) {
-    return managementTestClient.blacklistTopic(topicQualifiedName);
-  }
-
-  public void unblacklistTopic(String topicQualifiedName) {
-    managementTestClient.unblacklistTopic(topicQualifiedName).expectStatus().is2xxSuccessful();
-  }
-
-  public BlacklistStatus isTopicBlacklisted(String topicQualifiedName) {
-    return managementTestClient
-        .isTopicBlacklisted(topicQualifiedName)
-        .expectStatus()
-        .is2xxSuccessful()
-        .expectBody(BlacklistStatus.class)
-        .returnResult()
-        .getResponseBody();
-  }
-
-  public WebTestClient.ResponseSpec unblacklistTopicResponse(String topicQualifiedName) {
-    return managementTestClient.unblacklistTopic(topicQualifiedName);
   }
 
   public WebTestClient.ResponseSpec getLatestUndeliveredMessage(

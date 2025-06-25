@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.frontend.publishing.handlers;
 
 import static io.undertow.util.StatusCodes.INTERNAL_SERVER_ERROR;
 import static pl.allegro.tech.hermes.api.ErrorCode.AUTH_ERROR;
-import static pl.allegro.tech.hermes.api.ErrorCode.TOPIC_BLACKLISTED;
 import static pl.allegro.tech.hermes.api.ErrorCode.TOPIC_NOT_EXISTS;
 import static pl.allegro.tech.hermes.api.ErrorDescription.error;
 
@@ -67,16 +66,12 @@ class TopicHandler implements HttpHandler {
     String topicName = exchange.getQueryParameters().get("qualifiedTopicName").getFirst();
     Optional<CachedTopic> maybeTopic = topicsCache.getTopic(topicName);
 
-    if (!maybeTopic.isPresent()) {
+    if (maybeTopic.isEmpty()) {
       unknownTopic(exchange, topicName, messageId);
       return;
     }
 
     CachedTopic cachedTopic = maybeTopic.get();
-    if (cachedTopic.isBlacklisted()) {
-      blacklistedTopic(exchange, topicName, messageId);
-      return;
-    }
 
     Topic topic = cachedTopic.getTopic();
     if (topic.isAuthEnabled() && !hasPermission(exchange, topic)) {
@@ -117,15 +112,6 @@ class TopicHandler implements HttpHandler {
       HttpServerExchange exchange, String messageId, String qualifiedTopicName) {
     messageErrorProcessor.sendQuietly(
         exchange, error("Permission denied.", AUTH_ERROR), messageId, qualifiedTopicName);
-  }
-
-  private void blacklistedTopic(
-      HttpServerExchange exchange, String qualifiedTopicName, String messageId) {
-    messageErrorProcessor.sendQuietly(
-        exchange,
-        error("Topic blacklisted: " + qualifiedTopicName, TOPIC_BLACKLISTED),
-        messageId,
-        qualifiedTopicName);
   }
 
   // Default Undertow's response code (200) was changed in order to avoid situations in which
