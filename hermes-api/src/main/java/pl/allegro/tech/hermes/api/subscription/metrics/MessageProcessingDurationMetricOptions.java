@@ -3,13 +3,14 @@ package pl.allegro.tech.hermes.api.subscription.metrics;
 import static java.util.Collections.emptyList;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 
 public record MessageProcessingDurationMetricOptions(
-    @Size(max = 10) List<Long> thresholdsMilliseconds, boolean enabled) {
+    @Size(max = 10) List<@Positive Long> thresholdsMilliseconds, boolean enabled) {
 
   public static MessageProcessingDurationMetricOptions DISABLED =
       MessageProcessingDurationMetricOptions.disabled();

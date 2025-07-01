@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.integrationtests.management;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.waitAtMost;
+import static pl.allegro.tech.hermes.api.ErrorCode.VALIDATION_ERROR;
 import static pl.allegro.tech.hermes.api.PatchData.patchData;
 import static pl.allegro.tech.hermes.api.SubscriptionHealth.Status.NO_DATA;
 import static pl.allegro.tech.hermes.api.SubscriptionHealth.Status.UNHEALTHY;
@@ -29,6 +30,7 @@ import pl.allegro.tech.hermes.api.ConsumerGroup;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.DeliveryType;
 import pl.allegro.tech.hermes.api.EndpointAddress;
+import pl.allegro.tech.hermes.api.ErrorDescription;
 import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -337,6 +339,46 @@ public class SubscriptionManagementTest {
 
     // then
     response.expectStatus().isOk();
+    SubscriptionMetricsConfig metricsConfig =
+        hermes
+            .api()
+            .getSubscription(topic.getQualifiedName(), subscription.getName())
+            .getMetricsConfig();
+    assertThat(metricsConfig.messageProcessing().thresholdsMilliseconds()).isEmpty();
+  }
+
+  @Test
+  public void shouldNotUpdateThresholdsMillisecondsToNegativeValue() {
+    // given
+    Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
+    Subscription subscription =
+        hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).build());
+    PatchData patchData =
+        patchData()
+            .set(
+                "metricsConfig",
+                ImmutableMap.builder()
+                    .put(
+                        "messageProcessing",
+                        ImmutableMap.builder()
+                            .put("thresholdsMilliseconds", new String[] {"-100"})
+                            .build())
+                    .build())
+            .build();
+
+    // when
+    WebTestClient.ResponseSpec response =
+        hermes.api().updateSubscription(topic, subscription.getName(), patchData);
+
+    // then
+    response.expectStatus().isBadRequest();
+    ErrorDescription responseBody =
+        Objects.requireNonNull(
+            response.expectBody(ErrorDescription.class).returnResult().getResponseBody());
+    assertThat(responseBody.getCode()).isEqualTo(VALIDATION_ERROR);
+    assertThat(responseBody.getMessage())
+        .isEqualTo(
+            "Subscription.metricsConfig.messageProcessing.thresholdsMilliseconds[0].<list element> must be greater than 0");
     SubscriptionMetricsConfig metricsConfig =
         hermes
             .api()
