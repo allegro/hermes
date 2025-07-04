@@ -673,7 +673,7 @@ const en_US = {
       monitoringDocsLinkTitle: 'Offline retransmission monitoring docs',
       idHeader: 'ID',
       typeHeader: 'Type',
-      logsLinkHeader: 'Kibana',
+      logsLinkHeader: 'Logs',
       metricsLinkHeader: 'Metrics',
       jobLinkHeader: 'Job Details',
       allTasksLinkHeader: 'Hermes retransmission global queue',
