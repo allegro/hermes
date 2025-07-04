@@ -1,17 +1,12 @@
 <script setup lang="ts">
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import { useI18n } from 'vue-i18n';
+  import type { OfflineRetransmissionActiveTask } from '@/api/offline-retransmission';
 
   const { t } = useI18n();
 
   const props = defineProps<{
-    tasks: Array<{
-      taskId: string;
-      type: string;
-      logsUrl: string;
-      metricsUrl: string;
-      jobDetailsUrl: string;
-    }>;
+    tasks: Array<OfflineRetransmissionActiveTask>;
   }>();
 
   const configStore = useAppConfigStore();
