@@ -1,0 +1,23 @@
+{
+  "namespace": "pl.allegro.bigdata.avro.gcpavrotools",
+  "name": "RecordPrimitives",
+  "type": "record",
+  "fields": [
+    {
+      "name": "record_ints_field",
+      "type": {
+        "name": "int",
+        "type": "record",
+        "fields": [
+          {
+            "name": "int_value_field",
+            "type": "int"
+          }
+        ]
+      },
+      "default": {
+        "int_value_field": 997
+      }
+    }
+  ]
+}
