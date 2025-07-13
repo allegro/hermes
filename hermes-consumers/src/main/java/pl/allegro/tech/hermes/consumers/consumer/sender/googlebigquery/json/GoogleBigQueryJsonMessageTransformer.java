@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.json;
 
-import autovalue.shaded.kotlin.text.Charsets;
+import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import org.json.JSONObject;
 import org.json.JSONTokener;

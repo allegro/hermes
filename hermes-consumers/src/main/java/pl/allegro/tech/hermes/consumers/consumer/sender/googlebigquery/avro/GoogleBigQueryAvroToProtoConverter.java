@@ -7,12 +7,17 @@ import org.apache.avro.generic.GenericRecord;
 
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.StreamSupport;
 
 public class GoogleBigQueryAvroToProtoConverter implements ToProtoConverter<GenericRecord> {
     @Override
-    public DynamicMessage convertToProtoMessage(Descriptors.Descriptor protoSchema, TableSchema tableSchema, GenericRecord inputObject, boolean ignoreUnknownFields) {
-        return convertToProtoMessage(protoSchema, inputObject);
+    public List<DynamicMessage> convertToProtoMessage(Descriptors.Descriptor protoSchema, TableSchema tableSchema, Iterable<GenericRecord> inputObjects, boolean ignoreUnknownFields) {
+//        return convertToProtoMessage(protoSchema, inputObjects);
+        return StreamSupport.stream(inputObjects.spliterator(), false)
+                .map(it -> convertToProtoMessage( protoSchema, it)
+        ).toList();
     }
 
     public DynamicMessage convertToProtoMessage(Descriptors.Descriptor protoSchema, GenericRecord inputObject) {

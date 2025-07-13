@@ -1,27 +1,32 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro;
 
+import com.google.cloud.bigquery.storage.v1.TableName;
 import org.apache.avro.generic.GenericRecord;
+import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.CompletableFutureAwareMessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.GoogleBigQuerySenderTarget;
 
 import java.io.IOException;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 public class GoogleBigQueryAvroSender implements CompletableFutureAwareMessageSender {
 
     private final GoogleBigQueryAvroMessageTransformer avroMessageTransformer;
-    private final GoogleBigQuerySenderTarget target;
+    private final Subscription subscription;
     private final GoogleBigQueryAvroDataWriterPool avroDataWriterPool;
 
     public GoogleBigQueryAvroSender(GoogleBigQueryAvroMessageTransformer avroMessageTransformer,
-                                    GoogleBigQuerySenderTarget target,
+                                    Subscription subscription,
                                     GoogleBigQueryAvroDataWriterPool avroDataWriterPool) {
 
         this.avroMessageTransformer = avroMessageTransformer;
-        this.target = target;
+        this.subscription = subscription;
         this.avroDataWriterPool = avroDataWriterPool;
     }
 
@@ -29,11 +34,30 @@ public class GoogleBigQueryAvroSender implements CompletableFutureAwareMessageSe
     public void send(Message message, CompletableFuture<MessageSendingResult> resultFuture) {
         GenericRecord record = avroMessageTransformer.fromHermesMessage(message);
 
+        GoogleBigQuerySenderTarget target = getGoogleBigQuerySenderTarget(message);
+
+
         try {
             avroDataWriterPool.acquire(target).publish(record, resultFuture);
         } catch (IOException | ExecutionException | InterruptedException e) {
             resultFuture.complete(MessageSendingResult.failedResult(e));
         }
+    }
+
+    private GoogleBigQuerySenderTarget getGoogleBigQuerySenderTarget(Message message) {
+        ZonedDateTime timestamp = Instant.ofEpochMilli(message.getPublishingTimestamp()).atZone(ZoneId.of("UTC"));
+        String partition = "%04d%02d%02d".formatted(timestamp.getYear(), timestamp.getMonthValue(), timestamp.getDayOfMonth());
+//        String partition = "20250701";
+
+        TableName wholeTableName = TableName.parse(subscription.getEndpoint().getEndpoint().replace("googlebigquery://", ""));
+        GoogleBigQuerySenderTarget target =
+                GoogleBigQuerySenderTarget.newBuilder()
+                        .withTableName(TableName.of(
+                                wholeTableName.getProject(),
+                                wholeTableName.getDataset(),
+                                wholeTableName.getTable() + "$" + partition))
+                        .build();
+        return target;
     }
 
     @Override

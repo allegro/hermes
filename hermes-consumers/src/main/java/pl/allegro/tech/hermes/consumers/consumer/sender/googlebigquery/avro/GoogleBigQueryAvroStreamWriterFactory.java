@@ -2,8 +2,10 @@ package pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro;
 
 import com.google.api.gax.batching.FlowControlSettings;
 import com.google.api.gax.core.CredentialsProvider;
+import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.core.FixedExecutorProvider;
 import com.google.api.gax.grpc.ChannelPoolSettings;
+import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.auth.Credentials;
 import com.google.cloud.bigquery.storage.v1.BigQueryWriteClient;
 import com.google.cloud.bigquery.storage.v1.BigQueryWriteSettings;
@@ -39,18 +41,25 @@ public class GoogleBigQueryAvroStreamWriterFactory implements GoogleBigQueryStre
 
     public SchemaAwareStreamWriter<GenericRecord> getWriterForStream(String streamName) {
         try {
-            return SchemaAwareStreamWriter.newBuilder(streamName, writeClient, avroToProtoConverter)
+            ExecutorProvider executorProvider = FixedExecutorProvider.create(Executors.newScheduledThreadPool(100));
+
+            FlowControlSettings flowControlSettings = FlowControlSettings
+                    .newBuilder()
+                    .build();
+            TransportChannelProvider channelProvider =
+                BigQueryWriteSettings.defaultGrpcTransportProviderBuilder()
+                        .setCredentials(credentials)
+                        .setKeepAliveTime(Duration.ofMinutes(1))
+                        .setKeepAliveWithoutCalls(true)
+                        .setChannelPoolSettings(ChannelPoolSettings.staticallySized(2))
+                        .build();
+            return SchemaAwareStreamWriter.newBuilder(streamName + "/_default", writeClient, avroToProtoConverter)
                     .setEnableConnectionPool(true)
-                    .setExecutorProvider(FixedExecutorProvider.create(Executors.newScheduledThreadPool(100)))
-                    .setFlowControlSettings(FlowControlSettings.newBuilder().build())
-                    .setChannelProvider(BigQueryWriteSettings.defaultGrpcTransportProviderBuilder()
-                            .setCredentials(credentials)
-                            .setKeepAliveTime(Duration.ofMinutes(1))
-                            .setKeepAliveWithoutCalls(true)
-                            .setChannelPoolSettings(ChannelPoolSettings.staticallySized(2))
-                            .build()
-                    ).build();
-        } catch (Descriptors.DescriptorValidationException | IOException | InterruptedException e) {
+                    .setExecutorProvider(executorProvider)
+                    .setFlowControlSettings(flowControlSettings)
+
+                    .setChannelProvider(channelProvider).build();
+        } catch (Exception e) {
             logger.warn("Cannot create SchemaAwareStreamWriter for stream {}", streamName, e);
             throw new RuntimeException(e);
         }

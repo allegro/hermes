@@ -30,9 +30,9 @@ dependencies {
     implementation(group: 'org.hornetq', name: 'hornetq-jms-client', version: '2.4.1.Final') {
         exclude module: 'hornetq-native'
     }
-    api group: 'com.google.cloud', name: 'google-cloud-pubsub', version: '1.128.1'
     api group: 'org.apache.httpcomponents.core5', name: 'httpcore5', version: '5.2.4'
-    api(group: 'com.google.cloud', name: 'google-cloud-bigquery', version: '2.27.0')
+    api group: 'com.google.cloud', name: 'google-cloud-pubsub', version: '1.140.2'
+    api(group: 'com.google.cloud', name: 'google-cloud-bigquery', version: '2.52.0')
 
 
     testImplementation project(':hermes-test-helper')

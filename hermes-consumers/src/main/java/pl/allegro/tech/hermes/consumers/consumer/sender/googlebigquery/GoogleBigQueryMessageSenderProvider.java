@@ -46,7 +46,7 @@ public class GoogleBigQueryMessageSenderProvider implements ProtocolMessageSende
         if (subscription.getContentType().equals(ContentType.JSON)) {
             sender = new GoogleBigQueryJsonSender(jsonMessageTransformer, target, jsonDataWriterPool);
         } else {
-            sender = new GoogleBigQueryAvroSender(avroMessageTransformer, target, avroDataWriterPool);
+            sender = new GoogleBigQueryAvroSender(avroMessageTransformer, subscription, avroDataWriterPool);
         }
 
         return new SingleRecipientMessageSenderAdapter(sender, resilientMessageSender);
