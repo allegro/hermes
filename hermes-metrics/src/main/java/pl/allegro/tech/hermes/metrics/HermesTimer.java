@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.metrics;
 
 import io.micrometer.core.instrument.Timer;
+import java.time.Duration;
 
 public class HermesTimer {
   private final Timer micrometerTimer;
@@ -15,5 +16,9 @@ public class HermesTimer {
 
   public HermesTimerContext time() {
     return HermesTimerContext.from(micrometerTimer);
+  }
+
+  public void record(Duration duration) {
+    micrometerTimer.record(duration);
   }
 }

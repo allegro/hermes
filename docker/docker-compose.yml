@@ -30,6 +30,23 @@ services:
       - kafka_data:/var/lib/kafka/data
       - kafka_secrets:/etc/kafka/secrets
 
+  prometheus:
+    image: "victoriametrics/victoria-metrics:${VICTORIA_METRICS_IMAGES_TAG}"
+    ports:
+      - '8428:8428'
+
+  vmagent:
+    image: "victoriametrics/vmagent:${VICTORIA_METRICS_IMAGES_TAG}"
+    ports:
+      - '8429:8429'
+    volumes:
+      - ../docker/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - "--promscrape.config=/etc/prometheus/prometheus.yml"
+      - "--remoteWrite.url=http://prometheus:8428/api/v1/write"
+    depends_on:
+      - prometheus
+
   frontend:
     build:
       context: ../
@@ -44,6 +61,8 @@ services:
     build:
       context: ../
       dockerfile: ./docker/latest/consumers/Dockerfile
+    ports:
+      - "8070:8070"
     depends_on:
       - zk
       - kafka
@@ -57,6 +76,7 @@ services:
     depends_on:
       - zk
       - kafka
+      - prometheus
 
   schema-registry:
     image: "confluentinc/cp-schema-registry:${CONFLUENT_IMAGES_TAG}"

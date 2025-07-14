@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.integrationtests.management;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.waitAtMost;
+import static pl.allegro.tech.hermes.api.ErrorCode.VALIDATION_ERROR;
 import static pl.allegro.tech.hermes.api.PatchData.patchData;
 import static pl.allegro.tech.hermes.api.SubscriptionHealth.Status.NO_DATA;
 import static pl.allegro.tech.hermes.api.SubscriptionHealth.Status.UNHEALTHY;
@@ -17,6 +18,7 @@ import com.google.common.collect.ImmutableMap;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
@@ -28,6 +30,7 @@ import pl.allegro.tech.hermes.api.ConsumerGroup;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.DeliveryType;
 import pl.allegro.tech.hermes.api.EndpointAddress;
+import pl.allegro.tech.hermes.api.ErrorDescription;
 import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -37,6 +40,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.api.TopicPartition;
 import pl.allegro.tech.hermes.api.TrackingMode;
+import pl.allegro.tech.hermes.api.subscription.metrics.SubscriptionMetricsConfig;
 import pl.allegro.tech.hermes.integrationtests.prometheus.PrometheusExtension;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesExtension;
 import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscriber;
@@ -276,6 +280,111 @@ public class SubscriptionManagementTest {
     assertThat(policy.getSocketTimeout()).isEqualTo(3000);
     assertThat(policy.isRetryClientErrors()).isFalse();
     assertThat(policy.getSendingDelay()).isEqualTo(1000);
+  }
+
+  @Test
+  public void shouldUpdateMetricsConfiguration() {
+    // given
+    Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
+    Subscription subscription =
+        hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).build());
+    PatchData patchData =
+        patchData()
+            .set(
+                "metricsConfig",
+                Map.of(
+                    "messageProcessing",
+                    Map.of("enabled", true, "thresholdsMilliseconds", new String[] {"60000"})))
+            .build();
+
+    // when
+    WebTestClient.ResponseSpec response =
+        hermes.api().updateSubscription(topic, subscription.getName(), patchData);
+
+    // then
+    response.expectStatus().isOk();
+    SubscriptionMetricsConfig metricsConfig =
+        hermes
+            .api()
+            .getSubscription(topic.getQualifiedName(), subscription.getName())
+            .getMetricsConfig();
+    assertThat(metricsConfig.messageProcessing().enabled()).isTrue();
+    assertThat(metricsConfig.messageProcessing().getThresholdsDurations())
+        .containsExactly(Duration.ofMillis(60000));
+  }
+
+  @Test
+  public void shouldUpdateThresholdsMillisecondsToEmptyList() {
+    // given
+    Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
+    Subscription subscription =
+        hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).build());
+    PatchData patchData =
+        patchData()
+            .set(
+                "metricsConfig",
+                ImmutableMap.builder()
+                    .put(
+                        "messageProcessing",
+                        ImmutableMap.builder()
+                            .put("enabled", true)
+                            .put("thresholdsMilliseconds", new String[] {})
+                            .build())
+                    .build())
+            .build();
+
+    // when
+    WebTestClient.ResponseSpec response =
+        hermes.api().updateSubscription(topic, subscription.getName(), patchData);
+
+    // then
+    response.expectStatus().isOk();
+    SubscriptionMetricsConfig metricsConfig =
+        hermes
+            .api()
+            .getSubscription(topic.getQualifiedName(), subscription.getName())
+            .getMetricsConfig();
+    assertThat(metricsConfig.messageProcessing().thresholdsMilliseconds()).isEmpty();
+  }
+
+  @Test
+  public void shouldNotUpdateThresholdsMillisecondsToNegativeValue() {
+    // given
+    Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
+    Subscription subscription =
+        hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).build());
+    PatchData patchData =
+        patchData()
+            .set(
+                "metricsConfig",
+                ImmutableMap.builder()
+                    .put(
+                        "messageProcessing",
+                        ImmutableMap.builder()
+                            .put("thresholdsMilliseconds", new String[] {"-100"})
+                            .build())
+                    .build())
+            .build();
+
+    // when
+    WebTestClient.ResponseSpec response =
+        hermes.api().updateSubscription(topic, subscription.getName(), patchData);
+
+    // then
+    response.expectStatus().isBadRequest();
+    ErrorDescription responseBody =
+        Objects.requireNonNull(
+            response.expectBody(ErrorDescription.class).returnResult().getResponseBody());
+    assertThat(responseBody.getCode()).isEqualTo(VALIDATION_ERROR);
+    assertThat(responseBody.getMessage())
+        .isEqualTo(
+            "Subscription.metricsConfig.messageProcessing.thresholdsMilliseconds[0].<list element> must be greater than 0");
+    SubscriptionMetricsConfig metricsConfig =
+        hermes
+            .api()
+            .getSubscription(topic.getQualifiedName(), subscription.getName())
+            .getMetricsConfig();
+    assertThat(metricsConfig.messageProcessing().thresholdsMilliseconds()).isEmpty();
   }
 
   @Test

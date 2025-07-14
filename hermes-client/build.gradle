@@ -2,6 +2,13 @@ plugins {
     id 'java-library'
 }
 
+java {
+    // We need to support Java 17 until all of our clients migrate to Java 21.
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
 dependencies {
     compileOnly group: 'io.micrometer', name: 'micrometer-core', version: versions.micrometer_metrics
     compileOnly group: 'org.glassfish.jersey.core', name: 'jersey-client', version: versions.jersey
