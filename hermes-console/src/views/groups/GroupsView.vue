@@ -1,10 +1,10 @@
 <script setup lang="ts">
   import { isAny } from '@/utils/roles-util';
-  import { ref } from 'vue';
+  import {ref, watch} from 'vue';
   import { useGroups } from '@/composables/groups/use-groups/useGroups';
   import { useI18n } from 'vue-i18n';
   import { useRoles } from '@/composables/roles/use-roles/useRoles';
-  import { useRouter } from 'vue-router';
+  import { useRoute, useRouter } from 'vue-router';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import GroupForm from '@/views/groups/group-form/GroupForm.vue';
   import GroupListing from '@/views/groups/group-listing/GroupListing.vue';
@@ -13,10 +13,11 @@
   const { groups, loading, error, createGroup } = useGroups();
   const { t } = useI18n();
   const router = useRouter();
+  const route = useRoute();
 
   const roles = useRoles(null, null)?.roles;
 
-  const filter = ref<string>();
+  const filter = ref<string>(route.query.q as string || '');
   const createGroupDialogOpen = ref(false);
   const breadcrumbsItems = [
     {
@@ -35,6 +36,12 @@
       router.go(0);
     }
   };
+
+  const updateQueryParams = () => {
+    router.push({ query: { ...route.query, q: filter.value } } );
+  };
+
+  watch(filter, updateQueryParams);
 </script>
 
 <template>
@@ -82,6 +89,7 @@
           density="compact"
           v-model="filter"
           prepend-inner-icon="mdi-magnify"
+          type="search"
         />
       </v-col>
     </v-row>
