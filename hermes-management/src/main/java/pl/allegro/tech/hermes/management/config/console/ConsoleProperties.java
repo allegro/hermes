@@ -98,6 +98,8 @@ public class ConsoleProperties {
 
     private boolean criticalEnvironment = false;
 
+    private List<ConsoleEnvironment> knownEnvironments = Collections.emptyList();
+
     public String getTitle() {
       return title;
     }
@@ -128,6 +130,35 @@ public class ConsoleProperties {
 
     public void setEnvironmentName(String environmentName) {
       this.environmentName = environmentName;
+    }
+
+    public List<ConsoleEnvironment> getKnownEnvironments() {
+      return knownEnvironments;
+    }
+
+    public void setKnownEnvironments(List<ConsoleEnvironment> knownEnvironments) {
+      this.knownEnvironments = knownEnvironments;
+    }
+  }
+
+  public static final class ConsoleEnvironment {
+    private String name;
+    private String url;
+
+    public String getName() {
+      return name;
+    }
+
+    public void setName(String name) {
+      this.name = name;
+    }
+
+    public String getUrl() {
+      return url;
+    }
+
+    public void setUrl(String url) {
+      this.url = url;
     }
   }
 
@@ -350,6 +381,7 @@ public class ConsoleProperties {
         Lists.newArrayList(new RetentionUnit("DAYS", "DAYS"));
     private boolean offlineRetransmissionEnabled = false;
     private String offlineRetransmissionDescription = "Offline retransmission";
+    private String offlineRetransmissionFromViewDocsUrl = "https://hermes-pubsub.rtfd.org";
 
     public boolean isMessagePreviewEnabled() {
       return messagePreviewEnabled;
@@ -461,6 +493,15 @@ public class ConsoleProperties {
 
     public void setOfflineRetransmissionDescription(String offlineRetransmissionDescription) {
       this.offlineRetransmissionDescription = offlineRetransmissionDescription;
+    }
+
+    public String getOfflineRetransmissionFromViewDocsUrl() {
+      return offlineRetransmissionFromViewDocsUrl;
+    }
+
+    public void setOfflineRetransmissionFromViewDocsUrl(
+        String offlineRetransmissionFromViewDocsUrl) {
+      this.offlineRetransmissionFromViewDocsUrl = offlineRetransmissionFromViewDocsUrl;
     }
   }
 

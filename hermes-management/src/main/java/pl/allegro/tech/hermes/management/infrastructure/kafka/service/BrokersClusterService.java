@@ -29,10 +29,11 @@ import pl.allegro.tech.hermes.api.ConsumerGroup;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.management.domain.message.RetransmissionService;
-import pl.allegro.tech.hermes.management.domain.subscription.ConsumerGroupManager;
+import pl.allegro.tech.hermes.management.domain.subscription.consumergroup.ConsumerGroupManager;
 import pl.allegro.tech.hermes.management.domain.topic.BrokerTopicManagement;
 import pl.allegro.tech.hermes.management.domain.topic.SingleMessageReader;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MovingSubscriptionOffsetsValidationException;
@@ -41,6 +42,7 @@ public class BrokersClusterService {
 
   private static final Logger logger = LoggerFactory.getLogger(BrokersClusterService.class);
 
+  private final String datacenter;
   private final String clusterName;
   private final SingleMessageReader singleMessageReader;
   private final RetransmissionService retransmissionService;
@@ -50,9 +52,9 @@ public class BrokersClusterService {
   private final ConsumerGroupsDescriber consumerGroupsDescriber;
   private final AdminClient adminClient;
   private final ConsumerGroupManager consumerGroupManager;
-  private final KafkaConsumerManager kafkaConsumerManager;
 
   public BrokersClusterService(
+      String datacenter,
       String clusterName,
       SingleMessageReader singleMessageReader,
       RetransmissionService retransmissionService,
@@ -61,8 +63,8 @@ public class BrokersClusterService {
       OffsetsAvailableChecker offsetsAvailableChecker,
       LogEndOffsetChecker logEndOffsetChecker,
       AdminClient adminClient,
-      ConsumerGroupManager consumerGroupManager,
-      KafkaConsumerManager kafkaConsumerManager) {
+      ConsumerGroupManager consumerGroupManager) {
+    this.datacenter = datacenter;
     this.clusterName = clusterName;
     this.singleMessageReader = singleMessageReader;
     this.retransmissionService = retransmissionService;
@@ -74,11 +76,14 @@ public class BrokersClusterService {
             kafkaNamesMapper, adminClient, logEndOffsetChecker, clusterName);
     this.adminClient = adminClient;
     this.consumerGroupManager = consumerGroupManager;
-    this.kafkaConsumerManager = kafkaConsumerManager;
   }
 
   public String getClusterName() {
     return clusterName;
+  }
+
+  public String getDatacenter() {
+    return datacenter;
   }
 
   public void manageTopic(Consumer<BrokerTopicManagement> manageFunction) {
@@ -90,10 +95,14 @@ public class BrokersClusterService {
         topic, kafkaNamesMapper.toKafkaTopics(topic).getPrimary(), partition, offset);
   }
 
-  public List<PartitionOffset> indicateOffsetChange(
-      Topic topic, String subscriptionName, Long timestamp, boolean dryRun) {
-    return retransmissionService.indicateOffsetChange(
-        topic, subscriptionName, clusterName, timestamp, dryRun);
+  public void indicateOffsetChange(
+      Topic topic, String subscriptionName, List<PartitionOffset> partitionOffsets) {
+    retransmissionService.indicateOffsetChange(
+        topic, subscriptionName, clusterName, partitionOffsets);
+  }
+
+  public List<PartitionOffset> fetchTopicOffsetsAt(Topic topic, Long timestamp) {
+    return retransmissionService.fetchTopicOffsetsAt(topic, timestamp);
   }
 
   public boolean areOffsetsAvailableOnAllKafkaTopics(Topic topic) {
@@ -147,27 +156,24 @@ public class BrokersClusterService {
     consumerGroupManager.createConsumerGroup(topic, subscription);
   }
 
+  public void deleteConsumerGroup(SubscriptionName subscriptionName) {
+    consumerGroupManager.deleteConsumerGroup(subscriptionName);
+  }
+
   public Optional<ConsumerGroup> describeConsumerGroup(Topic topic, String subscriptionName) {
     return consumerGroupsDescriber.describeConsumerGroup(topic, subscriptionName);
   }
 
-  public void moveOffsetsToTheEnd(Topic topic, SubscriptionName subscription) {
-    validateIfOffsetsCanBeMoved(topic, subscription);
-
-    KafkaConsumer<byte[], byte[]> consumer = kafkaConsumerManager.createConsumer(subscription);
-    String kafkaTopicName = kafkaNamesMapper.toKafkaTopics(topic).getPrimary().name().asString();
-    Set<TopicPartition> topicPartitions = getTopicPartitions(consumer, kafkaTopicName);
-    consumer.assign(topicPartitions);
-
-    Map<TopicPartition, Long> endOffsets = consumer.endOffsets(topicPartitions);
-    Map<TopicPartition, OffsetAndMetadata> endOffsetsMetadata = buildOffsetsMetadata(endOffsets);
-    consumer.commitSync(endOffsetsMetadata);
-    consumer.close();
+  public void moveOffsets(SubscriptionName subscription, List<PartitionOffset> offsets) {
+    ConsumerGroupId consumerGroupId = kafkaNamesMapper.toConsumerGroupId(subscription);
+    Map<TopicPartition, OffsetAndMetadata> offsetAndMetadata = buildOffsetsMetadata(offsets);
+    adminClient.alterConsumerGroupOffsets(consumerGroupId.asString(), offsetAndMetadata).all();
 
     logger.info(
-        "Successfully moved offset to the end position for subscription {} and consumer group {}",
+        "Successfully moved offsets for subscription {} and consumer group {} to {}",
         subscription.getQualifiedName(),
-        kafkaNamesMapper.toConsumerGroupId(subscription));
+        kafkaNamesMapper.toConsumerGroupId(subscription),
+        offsetAndMetadata.toString());
   }
 
   private int numberOfAssignmentsForConsumersGroups(List<String> consumerGroupsIds)
@@ -182,11 +188,32 @@ public class BrokersClusterService {
         .size();
   }
 
-  private void validateIfOffsetsCanBeMoved(Topic topic, SubscriptionName subscription) {
+  public void validateIfOffsetsCanBeMovedByConsumers(Topic topic, SubscriptionName subscription) {
     describeConsumerGroup(topic, subscription.getName())
         .ifPresentOrElse(
             group -> {
-              if (!group.getMembers().isEmpty()) {
+              if (!group.isStable()) {
+                String s =
+                    format(
+                        "Consumer group %s for subscription %s is not stable.",
+                        group.getGroupId(), subscription.getQualifiedName());
+                throw new MovingSubscriptionOffsetsValidationException(s);
+              }
+            },
+            () -> {
+              String s =
+                  format(
+                      "No consumer group for subscription %s exists.",
+                      subscription.getQualifiedName());
+              throw new MovingSubscriptionOffsetsValidationException(s);
+            });
+  }
+
+  public void validateIfOffsetsCanBeMoved(Topic topic, SubscriptionName subscription) {
+    describeConsumerGroup(topic, subscription.getName())
+        .ifPresentOrElse(
+            group -> {
+              if (!group.isEmpty()) {
                 String s =
                     format(
                         "Consumer group %s for subscription %s has still active members.",
@@ -223,9 +250,13 @@ public class BrokersClusterService {
   }
 
   private Map<TopicPartition, OffsetAndMetadata> buildOffsetsMetadata(
-      Map<TopicPartition, Long> offsets) {
-    return offsets.entrySet().stream()
-        .map(entry -> ImmutablePair.of(entry.getKey(), new OffsetAndMetadata(entry.getValue())))
+      List<PartitionOffset> offsets) {
+    return offsets.stream()
+        .map(
+            offset ->
+                ImmutablePair.of(
+                    new TopicPartition(offset.getTopic().asString(), offset.getPartition()),
+                    new OffsetAndMetadata(offset.getOffset())))
         .collect(toMap(Pair::getKey, Pair::getValue));
   }
 }

@@ -4,7 +4,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffsets;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.filtering.FilteredMessageHandler;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
@@ -65,7 +65,12 @@ public class FilteringMessageReceiver implements MessageReceiver {
   }
 
   @Override
-  public boolean moveOffset(PartitionOffset offset) {
-    return receiver.moveOffset(offset);
+  public PartitionOffsets moveOffset(PartitionOffsets offsets) {
+    return receiver.moveOffset(offsets);
+  }
+
+  @Override
+  public Set<Integer> getAssignedPartitions() {
+    return receiver.getAssignedPartitions();
   }
 }

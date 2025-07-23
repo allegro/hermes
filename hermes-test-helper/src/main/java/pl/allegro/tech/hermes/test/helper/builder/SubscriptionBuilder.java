@@ -22,6 +22,7 @@ import pl.allegro.tech.hermes.api.SubscriptionPolicy;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.api.TrackingMode;
+import pl.allegro.tech.hermes.api.subscription.metrics.SubscriptionMetricsConfig;
 
 public class SubscriptionBuilder {
 
@@ -72,6 +73,8 @@ public class SubscriptionBuilder {
   private boolean attachingIdentityHeadersEnabled = false;
 
   private boolean autoDeleteWithTopicEnabled = false;
+
+  private SubscriptionMetricsConfig metricsConfig = null;
 
   private SubscriptionBuilder(
       TopicName topicName, String subscriptionName, EndpointAddress endpoint) {
@@ -163,7 +166,8 @@ public class SubscriptionBuilder {
           profilingEnabled,
           profilingThresholdMs,
           attachingIdentityHeadersEnabled,
-          autoDeleteWithTopicEnabled);
+          autoDeleteWithTopicEnabled,
+          metricsConfig);
     } else {
       return Subscription.createBatchSubscription(
           topicName,
@@ -311,6 +315,11 @@ public class SubscriptionBuilder {
 
   public SubscriptionBuilder withAutoDeleteWithTopicEnabled(boolean autoDeleteWithTopicEnabled) {
     this.autoDeleteWithTopicEnabled = autoDeleteWithTopicEnabled;
+    return this;
+  }
+
+  public SubscriptionBuilder withMetricsConfig(SubscriptionMetricsConfig metricsConfig) {
+    this.metricsConfig = metricsConfig;
     return this;
   }
 }

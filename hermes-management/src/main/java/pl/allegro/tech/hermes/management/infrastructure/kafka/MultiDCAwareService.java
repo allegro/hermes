@@ -6,8 +6,10 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -19,6 +21,7 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
 import pl.allegro.tech.hermes.management.domain.retransmit.RetransmitCommand;
@@ -62,34 +65,65 @@ public class MultiDCAwareService {
         .readMessageFromPrimary(topic, partition, offset);
   }
 
-  public MultiDCOffsetChangeSummary retransmit(
-      Topic topic, String subscriptionName, Long timestamp, boolean dryRun, RequestUser requester) {
+  public MultiDCOffsetChangeSummary fetchTopicOffsetsAt(Topic topic, Long timestamp) {
     MultiDCOffsetChangeSummary multiDCOffsetChangeSummary = new MultiDCOffsetChangeSummary();
 
     clusters.forEach(
         cluster ->
             multiDCOffsetChangeSummary.addPartitionOffsetList(
-                cluster.getClusterName(),
-                cluster.indicateOffsetChange(topic, subscriptionName, timestamp, dryRun)));
-
-    if (!dryRun) {
-      logger.info(
-          "Starting retransmission for subscription {}. Requested by {}. Retransmission timestamp: {}",
-          topic.getQualifiedName() + "$" + subscriptionName,
-          requester.getUsername(),
-          timestamp);
-      multiDcExecutor.executeByUser(
-          new RetransmitCommand(new SubscriptionName(subscriptionName, topic.getName())),
-          requester);
-      clusters.forEach(clusters -> waitUntilOffsetsAreMoved(topic, subscriptionName));
-      logger.info(
-          "Successfully moved offsets for retransmission of subscription {}. Requested by user: {}. Retransmission timestamp: {}",
-          topic.getQualifiedName() + "$" + subscriptionName,
-          requester.getUsername(),
-          timestamp);
-    }
+                cluster.getClusterName(), cluster.fetchTopicOffsetsAt(topic, timestamp)));
 
     return multiDCOffsetChangeSummary;
+  }
+
+  public void moveOffsets(
+      Topic topic,
+      String subscriptionName,
+      Map<String, List<PartitionOffset>> brokerPartitionOffsets) {
+    clusters.forEach(
+        cluster ->
+            cluster.validateIfOffsetsCanBeMoved(
+                topic, new SubscriptionName(subscriptionName, topic.getName())));
+
+    clusters.forEach(
+        cluster ->
+            cluster.moveOffsets(
+                new SubscriptionName(subscriptionName, topic.getName()),
+                brokerPartitionOffsets.getOrDefault(
+                    cluster.getClusterName(), Collections.emptyList())));
+  }
+
+  public void moveOffsetsForActiveConsumers(
+      Topic topic,
+      String subscriptionName,
+      Map<String, List<PartitionOffset>> brokerPartitionOffsets,
+      RequestUser requester) {
+    clusters.forEach(
+        cluster ->
+            cluster.validateIfOffsetsCanBeMovedByConsumers(
+                topic, new SubscriptionName(subscriptionName, topic.getName())));
+
+    clusters.forEach(
+        cluster ->
+            Optional.ofNullable(brokerPartitionOffsets.get(cluster.getClusterName()))
+                .ifPresent(
+                    offsets -> cluster.indicateOffsetChange(topic, subscriptionName, offsets)));
+
+    logger.info(
+        "Starting moving offsets for subscription {}. Requested by {}. Retransmission offsets: {}",
+        topic.getQualifiedName() + "$" + subscriptionName,
+        requester.getUsername(),
+        brokerPartitionOffsets);
+
+    multiDcExecutor.executeByUser(
+        new RetransmitCommand(new SubscriptionName(subscriptionName, topic.getName())), requester);
+    clusters.forEach(clusters -> waitUntilOffsetsAreMoved(topic, subscriptionName));
+
+    logger.info(
+        "Successfully moved offsets for retransmission of subscription {}. Requested by user: {}. Retransmission offsets: {}",
+        topic.getQualifiedName() + "$" + subscriptionName,
+        requester.getUsername(),
+        brokerPartitionOffsets);
   }
 
   public boolean areOffsetsAvailableOnAllKafkaTopics(Topic topic) {
@@ -166,7 +200,15 @@ public class MultiDCAwareService {
         .collect(toList());
   }
 
-  public void moveOffsetsToTheEnd(Topic topic, SubscriptionName subscription) {
-    clusters.forEach(c -> c.moveOffsetsToTheEnd(topic, subscription));
+  public void deleteConsumerGroupForDatacenter(
+      SubscriptionName subscriptionName, String datacenter) {
+    clusters.stream()
+        .filter(cluster -> cluster.getDatacenter().equals(datacenter))
+        .findFirst()
+        .ifPresentOrElse(
+            cluster -> cluster.deleteConsumerGroup(subscriptionName),
+            () -> {
+              throw new BrokersClusterNotFoundException(datacenter);
+            });
   }
 }

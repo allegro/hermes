@@ -1,9 +1,6 @@
 package pl.allegro.tech.hermes.management.config.storage;
 
-import static org.slf4j.LoggerFactory.getLogger;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -29,12 +26,12 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperSubscriptionRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperTopicRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperWorkloadConstraintsRepository;
-import pl.allegro.tech.hermes.management.domain.blacklist.TopicBlacklistRepository;
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
+import pl.allegro.tech.hermes.management.domain.detection.InactiveTopicsRepository;
 import pl.allegro.tech.hermes.management.domain.mode.ModeService;
 import pl.allegro.tech.hermes.management.domain.readiness.DatacenterReadinessRepository;
 import pl.allegro.tech.hermes.management.domain.retransmit.OfflineRetransmissionRepository;
-import pl.allegro.tech.hermes.management.infrastructure.blacklist.ZookeeperTopicBlacklistRepository;
+import pl.allegro.tech.hermes.management.infrastructure.detection.ZookeeperInactiveTopicsRepository;
 import pl.allegro.tech.hermes.management.infrastructure.metrics.SummedSharedCounter;
 import pl.allegro.tech.hermes.management.infrastructure.readiness.ZookeeperDatacenterReadinessRepository;
 import pl.allegro.tech.hermes.management.infrastructure.retransmit.ZookeeperOfflineRetransmissionRepository;
@@ -45,8 +42,6 @@ import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperRepos
 @Configuration
 @EnableConfigurationProperties(StorageClustersProperties.class)
 public class StorageConfiguration {
-
-  private static final Logger logger = getLogger(StorageConfiguration.class);
 
   @Autowired StorageClustersProperties storageClustersProperties;
 
@@ -149,13 +144,6 @@ public class StorageConfiguration {
   }
 
   @Bean
-  TopicBlacklistRepository topicBlacklistRepository() {
-    ZookeeperClient localClient = clientManager().getLocalClient();
-    return new ZookeeperTopicBlacklistRepository(
-        localClient.getCuratorFramework(), objectMapper, zookeeperPaths());
-  }
-
-  @Bean
   WorkloadConstraintsRepository workloadConstraintsRepository() {
     ZookeeperClient localClient = clientManager().getLocalClient();
     return new ZookeeperWorkloadConstraintsRepository(
@@ -175,6 +163,13 @@ public class StorageConfiguration {
   DatacenterReadinessRepository readinessRepository() {
     ZookeeperClient localClient = clientManager().getLocalClient();
     return new ZookeeperDatacenterReadinessRepository(
+        localClient.getCuratorFramework(), objectMapper, zookeeperPaths());
+  }
+
+  @Bean
+  InactiveTopicsRepository inactiveTopicsRepository() {
+    ZookeeperClient localClient = clientManager().getLocalClient();
+    return new ZookeeperInactiveTopicsRepository(
         localClient.getCuratorFramework(), objectMapper, zookeeperPaths());
   }
 }

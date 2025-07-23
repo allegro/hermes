@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.frontend.producer.kafka
 
-import com.codahale.metrics.MetricRegistry
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import org.apache.commons.lang3.tuple.ImmutablePair
 import org.apache.kafka.clients.admin.AdminClient
@@ -13,7 +12,12 @@ import org.awaitility.Awaitility
 import org.testcontainers.containers.KafkaContainer
 import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.spock.Testcontainers
-import pl.allegro.tech.hermes.api.*
+import pl.allegro.tech.hermes.api.ContentType
+import pl.allegro.tech.hermes.api.DeliveryType
+import pl.allegro.tech.hermes.api.Subscription
+import pl.allegro.tech.hermes.api.SubscriptionMode
+import pl.allegro.tech.hermes.api.Topic
+import pl.allegro.tech.hermes.api.subscription.metrics.SubscriptionMetricsConfig
 import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId
 import pl.allegro.tech.hermes.common.kafka.JsonToAvroMigrationKafkaNamesMapper
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper
@@ -39,7 +43,10 @@ import java.util.stream.Collectors
 import static java.util.Collections.emptyList
 import static java.util.Collections.emptyMap
 import static java.util.concurrent.TimeUnit.MILLISECONDS
-import static org.apache.kafka.clients.consumer.ConsumerConfig.*
+import static org.apache.kafka.clients.consumer.ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG
+import static org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG
+import static org.apache.kafka.clients.consumer.ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG
+import static org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG
 import static org.apache.kafka.clients.producer.ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG
 import static org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG
 
@@ -85,7 +92,7 @@ class LocalDatacenterMessageProducerIntegrationTest extends Specification {
     String datacenter = "dc"
 
     @Shared
-    ScheduledExecutorService chaosScheduler = Executors.newSingleThreadScheduledExecutor();
+    ScheduledExecutorService chaosScheduler = Executors.newSingleThreadScheduledExecutor()
 
     @Shared
     MetricsFacade metricsFacade = new MetricsFacade(new SimpleMeterRegistry())
@@ -119,8 +126,8 @@ class LocalDatacenterMessageProducerIntegrationTest extends Specification {
         brokerMessageProducer = new LocalDatacenterMessageProducer(
                 producers,
                 new MessageToKafkaProducerRecordConverter(new KafkaHeaderFactory(
-                            kafkaHeaderNameProperties,
-                            new HTTPHeadersProperties.PropagationAsKafkaHeadersProperties()),
+                        kafkaHeaderNameProperties,
+                        new HTTPHeadersProperties.PropagationAsKafkaHeadersProperties()),
                         schemaProperties.isIdHeaderEnabled()
                 )
         )
@@ -163,7 +170,7 @@ class LocalDatacenterMessageProducerIntegrationTest extends Specification {
 
     private static def createTestSubscription(Topic topic, String subscriptionName) {
         Subscription.create(topic.getQualifiedName(), subscriptionName, null, Subscription.State.PENDING, "test", [:], false, null, null,
-                null, ContentType.JSON, DeliveryType.SERIAL, [], SubscriptionMode.ANYCAST, [], null, null, false, false, 0, false, false
+                null, ContentType.JSON, DeliveryType.SERIAL, [], SubscriptionMode.ANYCAST, [], null, null, false, false, 0, false, false, SubscriptionMetricsConfig.DISABLED
         )
     }
 

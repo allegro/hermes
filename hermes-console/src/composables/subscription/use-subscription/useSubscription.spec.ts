@@ -1,4 +1,4 @@
-import { afterEach } from 'vitest';
+import { afterEach, expect } from 'vitest';
 import {
   createRetransmissionHandler,
   fetchSubscriptionErrorHandler,
@@ -18,7 +18,6 @@ import {
   dummySubscriptionHealth,
   dummySubscriptionMetrics,
 } from '@/dummy/subscription';
-import { expect } from 'vitest';
 import {
   expectNotificationDispatched,
   notificationStoreSpy,
@@ -391,6 +390,39 @@ describe('useSubscription', () => {
     });
   });
 
+  [200, 500].forEach((statusCode) => {
+    it(`should correctly manage the state of retransmission with status code ${statusCode}`, async () => {
+      // given
+      server.use(
+        createRetransmissionHandler({
+          topicName: dummySubscription.topicName,
+          subscriptionName: dummySubscription.name,
+          statusCode,
+          delayMs: 100,
+        }),
+      );
+      server.listen();
+
+      const { retransmitMessages, retransmitting } = useSubscription(
+        dummySubscription.topicName,
+        dummySubscription.name,
+      );
+
+      expect(retransmitting.value).toBeFalsy();
+
+      // when
+      retransmitMessages(new Date().toISOString());
+
+      // then
+      await waitFor(() => {
+        expect(retransmitting.value).toBeTruthy();
+      });
+      await waitFor(() => {
+        expect(retransmitting.value).toBeFalsy();
+      });
+    });
+  });
+
   it('should show message that skipping all messages was successful', async () => {
     // given
     server.use(
@@ -445,6 +477,39 @@ describe('useSubscription', () => {
       expectNotificationDispatched(notificationStore, {
         type: 'error',
         title: 'notifications.subscription.skipAllMessages.failure',
+      });
+    });
+  });
+
+  [200, 500].forEach((statusCode) => {
+    it(`should correctly manage the state of skipping all messages with status code ${statusCode}`, async () => {
+      // given
+      server.use(
+        createRetransmissionHandler({
+          topicName: dummySubscription.topicName,
+          subscriptionName: dummySubscription.name,
+          statusCode,
+          delayMs: 100,
+        }),
+      );
+      server.listen();
+
+      const { skipAllMessages, skippingAllMessages } = useSubscription(
+        dummySubscription.topicName,
+        dummySubscription.name,
+      );
+
+      expect(skippingAllMessages.value).toBeFalsy();
+
+      // when
+      skipAllMessages();
+
+      // then
+      await waitFor(() => {
+        expect(skippingAllMessages.value).toBeTruthy();
+      });
+      await waitFor(() => {
+        expect(skippingAllMessages.value).toBeFalsy();
       });
     });
   });

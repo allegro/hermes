@@ -23,6 +23,8 @@ server:
 spring:
   jersey:
     type: filter
+    filter:
+      order: 2147483647
 
 management:
   endpoints:
@@ -39,6 +41,8 @@ management:
     enabled: true
   consumer-groups:
     create-manually: true
+  leadership:
+    zookeeper-dc: dc
 
 
 audit.enabled: false
@@ -57,6 +61,7 @@ schema.repository:
 prometheus:
   client:
     enabled: true
+    externalMonitoringUrl: http://prometheus:8428
 
 console:
   configurationLocation: console/config-local.json

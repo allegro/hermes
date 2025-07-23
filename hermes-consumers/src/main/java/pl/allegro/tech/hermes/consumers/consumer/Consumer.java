@@ -3,7 +3,7 @@ package pl.allegro.tech.hermes.consumers.consumer;
 import java.util.Set;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffsets;
 import pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset;
 
 public interface Consumer {
@@ -26,7 +26,9 @@ public interface Consumer {
 
   void commit(Set<SubscriptionPartitionOffset> offsets);
 
-  boolean moveOffset(PartitionOffset subscriptionPartitionOffset);
+  PartitionOffsets moveOffset(PartitionOffsets subscriptionPartitionOffsets);
 
   Subscription getSubscription();
+
+  Set<Integer> getAssignedPartitions();
 }

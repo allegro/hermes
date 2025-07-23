@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.integrationtests.management;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.waitAtMost;
+import static pl.allegro.tech.hermes.api.ErrorCode.VALIDATION_ERROR;
 import static pl.allegro.tech.hermes.api.PatchData.patchData;
 import static pl.allegro.tech.hermes.api.SubscriptionHealth.Status.NO_DATA;
 import static pl.allegro.tech.hermes.api.SubscriptionHealth.Status.UNHEALTHY;
@@ -9,7 +10,6 @@ import static pl.allegro.tech.hermes.api.SubscriptionHealthProblem.malfunctionin
 import static pl.allegro.tech.hermes.integrationtests.prometheus.SubscriptionMetrics.subscriptionMetrics;
 import static pl.allegro.tech.hermes.integrationtests.prometheus.TopicMetrics.topicMetrics;
 import static pl.allegro.tech.hermes.integrationtests.setup.HermesExtension.auditEvents;
-import static pl.allegro.tech.hermes.integrationtests.setup.HermesExtension.brokerOperations;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscriptionWithRandomName;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
@@ -30,6 +30,7 @@ import pl.allegro.tech.hermes.api.ConsumerGroup;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.DeliveryType;
 import pl.allegro.tech.hermes.api.EndpointAddress;
+import pl.allegro.tech.hermes.api.ErrorDescription;
 import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -39,7 +40,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.api.TopicPartition;
 import pl.allegro.tech.hermes.api.TrackingMode;
-import pl.allegro.tech.hermes.env.BrokerOperations;
+import pl.allegro.tech.hermes.api.subscription.metrics.SubscriptionMetricsConfig;
 import pl.allegro.tech.hermes.integrationtests.prometheus.PrometheusExtension;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesExtension;
 import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscriber;
@@ -279,6 +280,111 @@ public class SubscriptionManagementTest {
     assertThat(policy.getSocketTimeout()).isEqualTo(3000);
     assertThat(policy.isRetryClientErrors()).isFalse();
     assertThat(policy.getSendingDelay()).isEqualTo(1000);
+  }
+
+  @Test
+  public void shouldUpdateMetricsConfiguration() {
+    // given
+    Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
+    Subscription subscription =
+        hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).build());
+    PatchData patchData =
+        patchData()
+            .set(
+                "metricsConfig",
+                Map.of(
+                    "messageProcessing",
+                    Map.of("enabled", true, "thresholdsMilliseconds", new String[] {"60000"})))
+            .build();
+
+    // when
+    WebTestClient.ResponseSpec response =
+        hermes.api().updateSubscription(topic, subscription.getName(), patchData);
+
+    // then
+    response.expectStatus().isOk();
+    SubscriptionMetricsConfig metricsConfig =
+        hermes
+            .api()
+            .getSubscription(topic.getQualifiedName(), subscription.getName())
+            .getMetricsConfig();
+    assertThat(metricsConfig.messageProcessing().enabled()).isTrue();
+    assertThat(metricsConfig.messageProcessing().getThresholdsDurations())
+        .containsExactly(Duration.ofMillis(60000));
+  }
+
+  @Test
+  public void shouldUpdateThresholdsMillisecondsToEmptyList() {
+    // given
+    Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
+    Subscription subscription =
+        hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).build());
+    PatchData patchData =
+        patchData()
+            .set(
+                "metricsConfig",
+                ImmutableMap.builder()
+                    .put(
+                        "messageProcessing",
+                        ImmutableMap.builder()
+                            .put("enabled", true)
+                            .put("thresholdsMilliseconds", new String[] {})
+                            .build())
+                    .build())
+            .build();
+
+    // when
+    WebTestClient.ResponseSpec response =
+        hermes.api().updateSubscription(topic, subscription.getName(), patchData);
+
+    // then
+    response.expectStatus().isOk();
+    SubscriptionMetricsConfig metricsConfig =
+        hermes
+            .api()
+            .getSubscription(topic.getQualifiedName(), subscription.getName())
+            .getMetricsConfig();
+    assertThat(metricsConfig.messageProcessing().thresholdsMilliseconds()).isEmpty();
+  }
+
+  @Test
+  public void shouldNotUpdateThresholdsMillisecondsToNegativeValue() {
+    // given
+    Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
+    Subscription subscription =
+        hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).build());
+    PatchData patchData =
+        patchData()
+            .set(
+                "metricsConfig",
+                ImmutableMap.builder()
+                    .put(
+                        "messageProcessing",
+                        ImmutableMap.builder()
+                            .put("thresholdsMilliseconds", new String[] {"-100"})
+                            .build())
+                    .build())
+            .build();
+
+    // when
+    WebTestClient.ResponseSpec response =
+        hermes.api().updateSubscription(topic, subscription.getName(), patchData);
+
+    // then
+    response.expectStatus().isBadRequest();
+    ErrorDescription responseBody =
+        Objects.requireNonNull(
+            response.expectBody(ErrorDescription.class).returnResult().getResponseBody());
+    assertThat(responseBody.getCode()).isEqualTo(VALIDATION_ERROR);
+    assertThat(responseBody.getMessage())
+        .isEqualTo(
+            "Subscription.metricsConfig.messageProcessing.thresholdsMilliseconds[0].<list element> must be greater than 0");
+    SubscriptionMetricsConfig metricsConfig =
+        hermes
+            .api()
+            .getSubscription(topic.getQualifiedName(), subscription.getName())
+            .getMetricsConfig();
+    assertThat(metricsConfig.messageProcessing().thresholdsMilliseconds()).isEmpty();
   }
 
   @Test
@@ -759,53 +865,5 @@ public class SubscriptionManagementTest {
 
     // then
     assertThat(response.getSerialSubscriptionPolicy().getInflightSize()).isEqualTo(42);
-  }
-
-  @Test
-  public void shouldMoveOffsetsToTheEnd() {
-    // given
-    TestSubscriber subscriber = subscribers.createSubscriber(503);
-    Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
-    Subscription subscription =
-        hermes
-            .initHelper()
-            .createSubscription(
-                subscriptionWithRandomName(topic.getName(), subscriber.getEndpoint())
-                    .withSubscriptionPolicy(SubscriptionPolicy.create(Map.of("messageTtl", 3600)))
-                    .build());
-    List<String> messages = List.of(MESSAGE.body(), MESSAGE.body(), MESSAGE.body(), MESSAGE.body());
-
-    // prevents from moving offsets during messages sending
-    messages.forEach(
-        message -> {
-          hermes.api().publishUntilSuccess(topic.getQualifiedName(), message);
-          subscriber.waitUntilReceived(message);
-        });
-
-    assertThat(allConsumerGroupOffsetsMovedToTheEnd(subscription)).isFalse();
-
-    hermes.api().deleteSubscription(topic.getQualifiedName(), subscription.getName());
-
-    // when
-    waitAtMost(Duration.ofSeconds(10))
-        .untilAsserted(
-            () ->
-                hermes
-                    .api()
-                    .moveOffsetsToTheEnd(topic.getQualifiedName(), subscription.getName())
-                    .expectStatus()
-                    .isOk());
-
-    // then
-    waitAtMost(Duration.ofSeconds(10))
-        .untilAsserted(
-            () -> assertThat(allConsumerGroupOffsetsMovedToTheEnd(subscription)).isTrue());
-  }
-
-  private boolean allConsumerGroupOffsetsMovedToTheEnd(Subscription subscription) {
-    List<BrokerOperations.ConsumerGroupOffset> partitionsOffsets =
-        brokerOperations.getTopicPartitionsOffsets(subscription.getQualifiedName());
-    return !partitionsOffsets.isEmpty()
-        && partitionsOffsets.stream().allMatch(BrokerOperations.ConsumerGroupOffset::movedToEnd);
   }
 }

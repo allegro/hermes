@@ -26,18 +26,16 @@ import pl.allegro.tech.hermes.common.kafka.KafkaConsumerPool;
 import pl.allegro.tech.hermes.common.kafka.KafkaConsumerPoolConfig;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.offset.SubscriptionOffsetChangeIndicator;
-import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
-import pl.allegro.tech.hermes.management.config.SubscriptionProperties;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
+import pl.allegro.tech.hermes.management.config.subscription.SubscriptionProperties;
 import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
-import pl.allegro.tech.hermes.management.domain.subscription.ConsumerGroupManager;
+import pl.allegro.tech.hermes.management.domain.subscription.consumergroup.ConsumerGroupManager;
 import pl.allegro.tech.hermes.management.domain.topic.BrokerTopicManagement;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.BrokersClusterService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaBrokerTopicManagement;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaConsumerGroupManager;
-import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaConsumerManager;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaRawMessageReader;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.KafkaSingleMessageReader;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.LogEndOffsetChecker;
@@ -46,7 +44,7 @@ import pl.allegro.tech.hermes.management.infrastructure.kafka.service.OffsetsAva
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.retransmit.KafkaRetransmissionService;
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperRepositoryManager;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
-import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
+import tech.allegro.schema.json2avro.converter.AvroJsonConverter;
 
 @Configuration
 @EnableConfigurationProperties(KafkaClustersProperties.class)
@@ -58,8 +56,6 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
 
   @Autowired SubscriptionProperties subscriptionProperties;
 
-  @Autowired CompositeMessageContentWrapper compositeMessageContentWrapper;
-
   @Autowired ZookeeperRepositoryManager zookeeperRepositoryManager;
 
   @Autowired MultiDatacenterRepositoryCommandExecutor multiDcExecutor;
@@ -69,7 +65,7 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
       KafkaNamesMappers kafkaNamesMappers,
       SchemaRepository schemaRepository,
       Clock clock,
-      JsonAvroConverter jsonAvroConverter) {
+      AvroJsonConverter avroJsonConverter) {
     List<DatacenterBoundRepositoryHolder<SubscriptionOffsetChangeIndicator>> repositories =
         zookeeperRepositoryManager.getRepositories(SubscriptionOffsetChangeIndicator.class);
 
@@ -102,8 +98,9 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
                           kafkaNamesMapper);
                   KafkaSingleMessageReader messageReader =
                       new KafkaSingleMessageReader(
-                          kafkaRawMessageReader, schemaRepository, jsonAvroConverter);
+                          kafkaRawMessageReader, schemaRepository, avroJsonConverter);
                   return new BrokersClusterService(
+                      kafkaProperties.getDatacenter(),
                       kafkaProperties.getQualifiedClusterName(),
                       messageReader,
                       retransmissionService,
@@ -112,8 +109,8 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
                       new OffsetsAvailableChecker(consumerPool, storage),
                       new LogEndOffsetChecker(consumerPool),
                       brokerAdminClient,
-                      createConsumerGroupManager(kafkaProperties, kafkaNamesMapper),
-                      createKafkaConsumerManager(kafkaProperties, kafkaNamesMapper));
+                      createConsumerGroupManager(
+                          kafkaProperties, kafkaNamesMapper, brokerAdminClient));
                 })
             .collect(toList());
 
@@ -126,20 +123,17 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
   }
 
   private ConsumerGroupManager createConsumerGroupManager(
-      KafkaProperties kafkaProperties, KafkaNamesMapper kafkaNamesMapper) {
+      KafkaProperties kafkaProperties,
+      KafkaNamesMapper kafkaNamesMapper,
+      AdminClient kafkaAdminClient) {
     return subscriptionProperties.isCreateConsumerGroupManuallyEnabled()
         ? new KafkaConsumerGroupManager(
             kafkaNamesMapper,
             kafkaProperties.getQualifiedClusterName(),
             kafkaProperties.getBrokerList(),
-            kafkaProperties)
+            kafkaProperties,
+            kafkaAdminClient)
         : new NoOpConsumerGroupManager();
-  }
-
-  private KafkaConsumerManager createKafkaConsumerManager(
-      KafkaProperties kafkaProperties, KafkaNamesMapper kafkaNamesMapper) {
-    return new KafkaConsumerManager(
-        kafkaProperties, kafkaNamesMapper, kafkaProperties.getBrokerList());
   }
 
   private SubscriptionOffsetChangeIndicator getRepository(

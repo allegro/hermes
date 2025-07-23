@@ -2,8 +2,12 @@ package pl.allegro.tech.hermes.frontend.publishing.message
 
 import groovy.json.JsonOutput
 import pl.allegro.tech.hermes.frontend.publishing.avro.AvroMessage
+import pl.allegro.tech.hermes.schema.CompiledSchema
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser
+import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader
 import spock.lang.Specification
+
+import java.nio.ByteBuffer
 
 import static java.util.Collections.emptyMap
 
@@ -11,7 +15,9 @@ class MessageToJsonConverterTest extends Specification {
 
     def 'should convert avro to JSON'() {
         given:
-        def avroUser = new AvroUser('name', 16, 'favourite-colour')
+        def compiledSchema = CompiledSchema.of(AvroUserSchemaLoader.load("/schema/user_4.avsc"), 1, 1)
+        def avroUser = new AvroUser(compiledSchema, 'name', 16, 'favourite-colour')
+        avroUser.add("accountBalance", ByteBuffer.wrap(29.99.unscaledValue().toByteArray()))
 
         when:
         def converted = new MessageToJsonConverter().convert(new AvroMessage(
@@ -19,7 +25,7 @@ class MessageToJsonConverterTest extends Specification {
 
         then:
         new String(converted) == JsonOutput.toJson(
-                [__metadata: null, name: 'name', age: 16, favoriteColor: 'favourite-colour'])
+                [__metadata: null, name: 'name', age: 16, favoriteColor: 'favourite-colour', accountBalance: '29.99'])
     }
 
     def 'should return bytes when decoding fails'() {

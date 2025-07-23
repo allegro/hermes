@@ -23,13 +23,17 @@ public class ZookeeperPaths {
   public static final String ADMIN_PATH = "admin";
   public static final String PREVIEW_PATH = "preview";
   public static final String OAUTH_PROVIDERS_PATH = "oauth-providers";
-  public static final String BLACKLIST_PATH = "blacklist";
   public static final String MAX_RATE_PATH = "max-rate";
   public static final String MAX_RATE_HISTORY_PATH = "history";
   public static final String STORAGE_HEALTH_PATH = "storage-health";
   public static final String DATACENTER_READINESS_PATH = "datacenter-readiness";
   public static final String OFFLINE_RETRANSMISSION_PATH = "offline-retransmission";
   public static final String OFFLINE_RETRANSMISSION_TASKS_PATH = "tasks";
+  public static final String INACTIVE_TOPICS_PATH = "inactive-topics";
+  public static final String MANAGEMENT_PATH = "management";
+  public static final String MANAGEMENT_PATH_LEADER = "leader";
+  public static final String CONSUMER_GROUP_TO_DELETE = "consumer-group-to-delete";
+  public static final String CONSUMER_GROUP_TO_DELETE_TASKS = "tasks";
 
   private final String basePath;
 
@@ -147,14 +151,6 @@ public class ZookeeperPaths {
     return Joiner.on(URL_SEPARATOR).join(consumersWorkloadConstraintsPath(), constraintsPath);
   }
 
-  public String topicsBlacklistPath() {
-    return Joiner.on(URL_SEPARATOR).join(basePath, BLACKLIST_PATH, TOPICS_PATH);
-  }
-
-  public String blacklistedTopicPath(String qualifiedTopicName) {
-    return Joiner.on(URL_SEPARATOR).join(topicsBlacklistPath(), qualifiedTopicName);
-  }
-
   public String oAuthProvidersPath() {
     return Joiner.on(URL_SEPARATOR).join(basePath, OAUTH_PROVIDERS_PATH);
   }
@@ -180,6 +176,24 @@ public class ZookeeperPaths {
   public String offlineRetransmissionPath(String taskId) {
     return Joiner.on(URL_SEPARATOR)
         .join(basePath, OFFLINE_RETRANSMISSION_PATH, OFFLINE_RETRANSMISSION_TASKS_PATH, taskId);
+  }
+
+  public String inactiveTopicsPath() {
+    return Joiner.on(URL_SEPARATOR).join(basePath, INACTIVE_TOPICS_PATH);
+  }
+
+  public String managementLeaderPath() {
+    return Joiner.on(URL_SEPARATOR).join(basePath, MANAGEMENT_PATH, MANAGEMENT_PATH_LEADER);
+  }
+
+  public String consumerGroupToDeletePath() {
+    return Joiner.on(URL_SEPARATOR)
+        .join(basePath, CONSUMER_GROUP_TO_DELETE, CONSUMER_GROUP_TO_DELETE_TASKS);
+  }
+
+  public String consumerGroupToDeletePath(String taskId) {
+    return Joiner.on(URL_SEPARATOR)
+        .join(basePath, CONSUMER_GROUP_TO_DELETE, CONSUMER_GROUP_TO_DELETE_TASKS, taskId);
   }
 
   public String join(String... parts) {
