@@ -24,6 +24,7 @@ export interface TopicForm {
   contentType: string;
   maxMessageSize: number;
   ack: string;
+  fallbackToRemoteDatacenterEnabled: boolean;
   schema?: string;
 }
 

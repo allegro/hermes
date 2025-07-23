@@ -59,7 +59,7 @@ jobs:
       - name: Run task with Gradle
         run: ./gradlew ${{ matrix.tasks.name }}
       - name: Archive task results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: (success() || failure()) && matrix.tasks.alias != 'benchmark'
         with:
           name: ${{ matrix.tasks.name }}-test-report

@@ -96,6 +96,13 @@
       :name="$t('topicView.properties.modificationDate')"
       :value="formatTimestamp(props.topic.modifiedAt)"
     />
+    <key-value-card-item
+      :name="$t('topicView.properties.fallbackToRemoteDatacenterEnabled')"
+      :value="topic.fallbackToRemoteDatacenterEnabled"
+      :tooltip="
+        $t('topicView.properties.tooltips.fallbackToRemoteDatacenterEnabled')
+      "
+    />
   </key-value-card>
 </template>
 

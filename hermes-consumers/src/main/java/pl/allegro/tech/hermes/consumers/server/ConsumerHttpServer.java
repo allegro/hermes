@@ -35,7 +35,13 @@ public class ConsumerHttpServer {
         "/status/subscriptionsCount",
         (exchange) -> respondWithObject(exchange, mapper, monitor.check(SUBSCRIPTIONS_COUNT)));
     server.createContext(
-        "/status/prometheus", (exchange) -> respondWithString(exchange, meterRegistry.scrape()));
+        "/status/prometheus",
+        (exchange) -> {
+          exchange
+              .getResponseHeaders()
+              .add("Content-Type", "text/plain;version=0.0.4;charset=utf-8");
+          respondWithString(exchange, meterRegistry.scrape());
+        });
   }
 
   private HttpServer createServer(int port) throws IOException {

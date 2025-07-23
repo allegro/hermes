@@ -35,6 +35,7 @@ export CONFLUENT_IMAGES_TAG=7.2.2.arm64
 docker-compose up
 ```
 
+Use `VICTORIA_METRICS_IMAGES_TAG` env to change victoria-metrics and vmagent image version.
 
 #### Checking the setup
 
@@ -56,7 +57,7 @@ image: allegro/hermes-management:hermes-[specific version tag]
 ## Development
 
 The default `docker-compose` setup will start all hermes modules (consumers, frontend, management), together
-with its dependencies (Kafka, ZooKeeper, Schema Registry). To run a specific module with gradle/IntelliJ,
+with its dependencies (Kafka, ZooKeeper, Schema Registry, VictoriaMetrics). To run a specific module with gradle/IntelliJ,
 just comment out the module in `services` section of the `docker-compose.yml` file, and start the java process locally:
 
 `./gradlew -p hermes-frontend run`

@@ -22,8 +22,8 @@
 
 <template>
   <v-form v-model="isFormValid" @submit.prevent="submit">
-    <v-row>
-      <v-col>
+    <v-row v-if="props.type === 'created'">
+      <v-col cols="5">
         <text-field
           :model-value="props.name"
           @input="$emit('update:name', $event.target.value)"
@@ -32,7 +32,7 @@
         />
       </v-col>
 
-      <v-col>
+      <v-col cols="5">
         <text-field
           :model-value="props.matcher"
           @input="$emit('update:matcher', $event.target.value)"
@@ -43,15 +43,6 @@
 
       <v-col>
         <v-btn
-          v-if="props.type === 'new'"
-          type="submit"
-          :ripple="false"
-          variant="text"
-          icon="mdi-plus-circle"
-          color="success"
-        />
-        <v-btn
-          v-else
           type="submit"
           :ripple="false"
           variant="text"
@@ -59,6 +50,11 @@
           color="error"
         />
       </v-col>
+    </v-row>
+    <v-row v-else justify="end">
+      <v-btn type="submit" :ripple="false" variant="text" color="success">
+        Add Filter
+      </v-btn>
     </v-row>
   </v-form>
 </template>
