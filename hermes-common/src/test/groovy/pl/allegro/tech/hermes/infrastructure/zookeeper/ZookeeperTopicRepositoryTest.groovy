@@ -6,6 +6,7 @@ import pl.allegro.tech.hermes.api.TopicName
 import pl.allegro.tech.hermes.common.metric.counter.zookeeper.ZookeeperCounterStorage
 import pl.allegro.tech.hermes.domain.group.GroupNotExistsException
 import pl.allegro.tech.hermes.domain.topic.TopicAlreadyExistsException
+import pl.allegro.tech.hermes.domain.topic.TopicDeletedRecentlyException
 import pl.allegro.tech.hermes.domain.topic.TopicNotExistsException
 import pl.allegro.tech.hermes.infrastructure.MalformedDataException
 import pl.allegro.tech.hermes.test.IntegrationTest
@@ -24,7 +25,19 @@ class ZookeeperTopicRepositoryTest extends IntegrationTest {
     void setup() {
         if (!groupRepository.groupExists(GROUP)) {
             groupRepository.createGroup(Group.from(GROUP))
+        } else {
+            String malformedTopicPath = paths.topicPath(new TopicName(GROUP, 'malformed'));
+            if (repository.pathExists(malformedTopicPath)) {
+                zookeeper().delete().forPath(malformedTopicPath);
+			}
+            for (name in repository.listTopicNames(GROUP)) {
+               repository.removeTopic(new TopicName(GROUP, name))
+               wait.untilTopicRemoved(GROUP, name)
+            }
+            groupRepository.removeGroup(GROUP)
+            groupRepository.createGroup(Group.from(GROUP))
         }
+		wait.untilGroupCreated(GROUP)
     }
 
     def "should create topic"() {
@@ -231,6 +244,7 @@ class ZookeeperTopicRepositoryTest extends IntegrationTest {
 
     def "should not throw exception on malformed topic when reading list of all topics"() {
         given:
+
         zookeeper().create().forPath(paths.topicPath(new TopicName(GROUP, 'malformed')), ''.bytes)
         wait.untilTopicCreated(GROUP, 'malformed')
 
@@ -240,4 +254,19 @@ class ZookeeperTopicRepositoryTest extends IntegrationTest {
         then:
         notThrown(MalformedDataException)
     }
+
+    def "should throw exception removing a topic and immediately attempting to recreate it"() {
+        given:
+        repository.createTopic(topic(GROUP, 'remove').build())
+        wait.untilTopicCreated(GROUP, 'remove')
+        repository.removeTopic(new TopicName(GROUP, 'remove'))
+        wait.untilTopicRemoved(GROUP, 'remove')
+
+        when:
+        repository.createTopic(topic(GROUP, 'remove').build())
+
+        then:
+        thrown(TopicDeletedRecentlyException)
+    }
+
 }
