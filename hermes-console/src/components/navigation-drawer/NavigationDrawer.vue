@@ -1,43 +1,44 @@
 <script setup lang="ts">
   import { isAdmin } from '@/utils/roles-util';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
-  import { useAuthStore } from '@/store/auth/useAuthStore';
   import { useRoles } from '@/composables/roles/use-roles/useRoles';
   import { useRoute } from 'vue-router';
 
   import { computed, ref } from 'vue';
   import NavigationItem from '@/components/navigation-drawer/NavigationItem.vue';
-  const authStore = useAuthStore();
-  const isLoggedIn = computed(() => authStore.isUserAuthorized);
-  const userData = computed(() => authStore.userData);
   const route = useRoute();
   const routeName = computed(() => route.name);
 
   const configStore = useAppConfigStore();
   const roles = useRoles(null, null)?.roles;
-  const rail = ref(false);
+  const rail = ref(true);
 </script>
 
 <template>
   <v-navigation-drawer :rail="rail" permanent @click="rail = false">
-    <template v-if="!isLoggedIn">
-      <v-list>
-        <v-list-item
-          :prepend-avatar="`https://alleavatar.allegrogroup.com/${userData.user_name}.jpg`"
-          :title="isLoggedIn ? userData.full_name : 'Logged out'"
-        >
-          <template v-slot:append>
-            <v-btn
-              icon="mdi-chevron-left"
-              variant="text"
-              @click.stop="rail = !rail"
-            ></v-btn>
-          </template>
-        </v-list-item>
-      </v-list>
+    <v-list>
+      <v-list-item>
+        <div class="d-flex align-center justify-center" style="width: 100%">
+          <v-btn
+            v-if="rail"
+            icon="mdi-chevron-right"
+            variant="text"
+            @click.stop="rail = !rail"
+          ></v-btn>
+        </div>
+        <div class="d-flex justify-end" style="width: 100%">
+          <v-btn
+            v-if="!rail"
+            icon="mdi-chevron-left"
+            variant="text"
+            @click.stop="rail = !rail"
+          ></v-btn>
+        </div>
+      </v-list-item>
+    </v-list>
 
-      <v-divider></v-divider>
-    </template>
+    <v-divider></v-divider>
+
     <v-list density="compact" nav>
       <navigation-item
         icon="mdi-cog"
@@ -122,6 +123,11 @@
         <navigation-item
           translation-key="homeView.links.consistency"
           name="consistency"
+          :current-route-name="routeName"
+        />
+        <navigation-item
+          translation-key="homeView.links.inactiveTopics"
+          name="inactiveTopics"
           :current-route-name="routeName"
         />
       </v-list-group>

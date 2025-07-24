@@ -19,6 +19,7 @@ const en_US = {
       readiness: 'Readiness',
       constraints: 'Constraints',
       consistency: 'Consistency',
+      inactiveTopics: 'Inactive topics',
     },
   },
   header: {

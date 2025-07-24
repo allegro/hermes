@@ -78,14 +78,8 @@ export const useAuthStore = defineStore('auth', {
     },
   },
   getters: {
-    userData(state: AuthStoreState): {
-      exp: number;
-      full_name: string;
-      user_name: string;
-    } {
-      return state.accessToken
-        ? jwtDecode(state.accessToken)
-        : { exp: 0, full_name: '', user_name: '' };
+    userData(state: AuthStoreState): { exp: number } {
+      return state.accessToken ? jwtDecode(state.accessToken) : { exp: 0 };
     },
     isUserAuthorized(state: AuthStoreState): boolean {
       const expiresAt = this.userData.exp * 1000;
