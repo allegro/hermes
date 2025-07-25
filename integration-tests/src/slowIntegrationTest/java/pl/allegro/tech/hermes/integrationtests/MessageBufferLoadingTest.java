@@ -124,6 +124,7 @@ public class MessageBufferLoadingTest {
     HermesFrontendTestApp frontend =
         new HermesFrontendTestApp(infra.hermesZookeeper(), infra.kafka(), infra.schemaRegistry());
     frontend.withProperty(MESSAGES_LOCAL_STORAGE_DIRECTORY, tempDirPath);
+    frontend.withProperty(MESSAGES_LOCAL_STORAGE_ENABLED, true);
 
     // when
     frontend.start();
