@@ -3,7 +3,11 @@ package pl.allegro.tech.hermes.common.message.converter;
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.InputStream;
+import java.util.Collection;
+import java.util.Collections;
+import org.apache.avro.Conversion;
 import org.apache.avro.Schema;
+import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.BinaryDecoder;
@@ -21,10 +25,18 @@ public class AvroBinaryDecoders {
           () -> DecoderFactory.get().binaryDecoder(threadLocalEmptyInputStream.get(), null));
 
   static GenericRecord decodeReusingThreadLocalBinaryDecoder(byte[] message, Schema schema) {
+    return decodeReusingThreadLocalBinaryDecoder(message, schema, Collections.emptyList());
+  }
+
+  static GenericRecord decodeReusingThreadLocalBinaryDecoder(
+      byte[] message, Schema schema, Collection<Conversion<?>> conversions) {
     try (FlushableBinaryDecoderHolder holder = new FlushableBinaryDecoderHolder()) {
       BinaryDecoder binaryDecoder =
           DecoderFactory.get().binaryDecoder(message, holder.getBinaryDecoder());
-      return new GenericDatumReader<GenericRecord>(schema).read(null, binaryDecoder);
+      GenericData genericData = new GenericData();
+      conversions.forEach(genericData::addLogicalTypeConversion);
+      return new GenericDatumReader<GenericRecord>(schema, schema, genericData)
+          .read(null, binaryDecoder);
     } catch (Exception e) {
       String reason =
           e.getMessage() == null ? ExceptionUtils.getRootCauseMessage(e) : e.getMessage();

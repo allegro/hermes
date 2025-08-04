@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.frontend.config;
 import jakarta.inject.Named;
 import java.time.Clock;
 import java.util.List;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -52,6 +53,7 @@ public class FrontendConfiguration {
   }
 
   @Bean
+  @ConditionalOnProperty(name = "frontend.messages.local.storage.enabled", havingValue = "true")
   public BackupMessagesLoader backupMessagesLoader(
       @Named("localDatacenterBrokerProducer") BrokerMessageProducer brokerMessageProducer,
       BrokerListeners brokerListeners,
@@ -71,6 +73,7 @@ public class FrontendConfiguration {
   }
 
   @Bean(initMethod = "extend")
+  @ConditionalOnProperty(name = "frontend.messages.local.storage.enabled", havingValue = "true")
   public PersistentBufferExtension persistentBufferExtension(
       LocalMessageStorageProperties localMessageStorageProperties,
       Clock clock,

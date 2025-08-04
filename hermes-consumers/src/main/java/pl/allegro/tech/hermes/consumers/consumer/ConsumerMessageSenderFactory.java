@@ -73,7 +73,11 @@ public class ConsumerMessageSenderFactory {
     List<SuccessHandler> successHandlers =
         Arrays.asList(
             consumerAuthorizationHandler,
-            new DefaultSuccessHandler(metrics, trackers, subscription.getQualifiedName()));
+            new DefaultSuccessHandler(
+                metrics,
+                trackers,
+                subscription.getQualifiedName(),
+                subscription.getMetricsConfig()));
 
     List<ErrorHandler> errorHandlers =
         Arrays.asList(

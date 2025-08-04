@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import pl.allegro.tech.hermes.api.constraints.ValidContentType;
+import pl.allegro.tech.hermes.api.subscription.metrics.SubscriptionMetricsConfig;
 
 @ValidContentType(message = "AVRO content type is not supported in BATCH delivery mode")
 @JsonIgnoreProperties(
@@ -66,6 +67,8 @@ public class  Subscription implements Anonymizable {
 
   private Instant modifiedAt;
 
+  @Valid @NotNull private SubscriptionMetricsConfig metricsConfig;
+
   private Subscription(
       TopicName topicName,
       String name,
@@ -88,7 +91,8 @@ public class  Subscription implements Anonymizable {
       boolean profilingEnabled,
       long profilingThresholdMs,
       boolean subscriptionIdentityHeadersEnabled,
-      boolean autoDeleteWithTopicEnabled) {
+      boolean autoDeleteWithTopicEnabled,
+      SubscriptionMetricsConfig metricsConfig) {
     this.topicName = topicName;
     this.name = name;
     this.endpoint = endpoint;
@@ -118,6 +122,7 @@ public class  Subscription implements Anonymizable {
     this.oAuthPolicy = oAuthPolicy;
     this.subscriptionIdentityHeadersEnabled = subscriptionIdentityHeadersEnabled;
     this.autoDeleteWithTopicEnabled = autoDeleteWithTopicEnabled;
+    this.metricsConfig = metricsConfig == null ? SubscriptionMetricsConfig.DISABLED : metricsConfig;
   }
 
   public static Subscription createSerialSubscription(
@@ -141,7 +146,8 @@ public class  Subscription implements Anonymizable {
       boolean profilingEnabled,
       long profilingThresholdMs,
       boolean subscriptionIdentityHeadersEnabled,
-      boolean autoDeleteWithTopicEnabled) {
+      boolean autoDeleteWithTopicEnabled,
+      SubscriptionMetricsConfig metricsConfig) {
     return new Subscription(
         topicName,
         name,
@@ -164,7 +170,8 @@ public class  Subscription implements Anonymizable {
         profilingEnabled,
         profilingThresholdMs,
         subscriptionIdentityHeadersEnabled,
-        autoDeleteWithTopicEnabled);
+        autoDeleteWithTopicEnabled,
+        metricsConfig);
   }
 
   public static Subscription createBatchSubscription(
@@ -208,7 +215,8 @@ public class  Subscription implements Anonymizable {
         false,
         0,
         subscriptionIdentityHeadersEnabled,
-        autoDeleteWithTopicEnabled);
+        autoDeleteWithTopicEnabled,
+        SubscriptionMetricsConfig.DISABLED);
   }
 
   @JsonCreator
@@ -236,7 +244,8 @@ public class  Subscription implements Anonymizable {
       @JsonProperty("profilingThresholdMs") long profilingThresholdMs,
       @JsonProperty("subscriptionIdentityHeadersEnabled")
           boolean subscriptionIdentityHeadersEnabled,
-      @JsonProperty("autoDeleteWithTopicEnabled") boolean autoDeleteWithTopicEnabled) {
+      @JsonProperty("autoDeleteWithTopicEnabled") boolean autoDeleteWithTopicEnabled,
+      @JsonProperty("metricsConfig") SubscriptionMetricsConfig metricsConfig) {
 
     DeliveryType validDeliveryType = deliveryType == null ? DeliveryType.SERIAL : deliveryType;
     SubscriptionMode subscriptionMode = mode == null ? SubscriptionMode.ANYCAST : mode;
@@ -274,7 +283,8 @@ public class  Subscription implements Anonymizable {
         profilingEnabled,
         profilingThresholdMs,
         subscriptionIdentityHeadersEnabled,
-        autoDeleteWithTopicEnabled);
+        autoDeleteWithTopicEnabled,
+        metricsConfig);
   }
 
   @Override
@@ -297,7 +307,8 @@ public class  Subscription implements Anonymizable {
         endpointAddressResolverMetadata,
         oAuthPolicy,
         http2Enabled,
-        subscriptionIdentityHeadersEnabled);
+        subscriptionIdentityHeadersEnabled,
+        metricsConfig);
   }
 
   @Override
@@ -332,7 +343,8 @@ public class  Subscription implements Anonymizable {
         && Objects.equals(this.oAuthPolicy, other.oAuthPolicy)
         && Objects.equals(
             this.subscriptionIdentityHeadersEnabled, other.subscriptionIdentityHeadersEnabled)
-        && Objects.equals(this.autoDeleteWithTopicEnabled, other.autoDeleteWithTopicEnabled);
+        && Objects.equals(this.autoDeleteWithTopicEnabled, other.autoDeleteWithTopicEnabled)
+        && Objects.equals(this.metricsConfig, other.metricsConfig);
   }
 
   @JsonIgnore
@@ -496,6 +508,10 @@ public class  Subscription implements Anonymizable {
     return autoDeleteWithTopicEnabled;
   }
 
+  public SubscriptionMetricsConfig getMetricsConfig() {
+    return metricsConfig;
+  }
+
   @Override
   public Subscription anonymize() {
     if (getEndpoint() != null && getEndpoint().containsCredentials() || hasOAuthPolicy()) {
@@ -521,7 +537,8 @@ public class  Subscription implements Anonymizable {
           profilingEnabled,
           profilingThresholdMs,
           subscriptionIdentityHeadersEnabled,
-          autoDeleteWithTopicEnabled);
+          autoDeleteWithTopicEnabled,
+          metricsConfig);
     }
     return this;
   }
