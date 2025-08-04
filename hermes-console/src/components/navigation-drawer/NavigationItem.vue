@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { defineProps, defineEmits } from 'vue';
+  import { defineEmits, defineProps } from 'vue';
   import { useRouter } from 'vue-router';
   const router = useRouter();
 
@@ -47,7 +47,7 @@
       <v-icon v-else-if="icon" :icon="icon" />
     </template>
     <template v-if="!externalUrl">
-      <v-list-item-title class="nav-title nav-title-align">{{
+      <v-list-item-title class="d-flex align-center w-100 pl-2">{{
         $t(translationKey)
       }}</v-list-item-title>
     </template>
@@ -55,11 +55,9 @@
       <a
         :href="externalUrl"
         target="_blank"
-        class="nav-title-link nav-title-align"
+        class="d-flex align-center w-100 pl-2 ml-8p"
       >
-        <v-list-item-title class="nav-title">{{
-          $t(translationKey)
-        }}</v-list-item-title>
+        <v-list-item-title>{{ $t(translationKey) }}</v-list-item-title>
       </a>
     </template>
   </v-list-item>
@@ -70,21 +68,7 @@
     text-decoration: none;
     color: inherit;
   }
-  .nav-title {
-    padding-left: 8px;
-    display: block;
-  }
-  .nav-title-link {
-    margin-left: 3%;
-    display: block;
-    width: 100%;
-  }
-  .nav-title-align {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    min-width: 0;
-    padding-left: 8px;
-    box-sizing: border-box;
+  .ml-8p {
+    margin-left: 8%;
   }
 </style>
