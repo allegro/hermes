@@ -731,7 +731,7 @@
     },
     "costs": {
       "enabled": true,
-      "globalDetailsUrl": "",
+      "globalDetailsUrl": "http://localhost:8082",
       "topicIframeUrl": "",
       "topicDetailsUrl": "",
       "subscriptionIframeUrl": "",

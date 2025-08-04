@@ -12,6 +12,14 @@
   const configStore = useAppConfigStore();
   const roles = useRoles(null, null)?.roles;
   const rail = ref(true);
+
+  function handleIconClick(url: string) {
+    if (rail.value) {
+      rail.value = false;
+    } else if (url) {
+      window.open(url, '_blank');
+    }
+  }
 </script>
 
 <template>
@@ -51,7 +59,7 @@
         <template v-slot:activator="{ props }">
           <navigation-item
             v-bind="props"
-            prepend-icon="mdi-star"
+            icon="mdi-star"
             translation-key="homeView.links.favorites"
             name="favorites"
             :readonly="true"
@@ -86,18 +94,22 @@
         translation-key="homeView.links.runtime"
         name="runtime"
         :external-url="configStore.loadedConfig.dashboard.metrics"
+        @icon-click="handleIconClick"
       />
       <navigation-item
         icon="mdi-book-open-variant"
         translation-key="homeView.links.documentation"
         name="docs"
         :external-url="configStore.loadedConfig.dashboard.docs"
+        @icon-click="handleIconClick"
       />
       <navigation-item
+        v-if="configStore.loadedConfig.costs.enabled"
         icon="mdi-currency-usd"
         translation-key="homeView.links.costs"
         name="costs"
         :external-url="configStore.loadedConfig.costs.globalDetailsUrl"
+        @icon-click="handleIconClick"
       />
       <v-list-group value="Admin" v-if="isAdmin(roles)">
         <template v-slot:activator="{ props }">
