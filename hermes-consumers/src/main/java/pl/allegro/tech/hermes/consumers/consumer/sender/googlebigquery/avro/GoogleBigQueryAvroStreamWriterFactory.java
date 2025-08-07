@@ -22,7 +22,7 @@ import pl.allegro.tech.hermes.consumers.consumer.bigquery.GoogleBigQueryStreamWr
 import java.io.IOException;
 import java.util.concurrent.Executors;
 
-@Component
+//@Component
 public class GoogleBigQueryAvroStreamWriterFactory implements GoogleBigQueryStreamWriterFactory<SchemaAwareStreamWriter<GenericRecord>> {
 
     private static final Logger logger = LoggerFactory.getLogger(GoogleBigQueryAvroStreamWriterFactory.class);

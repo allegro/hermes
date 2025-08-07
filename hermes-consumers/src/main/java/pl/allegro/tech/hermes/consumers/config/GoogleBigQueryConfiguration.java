@@ -54,4 +54,12 @@ public class GoogleBigQueryConfiguration {
     public GoogleBigQueryAvroToProtoConverter avroToProtoConverter() {
         return new GoogleBigQueryAvroToProtoConverter();
     }
+
+    @Bean
+    public GoogleBigQueryAvroStreamWriterFactory avroStreamWriterFactory(
+            CredentialsProvider credentialsProvider,
+            BigQueryWriteSettings writeSettings,
+            GoogleBigQueryAvroToProtoConverter avroToProtoConverter) throws IOException {
+        return new GoogleBigQueryAvroStreamWriterFactory(credentialsProvider, writeSettings, avroToProtoConverter);
+    }
 }

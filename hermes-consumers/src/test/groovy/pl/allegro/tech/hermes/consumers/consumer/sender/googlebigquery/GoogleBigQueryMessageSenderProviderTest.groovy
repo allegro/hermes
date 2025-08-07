@@ -7,6 +7,7 @@ import pl.allegro.tech.hermes.api.DeliveryType
 import pl.allegro.tech.hermes.api.EndpointAddress
 import pl.allegro.tech.hermes.api.Subscription
 import pl.allegro.tech.hermes.api.SubscriptionMode
+import pl.allegro.tech.hermes.api.subscription.metrics.SubscriptionMetricsConfig
 import pl.allegro.tech.hermes.consumers.consumer.ResilientMessageSender
 import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender
@@ -55,7 +56,8 @@ class GoogleBigQueryMessageSenderProviderTest extends Specification {
                 false,
                 0,
                 false,
-                false
+                false,
+                SubscriptionMetricsConfig.DISABLED
         )
 
         ResilientMessageSender resilientMessageSender = Mock(ResilientMessageSender)
