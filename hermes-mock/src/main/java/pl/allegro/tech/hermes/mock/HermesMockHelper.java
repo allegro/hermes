@@ -24,7 +24,7 @@ import org.apache.avro.io.DecoderFactory;
 import pl.allegro.tech.hermes.mock.exchange.Request;
 import pl.allegro.tech.hermes.mock.exchange.Response;
 import pl.allegro.tech.hermes.mock.matching.StartsWithPattern;
-import tech.allegro.schema.json2avro.converter.AvroJsonConverter;
+import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
 public class HermesMockHelper {
   private final WireMockServer wireMockServer;
@@ -58,7 +58,7 @@ public class HermesMockHelper {
 
   public <T> T deserializeAvro(byte[] raw, Schema schema, Class<T> clazz) {
     try {
-      byte[] json = new AvroJsonConverter().convertToJson(raw, schema);
+      byte[] json = new JsonAvroConverter().convertToJson(raw, schema);
       return deserializeJson(json, clazz);
     } catch (RuntimeException ex) {
       throw new HermesMockException(
