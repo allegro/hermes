@@ -18,6 +18,7 @@ dependencies {
     api group: 'org.springframework.boot', name: 'spring-boot-starter', version: versions.spring
     api group: 'org.eclipse.jetty', name: 'jetty-alpn-java-client', version: versions.jetty
     api group: 'org.eclipse.jetty.http2', name: 'jetty-http2-client-transport', version: versions.jetty
+
     implementation group: 'org.jctools', name: 'jctools-core', version: '4.0.3'
     api group: 'jakarta.jms', name: 'jakarta.jms-api', version: '3.1.0'
     implementation group: 'joda-time', name: 'joda-time', version: '2.12.7'
@@ -29,8 +30,10 @@ dependencies {
     implementation(group: 'org.hornetq', name: 'hornetq-jms-client', version: '2.4.1.Final') {
         exclude module: 'hornetq-native'
     }
-    api group: 'com.google.cloud', name: 'google-cloud-pubsub', version: '1.128.1'
     api group: 'org.apache.httpcomponents.core5', name: 'httpcore5', version: '5.2.4'
+    api group: 'com.google.cloud', name: 'google-cloud-pubsub', version: '1.140.2'
+    api(group: 'com.google.cloud', name: 'google-cloud-bigquery', version: '2.52.0')
+
 
     testImplementation project(':hermes-test-helper')
     testImplementation group: 'org.apache.curator', name: 'curator-test', version: versions.curator
@@ -39,6 +42,10 @@ dependencies {
     testImplementation project(':hermes-common')
 
     testImplementation(group: 'org.awaitility', name: 'awaitility-groovy', version: '4.2.1')
+    testImplementation(group: 'com.jayway.awaitility', name: 'awaitility', version: '1.6.1') {
+        exclude group: 'com.jayway.jsonpath', module: 'json-path'
+    }
+
     testImplementation group: 'tech.allegro.schema.json2avro', name: 'converter', version: versions.json2avro
 
     testImplementation group: 'org.spockframework', name: 'spock-core', version: versions.spock
