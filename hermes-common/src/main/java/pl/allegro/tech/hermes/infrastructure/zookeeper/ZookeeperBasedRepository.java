@@ -173,10 +173,38 @@ public abstract class ZookeeperBasedRepository {
       throw new InternalProcessingException("Attempting to remove empty set of paths from ZK");
     }
     ensureConnected();
-    List<CuratorOp> operations = new ArrayList<>(paths.size());
-    for (String path : paths) {
-      operations.add(zookeeper.transactionOp().delete().forPath(path));
+    List<CuratorOp> operations = deleteOpsForPaths(paths);
+    zookeeper.transaction().forOperations(operations);
+  }
+
+  protected void deleteAndCreateInTransaction(List<String> paths, String path, Object value)
+      throws Exception {
+    ensureConnected();
+    List<CuratorOp> operations = deleteOpsForPaths(paths);
+    operations.add(
+        zookeeper.transactionOp().create().forPath(path, mapper.writeValueAsBytes(value)));
+    zookeeper.transaction().forOperations(operations);
+  }
+
+  protected void deleteAndCreateInTransaction(
+      List<String> pathsToDelete, List<String> pathsToCreate, String path, Object value)
+      throws Exception {
+    ensureConnected();
+    List<CuratorOp> operations = deleteOpsForPaths(pathsToDelete);
+    for (String pathToCreate : pathsToCreate) {
+      operations.add(zookeeper.transactionOp().create().forPath(pathToCreate));
     }
+    operations.add(
+        zookeeper.transactionOp().create().forPath(path, mapper.writeValueAsBytes(value)));
+    zookeeper.transaction().forOperations(operations);
+  }
+
+  protected void deleteAndOverwriteInTransaction(List<String> paths, String path, Object value)
+      throws Exception {
+    ensureConnected();
+    List<CuratorOp> operations = deleteOpsForPaths(paths);
+    operations.add(
+        zookeeper.transactionOp().setData().forPath(path, mapper.writeValueAsBytes(value)));
     zookeeper.transaction().forOperations(operations);
   }
 
@@ -203,5 +231,13 @@ public abstract class ZookeeperBasedRepository {
 
   private interface ThrowingReader<T> {
     T read(byte[] data) throws IOException;
+  }
+
+  private List<CuratorOp> deleteOpsForPaths(List<String> paths) throws Exception {
+    List<CuratorOp> deleteOps = new ArrayList<>(paths.size());
+    for (String path : paths) {
+      deleteOps.add(zookeeper.transactionOp().delete().forPath(path));
+    }
+    return deleteOps;
   }
 }
