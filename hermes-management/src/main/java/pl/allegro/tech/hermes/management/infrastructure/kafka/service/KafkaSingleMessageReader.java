@@ -8,17 +8,17 @@ import pl.allegro.tech.hermes.common.message.wrapper.SchemaAwarePayload;
 import pl.allegro.tech.hermes.common.message.wrapper.SchemaAwareSerDe;
 import pl.allegro.tech.hermes.management.domain.topic.SingleMessageReader;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
-import tech.allegro.schema.json2avro.converter.AvroJsonConverter;
+import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
 public class KafkaSingleMessageReader implements SingleMessageReader {
   private final KafkaRawMessageReader kafkaRawMessageReader;
   private final SchemaRepository schemaRepository;
-  private final AvroJsonConverter converter;
+  private final JsonAvroConverter converter;
 
   public KafkaSingleMessageReader(
       KafkaRawMessageReader kafkaRawMessageReader,
       SchemaRepository schemaRepository,
-      AvroJsonConverter converter) {
+      JsonAvroConverter converter) {
     this.kafkaRawMessageReader = kafkaRawMessageReader;
     this.schemaRepository = schemaRepository;
     this.converter = converter;

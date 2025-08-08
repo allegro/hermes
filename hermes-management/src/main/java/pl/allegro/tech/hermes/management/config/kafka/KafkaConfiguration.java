@@ -44,7 +44,7 @@ import pl.allegro.tech.hermes.management.infrastructure.kafka.service.OffsetsAva
 import pl.allegro.tech.hermes.management.infrastructure.kafka.service.retransmit.KafkaRetransmissionService;
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperRepositoryManager;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
-import tech.allegro.schema.json2avro.converter.AvroJsonConverter;
+import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
 @Configuration
 @EnableConfigurationProperties(KafkaClustersProperties.class)
@@ -65,7 +65,7 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
       KafkaNamesMappers kafkaNamesMappers,
       SchemaRepository schemaRepository,
       Clock clock,
-      AvroJsonConverter avroJsonConverter) {
+      JsonAvroConverter jsonAvroConverter) {
     List<DatacenterBoundRepositoryHolder<SubscriptionOffsetChangeIndicator>> repositories =
         zookeeperRepositoryManager.getRepositories(SubscriptionOffsetChangeIndicator.class);
 
@@ -98,7 +98,7 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
                           kafkaNamesMapper);
                   KafkaSingleMessageReader messageReader =
                       new KafkaSingleMessageReader(
-                          kafkaRawMessageReader, schemaRepository, avroJsonConverter);
+                          kafkaRawMessageReader, schemaRepository, jsonAvroConverter);
                   return new BrokersClusterService(
                       kafkaProperties.getDatacenter(),
                       kafkaProperties.getQualifiedClusterName(),

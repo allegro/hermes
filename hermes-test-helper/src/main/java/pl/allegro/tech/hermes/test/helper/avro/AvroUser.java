@@ -115,10 +115,6 @@ public class AvroUser {
     return user;
   }
 
-  public void add(String key, Object value) {
-    this.record.put(key, value);
-  }
-
   public CompiledSchema<Schema> getCompiledSchema() {
     return schema;
   }
