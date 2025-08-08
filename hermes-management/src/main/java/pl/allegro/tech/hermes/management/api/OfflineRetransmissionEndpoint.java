@@ -23,6 +23,7 @@ import pl.allegro.tech.hermes.api.OfflineRetransmissionFromViewRequest;
 import pl.allegro.tech.hermes.api.OfflineRetransmissionRequest;
 import pl.allegro.tech.hermes.api.OfflineRetransmissionRequest.RetransmissionType;
 import pl.allegro.tech.hermes.api.OfflineRetransmissionTask;
+import pl.allegro.tech.hermes.api.OfflineRetransmissionTaskMonitoringInfo;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.management.api.auth.ManagementRights;
@@ -30,8 +31,8 @@ import pl.allegro.tech.hermes.management.domain.PermissionDeniedException;
 import pl.allegro.tech.hermes.management.domain.retransmit.OfflineRetransmissionService;
 
 @Component
-@Path("offline-retransmission/tasks")
-@Api(value = "offline-retransmission/tasks", description = "Offline retransmission operations")
+@Path("offline-retransmission")
+@Api(value = "offline-retransmission", description = "Offline retransmission operations")
 public class OfflineRetransmissionEndpoint {
 
   private final OfflineRetransmissionService retransmissionService;
@@ -49,6 +50,7 @@ public class OfflineRetransmissionEndpoint {
   }
 
   @POST
+  @Path("/tasks")
   @Consumes(APPLICATION_JSON)
   public Response createRetransmissionTask(
       @Valid OfflineRetransmissionRequest request,
@@ -60,6 +62,14 @@ public class OfflineRetransmissionEndpoint {
       createRetransmissionFromViewTask(request, requestContext);
     }
     return Response.status(Response.Status.CREATED).build();
+  }
+
+  @GET
+  @Produces(APPLICATION_JSON)
+  @Path("/topics/{topicName}/tasks")
+  public List<OfflineRetransmissionTaskMonitoringInfo> getRetransmissionTasks(
+      @PathParam("topicName") String qualifiedTopicName) {
+    return retransmissionService.getTopicTasksWithMonitoringInfo(qualifiedTopicName);
   }
 
   private void createRetransmissionFromViewTask(
@@ -83,13 +93,14 @@ public class OfflineRetransmissionEndpoint {
   }
 
   @GET
+  @Path("/tasks")
   @Produces(APPLICATION_JSON)
   public List<OfflineRetransmissionTask> getAllRetransmissionTasks() {
     return retransmissionService.getAllTasks();
   }
 
   @DELETE
-  @Path("/{taskId}")
+  @Path("/tasks/{taskId}")
   public Response deleteRetransmissionTask(@PathParam("taskId") String taskId) {
     retransmissionService.deleteTask(taskId);
     return Response.status(Response.Status.OK).build();
