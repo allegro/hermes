@@ -5,11 +5,13 @@ import com.google.cloud.bigquery.storage.v1.BigQueryWriteSettings;
 import com.google.cloud.bigquery.storage.v1.stub.BigQueryWriteStubSettings;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.*;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.*;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.json.GoogleBigQueryJsonDataWriterPool;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.json.GoogleBigQueryJsonMessageTransformer;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.json.GoogleBigQueryJsonStreamWriterFactory;
+import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.json.GoogleBigQueryJsonWriteClientProvider;
 
 
 import java.io.IOException;
@@ -62,4 +64,17 @@ public class GoogleBigQueryConfiguration {
             GoogleBigQueryAvroToProtoConverter avroToProtoConverter) throws IOException {
         return new GoogleBigQueryAvroStreamWriterFactory(credentialsProvider, writeSettings, avroToProtoConverter);
     }
+    @Bean
+    public GoogleBigQueryJsonStreamWriterFactory jsonStreamWriterFactory(
+            CredentialsProvider credentialsProvider,
+            GoogleBigQueryJsonWriteClientProvider writeClientProvider
+            ) throws IOException {
+        return new GoogleBigQueryJsonStreamWriterFactory(credentialsProvider, writeClientProvider);
+    }
+
+    @Bean
+    public GoogleBigQueryJsonWriteClientProvider jsonWriteClientProvider(BigQueryWriteSettings writeSettings) {
+        return new GoogleBigQueryJsonWriteClientProvider(writeSettings);
+    }
+
 }

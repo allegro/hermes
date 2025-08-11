@@ -18,7 +18,6 @@ import pl.allegro.tech.hermes.consumers.consumer.bigquery.GoogleBigQueryStreamWr
 import java.io.IOException;
 import java.util.concurrent.Executors;
 
-@Component
 public class GoogleBigQueryJsonStreamWriterFactory implements GoogleBigQueryStreamWriterFactory<JsonStreamWriter> {
 
     private static final Logger logger = LoggerFactory.getLogger(GoogleBigQueryJsonDataWriter.class);

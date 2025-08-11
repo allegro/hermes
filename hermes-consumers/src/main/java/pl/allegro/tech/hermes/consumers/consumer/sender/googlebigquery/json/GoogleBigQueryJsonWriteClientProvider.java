@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
-@Component
 public class GoogleBigQueryJsonWriteClientProvider {
     private final BigQueryWriteSettings writeSettings;
     public GoogleBigQueryJsonWriteClientProvider(BigQueryWriteSettings writeSettings) {
