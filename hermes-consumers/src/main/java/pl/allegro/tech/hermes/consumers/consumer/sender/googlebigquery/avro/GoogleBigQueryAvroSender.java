@@ -44,10 +44,14 @@ public class GoogleBigQueryAvroSender implements CompletableFutureAwareMessageSe
         }
     }
 
+    public static String partitionFromTimestamp(long timestampMillis) {
+        ZonedDateTime timestamp = Instant.ofEpochMilli(timestampMillis).atZone(ZoneId.of("UTC"))
+                .withZoneSameInstant(ZoneId.of("Europe/Warsaw"));
+        return "%04d%02d%02d".formatted(timestamp.getYear(), timestamp.getMonthValue(), timestamp.getDayOfMonth());
+    }
+
     private GoogleBigQuerySenderTarget getGoogleBigQuerySenderTarget(Message message) {
-        ZonedDateTime timestamp = Instant.ofEpochMilli(message.getPublishingTimestamp()).atZone(ZoneId.of("UTC"));
-        String partition = "%04d%02d%02d".formatted(timestamp.getYear(), timestamp.getMonthValue(), timestamp.getDayOfMonth());
-//        String partition = "20250701";
+        String partition = partitionFromTimestamp(message.getPublishingTimestamp());
 
         TableName wholeTableName = TableName.parse(subscription.getEndpoint().getEndpoint().replace("googlebigquery://", ""));
         GoogleBigQuerySenderTarget target =
