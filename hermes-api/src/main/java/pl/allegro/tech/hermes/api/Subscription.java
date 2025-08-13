@@ -92,7 +92,9 @@ public class Subscription implements Anonymizable {
       long profilingThresholdMs,
       boolean subscriptionIdentityHeadersEnabled,
       boolean autoDeleteWithTopicEnabled,
-      SubscriptionMetricsConfig metricsConfig) {
+      SubscriptionMetricsConfig metricsConfig,
+      Instant createdAt,
+      Instant modifiedAt) {
     this.topicName = topicName;
     this.name = name;
     this.endpoint = endpoint;
@@ -123,6 +125,8 @@ public class Subscription implements Anonymizable {
     this.subscriptionIdentityHeadersEnabled = subscriptionIdentityHeadersEnabled;
     this.autoDeleteWithTopicEnabled = autoDeleteWithTopicEnabled;
     this.metricsConfig = metricsConfig == null ? SubscriptionMetricsConfig.DISABLED : metricsConfig;
+    this.createdAt = createdAt;
+    this.modifiedAt = modifiedAt;
   }
 
   public static Subscription createSerialSubscription(
@@ -171,7 +175,9 @@ public class Subscription implements Anonymizable {
         profilingThresholdMs,
         subscriptionIdentityHeadersEnabled,
         autoDeleteWithTopicEnabled,
-        metricsConfig);
+        metricsConfig,
+        null,
+        null);
   }
 
   public static Subscription createBatchSubscription(
@@ -216,7 +222,9 @@ public class Subscription implements Anonymizable {
         0,
         subscriptionIdentityHeadersEnabled,
         autoDeleteWithTopicEnabled,
-        SubscriptionMetricsConfig.DISABLED);
+        SubscriptionMetricsConfig.DISABLED,
+        null,
+        null);
   }
 
   @JsonCreator
@@ -284,7 +292,9 @@ public class Subscription implements Anonymizable {
         profilingThresholdMs,
         subscriptionIdentityHeadersEnabled,
         autoDeleteWithTopicEnabled,
-        metricsConfig);
+        metricsConfig,
+        null,
+        null);
   }
 
   @Override
@@ -538,7 +548,9 @@ public class Subscription implements Anonymizable {
           profilingThresholdMs,
           subscriptionIdentityHeadersEnabled,
           autoDeleteWithTopicEnabled,
-          metricsConfig);
+          metricsConfig,
+          createdAt,
+          modifiedAt);
     }
     return this;
   }
