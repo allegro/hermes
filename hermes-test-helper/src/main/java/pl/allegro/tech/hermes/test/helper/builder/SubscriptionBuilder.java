@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.test.helper.builder;
 
 import java.net.URI;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -76,6 +77,9 @@ public class SubscriptionBuilder {
 
   private SubscriptionMetricsConfig metricsConfig = null;
 
+  private Instant createdAt;
+  private Instant modifiedAt;
+
   private SubscriptionBuilder(
       TopicName topicName, String subscriptionName, EndpointAddress endpoint) {
     this.topicName = topicName;
@@ -144,51 +148,57 @@ public class SubscriptionBuilder {
   }
 
   public Subscription build() {
+    Subscription s;
     if (deliveryType == DeliveryType.SERIAL) {
-      return Subscription.createSerialSubscription(
-          topicName,
-          name,
-          endpoint,
-          state,
-          description,
-          serialSubscriptionPolicy,
-          trackingEnabled,
-          trackingMode,
-          owner,
-          monitoringDetails,
-          contentType,
-          filters,
-          mode,
-          headers,
-          metadata,
-          oAuthPolicy,
-          http2Enabled,
-          profilingEnabled,
-          profilingThresholdMs,
-          attachingIdentityHeadersEnabled,
-          autoDeleteWithTopicEnabled,
-          metricsConfig);
+      s =
+          Subscription.createSerialSubscription(
+              topicName,
+              name,
+              endpoint,
+              state,
+              description,
+              serialSubscriptionPolicy,
+              trackingEnabled,
+              trackingMode,
+              owner,
+              monitoringDetails,
+              contentType,
+              filters,
+              mode,
+              headers,
+              metadata,
+              oAuthPolicy,
+              http2Enabled,
+              profilingEnabled,
+              profilingThresholdMs,
+              attachingIdentityHeadersEnabled,
+              autoDeleteWithTopicEnabled,
+              metricsConfig);
     } else {
-      return Subscription.createBatchSubscription(
-          topicName,
-          name,
-          endpoint,
-          state,
-          description,
-          batchSubscriptionPolicy,
-          trackingEnabled,
-          trackingMode,
-          owner,
-          monitoringDetails,
-          contentType,
-          filters,
-          headers,
-          metadata,
-          oAuthPolicy,
-          http2Enabled,
-          attachingIdentityHeadersEnabled,
-          autoDeleteWithTopicEnabled);
+      s =
+          Subscription.createBatchSubscription(
+              topicName,
+              name,
+              endpoint,
+              state,
+              description,
+              batchSubscriptionPolicy,
+              trackingEnabled,
+              trackingMode,
+              owner,
+              monitoringDetails,
+              contentType,
+              filters,
+              headers,
+              metadata,
+              oAuthPolicy,
+              http2Enabled,
+              attachingIdentityHeadersEnabled,
+              autoDeleteWithTopicEnabled);
     }
+    if (createdAt != null) s.setCreatedAt(createdAt.toEpochMilli());
+    if (modifiedAt != null) s.setModifiedAt(modifiedAt.toEpochMilli());
+    return s;
   }
 
   public SubscriptionBuilder withEndpoint(EndpointAddress endpoint) {
@@ -320,6 +330,16 @@ public class SubscriptionBuilder {
 
   public SubscriptionBuilder withMetricsConfig(SubscriptionMetricsConfig metricsConfig) {
     this.metricsConfig = metricsConfig;
+    return this;
+  }
+
+  public SubscriptionBuilder withCreatedAt(Instant createdAt) {
+    this.createdAt = createdAt;
+    return this;
+  }
+
+  public SubscriptionBuilder withModifiedAt(Instant modifiedAt) {
+    this.modifiedAt = modifiedAt;
     return this;
   }
 }
