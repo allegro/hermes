@@ -5,10 +5,12 @@ import static pl.allegro.tech.hermes.api.OfflineRetransmissionRequest.Retransmis
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import pl.allegro.tech.hermes.api.OfflineRetransmissionFromTopicRequest;
 import pl.allegro.tech.hermes.api.OfflineRetransmissionFromViewRequest;
 import pl.allegro.tech.hermes.api.OfflineRetransmissionTask;
+import pl.allegro.tech.hermes.api.OfflineRetransmissionTaskMonitoringInfo;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
@@ -17,12 +19,15 @@ import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 public class OfflineRetransmissionService {
   private final OfflineRetransmissionRepository offlineRetransmissionRepository;
   private final TopicRepository topicRepository;
+  private final RetransmissionMonitoringUrlProvider monitoringUrlProvider;
 
   public OfflineRetransmissionService(
       OfflineRetransmissionRepository offlineRetransmissionRepository,
-      TopicRepository topicRepository) {
+      TopicRepository topicRepository,
+      RetransmissionMonitoringUrlProvider monitoringUrlProvider) {
     this.offlineRetransmissionRepository = offlineRetransmissionRepository;
     this.topicRepository = topicRepository;
+    this.monitoringUrlProvider = monitoringUrlProvider;
   }
 
   public void validateTopicRequest(OfflineRetransmissionFromTopicRequest request) {
@@ -72,6 +77,26 @@ public class OfflineRetransmissionService {
 
   public List<OfflineRetransmissionTask> getAllTasks() {
     return offlineRetransmissionRepository.getAllTasks();
+  }
+
+  public List<OfflineRetransmissionTaskMonitoringInfo> getTopicTasksWithMonitoringInfo(
+      String qualifiedTopicName) {
+    return getAllTasks().stream()
+        .filter(
+            task ->
+                task.getSourceTopic()
+                        .map(sourceTopic -> Objects.equals(sourceTopic, qualifiedTopicName))
+                        .orElse(false)
+                    || Objects.equals(task.getTargetTopic(), qualifiedTopicName))
+        .map(
+            task ->
+                new OfflineRetransmissionTaskMonitoringInfo(
+                    task.getType(),
+                    task.getTaskId(),
+                    monitoringUrlProvider.getLogsUrl(task),
+                    monitoringUrlProvider.getMetricsUrl(task),
+                    monitoringUrlProvider.getJobDetailsUrl(task)))
+        .toList();
   }
 
   public void deleteTask(String taskId) {

@@ -690,9 +690,13 @@
           "label": "DAYS"
         }
       ],
-      "offlineRetransmissionEnabled": true,
-      "offlineRetransmissionDescription": "Offline retransmission",
-      "offlineRetransmissionFromViewDocsUrl": "https://hermes-pubsub.rtfd.org"
+      "offlineRetransmission": {
+        "enabled": true,
+        "description": "Offline retransmission",
+        "fromViewDocsUrl": "https://hermes-pubsub.rtfd.org",
+        "globalTaskQueueUrl": "http://localhost:8090/offline-retransmission/tasks",
+        "monitoringDocsUrl": "https://hermes-pubsub.rtfd.org"
+      }
     },
     "subscription": {
       "endpointAddressResolverMetadata": {
@@ -731,7 +735,7 @@
     },
     "costs": {
       "enabled": true,
-      "globalDetailsUrl": "",
+      "globalDetailsUrl": "http://localhost:8082",
       "topicIframeUrl": "",
       "topicDetailsUrl": "",
       "subscriptionIframeUrl": "",
