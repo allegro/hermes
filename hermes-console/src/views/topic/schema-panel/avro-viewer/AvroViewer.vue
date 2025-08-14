@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+  import { createRecordTypesRegistry } from '@/views/topic/schema-panel/avro-viewer/avro-record-types-registry';
   import AvroNode from '@/views/topic/schema-panel/avro-viewer/AvroNode.vue';
   import type { AvroSchema } from '@/views/topic/schema-panel/AvroTypes';
   const props = defineProps<{
@@ -9,6 +10,7 @@
     const jsonSchema: AvroSchema = JSON.parse(props.schema);
     return {
       name: jsonSchema.name,
+      namespace: jsonSchema.namespace,
       doc: jsonSchema.doc,
       type: {
         type: 'record',
@@ -22,7 +24,12 @@
 
 <template>
   <div class="avro-schema">
-    <AvroNode v-if="rootField()" :field="rootField()" :root="true" />
+    <AvroNode
+      v-if="rootField()"
+      :field="rootField()"
+      :record-reference-types="createRecordTypesRegistry(rootField())"
+      :root="true"
+    />
   </div>
 </template>
 
