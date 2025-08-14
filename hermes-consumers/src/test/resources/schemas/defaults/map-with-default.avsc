@@ -1,0 +1,21 @@
+{
+  "namespace": "pl.allegro.bigdata.avro.gcpavrotools",
+  "name": "Primitives",
+  "type": "record",
+  "fields": [
+    {
+      "name": "map_of_ints_field",
+      "type": {
+        "type": "map",
+        "values": {
+          "type": "int"
+        }
+      },
+      "default": {
+        "policja": 997,
+        "straż pożarna": 998,
+        "pogotowie": 999
+      }
+    }
+  ]
+}
