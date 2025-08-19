@@ -379,9 +379,7 @@ public class ConsoleProperties {
     private Set<String> allowedTopicLabels = Collections.emptySet();
     private List<RetentionUnit> retentionUnits =
         Lists.newArrayList(new RetentionUnit("DAYS", "DAYS"));
-    private boolean offlineRetransmissionEnabled = false;
-    private String offlineRetransmissionDescription = "Offline retransmission";
-    private String offlineRetransmissionFromViewDocsUrl = "https://hermes-pubsub.rtfd.org";
+    private OfflineRetransmission offlineRetransmission = new OfflineRetransmission();
 
     public boolean isMessagePreviewEnabled() {
       return messagePreviewEnabled;
@@ -479,29 +477,12 @@ public class ConsoleProperties {
       this.retentionUnits = retentionUnits;
     }
 
-    public boolean getOfflineRetransmissionEnabled() {
-      return offlineRetransmissionEnabled;
+    public OfflineRetransmission getOfflineRetransmission() {
+      return offlineRetransmission;
     }
 
-    public void setOfflineRetransmissionEnabled(boolean offlineRetransmissionEnabled) {
-      this.offlineRetransmissionEnabled = offlineRetransmissionEnabled;
-    }
-
-    public String getOfflineRetransmissionDescription() {
-      return offlineRetransmissionDescription;
-    }
-
-    public void setOfflineRetransmissionDescription(String offlineRetransmissionDescription) {
-      this.offlineRetransmissionDescription = offlineRetransmissionDescription;
-    }
-
-    public String getOfflineRetransmissionFromViewDocsUrl() {
-      return offlineRetransmissionFromViewDocsUrl;
-    }
-
-    public void setOfflineRetransmissionFromViewDocsUrl(
-        String offlineRetransmissionFromViewDocsUrl) {
-      this.offlineRetransmissionFromViewDocsUrl = offlineRetransmissionFromViewDocsUrl;
+    public void setOfflineRetransmission(OfflineRetransmission offlineRetransmission) {
+      this.offlineRetransmission = offlineRetransmission;
     }
   }
 
@@ -923,6 +904,54 @@ public class ConsoleProperties {
 
     public void setSubscriptionDetailsUrl(String subscriptionDetailsUrl) {
       this.subscriptionDetailsUrl = subscriptionDetailsUrl;
+    }
+  }
+
+  public static final class OfflineRetransmission {
+    private boolean enabled = false;
+    private String description = "Offline retransmission";
+    private String fromViewDocsUrl = "https://hermes-pubsub.rtfd.org";
+    private String globalTaskQueueUrl = "http://localhost:8090/offline-retransmission/tasks";
+    private String monitoringDocsUrl = "https://hermes-pubsub.rtfd.org";
+
+    public boolean isEnabled() {
+      return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+      this.enabled = enabled;
+    }
+
+    public String getDescription() {
+      return description;
+    }
+
+    public void setDescription(String description) {
+      this.description = description;
+    }
+
+    public String getFromViewDocsUrl() {
+      return fromViewDocsUrl;
+    }
+
+    public void setFromViewDocsUrl(String fromViewDocsUrl) {
+      this.fromViewDocsUrl = fromViewDocsUrl;
+    }
+
+    public String getGlobalTaskQueueUrl() {
+      return globalTaskQueueUrl;
+    }
+
+    public void setGlobalTaskQueueUrl(String globalTaskQueueUrl) {
+      this.globalTaskQueueUrl = globalTaskQueueUrl;
+    }
+
+    public String getMonitoringDocsUrl() {
+      return monitoringDocsUrl;
+    }
+
+    public void setMonitoringDocsUrl(String monitoringDocsUrl) {
+      this.monitoringDocsUrl = monitoringDocsUrl;
     }
   }
 }

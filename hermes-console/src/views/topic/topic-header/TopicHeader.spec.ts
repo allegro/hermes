@@ -207,28 +207,36 @@ describe('TopicHeader', () => {
 
   it.each([
     {
-      offlineRetransmissionEnabled: false,
+      offlineRetransmission: {
+        enabled: false,
+      },
       offlineStorageEnabled: false,
       show: false,
     },
     {
-      offlineRetransmissionEnabled: true,
+      offlineRetransmission: {
+        enabled: true,
+      },
       offlineStorageEnabled: false,
       show: false,
     },
     {
-      offlineRetransmissionEnabled: false,
+      offlineRetransmission: {
+        enabled: false,
+      },
       offlineStorageEnabled: true,
       show: false,
     },
     {
-      offlineRetransmissionEnabled: true,
+      offlineRetransmission: {
+        enabled: true,
+      },
       offlineStorageEnabled: true,
       show: true,
     },
   ])(
     'should show or hide offline retransmission button',
-    ({ offlineRetransmissionEnabled, offlineStorageEnabled, show }) => {
+    ({ offlineRetransmission, offlineStorageEnabled, show }) => {
       // when
       const testPinia = createTestingPinia({
         initialState: {
@@ -236,7 +244,7 @@ describe('TopicHeader', () => {
             ...appConfigStoreState,
             appConfig: {
               ...dummyAppConfig,
-              topic: { ...dummyAppConfig.topic, offlineRetransmissionEnabled },
+              topic: { ...dummyAppConfig.topic, offlineRetransmission },
             },
           },
         },
