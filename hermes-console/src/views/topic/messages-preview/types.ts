@@ -8,3 +8,8 @@ export interface ParsedMessagePreview extends MessagePreview {
     };
   };
 }
+
+export interface SelectedRow<Item> {
+  index: number;
+  item: Item;
+}
