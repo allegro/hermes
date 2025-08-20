@@ -9,6 +9,32 @@
     tasks: Array<OfflineRetransmissionActiveTask>;
   }>();
 
+  const taskTableHeaders = [
+    {
+      title: t('offlineRetransmission.monitoringView.idHeader'),
+      key: 'taskId',
+    },
+    {
+      title: t('offlineRetransmission.monitoringView.typeHeader'),
+      key: 'type',
+    },
+    {
+      title: t('offlineRetransmission.monitoringView.logsLinkHeader'),
+      key: 'logsUrl',
+      sortable: false,
+    },
+    {
+      title: t('offlineRetransmission.monitoringView.metricsLinkHeader'),
+      key: 'metricsUrl',
+      sortable: false,
+    },
+    {
+      title: t('offlineRetransmission.monitoringView.jobLinkHeader'),
+      key: 'jobDetailsUrl',
+      sortable: false,
+    },
+  ];
+
   const configStore = useAppConfigStore();
 </script>
 
@@ -54,65 +80,45 @@
       </div>
     </template>
     <v-card-text>
-      <v-table density="comfortable" hover>
-        <thead>
-          <tr>
-            <th>{{ $t('offlineRetransmission.monitoringView.idHeader') }}</th>
-            <th>
-              {{ $t('offlineRetransmission.monitoringView.typeHeader') }}
-            </th>
-            <th>
-              {{ $t('offlineRetransmission.monitoringView.logsLinkHeader') }}
-            </th>
-            <th>
-              {{ $t('offlineRetransmission.monitoringView.metricsLinkHeader') }}
-            </th>
-            <th>
-              {{ $t('offlineRetransmission.monitoringView.jobLinkHeader') }}
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="task in props.tasks" v-bind:key="task.taskId">
-            <td class="text-medium-emphasis">
-              {{ task.taskId }}
-            </td>
-            <td class="text-medium-emphasis">
-              {{ task.type }}
-            </td>
-            <td class="font-weight-medium">
-              <v-btn
-                :href="task.logsUrl"
-                target="_blank"
-                variant="text"
-                color="blue"
-              >
-                Link
-              </v-btn>
-            </td>
-            <td class="font-weight-medium">
-              <v-btn
-                :href="task.metricsUrl"
-                target="_blank"
-                variant="text"
-                color="blue"
-              >
-                Link
-              </v-btn>
-            </td>
-            <td class="font-weight-medium">
-              <v-btn
-                :href="task.jobDetailsUrl"
-                target="_blank"
-                variant="text"
-                color="blue"
-              >
-                Link
-              </v-btn>
-            </td>
-          </tr>
-        </tbody>
-      </v-table>
+      <v-data-table
+        :items="props.tasks"
+        :headers="taskTableHeaders"
+        items-per-page="-1"
+      >
+        <template v-slot:[`item.logsUrl`]="{ item }">
+          <a
+            :href="item.logsUrl"
+            target="_blank"
+            class="text-decoration-none text-button text-none text-primary"
+            >View logs</a
+          >
+          <v-icon color="primary" size="x-small" class="ml-1"
+            >mdi-open-in-new</v-icon
+          >
+        </template>
+        <template v-slot:[`item.metricsUrl`]="{ item }">
+          <a
+            :href="item.metricsUrl"
+            target="_blank"
+            class="text-decoration-none text-button text-none text-primary"
+            >View metrics</a
+          >
+          <v-icon color="primary" size="x-small" class="ml-1"
+            >mdi-open-in-new</v-icon
+          >
+        </template>
+        <template v-slot:[`item.jobDetailsUrl`]="{ item }">
+          <a
+            :href="item.jobDetailsUrl"
+            target="_blank"
+            class="text-decoration-none text-button text-none text-primary"
+            >View details</a
+          >
+          <v-icon color="primary" size="x-small" class="ml-1"
+            >mdi-open-in-new</v-icon
+          >
+        </template>
+      </v-data-table>
     </v-card-text>
   </v-card>
 </template>

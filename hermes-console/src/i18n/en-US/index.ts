@@ -679,7 +679,7 @@ const en_US = {
       title: 'Active offline retransmissions',
       allTasksLinkTitle: 'Global queue',
       monitoringDocsLinkTitle: 'Monitoring docs',
-      idHeader: 'ID',
+      idHeader: 'Task ID',
       typeHeader: 'Type',
       logsLinkHeader: 'Logs',
       metricsLinkHeader: 'Metrics',
