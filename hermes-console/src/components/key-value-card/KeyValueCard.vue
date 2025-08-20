@@ -7,7 +7,7 @@
 </script>
 
 <template>
-  <v-card border flat>
+  <v-card rounded="lg">
     <template #title>
       <div class="d-flex justify-space-between">
         <p class="font-weight-bold">
@@ -20,6 +20,7 @@
           target="_blank"
           :href="buttonHref!!"
           variant="text"
+          color="primary"
         >
           {{ props.buttonText }}
         </v-btn>

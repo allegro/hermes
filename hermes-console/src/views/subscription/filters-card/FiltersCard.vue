@@ -27,11 +27,19 @@
 </script>
 
 <template>
-  <v-card class="mb-2" border flat>
+  <v-card class="mb-2">
     <template #title>
-      <p class="font-weight-bold">
-        {{ $t('subscription.filtersCard.title') }}
-      </p>
+      <div class="d-flex justify-space-between">
+        <p class="font-weight-bold">
+          {{ $t('subscription.filtersCard.title') }}
+        </p>
+        <subscription-path-filters-debug
+          :topic="props.topic"
+          :paths="getAvroPaths(props.schema)"
+          :model-value="pathFilters(props.filters)"
+          :edit-enabled="false"
+        />
+      </div>
     </template>
     <v-table density="compact">
       <thead>
@@ -63,14 +71,6 @@
         </tr>
       </tbody>
     </v-table>
-    <template #actions>
-      <subscription-path-filters-debug
-        :topic="props.topic"
-        :paths="getAvroPaths(props.schema)"
-        :model-value="pathFilters(props.filters)"
-        :edit-enabled="false"
-      />
-    </template>
   </v-card>
 </template>
 

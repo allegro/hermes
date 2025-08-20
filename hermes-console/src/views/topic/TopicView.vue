@@ -47,18 +47,22 @@
     {
       title: t('subscription.subscriptionBreadcrumbs.home'),
       href: '/',
+      exact: true,
     },
     {
       title: t('subscription.subscriptionBreadcrumbs.groups'),
       href: '/ui/groups',
+      exact: true,
     },
     {
       title: groupId,
       href: `/ui/groups/${groupId}`,
+      exact: true,
     },
     {
       title: topicName,
       href: `/ui/groups/${groupId}/topics/${topicName}`,
+      exact: true,
     },
   ];
   const configStore = useAppConfigStore();
@@ -122,9 +126,9 @@
     @action="deleteTopic"
     @cancel="closeRemoveDialog"
   />
-  <v-container class="d-flex flex-column topic-view__container">
+  <v-container class="d-flex flex-column row-gap-2">
     <div class="d-flex justify-space-between align-center">
-      <v-breadcrumbs :items="breadcrumbsItems" density="compact" />
+      <v-breadcrumbs :items="breadcrumbsItems" class="text-body-2" />
     </div>
     <loading-spinner v-if="loading" />
     <console-alert
@@ -234,13 +238,6 @@
 <style scoped lang="scss">
   .topic-view__container {
     row-gap: 8pt;
-  }
-
-  .topic-view__upper_panel {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    grid-gap: 8pt;
-    align-items: start;
   }
 
   .topic-view__tabs {

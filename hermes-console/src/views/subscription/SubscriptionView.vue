@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import { isSubscriptionOwnerOrAdmin } from '@/utils/roles-util';
+  import { ref } from 'vue';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import { useDialog } from '@/composables/dialog/use-dialog/useDialog';
   import { useI18n } from 'vue-i18n';
@@ -147,6 +148,13 @@
       configStore.appConfig?.costs.subscriptionDetailsUrl,
     ),
   };
+
+  const Tab = {
+    General: 'general',
+    Messages: 'messages',
+    Filters: 'filters',
+  };
+  const currentTab = ref<string>(Tab.General);
 </script>
 
 <template>
@@ -178,10 +186,10 @@
     @action="activate"
     @cancel="closeActivateDialog"
   />
-  <v-container>
+  <v-container class="d-flex flex-column row-gap-2">
     <v-row dense>
       <v-col md="12">
-        <v-breadcrumbs :items="breadcrumbsItems" density="compact" />
+        <v-breadcrumbs :items="breadcrumbsItems" class="text-body-2" />
         <loading-spinner v-if="loading" />
         <console-alert
           v-if="error.fetchSubscription"
@@ -212,70 +220,110 @@
         </v-col>
       </v-row>
 
-      <v-row dense>
-        <v-col md="6" class="d-flex flex-column row-gap-2">
-          <metrics-card
-            v-if="subscriptionMetrics"
-            :subscription-metrics="subscriptionMetrics"
-            :topic-name="topicId"
-            :subscription-name="subscriptionId"
-          />
-          <costs-card
-            v-if="configStore.appConfig?.costs.enabled"
-            :iframe-url="costs.iframeUrl"
-            :details-url="costs.detailsUrl"
-          />
-          <manage-messages-card
-            v-if="isSubscriptionOwnerOrAdmin(roles)"
-            :topic="topicId"
-            :subscription="subscriptionId"
-            @retransmit="onRetransmit"
-            @skipAllMessages="skipAllMessages"
-          />
-        </v-col>
-        <v-col md="6">
-          <properties-card v-if="subscription" :subscription="subscription" />
-        </v-col>
-      </v-row>
+      <v-container class="py-0">
+        <v-tabs
+          v-model="currentTab"
+          color="primary"
+          class="subscription-view__tabs"
+        >
+          <v-tab :value="Tab.General" class="text-capitalize">General</v-tab>
+          <v-tab :value="Tab.Filters" class="text-capitalize">Filters</v-tab>
+          <v-tab :value="Tab.Messages" class="text-capitalize">Messages</v-tab>
+        </v-tabs>
+      </v-container>
 
-      <v-row dense>
-        <v-col md="12">
-          <filters-card
-            v-if="subscription && subscription?.filters.length > 0"
-            :filters="subscription?.filters!!"
-            :schema="topic?.schema"
-            :topic="topicId"
-          />
-          <headers-card
-            v-if="!!subscription && subscription.headers.length > 0"
-            :headers="subscription?.headers"
-          />
-        </v-col>
-      </v-row>
+      <v-tabs-window v-model="currentTab">
+        <v-tabs-window-item :value="Tab.General">
+          <v-container class="py-0">
+            <v-row dense>
+              <v-col md="6" class="d-flex flex-column row-gap-2">
+                <metrics-card
+                  v-if="subscriptionMetrics"
+                  :subscription-metrics="subscriptionMetrics"
+                  :topic-name="topicId"
+                  :subscription-name="subscriptionId"
+                />
+                <costs-card
+                  v-if="configStore.appConfig?.costs.enabled"
+                  :iframe-url="costs.iframeUrl"
+                  :details-url="costs.detailsUrl"
+                />
+              </v-col>
+              <v-col md="6">
+                <properties-card
+                  v-if="subscription"
+                  :subscription="subscription"
+                />
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-tabs-window-item>
 
-      <v-row dense>
-        <v-col md="7">
-          <undelivered-messages-card
-            v-if="
-              subscriptionUndeliveredMessages &&
-              subscriptionUndeliveredMessages?.length > 0 &&
-              isSubscriptionOwnerOrAdmin(roles)
-            "
-            :undelivered-messages="subscriptionUndeliveredMessages"
-          />
-        </v-col>
-        <v-col md="5">
-          <last-undelivered-message
-            v-if="
-              subscriptionLastUndeliveredMessage &&
-              isSubscriptionOwnerOrAdmin(roles)
-            "
-            :last-undelivered="subscriptionLastUndeliveredMessage"
-          />
-        </v-col>
-      </v-row>
+        <v-tabs-window-item :value="Tab.Filters">
+          <v-container class="py-0">
+            <v-row dense>
+              <v-col md="12">
+                <filters-card
+                  :filters="subscription?.filters!!"
+                  :schema="topic?.schema"
+                  :topic="topicId"
+                />
+                <headers-card :headers="subscription?.headers" />
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-tabs-window-item>
+
+        <v-tabs-window-item :value="Tab.Messages">
+          <v-container class="py-0">
+            <v-row dense>
+              <v-col md="6">
+                <manage-messages-card
+                  v-if="isSubscriptionOwnerOrAdmin(roles)"
+                  :topic="topicId"
+                  :subscription="subscriptionId"
+                  @retransmit="onRetransmit"
+                  @skipAllMessages="skipAllMessages"
+                />
+              </v-col>
+            </v-row>
+
+            <v-row dense>
+              <v-col md="12">
+                <undelivered-messages-card
+                  v-if="
+                    subscriptionUndeliveredMessages &&
+                    subscriptionUndeliveredMessages?.length > 0 &&
+                    isSubscriptionOwnerOrAdmin(roles)
+                  "
+                  :undelivered-messages="subscriptionUndeliveredMessages"
+                />
+              </v-col>
+            </v-row>
+
+            <v-row dense>
+              <v-col md="12">
+                <last-undelivered-message
+                  v-if="
+                    subscriptionLastUndeliveredMessage &&
+                    isSubscriptionOwnerOrAdmin(roles)
+                  "
+                  :last-undelivered="subscriptionLastUndeliveredMessage"
+                />
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-tabs-window-item>
+      </v-tabs-window>
     </template>
   </v-container>
 </template>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+  .subscription-view__tabs {
+    :deep(.v-slide-group__content) {
+      border-bottom: 1px rgba(var(--v-border-color), var(--v-border-opacity))
+        solid;
+    }
+  }
+</style>

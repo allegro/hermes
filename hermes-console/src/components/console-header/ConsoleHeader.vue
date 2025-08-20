@@ -5,8 +5,6 @@
   import { useI18n } from 'vue-i18n';
   import { useRouter } from 'vue-router';
   import { useTheme } from 'vuetify';
-  import EnvironmentBadge from '@/components/environment-badge/EnviromentBadge.vue';
-  import EnvironmentSwitch from '@/components/environment-switch/EnvironmentSwitch.vue';
   import ThemeSwitch from '@/components/theme-switch/ThemeSwitch.vue';
 
   const { t } = useI18n();
@@ -33,7 +31,7 @@
 </script>
 
 <template>
-  <v-app-bar :elevation="0" density="compact" color="background">
+  <v-app-bar flat density="compact" color="surface" class="border-b-sm">
     <div class="header">
       <!-- TODO: navigate to home -->
       <div class="header-left">
@@ -53,16 +51,6 @@
             alt="Hermes"
           />
         </router-link>
-        <environment-badge
-          :environment-name="
-            configStore.appConfig?.console.environmentName || ''
-          "
-          :is-critical-environment="
-            configStore.appConfig?.console.criticalEnvironment || false
-          "
-        />
-        <v-divider vertical v-if="knownEnvironments.length > 0"></v-divider>
-        <environment-switch :known-environments="knownEnvironments" />
       </div>
       <div class="d-flex align-center ga-2 pr-2">
         <theme-switch />

@@ -29,10 +29,14 @@
         {{ $t('topicView.schema.copy') }}
       </v-btn>
     </div>
-    <AvroViewer v-show="!showRawSchema" :schema="props.schema" />
-    <pre v-show="showRawSchema">
+    <div>
+      <AvroViewer v-show="!showRawSchema" :schema="props.schema" />
+      <v-card>
+        <pre v-show="showRawSchema">
           <v-code class="raw-schema-snippet">{{ JSON.parse(props.schema) }}</v-code>
         </pre>
+      </v-card>
+    </div>
   </div>
 </template>
 
@@ -41,6 +45,6 @@
     line-height: 1.4;
     max-height: 500px;
     overflow: scroll;
-    border: #cccccc 1px solid;
+    //border: #cccccc 1px solid;
   }
 </style>

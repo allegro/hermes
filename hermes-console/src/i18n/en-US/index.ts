@@ -491,7 +491,7 @@ const en_US = {
     metricsCard: {
       title: 'Subscription metrics',
       deliveryRate: 'Delivery rate',
-      dashboard: 'DASHBOARD',
+      dashboard: 'Dashboard',
       subscriberLatency: 'Subscriber latency',
       delivered: 'Delivered',
       discarded: 'Discarded',
@@ -602,7 +602,8 @@ const en_US = {
     subscriptionMetadata: {
       editSubscription: 'Edit subscription {subscriptionName}',
       subscription: 'Subscription',
-      owners: 'OWNER:',
+      owners: 'Owner:',
+      endpoint: 'Endpoint:',
       unauthorizedTooltip:
         "You don't have permissions to manage this subscription",
       actions: {

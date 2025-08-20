@@ -21,18 +21,12 @@
 </script>
 
 <template>
-  <div class="avro-schema">
+  <v-card class="px-3 py-3">
     <AvroNode v-if="rootField()" :field="rootField()" :root="true" />
-  </div>
+  </v-card>
 </template>
 
 <style lang="scss" scoped>
-  .avro-schema {
-    padding: 10px;
-    line-height: 1.4;
-    border: #ccc 1px solid;
-    background-color: #ffffff;
-  }
   .v-theme--dark .avro-schema {
     background-color: #343434;
   }

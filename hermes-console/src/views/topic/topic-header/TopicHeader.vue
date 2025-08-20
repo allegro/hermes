@@ -12,11 +12,11 @@
   import { useOfflineRetransmission } from '@/composables/topic/use-offline-retransmission/useOfflineRetransmission';
   import { useRouter } from 'vue-router';
   import OfflineRetransmissionDialog from '@/views/topic/offline-retransmission/OfflineRetransmissionDialog.vue';
-  import TooltipIcon from '@/components/tooltip-icon/TooltipIcon.vue';
   import TopicForm from '@/views/topic/topic-form/TopicForm.vue';
   import type { Owner } from '@/api/owner';
   import type { Role } from '@/api/role';
   import type { TopicWithSchema } from '@/api/topic';
+  import TooltipIcon from '@/components/tooltip-icon/TooltipIcon.vue';
 
   const TOPIC_RETRANSMISSION = 'topic';
   const favorites = useFavorites();
@@ -75,7 +75,7 @@
 </script>
 
 <template>
-  <v-card density="compact" flat>
+  <v-card density="compact" flat color="transparent" border="false">
     <div class="d-flex justify-end mr-4 mb-1">
       <v-dialog v-model="showTopicEditForm" min-width="800" :persistent="true">
         <v-card>
@@ -102,14 +102,22 @@
       </v-dialog>
     </div>
     <v-card-item>
-      <p class="text-overline">{{ $t('topicView.header.topic') }}</p>
+      <p class="text-overline text-primary">
+        {{ $t('topicView.header.topic') }}
+      </p>
       <div class="d-flex justify-space-between">
-        <p
-          class="text-h4 font-weight-bold"
-          style="word-wrap: break-word; max-width: 90%"
-        >
-          {{ props.topic.name }}
-        </p>
+        <div class="d-flex flex-grow-1 column-gap-1">
+          <p
+            class="text-h4 font-weight-bold"
+            style="word-wrap: break-word; max-width: 90%"
+          >
+            {{ props.topic.name }}
+          </p>
+          <tooltip-icon
+            v-if="!isSubscriptionOwnerOrAdmin(roles)"
+            :content="$t('topicView.header.unauthorizedTooltip')"
+          />
+        </div>
         <div>
           <v-tooltip :text="$t('topicView.header.actions.copyName')">
             <template v-slot:activator="{ props }">
@@ -151,29 +159,23 @@
       </div>
     </v-card-item>
 
-    <v-card-text>
-      <p class="text-subtitle-2">{{ props.topic.description }}</p>
-    </v-card-text>
-
-    <v-divider class="mx-4 mb-1" />
-
-    <v-card-actions class="d-flex justify-space-between">
+    <v-card-text class="d-flex justify-space-between">
       <div>
-        <v-btn
-          class="text-capitalize"
-          prepend-icon="mdi-account-supervisor"
-          :href="props.owner.url"
-          target="_blank"
-          color="blue"
-        >
-          {{ $t('topicView.header.owner') }} {{ props.owner.name }}
-        </v-btn>
+        <p class="text-body-1 text-medium-emphasis">
+          {{ props.topic.description }}
+        </p>
+        <p class="text-body-2 text-medium-emphasis">
+          <v-icon>mdi-account-supervisor</v-icon>
+          {{ $t('topicView.header.owner') }}
+          <a
+            :href="props.owner.url"
+            target="_blank"
+            class="text-decoration-none text-button text-none text-primary"
+            >{{ props.owner.name }}</a
+          >
+        </p>
       </div>
-      <div class="d-flex flex-row">
-        <tooltip-icon
-          v-if="!isSubscriptionOwnerOrAdmin(roles)"
-          :content="$t('topicView.header.unauthorizedTooltip')"
-        />
+      <div class="d-flex column-gap-2">
         <v-btn
           :disabled="
             configStore.loadedConfig.topic.readOnlyModeEnabled ||
@@ -182,12 +184,24 @@
           prepend-icon="mdi-pencil"
           class="text-capitalize"
           @click="showTopicForm"
+          color="primary"
           >{{ $t('topicView.header.actions.edit') }}
         </v-btn>
+
+        <v-btn
+          color="red"
+          prepend-icon="mdi-delete"
+          class="text-capitalize"
+          @click="emit('remove')"
+          :disabled="!isTopicOwnerOrAdmin(roles)"
+          >{{ $t('topicView.header.actions.remove') }}
+        </v-btn>
+
         <v-btn
           prepend-icon="mdi-export"
           :disabled="!isTopicOwnerOrAdmin(roles)"
           class="text-capitalize"
+          variant="outlined"
           @click="exportTopic"
           >{{ $t('topicView.header.actions.export') }}
         </v-btn>
@@ -197,6 +211,7 @@
             topic.offlineStorage.enabled &&
             isTopicOwnerOrAdmin(roles)
           "
+          variant="outlined"
           prepend-icon="mdi-transmission-tower"
           data-testid="offlineRetransmissionButton"
           class="text-capitalize"
@@ -204,16 +219,8 @@
           <OfflineRetransmissionDialog @retransmit="onRetransmit">
           </OfflineRetransmissionDialog>
         </v-btn>
-        <v-btn
-          color="red"
-          prepend-icon="mdi-delete"
-          class="text-capitalize"
-          @click="emit('remove')"
-          :disabled="!isTopicOwnerOrAdmin(roles)"
-          >{{ $t('topicView.header.actions.remove') }}
-        </v-btn>
       </div>
-    </v-card-actions>
+    </v-card-text>
   </v-card>
 </template>
 

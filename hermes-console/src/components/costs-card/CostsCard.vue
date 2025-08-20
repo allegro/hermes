@@ -6,7 +6,7 @@
 </script>
 
 <template>
-  <v-card border flat>
+  <v-card border flat rounded="lg">
     <template #title>
       <div class="d-flex justify-space-between">
         <p class="font-weight-bold">
@@ -18,6 +18,7 @@
           target="_blank"
           :href="detailsUrl"
           variant="text"
+          color="primary"
         >
           {{ $t('costsCard.detailsButton') }}
         </v-btn>

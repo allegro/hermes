@@ -1,4 +1,13 @@
 <script setup lang="ts">
+  import { computed } from 'vue';
+  import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
+  import EnvironmentSelect from '@/components/environment-select/EnvironmentSelect.vue';
+
+  const configStore = useAppConfigStore();
+  const knownEnvironments = computed(
+    () => configStore.appConfig?.console.knownEnvironments || [],
+  );
+
   const navigationGroups = [
     {
       group: 'Console',
@@ -45,8 +54,17 @@
 </script>
 
 <template>
-  <v-navigation-drawer floating color="background">
-    <v-list density="compact" nav slim active-color="accent">
+  <v-navigation-drawer floating color="surface" permanent class="border-e-sm">
+    <div class="pa-2">
+      <environment-select
+        :known-environments="knownEnvironments"
+        :is-current-environment-critical="
+          configStore.loadedConfig.console.criticalEnvironment
+        "
+      />
+    </div>
+
+    <v-list density="compact" nav slim color="accent">
       <template
         v-for="(navigationGroup, navigationGroupIndex) in navigationGroups"
         :key="navigationGroupIndex"

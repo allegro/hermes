@@ -50,7 +50,7 @@
 </script>
 
 <template>
-  <div>
+  <div class="d-flex flex-column row-gap-2">
     <div class="d-flex justify-space-between">
       <v-dialog
         v-model="showSubscriptionCreationForm"

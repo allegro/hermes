@@ -77,7 +77,7 @@
 <template>
   <div
     :style="{ cursor: expandable ? 'pointer' : 'default' }"
-    class="flex-row"
+    class="flex-row text-body-2"
     @click="toggle"
   >
     <div v-if="!root" class="tree-branch" />
