@@ -53,6 +53,9 @@ const vuetify = createVuetify({
     VBtn: {
       variant: 'flat',
     },
+    VRow: {
+      dense: true,
+    },
   },
 });
 

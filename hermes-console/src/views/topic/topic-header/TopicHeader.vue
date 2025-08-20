@@ -9,16 +9,13 @@
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import { useFavorites } from '@/store/favorites/useFavorites';
   import { useI18n } from 'vue-i18n';
-  import { useOfflineRetransmission } from '@/composables/topic/use-offline-retransmission/useOfflineRetransmission';
   import { useRouter } from 'vue-router';
-  import OfflineRetransmissionDialog from '@/views/topic/offline-retransmission/OfflineRetransmissionDialog.vue';
+  import TooltipIcon from '@/components/tooltip-icon/TooltipIcon.vue';
   import TopicForm from '@/views/topic/topic-form/TopicForm.vue';
   import type { Owner } from '@/api/owner';
   import type { Role } from '@/api/role';
   import type { TopicWithSchema } from '@/api/topic';
-  import TooltipIcon from '@/components/tooltip-icon/TooltipIcon.vue';
 
-  const TOPIC_RETRANSMISSION = 'topic';
   const favorites = useFavorites();
 
   const router = useRouter();
@@ -36,30 +33,6 @@
   const emit = defineEmits<{
     remove: [];
   }>();
-
-  const offlineRetransmission = useOfflineRetransmission();
-
-  const onRetransmit = async (
-    targetTopic: string,
-    startTimestamp: string,
-    endTimestamp: string,
-  ) => {
-    let retransmitted = await offlineRetransmission.retransmit({
-      type: TOPIC_RETRANSMISSION,
-      sourceTopic: props.topic.name,
-      targetTopic,
-      startTimestamp,
-      endTimestamp,
-    });
-
-    /*
-    This is needed as we want to refresh an active offline retransmissions component
-    so it fetches newest monitoring info from management.
-   */
-    if (retransmitted) {
-      refreshPage();
-    }
-  };
 
   const showTopicEditForm = ref(false);
 
@@ -187,6 +160,15 @@
       </div>
       <div class="d-flex column-gap-2">
         <v-btn
+          prepend-icon="mdi-export"
+          :disabled="!isTopicOwnerOrAdmin(roles)"
+          class="text-capitalize"
+          variant="outlined"
+          @click="exportTopic"
+          >{{ $t('topicView.header.actions.export') }}
+        </v-btn>
+
+        <v-btn
           :disabled="
             configStore.loadedConfig.topic.readOnlyModeEnabled ||
             !isTopicOwnerOrAdmin(roles)
@@ -205,29 +187,6 @@
           @click="emit('remove')"
           :disabled="!isTopicOwnerOrAdmin(roles)"
           >{{ $t('topicView.header.actions.remove') }}
-        </v-btn>
-
-        <v-btn
-          prepend-icon="mdi-export"
-          :disabled="!isTopicOwnerOrAdmin(roles)"
-          class="text-capitalize"
-          variant="outlined"
-          @click="exportTopic"
-          >{{ $t('topicView.header.actions.export') }}
-        </v-btn>
-        <v-btn
-          v-if="
-            configStore.loadedConfig.topic.offlineRetransmission.enabled &&
-            topic.offlineStorage.enabled &&
-            isTopicOwnerOrAdmin(roles)
-          "
-          variant="outlined"
-          prepend-icon="mdi-transmission-tower"
-          data-testid="offlineRetransmissionButton"
-          class="text-capitalize"
-          >{{ $t('topicView.header.actions.offlineRetransmission') }}
-          <OfflineRetransmissionDialog @retransmit="onRetransmit">
-          </OfflineRetransmissionDialog>
         </v-btn>
       </div>
     </v-card-text>

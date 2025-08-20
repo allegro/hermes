@@ -127,6 +127,7 @@
     @action="deleteTopic"
     @cancel="closeRemoveDialog"
   />
+
   <v-container class="d-flex flex-column row-gap-2">
     <div class="d-flex justify-space-between align-center">
       <v-breadcrumbs :items="breadcrumbsItems" class="text-body-2" />
@@ -171,7 +172,7 @@
       <v-tabs-window v-model="currentTab">
         <v-tabs-window-item :value="Tab.General">
           <v-container class="py-0">
-            <v-row dense>
+            <v-row>
               <v-col md="6" class="d-flex flex-column row-gap-2">
                 <metrics-list
                   v-if="metrics"
@@ -224,24 +225,36 @@
 
         <v-tabs-window-item :value="Tab.Messages">
           <v-container class="py-0">
-            <tracking-card
-              v-if="topic?.trackingEnabled"
-              :tracking-urls="trackingUrls"
-            />
-            <messages-preview
-              v-if="
-                messages &&
-                configStore.appConfig?.topic.messagePreviewEnabled &&
-                isTopicOwnerOrAdmin(roles)
-              "
-              :messages="messages"
-            />
+            <v-row>
+              <v-col md="12">
+                <tracking-card
+                  v-if="topic?.trackingEnabled"
+                  :tracking-urls="trackingUrls"
+                />
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col md="12">
+                <messages-preview
+                  v-if="
+                    messages &&
+                    configStore.appConfig?.topic.messagePreviewEnabled &&
+                    isTopicOwnerOrAdmin(roles)
+                  "
+                  :messages="messages"
+                />
+              </v-col>
+            </v-row>
           </v-container>
         </v-tabs-window-item>
 
         <v-tabs-window-item :value="Tab.OfflineRetransmission">
           <v-container class="py-0">
-            <offline-retransmission-info :tasks="activeRetransmissions" />
+            <offline-retransmission-info
+              :topic="topic"
+              :roles="roles"
+              :tasks="activeRetransmissions"
+            />
           </v-container>
         </v-tabs-window-item>
       </v-tabs-window>

@@ -1,17 +1,51 @@
 <script setup lang="ts">
+  import { formatTimestampMillis } from '@/utils/date-formatter/date-formatter';
   import type { MessagePreview } from '@/api/topic';
+  import type { ParsedMessagePreview } from '@/views/topic/messages-preview/types';
+
   const props = defineProps<{
     messages: MessagePreview[];
   }>();
+
+  const parsedMessages = props.messages.map(
+    (message) =>
+      ({
+        ...message,
+        parsedContent: JSON.parse(message.content || '{}'),
+      }) satisfies ParsedMessagePreview,
+  );
+
+  const messagesTableHeaders = [
+    { title: 'Message Id', key: 'messageId' },
+    { title: 'Timestamp', key: 'timestamp' },
+    { title: 'Message', key: 'content' },
+    { title: 'Truncated', key: 'truncated' },
+  ];
 </script>
 
 <template>
-  <div class="d-flex flex-column row-gap-2">
-    <pre
-      v-for="(message, index) in props.messages"
-      :key="index"
-    ><v-code class="raw-schema-snippet">{{ JSON.parse(message.content) }}</v-code></pre>
-  </div>
+  <v-card>
+    <template #title>
+      <div class="d-flex justify-space-between">
+        <p class="font-weight-bold">Messages Preview</p>
+      </div>
+    </template>
+
+    <v-card-text>
+      <v-data-table :items="parsedMessages" :headers="messagesTableHeaders">
+        <template #[`item.messageId`]="{ item }">
+          {{ item?.parsedContent?.__metadata?.messageId }}
+        </template>
+        <template #[`item.timestamp`]="{ item }">
+          {{
+            formatTimestampMillis(
+              Number(item?.parsedContent?.__metadata?.timestamp),
+            )
+          }}
+        </template>
+      </v-data-table>
+    </v-card-text>
+  </v-card>
 </template>
 
 <style scoped lang="scss">

@@ -1,13 +1,24 @@
 <script setup lang="ts">
+  import { isTopicOwnerOrAdmin } from '@/utils/roles-util';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import { useI18n } from 'vue-i18n';
+  import { useOfflineRetransmission } from '@/composables/topic/use-offline-retransmission/useOfflineRetransmission';
+  import { useRouter } from 'vue-router';
+  import OfflineRetransmissionDialog from '@/views/topic/offline-retransmission/OfflineRetransmissionDialog.vue';
   import type { OfflineRetransmissionActiveTask } from '@/api/offline-retransmission';
+  import type { TopicWithSchema } from '@/api/topic';
+  import type { Role } from '@/api/role';
 
   const { t } = useI18n();
+  const router = useRouter();
 
   const props = defineProps<{
+    topic: TopicWithSchema;
+    roles: Role[] | undefined;
     tasks: Array<OfflineRetransmissionActiveTask>;
   }>();
+
+  const TOPIC_RETRANSMISSION = 'topic';
 
   const taskTableHeaders = [
     {
@@ -36,6 +47,34 @@
   ];
 
   const configStore = useAppConfigStore();
+
+  const offlineRetransmission = useOfflineRetransmission();
+
+  const onRetransmit = async (
+    targetTopic: string,
+    startTimestamp: string,
+    endTimestamp: string,
+  ) => {
+    let retransmitted = await offlineRetransmission.retransmit({
+      type: TOPIC_RETRANSMISSION,
+      sourceTopic: props.topic.name,
+      targetTopic,
+      startTimestamp,
+      endTimestamp,
+    });
+
+    /*
+    This is needed as we want to refresh an active offline retransmissions component
+    so it fetches newest monitoring info from management.
+   */
+    if (retransmitted) {
+      refreshPage();
+    }
+  };
+
+  function refreshPage() {
+    router.go(0);
+  }
 </script>
 
 <template>
@@ -43,11 +82,23 @@
     <template #title>
       <div class="d-flex justify-space-between">
         <p class="font-weight-bold">
-          {{ t('offlineRetransmission.monitoringView.title') }} ({{
-            props.tasks.length
-          }})
+          {{ t('offlineRetransmission.monitoringView.title') }}
         </p>
         <div class="d-flex justify-space-between row-gap-2">
+          <v-btn
+            v-if="
+              configStore.loadedConfig.topic.offlineRetransmission.enabled &&
+              topic.offlineStorage.enabled &&
+              isTopicOwnerOrAdmin(roles)
+            "
+            variant="text"
+            color="primary"
+            prepend-icon="mdi-plus"
+            data-testid="offlineRetransmissionButton"
+            class="text-capitalize"
+            >New retransmission task
+            <OfflineRetransmissionDialog @retransmit="onRetransmit" />
+          </v-btn>
           <v-btn
             class="text-capitalize"
             prepend-icon="mdi-open-in-new"
@@ -79,6 +130,7 @@
         </div>
       </div>
     </template>
+    <template #subtitle>{{ props.tasks.length }} active task(s)</template>
     <v-card-text>
       <v-data-table
         :items="props.tasks"
