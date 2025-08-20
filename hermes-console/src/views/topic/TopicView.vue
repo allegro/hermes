@@ -112,7 +112,8 @@
     Schema: 'schema',
     Subscriptions: 'subscriptions',
     OfflineClients: 'offlineClients',
-    MessagesPreview: 'messagesPreview',
+    Messages: 'messages',
+    OfflineRetransmission: 'offlineRetransmission',
   };
   const currentTab = ref<string>(Tab.General);
 </script>
@@ -152,15 +153,18 @@
         <v-tabs v-model="currentTab" color="primary" class="topic-view__tabs">
           <v-tab :value="Tab.General" class="text-capitalize">General</v-tab>
           <v-tab :value="Tab.Schema" class="text-capitalize">Schema</v-tab>
-          <v-tab :value="Tab.Subscriptions" class="text-capitalize"
-            >Subscriptions</v-tab
-          >
-          <v-tab :value="Tab.OfflineClients" class="text-capitalize"
-            >Offline clients</v-tab
-          >
-          <v-tab :value="Tab.MessagesPreview" class="text-capitalize"
-            >Messages preview</v-tab
-          >
+          <v-tab :value="Tab.Subscriptions" class="text-capitalize">
+            Subscriptions
+          </v-tab>
+          <v-tab :value="Tab.OfflineClients" class="text-capitalize">
+            Offline clients
+          </v-tab>
+          <v-tab :value="Tab.Messages" class="text-capitalize">
+            Messages
+          </v-tab>
+          <v-tab :value="Tab.OfflineRetransmission" class="text-capitalize">
+            Offline Retransmission
+          </v-tab>
         </v-tabs>
       </v-container>
 
@@ -179,11 +183,6 @@
                   :iframe-url="costs.iframeUrl"
                   :details-url="costs.detailsUrl"
                 />
-                <tracking-card
-                  v-if="topic?.trackingEnabled"
-                  :tracking-urls="trackingUrls"
-                />
-                <offline-retransmission-info :tasks="activeRetransmissions" />
               </v-col>
               <v-col md="6">
                 <properties-list v-if="topic" :topic="topic" />
@@ -223,8 +222,12 @@
           </v-container>
         </v-tabs-window-item>
 
-        <v-tabs-window-item :value="Tab.MessagesPreview">
+        <v-tabs-window-item :value="Tab.Messages">
           <v-container class="py-0">
+            <tracking-card
+              v-if="topic?.trackingEnabled"
+              :tracking-urls="trackingUrls"
+            />
             <messages-preview
               v-if="
                 messages &&
@@ -233,6 +236,12 @@
               "
               :messages="messages"
             />
+          </v-container>
+        </v-tabs-window-item>
+
+        <v-tabs-window-item :value="Tab.OfflineRetransmission">
+          <v-container class="py-0">
+            <offline-retransmission-info :tasks="activeRetransmissions" />
           </v-container>
         </v-tabs-window-item>
       </v-tabs-window>

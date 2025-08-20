@@ -677,8 +677,8 @@ const en_US = {
     endTimestamp: 'End timestamp (UTC)',
     monitoringView: {
       title: 'Active offline retransmissions',
-      allTasksLinkTitle: 'Offline retransmission global queue',
-      monitoringDocsLinkTitle: 'Offline retransmission monitoring docs',
+      allTasksLinkTitle: 'Global queue',
+      monitoringDocsLinkTitle: 'Monitoring docs',
       idHeader: 'ID',
       typeHeader: 'Type',
       logsLinkHeader: 'Logs',

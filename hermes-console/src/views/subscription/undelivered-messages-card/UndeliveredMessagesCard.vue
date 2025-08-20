@@ -8,7 +8,7 @@
 </script>
 
 <template>
-  <v-card class="mb-2" border flat>
+  <v-card>
     <template #title>
       <p class="font-weight-bold">
         {{ $t('subscription.undeliveredMessagesCard.title') }}

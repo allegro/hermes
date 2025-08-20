@@ -7,7 +7,7 @@
 </script>
 
 <template>
-  <v-card rounded="lg">
+  <v-card>
     <template #title>
       <div class="d-flex justify-space-between">
         <p class="font-weight-bold">

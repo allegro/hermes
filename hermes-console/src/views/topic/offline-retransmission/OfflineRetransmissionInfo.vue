@@ -13,53 +13,66 @@
 </script>
 
 <template>
-  <v-expansion-panels>
-    <v-expansion-panel
-      :title="`${t('offlineRetransmission.monitoringView.title')} (${props.tasks.length})`"
-    >
-      <v-expansion-panel-text>
-        <v-btn
-          class="mt-2"
-          :href="
-            configStore.loadedConfig.topic.offlineRetransmission
-              .globalTaskQueueUrl
-          "
-          target="_blank"
-        >
-          {{ $t('offlineRetransmission.monitoringView.allTasksLinkTitle') }}
-        </v-btn>
-        <v-btn
-          class="mt-2"
-          :href="
-            configStore.loadedConfig.topic.offlineRetransmission
-              .monitoringDocsUrl
-          "
-          target="_blank"
-        >
-          {{
-            $t('offlineRetransmission.monitoringView.monitoringDocsLinkTitle')
-          }}
-        </v-btn>
-        <v-table density="comfortable" hover>
-          <thead>
-            <tr>
-              <th>{{ $t('offlineRetransmission.monitoringView.idHeader') }}</th>
-              <th>
-                {{ $t('offlineRetransmission.monitoringView.typeHeader') }}
-              </th>
-              <th>
-                {{ $t('offlineRetransmission.monitoringView.logsLinkHeader') }}
-              </th>
-              <th>
-                {{
-                  $t('offlineRetransmission.monitoringView.metricsLinkHeader')
-                }}
-              </th>
-              <th>
-                {{ $t('offlineRetransmission.monitoringView.jobLinkHeader') }}
-              </th>
-            </tr>
-          </thead>
+  <v-card>
+    <template #title>
+      <div class="d-flex justify-space-between">
+        <p class="font-weight-bold">
+          {{ t('offlineRetransmission.monitoringView.title') }} ({{
+            props.tasks.length
+          }})
+        </p>
+        <div class="d-flex justify-space-between row-gap-2">
+          <v-btn
+            class="text-capitalize"
+            prepend-icon="mdi-open-in-new"
+            :href="
+              configStore.loadedConfig.topic.offlineRetransmission
+                .globalTaskQueueUrl
+            "
+            target="_blank"
+            variant="text"
+            color="primary"
+          >
+            {{ $t('offlineRetransmission.monitoringView.allTasksLinkTitle') }}
+          </v-btn>
+          <v-btn
+            class="text-capitalize"
+            prepend-icon="mdi-open-in-new"
+            :href="
+              configStore.loadedConfig.topic.offlineRetransmission
+                .monitoringDocsUrl
+            "
+            target="_blank"
+            variant="text"
+            color="primary"
+          >
+            {{
+              $t('offlineRetransmission.monitoringView.monitoringDocsLinkTitle')
+            }}
+          </v-btn>
+        </div>
+      </div>
+    </template>
+    <v-card-text>
+      <v-table density="comfortable" hover>
+        <thead>
+          <tr>
+            <th>{{ $t('offlineRetransmission.monitoringView.idHeader') }}</th>
+            <th>
+              {{ $t('offlineRetransmission.monitoringView.typeHeader') }}
+            </th>
+            <th>
+              {{ $t('offlineRetransmission.monitoringView.logsLinkHeader') }}
+            </th>
+            <th>
+              {{ $t('offlineRetransmission.monitoringView.metricsLinkHeader') }}
+            </th>
+            <th>
+              {{ $t('offlineRetransmission.monitoringView.jobLinkHeader') }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
           <tr v-for="task in props.tasks" v-bind:key="task.taskId">
             <td class="text-medium-emphasis">
               {{ task.taskId }}
@@ -98,10 +111,10 @@
               </v-btn>
             </td>
           </tr>
-        </v-table>
-      </v-expansion-panel-text>
-    </v-expansion-panel>
-  </v-expansion-panels>
+        </tbody>
+      </v-table>
+    </v-card-text>
+  </v-card>
 </template>
 
 <style scoped lang="scss"></style>

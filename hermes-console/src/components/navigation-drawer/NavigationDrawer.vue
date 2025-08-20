@@ -30,7 +30,7 @@
 <template>
   <v-navigation-drawer :rail="rail" permanent @click="rail = false">
     <v-list density="compact" nav>
-      <v-list-item>
+      <v-list-item class="pa-0">
         <environment-select
           :known-environments="knownEnvironments"
           :is-current-environment-critical="
@@ -140,10 +140,8 @@
       </v-list-group>
     </v-list>
 
-    <v-spacer />
-    <v-divider />
-
-    <v-list>
+    <template #append>
+      <v-divider />
       <v-list-item>
         <div class="d-flex align-center justify-center" style="width: 100%">
           <v-btn
@@ -162,6 +160,6 @@
           ></v-btn>
         </div>
       </v-list-item>
-    </v-list>
+    </template>
   </v-navigation-drawer>
 </template>
