@@ -148,57 +148,54 @@ public class SubscriptionBuilder {
   }
 
   public Subscription build() {
-    Subscription s;
     if (deliveryType == DeliveryType.SERIAL) {
-      s =
-          Subscription.createSerialSubscription(
-              topicName,
-              name,
-              endpoint,
-              state,
-              description,
-              serialSubscriptionPolicy,
-              trackingEnabled,
-              trackingMode,
-              owner,
-              monitoringDetails,
-              contentType,
-              filters,
-              mode,
-              headers,
-              metadata,
-              oAuthPolicy,
-              http2Enabled,
-              profilingEnabled,
-              profilingThresholdMs,
-              attachingIdentityHeadersEnabled,
-              autoDeleteWithTopicEnabled,
-              metricsConfig);
-    } else {
-      s =
-          Subscription.createBatchSubscription(
-              topicName,
-              name,
-              endpoint,
-              state,
-              description,
-              batchSubscriptionPolicy,
-              trackingEnabled,
-              trackingMode,
-              owner,
-              monitoringDetails,
-              contentType,
-              filters,
-              headers,
-              metadata,
-              oAuthPolicy,
-              http2Enabled,
-              attachingIdentityHeadersEnabled,
-              autoDeleteWithTopicEnabled);
+      return Subscription.createSerialSubscription(
+          topicName,
+          name,
+          endpoint,
+          state,
+          description,
+          serialSubscriptionPolicy,
+          trackingEnabled,
+          trackingMode,
+          owner,
+          monitoringDetails,
+          contentType,
+          filters,
+          mode,
+          headers,
+          metadata,
+          oAuthPolicy,
+          http2Enabled,
+          profilingEnabled,
+          profilingThresholdMs,
+          attachingIdentityHeadersEnabled,
+          autoDeleteWithTopicEnabled,
+          metricsConfig,
+          createdAt,
+          modifiedAt);
     }
-    if (createdAt != null) s.setCreatedAt(createdAt.toEpochMilli());
-    if (modifiedAt != null) s.setModifiedAt(modifiedAt.toEpochMilli());
-    return s;
+    return Subscription.createBatchSubscription(
+        topicName,
+        name,
+        endpoint,
+        state,
+        description,
+        batchSubscriptionPolicy,
+        trackingEnabled,
+        trackingMode,
+        owner,
+        monitoringDetails,
+        contentType,
+        filters,
+        headers,
+        metadata,
+        oAuthPolicy,
+        http2Enabled,
+        attachingIdentityHeadersEnabled,
+        autoDeleteWithTopicEnabled,
+        createdAt,
+        modifiedAt);
   }
 
   public SubscriptionBuilder withEndpoint(EndpointAddress endpoint) {

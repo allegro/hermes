@@ -151,7 +151,9 @@ public class Subscription implements Anonymizable {
       long profilingThresholdMs,
       boolean subscriptionIdentityHeadersEnabled,
       boolean autoDeleteWithTopicEnabled,
-      SubscriptionMetricsConfig metricsConfig) {
+      SubscriptionMetricsConfig metricsConfig,
+      Instant createdAt,
+      Instant modifiedAt) {
     return new Subscription(
         topicName,
         name,
@@ -176,8 +178,8 @@ public class Subscription implements Anonymizable {
         subscriptionIdentityHeadersEnabled,
         autoDeleteWithTopicEnabled,
         metricsConfig,
-        null,
-        null);
+        createdAt,
+        modifiedAt);
   }
 
   public static Subscription createBatchSubscription(
@@ -198,7 +200,9 @@ public class Subscription implements Anonymizable {
       SubscriptionOAuthPolicy oAuthPolicy,
       boolean http2Enabled,
       boolean subscriptionIdentityHeadersEnabled,
-      boolean autoDeleteWithTopicEnabled) {
+      boolean autoDeleteWithTopicEnabled,
+      Instant createdAt,
+      Instant modifiedAt) {
     return new Subscription(
         topicName,
         name,
@@ -223,8 +227,8 @@ public class Subscription implements Anonymizable {
         subscriptionIdentityHeadersEnabled,
         autoDeleteWithTopicEnabled,
         SubscriptionMetricsConfig.DISABLED,
-        null,
-        null);
+        createdAt,
+        modifiedAt);
   }
 
   @JsonCreator
@@ -318,7 +322,9 @@ public class Subscription implements Anonymizable {
         oAuthPolicy,
         http2Enabled,
         subscriptionIdentityHeadersEnabled,
-        metricsConfig);
+        metricsConfig,
+        createdAt,
+        modifiedAt);
   }
 
   @Override
@@ -354,7 +360,9 @@ public class Subscription implements Anonymizable {
         && Objects.equals(
             this.subscriptionIdentityHeadersEnabled, other.subscriptionIdentityHeadersEnabled)
         && Objects.equals(this.autoDeleteWithTopicEnabled, other.autoDeleteWithTopicEnabled)
-        && Objects.equals(this.metricsConfig, other.metricsConfig);
+        && Objects.equals(this.metricsConfig, other.metricsConfig)
+        && Objects.equals(this.createdAt, other.createdAt)
+        && Objects.equals(this.modifiedAt, other.modifiedAt);
   }
 
   @JsonIgnore
