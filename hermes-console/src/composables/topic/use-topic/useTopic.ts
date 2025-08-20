@@ -1,6 +1,7 @@
 import {
   removeTopic as deleteTopic,
   fetchTopic,
+  getActiveOfflineRetransmissions,
   fetchOfflineClientsSource as getOfflineClientsSource,
   fetchTopic as getTopic,
   fetchTopicClients as getTopicClients,
@@ -9,6 +10,7 @@ import {
   fetchOwner as getTopicOwner,
   fetchTopicSubscriptionDetails as getTopicSubscriptionDetails,
   fetchTopicSubscriptions as getTopicSubscriptions,
+  getTopicTrackingUrls,
 } from '@/api/hermes-client';
 import { dispatchErrorNotification } from '@/utils/notification-utils';
 import { ref } from 'vue';
@@ -21,9 +23,11 @@ import type {
   TopicWithSchema,
 } from '@/api/topic';
 import type { OfflineClientsSource } from '@/api/offline-clients-source';
+import type { OfflineRetransmissionActiveTask } from '@/api/offline-retransmission';
 import type { Owner } from '@/api/owner';
 import type { Ref } from 'vue';
 import type { Subscription } from '@/api/subscription';
+import type { TrackingUrl } from '@/api/tracking-url';
 
 export interface UseTopic {
   topic: Ref<TopicWithSchema | undefined>;
@@ -32,11 +36,13 @@ export interface UseTopic {
   metrics: Ref<TopicMetrics | undefined>;
   subscriptions: Ref<Subscription[] | undefined>;
   offlineClientsSource: Ref<OfflineClientsSource | undefined>;
+  trackingUrls: Ref<TrackingUrl[] | undefined>;
   loading: Ref<boolean>;
   error: Ref<UseTopicErrors>;
   fetchOfflineClientsSource: () => Promise<void>;
   removeTopic: () => Promise<boolean>;
   fetchTopicClients: () => Promise<string[] | null>;
+  activeRetransmissions: Ref<OfflineRetransmissionActiveTask[] | undefined>;
 }
 
 export interface UseTopicErrors {
@@ -46,6 +52,7 @@ export interface UseTopicErrors {
   fetchTopicMetrics: Error | null;
   fetchSubscriptions: Error | null;
   fetchOfflineClientsSource: Error | null;
+  getTopicTrackingUrls: Error | null;
 }
 
 export function useTopic(topicName: string): UseTopic {
@@ -57,6 +64,8 @@ export function useTopic(topicName: string): UseTopic {
   const metrics = ref<TopicMetrics>();
   const subscriptions = ref<Subscription[]>();
   const offlineClientsSource = ref<OfflineClientsSource>();
+  const trackingUrls = ref<TrackingUrl[]>();
+  const activeRetransmissions = ref<OfflineRetransmissionActiveTask[]>();
   const loading = ref(false);
   const error = ref<UseTopicErrors>({
     fetchTopic: null,
@@ -65,6 +74,7 @@ export function useTopic(topicName: string): UseTopic {
     fetchTopicMetrics: null,
     fetchSubscriptions: null,
     fetchOfflineClientsSource: null,
+    getTopicTrackingUrls: null,
   });
 
   const fetchTopic = async () => {
@@ -77,6 +87,7 @@ export function useTopic(topicName: string): UseTopic {
           fetchTopicMessagesPreview(),
           fetchTopicMetrics(),
           fetchSubscriptions(),
+          fetchActiveOfflineRetransmissions(),
         ]);
       }
     } finally {
@@ -152,6 +163,14 @@ export function useTopic(topicName: string): UseTopic {
     }
   };
 
+  const fetchTopicTrackingUrls = async () => {
+    try {
+      trackingUrls.value = (await getTopicTrackingUrls(topicName)).data;
+    } catch (e) {
+      error.value.getTopicTrackingUrls = e as Error;
+    }
+  };
+
   const removeTopic = async (): Promise<boolean> => {
     try {
       await deleteTopic(topicName);
@@ -187,7 +206,24 @@ export function useTopic(topicName: string): UseTopic {
     }
   };
 
+  const fetchActiveOfflineRetransmissions = async () => {
+    try {
+      activeRetransmissions.value = (
+        await getActiveOfflineRetransmissions(topicName)
+      ).data;
+    } catch (e: any) {
+      dispatchErrorNotification(
+        e,
+        notificationStore,
+        useGlobalI18n().t(
+          'notifications.offlineRetransmission.fetchActive.failure',
+        ),
+      );
+    }
+  };
+
   fetchTopic();
+  fetchTopicTrackingUrls();
 
   return {
     topic,
@@ -196,11 +232,13 @@ export function useTopic(topicName: string): UseTopic {
     metrics,
     subscriptions,
     offlineClientsSource,
+    trackingUrls,
     loading,
     error,
     fetchOfflineClientsSource,
     removeTopic,
     fetchTopicClients,
+    activeRetransmissions,
   };
 }
 

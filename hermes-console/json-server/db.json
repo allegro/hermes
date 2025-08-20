@@ -200,7 +200,7 @@
   "topics": [
     {
       "id": "pl.allegro.public.group.DummyEvent",
-      "schema": "{\"type\":\"record\",\"name\":\"DummyEvent\",\"namespace\":\"pl.allegro.public.group.DummyEvent\",\"doc\":\"Event emitted when notification is sent to a user\",\"fields\":[{\"name\":\"__metadata\",\"type\":[\"null\",{\"type\":\"map\",\"values\":\"string\"}],\"doc\":\"Field internally used by Hermes to propagate metadata.\",\"default\":null},{\"name\":\"waybillId\",\"type\":[\"null\",{\"type\":\"record\",\"name\":\"WaybillId\",\"fields\":[{\"name\":\"waybill\",\"type\":\"string\",\"doc\":\"Waybill\"},{\"name\":\"carrierId\",\"type\":\"string\",\"doc\":\"CarrierId\"}]}],\"doc\":\"WaybillId\",\"default\":null},{\"name\":\"notificationId\",\"type\":\"string\",\"doc\":\"Notification Id\"},{\"name\":\"userId\",\"type\":\"string\",\"doc\":\"User Id\"}]}",
+      "schema": "{\"type\":\"record\",\"name\":\"DummyEvent\",\"namespace\":\"pl.allegro.public.group.DummyEvent\",\"doc\":\"Event emitted when notification is sent to a user\",\"fields\":[{\"name\":\"__metadata\",\"type\":[\"null\",{\"type\":\"map\",\"values\":\"string\"}],\"doc\":\"Field internally used by Hermes to propagate metadata.\",\"default\":null},{\"name\":\"waybillId\",\"type\":[\"null\",{\"type\":\"record\",\"name\":\"WaybillId\",\"fields\":[{\"name\":\"waybill\",\"type\":\"string\",\"doc\":\"Waybill\"},{\"name\":\"carrierId\",\"type\":\"string\",\"doc\":\"CarrierId\"}]}],\"doc\":\"WaybillId\",\"default\":null},{\"name\":\"otherWaybillId\",\"type\":[\"null\",\"WaybillId\"],\"doc\":\"other WaybillId\",\"default\":null},{\"name\":\"notificationId\",\"type\":\"string\",\"doc\":\"Notification Id\"},{\"name\":\"userId\",\"type\":\"string\",\"doc\":\"User Id\"}]}",
       "name": "pl.allegro.public.group.DummyEvent",
       "description": "Events emitted when notification is sent to a user.",
       "owner": {
@@ -213,7 +213,8 @@
       },
       "jsonToAvroDryRun": false,
       "ack": "LEADER",
-      "trackingEnabled": false,
+      "fallbackToRemoteDatacenterEnabled": true,
+      "trackingEnabled": true,
       "migratedFromJsonType": false,
       "schemaIdAwareSerializationEnabled": false,
       "contentType": "AVRO",
@@ -250,6 +251,14 @@
       "subscriptions": 1,
       "throughput": "0.0"
     }
+  ],
+  "topicsTrackingUrls": [
+    {"name": "Tracking Link 1", "url": "#"},
+    {"name": "Tracking Link 2", "url": "#"}
+  ],
+  "subscriptionsTrackingUrls": [
+    {"name": "Tracking Link 1", "url": "#"},
+    {"name": "Tracking Link 2", "url": "#"}
   ],
   "topicsOwners": [
     {
@@ -393,7 +402,7 @@
         "retryClientErrors": true,
         "backoffMaxIntervalMillis": 600000
       },
-      "trackingEnabled": false,
+      "trackingEnabled": true,
       "trackingMode": "trackingOff",
       "owner": {
         "source": "Service Catalog",
@@ -681,9 +690,13 @@
           "label": "DAYS"
         }
       ],
-      "offlineRetransmissionEnabled": true,
-      "offlineRetransmissionDescription": "Offline retransmission",
-      "offlineRetransmissionFromViewDocsUrl": "https://hermes-pubsub.rtfd.org"
+      "offlineRetransmission": {
+        "enabled": true,
+        "description": "Offline retransmission",
+        "fromViewDocsUrl": "https://hermes-pubsub.rtfd.org",
+        "globalTaskQueueUrl": "http://localhost:8090/offline-retransmission/tasks",
+        "monitoringDocsUrl": "https://hermes-pubsub.rtfd.org"
+      }
     },
     "subscription": {
       "endpointAddressResolverMetadata": {
@@ -722,7 +735,7 @@
     },
     "costs": {
       "enabled": true,
-      "globalDetailsUrl": "",
+      "globalDetailsUrl": "http://localhost:8082",
       "topicIframeUrl": "",
       "topicDetailsUrl": "",
       "subscriptionIframeUrl": "",

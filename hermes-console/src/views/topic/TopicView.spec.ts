@@ -2,20 +2,22 @@ import { beforeEach, describe, expect } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
 import { createTestingPinia } from '@pinia/testing';
 import { createTestingPiniaWithState } from '@/dummy/store';
-import { dummyAppConfig } from '@/dummy/app-config';
-import { dummyMetricsDashboardUrl } from '@/dummy/metricsDashboardUrl';
 import {
+  dummyActiveOfflineRetransmissions,
   dummyOfflineClientsSource,
   dummyOwner,
   dummyTopic,
   dummyTopicMessagesPreview,
   dummyTopicMetrics,
 } from '@/dummy/topic';
+import { dummyAppConfig } from '@/dummy/app-config';
+import { dummyMetricsDashboardUrl } from '@/dummy/metricsDashboardUrl';
 import { dummyRoles } from '@/dummy/roles';
 import {
   dummySubscription,
   secondDummySubscription,
 } from '@/dummy/subscription';
+import { dummyTrackingUrls } from '@/dummy/tracking-urls';
 import { fireEvent } from '@testing-library/vue';
 import { ref } from 'vue';
 import { render } from '@/utils/test-utils';
@@ -54,9 +56,12 @@ const useTopicMock: UseTopic = {
     fetchTopicMetrics: null,
     fetchSubscriptions: null,
     fetchOfflineClientsSource: null,
+    getTopicTrackingUrls: null,
   }),
+  trackingUrls: ref(dummyTrackingUrls),
   fetchOfflineClientsSource: () => Promise.resolve(),
   removeTopic: () => Promise.resolve(true),
+  activeRetransmissions: ref(dummyActiveOfflineRetransmissions),
 };
 
 vi.mock('@/composables/metrics/use-metrics/useMetrics');
@@ -267,6 +272,7 @@ describe('TopicView', () => {
         fetchTopicMetrics: null,
         fetchSubscriptions: null,
         fetchOfflineClientsSource: null,
+        getTopicTrackingUrls: null,
       }),
     });
     vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
@@ -345,5 +351,26 @@ describe('TopicView', () => {
     expect(
       getByText('topicView.confirmationDialog.remove.text'),
     ).toBeInTheDocument();
+  });
+
+  it('should render tracking card when tracking is enabled', () => {
+    // given
+    const dummyTopic2 = dummyTopic;
+    dummyTopic2.trackingEnabled = true;
+
+    // and
+    vi.mocked(useTopic).mockReturnValueOnce({
+      ...useTopicMock,
+      topic: ref(dummyTopic2),
+    });
+    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
+
+    // when
+    const { getByText } = render(TopicView, {
+      testPinia: createTestingPiniaWithState(),
+    });
+
+    // then
+    expect(getByText('trackingCard.title')).toBeVisible();
   });
 });

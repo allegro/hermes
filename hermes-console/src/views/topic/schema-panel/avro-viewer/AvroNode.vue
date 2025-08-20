@@ -1,9 +1,15 @@
 <script lang="ts" setup>
   import { defineProps, ref } from 'vue';
-  import type { AvroSchema, Type } from '@/views/topic/schema-panel/AvroTypes';
+  import { getRecordTypesRegistryEntry } from '@/views/topic/schema-panel/avro-viewer/avro-record-types-registry';
+  import type {
+    AvroSchema,
+    RecordType,
+    Type,
+  } from '@/views/topic/schema-panel/AvroTypes';
 
   const props = defineProps<{
     field: AvroSchema;
+    recordReferenceTypes: Map<string, RecordType>;
     root: boolean;
   }>();
   const expanded = ref(true);
@@ -62,10 +68,17 @@
   };
 
   const types = getTypes(props.field.type);
-  const isRecord = types.some((type: Type) => type.includes('record'));
+  const recordTypeReference = getRecordTypesRegistryEntry(
+    props.recordReferenceTypes,
+    props.field.type,
+  );
+  const isRecord =
+    !!recordTypeReference ||
+    types.some((type: Type) => type.includes('record'));
   const isEnum = types.some((type: Type) => type.includes('enum'));
   const expandable = isRecord || isEnum;
-  const nestedType = isRecord && findNestedType(props.field.type);
+  const nestedType =
+    isRecord && (recordTypeReference || findNestedType(props.field.type));
   const enumSymbols = isEnum && findEnumSymbols(props.field.type);
 
   const toggle = (event: Event) => {
@@ -100,6 +113,7 @@
         v-for="nestedField in nestedType.fields"
         :key="nestedField.name"
         :field="nestedField"
+        :record-reference-types="props.recordReferenceTypes"
         :root="false"
       />
     </div>

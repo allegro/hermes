@@ -13,7 +13,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.util.MultiValueMap;
-import pl.allegro.tech.hermes.api.BlacklistStatus;
 import pl.allegro.tech.hermes.api.ConsumerGroup;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.MessageFiltersVerificationInput;
@@ -119,6 +118,13 @@ public class HermesTestClient {
         .is2xxSuccessful();
   }
 
+  public WebTestClient.ResponseSpec activateSubscription(Topic topic, String subscription) {
+    return managementTestClient
+        .updateSubscriptionState(topic, subscription, Subscription.State.ACTIVE)
+        .expectStatus()
+        .is2xxSuccessful();
+  }
+
   public void waitUntilSubscriptionActivated(String topicQualifiedName, String subscriptionName) {
     waitAtMost(Duration.ofSeconds(10))
         .untilAsserted(
@@ -182,7 +188,7 @@ public class HermesTestClient {
             });
   }
 
-  private long calculateCommittedMessages(String topicQualifiedName, String subscription) {
+  public long calculateCommittedMessages(String topicQualifiedName, String subscription) {
     AtomicLong messagesCommittedCount = new AtomicLong(0);
     List<ConsumerGroup> consumerGroups =
         getConsumerGroupsDescription(topicQualifiedName, subscription)
@@ -285,32 +291,6 @@ public class HermesTestClient {
       throws IOException, InterruptedException {
     return publishSlowly(
         clientTimeout, pauseTimeBetweenChunks, delayBeforeSendingFirstData, topicName, false);
-  }
-
-  public void blacklistTopic(String topicQualifiedName) {
-    managementTestClient.blacklistTopic(topicQualifiedName).expectStatus().is2xxSuccessful();
-  }
-
-  public WebTestClient.ResponseSpec blacklistTopicResponse(String topicQualifiedName) {
-    return managementTestClient.blacklistTopic(topicQualifiedName);
-  }
-
-  public void unblacklistTopic(String topicQualifiedName) {
-    managementTestClient.unblacklistTopic(topicQualifiedName).expectStatus().is2xxSuccessful();
-  }
-
-  public BlacklistStatus isTopicBlacklisted(String topicQualifiedName) {
-    return managementTestClient
-        .isTopicBlacklisted(topicQualifiedName)
-        .expectStatus()
-        .is2xxSuccessful()
-        .expectBody(BlacklistStatus.class)
-        .returnResult()
-        .getResponseBody();
-  }
-
-  public WebTestClient.ResponseSpec unblacklistTopicResponse(String topicQualifiedName) {
-    return managementTestClient.unblacklistTopic(topicQualifiedName);
   }
 
   public WebTestClient.ResponseSpec getLatestUndeliveredMessage(
@@ -504,6 +484,11 @@ public class HermesTestClient {
     return managementTestClient.getOfflineRetransmissionTasks();
   }
 
+  public WebTestClient.ResponseSpec getTopicActiveRetransmissionsMonitoringInfo(
+      String qualifiedTopicName) {
+    return managementTestClient.getTopicActiveRetransmissionsMonitoringInfo(qualifiedTopicName);
+  }
+
   public WebTestClient.ResponseSpec deleteOfflineRetransmissionTask(String taskId) {
     return managementTestClient.deleteOfflineRetransmissionTask(taskId);
   }
@@ -549,10 +534,5 @@ public class HermesTestClient {
 
   public List<String> getGroups() {
     return managementTestClient.getGroups();
-  }
-
-  public WebTestClient.ResponseSpec moveOffsetsToTheEnd(
-      String topicQualifiedName, String subscriptionName) {
-    return managementTestClient.moveOffsetsToTheEnd(topicQualifiedName, subscriptionName);
   }
 }

@@ -4,12 +4,15 @@
   import { useDialog } from '@/composables/dialog/use-dialog/useDialog';
   import { useI18n } from 'vue-i18n';
   import ConfirmationDialog from '@/components/confirmation-dialog/ConfirmationDialog.vue';
+  import LoadingSpinner from '@/components/loading-spinner/LoadingSpinner.vue';
 
   const { t } = useI18n();
 
   const props = defineProps<{
     topic: string;
     subscription: string;
+    retransmitting: boolean;
+    skippingAllMessages: boolean;
   }>();
 
   const emit = defineEmits<{
@@ -113,11 +116,15 @@
           </v-col>
           <v-col md="3">
             <v-btn
+              :disabled="retransmitting || skippingAllMessages"
               color="red"
               @click="openRetransmitDialog"
               data-testid="retransmitButton"
             >
-              {{ $t('subscription.manageMessagesCard.retransmitButton') }}
+              <loading-spinner v-if="retransmitting"></loading-spinner>
+              <span v-else>
+                {{ $t('subscription.manageMessagesCard.retransmitButton') }}
+              </span>
             </v-btn>
           </v-col>
         </v-row>
@@ -128,12 +135,16 @@
           {{ $t('subscription.manageMessagesCard.skipAllMessagesTitle') }}
         </p>
         <v-btn
+          :disabled="retransmitting || skippingAllMessages"
           color="red"
           class="mt-2"
           @click="openSkipAllMessagesDialog"
           data-testid="skipAllMessagesButton"
         >
-          {{ $t('subscription.manageMessagesCard.skipAllMessagesButton') }}
+          <loading-spinner v-if="skippingAllMessages"></loading-spinner>
+          <span v-else>
+            {{ $t('subscription.manageMessagesCard.skipAllMessagesButton') }}
+          </span>
         </v-btn>
       </v-card-item>
     </v-form>

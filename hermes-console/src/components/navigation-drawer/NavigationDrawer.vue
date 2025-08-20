@@ -1,96 +1,167 @@
 <script setup lang="ts">
-  import { computed } from 'vue';
+  import { isAdmin } from '@/utils/roles-util';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
+  import { useRoles } from '@/composables/roles/use-roles/useRoles';
+  import { useRoute } from 'vue-router';
+
+  import { computed, ref } from 'vue';
   import EnvironmentSelect from '@/components/environment-select/EnvironmentSelect.vue';
+  import NavigationItem from '@/components/navigation-drawer/NavigationItem.vue';
+
+  const route = useRoute();
+  const routeName = computed(() => route.name);
 
   const configStore = useAppConfigStore();
   const knownEnvironments = computed(
     () => configStore.appConfig?.console.knownEnvironments || [],
   );
+  const roles = useRoles(null, null)?.roles;
+  const rail = ref(true);
 
-  const navigationGroups = [
-    {
-      group: 'Console',
-      items: [
-        { title: 'Home', icon: 'mdi-home', to: '/ui' },
-        { title: 'Groups', icon: 'mdi-file-tree', to: '/ui/groups' },
-        {
-          title: 'Favorite Topics',
-          icon: 'mdi-file-table-box-outline',
-          to: '/ui/favorite-topics',
-        },
-        {
-          title: 'Favorite Subscriptions',
-          icon: 'mdi-account-arrow-down-outline',
-          to: '/ui/favorite-subscriptions',
-        },
-      ],
-    },
-    {
-      group: 'Monitoring',
-      items: [
-        { title: 'Statistics', icon: 'mdi-chart-box-outline', to: '/ui/stats' },
-        { title: 'Runtime', icon: 'mdi-chart-multiple', to: '/ui/runtime' },
-        { title: 'Costs', icon: 'mdi-finance', to: '/ui/costs' },
-      ],
-    },
-    {
-      group: 'Admin',
-      items: [
-        {
-          title: 'Consistency',
-          icon: 'mdi-chart-histogram',
-          to: '/ui/consistency',
-        },
-        { title: 'Constraints', icon: 'mdi-cogs', to: '/ui/constraints' },
-        {
-          title: 'Readiness',
-          icon: 'mdi-arrow-right-drop-circle-outline',
-          to: '/ui/readiness',
-        },
-      ],
-    },
-  ];
+  function handleIconClick(url: string) {
+    if (rail.value) {
+      rail.value = false;
+    } else if (url) {
+      window.open(url, '_blank');
+    }
+  }
 </script>
 
 <template>
-  <v-navigation-drawer floating color="surface" permanent class="border-e-sm">
-    <div class="pa-2">
-      <environment-select
-        :known-environments="knownEnvironments"
-        :is-current-environment-critical="
-          configStore.loadedConfig.console.criticalEnvironment
-        "
-      />
-    </div>
-
-    <v-list density="compact" nav slim color="accent">
-      <template
-        v-for="(navigationGroup, navigationGroupIndex) in navigationGroups"
-        :key="navigationGroupIndex"
-      >
-        <v-list-subheader class="text-subtitle-2 font-weight-bold">{{
-          navigationGroup.group
-        }}</v-list-subheader>
-
-        <v-list-item
-          v-for="(item, itemIndex) in navigationGroup.items"
-          :key="itemIndex"
-          :to="item.to"
-        >
-          <template v-slot:prepend>
-            <v-icon :icon="item.icon" />
-          </template>
-
-          <v-list-item-title>{{ item.title }}</v-list-item-title>
-        </v-list-item>
-        <v-divider
-          v-if="navigationGroupIndex + 1 < navigationGroups.length"
-          class="mt-3 mb-3"
+  <v-navigation-drawer :rail="rail" permanent @click="rail = false">
+    <v-list density="compact" nav>
+      <v-list-item>
+        <environment-select
+          :known-environments="knownEnvironments"
+          :is-current-environment-critical="
+            configStore.loadedConfig.console.criticalEnvironment
+          "
         />
-      </template>
+      </v-list-item>
+    </v-list>
+
+    <v-divider></v-divider>
+
+    <v-list density="compact" nav>
+      <navigation-item
+        icon="mdi-cog"
+        translation-key="homeView.links.console"
+        name="groups"
+        :current-route-name="routeName"
+      />
+
+      <v-list-group value="Favorites">
+        <template v-slot:activator="{ props }">
+          <navigation-item
+            v-bind="props"
+            icon="mdi-star"
+            translation-key="homeView.links.favorites"
+            name="favorites"
+            :readonly="true"
+          />
+        </template>
+
+        <navigation-item
+          translation-key="homeView.links.subscriptions"
+          name="favoriteSubscriptions"
+          :current-route-name="routeName"
+        />
+        <navigation-item
+          translation-key="homeView.links.topics"
+          name="favoriteTopics"
+          :current-route-name="routeName"
+        />
+      </v-list-group>
+      <navigation-item
+        icon="mdi-chart-bar"
+        translation-key="homeView.links.statistics"
+        name="stats"
+        :current-route-name="routeName"
+      />
+      <navigation-item
+        icon="mdi-magnify"
+        translation-key="homeView.links.search"
+        name="search"
+        :current-route-name="routeName"
+      />
+      <navigation-item
+        icon="mdi-chart-multiple"
+        translation-key="homeView.links.runtime"
+        name="runtime"
+        :external-url="configStore.loadedConfig.dashboard.metrics"
+        @icon-click="handleIconClick"
+      />
+      <navigation-item
+        icon="mdi-book-open-variant"
+        translation-key="homeView.links.documentation"
+        name="docs"
+        :external-url="configStore.loadedConfig.dashboard.docs"
+        @icon-click="handleIconClick"
+      />
+      <navigation-item
+        v-if="configStore.loadedConfig.costs.enabled"
+        icon="mdi-currency-usd"
+        translation-key="homeView.links.costs"
+        name="costs"
+        :external-url="configStore.loadedConfig.costs.globalDetailsUrl"
+        @icon-click="handleIconClick"
+      />
+      <v-list-group value="Admin" v-if="isAdmin(roles)">
+        <template v-slot:activator="{ props }">
+          <navigation-item
+            v-bind="props"
+            translation-key="homeView.links.adminTools"
+            name="adminTools"
+            icon="mdi-security"
+            :readonly="true"
+          />
+        </template>
+
+        <navigation-item
+          translation-key="homeView.links.readiness"
+          name="readiness"
+          :current-route-name="routeName"
+        />
+        <navigation-item
+          translation-key="homeView.links.constraints"
+          name="constraints"
+          :current-route-name="routeName"
+        />
+        <navigation-item
+          translation-key="homeView.links.consistency"
+          name="consistency"
+          :current-route-name="routeName"
+        />
+        <navigation-item
+          translation-key="homeView.links.inactiveTopics"
+          name="inactiveTopics"
+          :current-route-name="routeName"
+        />
+      </v-list-group>
+    </v-list>
+
+    <v-spacer />
+    <v-divider />
+
+    <v-list>
+      <v-list-item>
+        <div class="d-flex align-center justify-center" style="width: 100%">
+          <v-btn
+            v-if="rail"
+            icon="mdi-chevron-right"
+            variant="text"
+            @click.stop="rail = !rail"
+          ></v-btn>
+        </div>
+        <div class="d-flex justify-end" style="width: 100%">
+          <v-btn
+            v-if="!rail"
+            icon="mdi-chevron-left"
+            variant="text"
+            @click.stop="rail = !rail"
+          ></v-btn>
+        </div>
+      </v-list-item>
     </v-list>
   </v-navigation-drawer>
 </template>
-
-<style scoped lang="scss"></style>

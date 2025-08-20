@@ -85,10 +85,14 @@ export const dummyAppConfig: AppConfiguration = {
         label: 'HOURS',
       },
     ],
-    offlineRetransmissionEnabled: true,
-    offlineRetransmissionDescription:
-      'Offline retransmission allows retransmitting events from GCP (BigQuery) to Hermes.',
-    offlineRetransmissionFromViewDocsUrl: 'https://hermes-pubsub.rtfd.org',
+    offlineRetransmission: {
+      enabled: true,
+      description:
+        'Offline retransmission allows retransmitting events from GCP (BigQuery) to Hermes.',
+      fromViewDocsUrl: 'https://hermes-pubsub.rtfd.org',
+      globalTaskQueueUrl: 'http://localhost:8090/offline-retransmission/tasks',
+      monitoringDocsUrl: 'https://hermes-pubsub.rtfd.org',
+    },
   },
   subscription: {
     endpointAddressResolverMetadata: {

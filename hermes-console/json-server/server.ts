@@ -1,4 +1,5 @@
 const topics = require('./topics.json');
+const activeOfflineRetransmissionTasks = require('./active-offline-retransmission-tasks.json');
 const subscriptions = require('./subscriptions.json');
 const routes = require('./routes.json');
 const filterDebug = require('./filter-debug.json');
@@ -18,10 +19,6 @@ server.post('/query/topics', (req, res) => {
 
 server.post('/query/subscriptions', (req, res) => {
   res.jsonp(subscriptions);
-});
-
-server.post('/topics/*/subscriptions/*/moveOffsetsToTheEnd', (req, res) => {
-  res.sendStatus(200);
 });
 
 server.post('/topicSubscriptions', (req, res) => {
@@ -80,10 +77,19 @@ server.post('/offline-retransmission/tasks', (req, res) => {
   res.sendStatus(200);
 });
 
-server.put(
-  '/topics/:topic/subscriptions/:subscroption/retransmission',
+server.get(
+  '/offline-retransmission/topics/pl.allegro.public.group.DummyEvent/tasks/',
   (req, res) => {
-    res.sendStatus(200);
+    res.jsonp(activeOfflineRetransmissionTasks);
+  },
+);
+
+server.put(
+  '/topics/:topic/subscriptions/:subscription/retransmission',
+  (req, res) => {
+    setTimeout(() => {
+      res.sendStatus(200);
+    }, 2000);
   },
 );
 

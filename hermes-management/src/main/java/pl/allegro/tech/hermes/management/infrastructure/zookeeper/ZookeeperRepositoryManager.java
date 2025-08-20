@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.management.infrastructure.zookeeper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,16 +29,16 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperSubscriptionRepo
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperTopicRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperWorkloadConstraintsRepository;
 import pl.allegro.tech.hermes.management.config.storage.ZookeeperGroupRepositoryFactory;
-import pl.allegro.tech.hermes.management.domain.blacklist.TopicBlacklistRepository;
 import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryManager;
 import pl.allegro.tech.hermes.management.domain.detection.InactiveTopicsRepository;
 import pl.allegro.tech.hermes.management.domain.readiness.DatacenterReadinessRepository;
 import pl.allegro.tech.hermes.management.domain.retransmit.OfflineRetransmissionRepository;
-import pl.allegro.tech.hermes.management.infrastructure.blacklist.ZookeeperTopicBlacklistRepository;
+import pl.allegro.tech.hermes.management.domain.subscription.consumergroup.ConsumerGroupToDeleteRepository;
 import pl.allegro.tech.hermes.management.infrastructure.detection.ZookeeperInactiveTopicsRepository;
 import pl.allegro.tech.hermes.management.infrastructure.readiness.ZookeeperDatacenterReadinessRepository;
 import pl.allegro.tech.hermes.management.infrastructure.retransmit.ZookeeperOfflineRetransmissionRepository;
+import pl.allegro.tech.hermes.management.infrastructure.subscription.consumergroup.ZookeeperConsumerGroupToDeleteRepository;
 
 public class ZookeeperRepositoryManager implements RepositoryManager {
 
@@ -58,8 +57,6 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
       new HashMap<>();
   private final Map<String, MessagePreviewRepository> messagePreviewRepositoriesByDc =
       new HashMap<>();
-  private final Map<String, TopicBlacklistRepository> topicBlacklistRepositoriesByDc =
-      new HashMap<>();
   private final Map<String, WorkloadConstraintsRepository> workloadConstraintsRepositoriesByDc =
       new HashMap<>();
   private final Map<String, LastUndeliveredMessageReader> lastUndeliveredMessageReaderByDc =
@@ -70,6 +67,8 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
   private final Map<String, OfflineRetransmissionRepository> offlineRetransmissionRepositoriesByDc =
       new HashMap<>();
   private final Map<String, InactiveTopicsRepository> inactiveTopicsRepositoriesByDc =
+      new HashMap<>();
+  private final Map<String, ConsumerGroupToDeleteRepository> consumerGroupCleanupRepositoryByDc =
       new HashMap<>();
   private final ZookeeperGroupRepositoryFactory zookeeperGroupRepositoryFactory;
 
@@ -120,10 +119,6 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
           new ZookeeperMessagePreviewRepository(zookeeper, mapper, paths);
       messagePreviewRepositoriesByDc.put(dcName, messagePreviewRepository);
 
-      TopicBlacklistRepository topicBlacklistRepository =
-          new ZookeeperTopicBlacklistRepository(zookeeper, mapper, paths);
-      topicBlacklistRepositoriesByDc.put(dcName, topicBlacklistRepository);
-
       WorkloadConstraintsRepository workloadConstraintsRepository =
           new ZookeeperWorkloadConstraintsRepository(zookeeper, mapper, paths);
       workloadConstraintsRepositoriesByDc.put(dcName, workloadConstraintsRepository);
@@ -146,6 +141,10 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
       ZookeeperInactiveTopicsRepository inactiveTopicsRepository =
           new ZookeeperInactiveTopicsRepository(zookeeper, mapper, paths);
       inactiveTopicsRepositoriesByDc.put(dcName, inactiveTopicsRepository);
+
+      ZookeeperConsumerGroupToDeleteRepository consumerGroupCleanupRepository =
+          new ZookeeperConsumerGroupToDeleteRepository(zookeeper, mapper, paths);
+      consumerGroupCleanupRepositoryByDc.put(dcName, consumerGroupCleanupRepository);
     }
   }
 
@@ -167,13 +166,13 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
 
   public <T> List<DatacenterBoundRepositoryHolder<T>> getRepositories(Class<T> repositoryType) {
     return getRepositoriesByType(repositoryType).entrySet().stream()
-        .sorted(Comparator.comparing(Map.Entry::getKey))
+        .sorted(Map.Entry.comparingByKey())
         .map(entry -> new DatacenterBoundRepositoryHolder<>(entry.getValue(), entry.getKey()))
         .collect(Collectors.toList());
   }
 
   @SuppressWarnings("unchecked")
-  private <T> Map<String, T> getRepositoriesByType(Class<T> type) {
+  public <T> Map<String, T> getRepositoriesByType(Class<T> type) {
     Object repository = repositoryByType.get(type);
     if (repository == null) {
       throw new InternalProcessingException(
@@ -190,7 +189,6 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
     repositoryByType.put(OAuthProviderRepository.class, oAuthProviderRepositoriesByDc);
     repositoryByType.put(SubscriptionOffsetChangeIndicator.class, offsetChangeIndicatorsByDc);
     repositoryByType.put(MessagePreviewRepository.class, messagePreviewRepositoriesByDc);
-    repositoryByType.put(TopicBlacklistRepository.class, topicBlacklistRepositoriesByDc);
     repositoryByType.put(WorkloadConstraintsRepository.class, workloadConstraintsRepositoriesByDc);
     repositoryByType.put(LastUndeliveredMessageReader.class, lastUndeliveredMessageReaderByDc);
     repositoryByType.put(AdminTool.class, adminToolByDc);
@@ -198,5 +196,6 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
     repositoryByType.put(
         OfflineRetransmissionRepository.class, offlineRetransmissionRepositoriesByDc);
     repositoryByType.put(InactiveTopicsRepository.class, inactiveTopicsRepositoriesByDc);
+    repositoryByType.put(ConsumerGroupToDeleteRepository.class, consumerGroupCleanupRepositoryByDc);
   }
 }

@@ -7,12 +7,19 @@ const en_US = {
       console: 'Console',
       favoriteTopics: 'Favorite topics',
       favoriteSubscriptions: 'Favorite subs',
+      topics: 'Topics',
+      subscriptions: 'Subscriptions',
       runtime: 'Runtime',
       statistics: 'Stats',
       search: 'Search',
       documentation: 'Docs',
       costs: 'Costs',
       adminTools: 'Admin tools',
+      favorites: 'Favorites',
+      readiness: 'Readiness',
+      constraints: 'Constraints',
+      consistency: 'Consistency',
+      inactiveTopics: 'Inactive topics',
     },
   },
   header: {
@@ -347,6 +354,7 @@ const en_US = {
       offlineRetention: 'Offline retention',
       creationDate: 'Creation date',
       modificationDate: 'Modification date',
+      fallbackToRemoteDatacenterEnabled: 'Fallback to remote DC enabled',
       tooltips: {
         acknowledgement:
           'Specifies the strength of guarantees that acknowledged message was indeed persisted. ' +
@@ -366,6 +374,8 @@ const en_US = {
           'Should data from this topic be stored in offline storage (e.g. HDFS).',
         offlineRetention:
           'For how long should this topic be stored in offline storage.',
+        fallbackToRemoteDatacenterEnabled:
+          'In the event of a message publishing failure, Hermes falls back to a remote data center instead of storing unsent messages on local disk. Enabling fallback to the remote data center increases the durability of your messages but may impact the publishing latency and increase number of duplicated messages.',
       },
       ackText: {
         all: 'All brokers',
@@ -626,10 +636,6 @@ const en_US = {
       reason: 'Reason',
       timestamp: 'Timestamp',
     },
-    moveOffsets: {
-      tooltip: 'Move subscription offsets to the end',
-      button: 'MOVE OFFSETS',
-    },
   },
   search: {
     collection: {
@@ -669,6 +675,17 @@ const en_US = {
     targetTopic: 'Target topic',
     startTimestamp: 'Start timestamp (UTC)',
     endTimestamp: 'End timestamp (UTC)',
+    monitoringView: {
+      title: 'Active offline retransmissions',
+      allTasksLinkTitle: 'Offline retransmission global queue',
+      monitoringDocsLinkTitle: 'Offline retransmission monitoring docs',
+      idHeader: 'ID',
+      typeHeader: 'Type',
+      logsLinkHeader: 'Logs',
+      metricsLinkHeader: 'Metrics',
+      jobLinkHeader: 'Job Details',
+      allTasksLinkHeader: 'Hermes retransmission global queue',
+    },
   },
   notifications: {
     dashboardUrl: {
@@ -811,6 +828,9 @@ const en_US = {
         failure:
           'Failed to create retransmission task from topic: “{sourceTopic}“ to topic: “{targetTopic}“',
       },
+      fetchActive: {
+        failure: 'Failed to fetch active retransmission tasks',
+      },
     },
     subscriptionFiltersDebug: {
       fetchTopicContentType: {
@@ -838,6 +858,10 @@ const en_US = {
   costsCard: {
     title: 'Costs',
     detailsButton: 'Dashboard',
+  },
+  trackingCard: {
+    title: 'Tracking',
+    noTrackingUrls: 'No tracking urls available',
   },
 };
 

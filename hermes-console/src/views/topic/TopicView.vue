@@ -15,10 +15,12 @@
   import MessagesPreview from '@/views/topic/messages-preview/MessagesPreview.vue';
   import MetricsList from '@/views/topic/metrics-list/MetricsList.vue';
   import OfflineClients from '@/views/topic/offline-clients/OfflineClients.vue';
+  import OfflineRetransmissionInfo from '@/views/topic/offline-retransmission/OfflineRetransmissionInfo.vue';
   import PropertiesList from '@/views/topic/properties-list/PropertiesList.vue';
   import SchemaPanel from '@/views/topic/schema-panel/SchemaPanel.vue';
   import SubscriptionsList from '@/views/topic/subscriptions-list/SubscriptionsList.vue';
   import TopicHeader from '@/views/topic/topic-header/TopicHeader.vue';
+  import TrackingCard from '@/components/tracking-card/TrackingCard.vue';
 
   const router = useRouter();
 
@@ -38,31 +40,29 @@
     error,
     subscriptions,
     offlineClientsSource,
+    trackingUrls,
     fetchOfflineClientsSource,
     removeTopic,
     fetchTopicClients,
+    activeRetransmissions,
   } = useTopic(topicName);
 
   const breadcrumbsItems = [
     {
       title: t('subscription.subscriptionBreadcrumbs.home'),
       href: '/',
-      exact: true,
     },
     {
       title: t('subscription.subscriptionBreadcrumbs.groups'),
       href: '/ui/groups',
-      exact: true,
     },
     {
       title: groupId,
       href: `/ui/groups/${groupId}`,
-      exact: true,
     },
     {
       title: topicName,
       href: `/ui/groups/${groupId}/topics/${topicName}`,
-      exact: true,
     },
   ];
   const configStore = useAppConfigStore();
@@ -179,6 +179,11 @@
                   :iframe-url="costs.iframeUrl"
                   :details-url="costs.detailsUrl"
                 />
+                <tracking-card
+                  v-if="topic?.trackingEnabled"
+                  :tracking-urls="trackingUrls"
+                />
+                <offline-retransmission-info :tasks="activeRetransmissions" />
               </v-col>
               <v-col md="6">
                 <properties-list v-if="topic" :topic="topic" />

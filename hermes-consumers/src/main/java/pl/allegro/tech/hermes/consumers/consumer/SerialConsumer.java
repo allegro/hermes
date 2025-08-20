@@ -11,7 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffsets;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.CommonConsumerParameters;
 import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResolver;
@@ -262,12 +262,17 @@ public class SerialConsumer implements Consumer {
   }
 
   @Override
-  public boolean moveOffset(PartitionOffset offset) {
-    return messageReceiver.moveOffset(offset);
+  public PartitionOffsets moveOffset(PartitionOffsets offsets) {
+    return messageReceiver.moveOffset(offsets);
   }
 
   @Override
   public Subscription getSubscription() {
     return subscription;
+  }
+
+  @Override
+  public Set<Integer> getAssignedPartitions() {
+    return messageReceiver.getAssignedPartitions();
   }
 }

@@ -16,7 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
+import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffsets;
 import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.UnsupportedContentTypeException;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
@@ -180,7 +180,11 @@ public class MessageBatchReceiver {
     receiver.commit(offsets);
   }
 
-  public boolean moveOffset(PartitionOffset offset) {
-    return receiver.moveOffset(offset);
+  public PartitionOffsets moveOffset(PartitionOffsets offsets) {
+    return receiver.moveOffset(offsets);
+  }
+
+  public Set<Integer> getAssignedPartitions() {
+    return receiver.getAssignedPartitions();
   }
 }

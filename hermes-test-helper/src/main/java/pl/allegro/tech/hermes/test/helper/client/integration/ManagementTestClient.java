@@ -47,10 +47,6 @@ public class ManagementTestClient {
   private static final String RETRANSMISSION_PATH =
       "/topics/{topicName}/subscriptions/{subscriptionName}/retransmission";
 
-  private static final String BLACKLIST_TOPICS_PATH = "/blacklist/topics";
-
-  private static final String BLACKLIST_TOPIC_PATH = "/blacklist/topics/{topicName}";
-
   private static final String LATEST_UNDELIVERED_MESSAGE =
       "/topics/{topicName}/subscriptions/{subscriptionName}/undelivered";
 
@@ -58,9 +54,6 @@ public class ManagementTestClient {
 
   private static final String TOPIC_PREVIEW_OFFSET =
       "/topics/{topicName}/preview/cluster/{brokersClusterName}/partition/{partition}/offset/{offset}";
-
-  private static final String MOVE_SUBSCRIPTION_OFFSETS =
-      "/topics/{topicName}/subscriptions/{subscriptionName}/moveOffsetsToTheEnd";
 
   private static final String SET_READINESS = "/readiness/datacenters/{dc}";
 
@@ -105,6 +98,9 @@ public class ManagementTestClient {
   private static final String MODE = "/mode";
 
   private static final String OFFLINE_RETRANSMISSION_TASKS = "/offline-retransmission/tasks";
+
+  private static final String OFFLINE_RETRANSMISSION_TOPIC_TASKS_MONITORING_INFO =
+      "/offline-retransmission/topics/{topicName}/tasks";
 
   private static final String OFFLINE_RETRANSMISSION_TASK =
       "/offline-retransmission/tasks/{taskId}";
@@ -282,34 +278,6 @@ public class ManagementTestClient {
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  public WebTestClient.ResponseSpec blacklistTopic(String topicQualifiedName) {
-    return webTestClient
-        .post()
-        .uri(BLACKLIST_TOPICS_PATH)
-        .body(Mono.just(List.of(topicQualifiedName)), List.class)
-        .exchange();
-  }
-
-  public WebTestClient.ResponseSpec unblacklistTopic(String topicQualifiedName) {
-    return webTestClient
-        .delete()
-        .uri(
-            UriBuilder.fromUri(managementContainerUrl)
-                .path(BLACKLIST_TOPIC_PATH)
-                .build(topicQualifiedName))
-        .exchange();
-  }
-
-  public WebTestClient.ResponseSpec isTopicBlacklisted(String topicQualifiedName) {
-    return webTestClient
-        .get()
-        .uri(
-            UriBuilder.fromUri(managementContainerUrl)
-                .path(BLACKLIST_TOPIC_PATH)
-                .build(topicQualifiedName))
-        .exchange();
   }
 
   public WebTestClient.ResponseSpec getLatestUndeliveredMessage(
@@ -737,6 +705,17 @@ public class ManagementTestClient {
         .exchange();
   }
 
+  public WebTestClient.ResponseSpec getTopicActiveRetransmissionsMonitoringInfo(
+      String qualifiedTopicName) {
+    return webTestClient
+        .get()
+        .uri(
+            UriBuilder.fromUri(managementContainerUrl)
+                .path(OFFLINE_RETRANSMISSION_TOPIC_TASKS_MONITORING_INFO)
+                .build(qualifiedTopicName))
+        .exchange();
+  }
+
   public WebTestClient.ResponseSpec deleteOfflineRetransmissionTask(String taskId) {
     return webTestClient
         .delete()
@@ -802,17 +781,6 @@ public class ManagementTestClient {
         .put()
         .uri(UriBuilder.fromUri(managementContainerUrl).path(GROUP_PATH).build(groupName))
         .body(Mono.just(group), Group.class)
-        .exchange();
-  }
-
-  public WebTestClient.ResponseSpec moveOffsetsToTheEnd(
-      String topicQualifiedName, String subscriptionName) {
-    return webTestClient
-        .post()
-        .uri(
-            UriBuilder.fromUri(managementContainerUrl)
-                .path(MOVE_SUBSCRIPTION_OFFSETS)
-                .build(topicQualifiedName, subscriptionName))
         .exchange();
   }
 }

@@ -1,4 +1,5 @@
 import {
+  dummyActiveOfflineRetransmissions,
   dummyOwner,
   dummyTopic,
   dummyTopicMessagesPreview,
@@ -29,6 +30,7 @@ import type {
   TopicMetrics,
   TopicWithSchema,
 } from '@/api/topic';
+import type { OfflineRetransmissionActiveTask } from '@/api/offline-retransmission';
 import type { Owner } from '@/api/owner';
 import type { Role } from '@/api/role';
 import type { SentMessageTrace } from '@/api/subscription-undelivered';
@@ -199,6 +201,19 @@ export const fetchTopicClientsErrorHandler = ({
     });
   });
 
+export const fetchActiveOfflineRetransmissionTasksHandler = ({
+  topicName,
+  tasks = dummyActiveOfflineRetransmissions,
+}: {
+  topicName: string;
+  tasks?: Array<OfflineRetransmissionActiveTask> | null;
+}) =>
+  http.get(`${url}/offline-retransmission/topics/${topicName}/tasks`, () => {
+    return HttpResponse.json(tasks, {
+      status: 200,
+    });
+  });
+
 export const successfulTopicHandlers = [
   fetchTopicHandler({}),
   fetchOwnerHandler({}),
@@ -209,6 +224,7 @@ export const successfulTopicHandlers = [
   fetchTopicSubscriptionDetailsHandler({
     subscription: secondDummySubscription,
   }),
+  fetchActiveOfflineRetransmissionTasksHandler({ topicName: dummyTopic.name }),
 ];
 
 export const fetchSubscriptionHandler = ({
@@ -817,24 +833,6 @@ export const switchReadinessErrorHandler = ({
     });
   });
 
-export const moveSubscriptionOffsetsHandler = ({
-  topicName,
-  subscriptionName,
-  statusCode,
-}: {
-  topicName: string;
-  subscriptionName: string;
-  statusCode: number;
-}) =>
-  http.post(
-    `${url}/topics/${topicName}/subscriptions/${subscriptionName}/moveOffsetsToTheEnd`,
-    () => {
-      return new HttpResponse(undefined, {
-        status: statusCode,
-      });
-    },
-  );
-
 export const upsertTopicConstraintHandler = ({
   statusCode,
 }: {
@@ -974,14 +972,19 @@ export const createRetransmissionHandler = ({
   statusCode,
   topicName,
   subscriptionName,
+  delayMs,
 }: {
   statusCode: number;
   topicName: string;
   subscriptionName: string;
+  delayMs?: number;
 }) =>
   http.put(
     `${url}/topics/${topicName}/subscriptions/${subscriptionName}/retransmission`,
-    () => {
+    async () => {
+      if (delayMs && delayMs > 0) {
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+      }
       return new HttpResponse(undefined, {
         status: statusCode,
       });
