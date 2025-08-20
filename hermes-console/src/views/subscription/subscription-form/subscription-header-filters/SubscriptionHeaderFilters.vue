@@ -46,7 +46,6 @@
     v-model:matcher="newFilterMatcher"
     @add="addFilter()"
     type="new"
-    class="mb-3"
   />
 </template>
 
