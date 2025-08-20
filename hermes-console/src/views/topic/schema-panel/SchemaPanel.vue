@@ -2,6 +2,7 @@
   import { copyToClipboard } from '@/utils/copy-utils';
   import { defineProps, ref } from 'vue';
   import AvroViewer from '@/views/topic/schema-panel/avro-viewer/AvroViewer.vue';
+  import JsonViewer from '@/components/json-viewer/JsonViewer.vue';
   const props = defineProps<{
     schema: string;
   }>();
@@ -32,19 +33,8 @@
     <div>
       <AvroViewer v-show="!showRawSchema" :schema="props.schema" />
       <v-card>
-        <pre v-show="showRawSchema">
-          <v-code class="raw-schema-snippet">{{ JSON.parse(props.schema) }}</v-code>
-        </pre>
+        <json-viewer :json="props.schema" v-show="showRawSchema" />
       </v-card>
     </div>
   </div>
 </template>
-
-<style scoped lang="scss">
-  .raw-schema-snippet {
-    line-height: 1.4;
-    max-height: 500px;
-    overflow: scroll;
-    //border: #cccccc 1px solid;
-  }
-</style>
