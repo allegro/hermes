@@ -19,8 +19,10 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post
 
 class HttpClientConnectionMonitoringTest extends Specification {
 
-    @Shared int port
-    @Shared WireMockServer wireMock
+    @Shared
+    int port
+    @Shared
+    WireMockServer wireMock
 
     HttpClient client
     HttpClient batchClient
@@ -39,7 +41,7 @@ class HttpClientConnectionMonitoringTest extends Specification {
         ConsumerSenderConfiguration consumerConfiguration = new ConsumerSenderConfiguration();
         client = consumerConfiguration.http1SerialClient(new HttpClientsFactory(
                 new InstrumentedExecutorServiceFactory(metrics),
-                sslContextFactoryProvider), new Http1ClientProperties()
+                sslContextFactoryProvider), metrics, new Http1ClientProperties()
         )
         batchClient = Mock(HttpClient)
         client.start()

@@ -47,6 +47,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpClientsWorkload
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpHeadersProvidersFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpMessageBatchSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpRequestFactoryProvider;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.JettyHttpClientMetrics;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.JettyHttpMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.SendingResultHandlers;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.SslContextFactoryProvider;
@@ -57,6 +58,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.EndpointAddress
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.InterpolatingEndpointAddressResolver;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
 import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
+import pl.allegro.tech.hermes.metrics.HermesTimer;
 
 @Configuration
 @EnableConfigurationProperties({
@@ -76,9 +78,16 @@ public class ConsumerSenderConfiguration {
   @Bean(name = "http1-serial-client")
   public HttpClient http1SerialClient(
       HttpClientsFactory httpClientsFactory,
+      MetricsFacade metricsFacade,
       @Named("http1-serial-client-parameters") Http1ClientParameters http1ClientParameters) {
-    return httpClientsFactory.createClientForHttp1(
-        "jetty-http1-serial-client", http1ClientParameters);
+    HttpClient client =
+        httpClientsFactory.createClientForHttp1("jetty-http1-serial-client", http1ClientParameters);
+    var metrics = metricsFacade.consumerSender();
+    enrichWithMetrics(
+        client,
+        metrics.http1SerialClientRequestQueueWaitingTimer(),
+        metrics.http1SerialClientRequestProcessingTimer());
+    return client;
   }
 
   @Bean(name = "http2-serial-client-parameters")
@@ -90,13 +99,20 @@ public class ConsumerSenderConfiguration {
   @Bean
   public Http2ClientHolder http2ClientHolder(
       HttpClientsFactory httpClientsFactory,
+      MetricsFacade metricsFacade,
       @Named("http2-serial-client-parameters") Http2ClientProperties http2ClientProperties) {
     if (!http2ClientProperties.isEnabled()) {
       return new Http2ClientHolder(null);
     } else {
-      return new Http2ClientHolder(
+      HttpClient client =
           httpClientsFactory.createClientForHttp2(
-              "jetty-http2-serial-client", http2ClientProperties));
+              "jetty-http2-serial-client", http2ClientProperties);
+      var metrics = metricsFacade.consumerSender();
+      enrichWithMetrics(
+          client,
+          metrics.http2SerialClientRequestQueueWaitingTimer(),
+          metrics.http2SerialClientRequestProcessingTimer());
+      return new Http2ClientHolder(client);
     }
   }
 
@@ -109,9 +125,16 @@ public class ConsumerSenderConfiguration {
   @Bean(name = "http1-batch-client")
   public HttpClient http1BatchClient(
       HttpClientsFactory httpClientsFactory,
+      MetricsFacade metricsFacade,
       @Named("http1-batch-client-parameters") Http1ClientParameters http1ClientParameters) {
-    return httpClientsFactory.createClientForHttp1(
-        "jetty-http1-batch-client", http1ClientParameters);
+    HttpClient client =
+        httpClientsFactory.createClientForHttp1("jetty-http1-batch-client", http1ClientParameters);
+    var metrics = metricsFacade.consumerSender();
+    enrichWithMetrics(
+        client,
+        metrics.http1BatchClientRequestQueueWaitingTimer(),
+        metrics.http1BatchClientRequestProcessingTimer());
+    return client;
   }
 
   @Bean(name = "oauth-http-client")
@@ -274,5 +297,12 @@ public class ConsumerSenderConfiguration {
             .withMonitoringEnabled(senderAsyncTimeoutProperties.isThreadPoolMonitoringEnabled())
             .create();
     return new FutureAsyncTimeout(timeoutExecutorService);
+  }
+
+  private static void enrichWithMetrics(
+      HttpClient client, HermesTimer requestQueueWaitingTimer, HermesTimer requestProcessingTimer) {
+    client
+        .getRequestListeners()
+        .addListener(new JettyHttpClientMetrics(requestQueueWaitingTimer, requestProcessingTimer));
   }
 }
