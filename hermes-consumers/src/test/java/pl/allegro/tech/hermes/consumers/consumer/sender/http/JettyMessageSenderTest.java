@@ -25,6 +25,7 @@ import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
 import pl.allegro.tech.hermes.consumers.config.ConsumerSenderConfiguration;
 import pl.allegro.tech.hermes.consumers.config.Http1ClientProperties;
+import pl.allegro.tech.hermes.consumers.config.HttpClientsMonitoringProperties;
 import pl.allegro.tech.hermes.consumers.config.SslContextProperties;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
@@ -73,7 +74,8 @@ public class JettyMessageSenderTest {
                 new InstrumentedExecutorServiceFactory(TestMetricsFacadeFactory.create()),
                 sslContextFactoryProvider),
             metricsFacade,
-            new Http1ClientProperties());
+            new Http1ClientProperties(),
+            new HttpClientsMonitoringProperties());
     client.start();
   }
 

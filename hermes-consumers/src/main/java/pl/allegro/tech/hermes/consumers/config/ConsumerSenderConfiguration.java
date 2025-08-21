@@ -79,14 +79,17 @@ public class ConsumerSenderConfiguration {
   public HttpClient http1SerialClient(
       HttpClientsFactory httpClientsFactory,
       MetricsFacade metricsFacade,
-      @Named("http1-serial-client-parameters") Http1ClientParameters http1ClientParameters) {
+      @Named("http1-serial-client-parameters") Http1ClientParameters http1ClientParameters,
+      HttpClientsMonitoringProperties monitoringProperties) {
     HttpClient client =
         httpClientsFactory.createClientForHttp1("jetty-http1-serial-client", http1ClientParameters);
     var metrics = metricsFacade.consumerSender();
-    enrichWithMetrics(
-        client,
-        metrics.http1SerialClientRequestQueueWaitingTimer(),
-        metrics.http1SerialClientRequestProcessingTimer());
+    if (monitoringProperties.isRequestProcessingMonitoringEnabled()) {
+      enrichWithMetrics(
+          client,
+          metrics.http1SerialClientRequestQueueWaitingTimer(),
+          metrics.http1SerialClientRequestProcessingTimer());
+    }
     return client;
   }
 
@@ -100,7 +103,8 @@ public class ConsumerSenderConfiguration {
   public Http2ClientHolder http2ClientHolder(
       HttpClientsFactory httpClientsFactory,
       MetricsFacade metricsFacade,
-      @Named("http2-serial-client-parameters") Http2ClientProperties http2ClientProperties) {
+      @Named("http2-serial-client-parameters") Http2ClientProperties http2ClientProperties,
+      HttpClientsMonitoringProperties monitoringProperties) {
     if (!http2ClientProperties.isEnabled()) {
       return new Http2ClientHolder(null);
     } else {
@@ -108,10 +112,12 @@ public class ConsumerSenderConfiguration {
           httpClientsFactory.createClientForHttp2(
               "jetty-http2-serial-client", http2ClientProperties);
       var metrics = metricsFacade.consumerSender();
-      enrichWithMetrics(
-          client,
-          metrics.http2SerialClientRequestQueueWaitingTimer(),
-          metrics.http2SerialClientRequestProcessingTimer());
+      if (monitoringProperties.isRequestProcessingMonitoringEnabled()) {
+        enrichWithMetrics(
+            client,
+            metrics.http2SerialClientRequestQueueWaitingTimer(),
+            metrics.http2SerialClientRequestProcessingTimer());
+      }
       return new Http2ClientHolder(client);
     }
   }
@@ -126,14 +132,17 @@ public class ConsumerSenderConfiguration {
   public HttpClient http1BatchClient(
       HttpClientsFactory httpClientsFactory,
       MetricsFacade metricsFacade,
-      @Named("http1-batch-client-parameters") Http1ClientParameters http1ClientParameters) {
+      @Named("http1-batch-client-parameters") Http1ClientParameters http1ClientParameters,
+      HttpClientsMonitoringProperties monitoringProperties) {
     HttpClient client =
         httpClientsFactory.createClientForHttp1("jetty-http1-batch-client", http1ClientParameters);
     var metrics = metricsFacade.consumerSender();
-    enrichWithMetrics(
-        client,
-        metrics.http1BatchClientRequestQueueWaitingTimer(),
-        metrics.http1BatchClientRequestProcessingTimer());
+    if (monitoringProperties.isRequestProcessingMonitoringEnabled()) {
+      enrichWithMetrics(
+          client,
+          metrics.http1BatchClientRequestQueueWaitingTimer(),
+          metrics.http1BatchClientRequestProcessingTimer());
+    }
     return client;
   }
 
