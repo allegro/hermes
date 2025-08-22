@@ -21,11 +21,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.EndpointAddressResolverMetadata;
-import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
 import pl.allegro.tech.hermes.consumers.config.ConsumerSenderConfiguration;
 import pl.allegro.tech.hermes.consumers.config.Http1ClientProperties;
-import pl.allegro.tech.hermes.consumers.config.HttpClientsMonitoringProperties;
 import pl.allegro.tech.hermes.consumers.config.SslContextProperties;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
@@ -58,8 +56,6 @@ public class JettyMessageSenderTest {
   private final HttpHeadersProvider headersProvider =
       new HermesHeadersProvider(Collections.singleton(new Http1HeadersProvider()));
 
-  private static final MetricsFacade metricsFacade = TestMetricsFacadeFactory.create();
-
   @BeforeClass
   public static void setupEnvironment() throws Exception {
     wireMockServer = new WireMockServer(ENDPOINT_PORT);
@@ -73,9 +69,7 @@ public class JettyMessageSenderTest {
             new HttpClientsFactory(
                 new InstrumentedExecutorServiceFactory(TestMetricsFacadeFactory.create()),
                 sslContextFactoryProvider),
-            metricsFacade,
-            new Http1ClientProperties(),
-            new HttpClientsMonitoringProperties());
+            new Http1ClientProperties());
     client.start();
   }
 

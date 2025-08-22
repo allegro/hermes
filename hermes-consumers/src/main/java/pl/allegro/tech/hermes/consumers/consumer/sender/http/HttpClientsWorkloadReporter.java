@@ -9,6 +9,7 @@ import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.MultiplexConnectionPool;
 import org.eclipse.jetty.client.transport.HttpDestination;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
+import pl.allegro.tech.hermes.metrics.HermesTimer;
 
 public class HttpClientsWorkloadReporter {
 
@@ -18,6 +19,7 @@ public class HttpClientsWorkloadReporter {
   private final Http2ClientHolder http2ClientHolder;
   private final boolean isRequestQueueMonitoringEnabled;
   private final boolean isConnectionPoolMonitoringEnabled;
+  private final boolean isRequestProcessingMonitoringEnabled;
 
   public HttpClientsWorkloadReporter(
       MetricsFacade metrics,
@@ -25,13 +27,15 @@ public class HttpClientsWorkloadReporter {
       HttpClient http1BatchClient,
       Http2ClientHolder http2ClientHolder,
       boolean isRequestQueueMonitoringEnabled,
-      boolean isConnectionPoolMonitoringEnabled) {
+      boolean isConnectionPoolMonitoringEnabled,
+      boolean isRequestProcessingMonitoringEnabled) {
     this.metrics = metrics;
     this.http1SerialClient = http1SerialClient;
     this.http1BatchClient = http1BatchClient;
     this.http2ClientHolder = http2ClientHolder;
     this.isRequestQueueMonitoringEnabled = isRequestQueueMonitoringEnabled;
     this.isConnectionPoolMonitoringEnabled = isConnectionPoolMonitoringEnabled;
+    this.isRequestProcessingMonitoringEnabled = isRequestProcessingMonitoringEnabled;
   }
 
   public void start() {
@@ -40,6 +44,9 @@ public class HttpClientsWorkloadReporter {
     }
     if (isConnectionPoolMonitoringEnabled) {
       registerConnectionGauges();
+    }
+    if (isRequestProcessingMonitoringEnabled) {
+      registerRequestProcessingListeners();
     }
   }
 
@@ -177,5 +184,31 @@ public class HttpClientsWorkloadReporter {
 
   private Stream<MultiplexConnectionPool> getHttp2ConnectionPool(HttpClient http2Client) {
     return getConnectionPool(http2Client).map(MultiplexConnectionPool.class::cast);
+  }
+
+  private void registerRequestProcessingListeners() {
+    enrichWithRequestProcessingMetrics(
+        http1SerialClient,
+        metrics.consumerSender().http1SerialClientRequestQueueWaitingTimer(),
+        metrics.consumerSender().http1SerialClientRequestProcessingTimer());
+    enrichWithRequestProcessingMetrics(
+        http1BatchClient,
+        metrics.consumerSender().http1BatchClientRequestQueueWaitingTimer(),
+        metrics.consumerSender().http1BatchClientRequestProcessingTimer());
+    http2ClientHolder
+        .getHttp2Client()
+        .ifPresent(
+            http2Client ->
+                enrichWithRequestProcessingMetrics(
+                    http2Client,
+                    metrics.consumerSender().http2SerialClientRequestQueueWaitingTimer(),
+                    metrics.consumerSender().http2SerialClientRequestProcessingTimer()));
+  }
+
+  private static void enrichWithRequestProcessingMetrics(
+      HttpClient client, HermesTimer requestQueueWaitingTimer, HermesTimer requestProcessingTimer) {
+    client
+        .getRequestListeners()
+        .addListener(new JettyHttpClientMetrics(requestQueueWaitingTimer, requestProcessingTimer));
   }
 }

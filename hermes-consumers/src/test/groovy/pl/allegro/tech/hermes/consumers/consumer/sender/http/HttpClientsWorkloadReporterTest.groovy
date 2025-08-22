@@ -38,6 +38,7 @@ class HttpClientsWorkloadReporterTest extends Specification {
                 http1BatchClient,
                 new Http2ClientHolder(http2Client),
                 true,
+                false,
                 false)
 
         expect:
@@ -60,7 +61,7 @@ class HttpClientsWorkloadReporterTest extends Specification {
         def http1BatchClient = Mock(HttpClient)
         http1BatchClient.getDestinations() >> []
 
-        def reporter = new HttpClientsWorkloadReporter(Mock(MetricsFacade), http1Client, http1BatchClient, new Http2ClientHolder(null), true, false)
+        def reporter = new HttpClientsWorkloadReporter(Mock(MetricsFacade), http1Client, http1BatchClient, new Http2ClientHolder(null), true, false, false)
 
         expect:
         reporter.queuesSize == 3

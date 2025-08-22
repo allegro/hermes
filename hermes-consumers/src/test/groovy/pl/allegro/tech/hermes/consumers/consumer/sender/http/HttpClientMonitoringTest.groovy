@@ -5,6 +5,7 @@ import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.search.Search
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import org.eclipse.jetty.client.HttpClient
+import org.eclipse.jetty.client.RequestListeners
 import pl.allegro.tech.hermes.common.metric.MetricsFacade
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory
 import pl.allegro.tech.hermes.consumers.config.ConsumerSenderConfiguration
@@ -25,12 +26,12 @@ class HttpClientMonitoringTest extends Specification {
     @Shared
     WireMockServer wireMock
 
+    HttpClient client
     HttpClient batchClient
     MeterRegistry meterRegistry = new SimpleMeterRegistry()
     MetricsFacade metrics = new MetricsFacade(meterRegistry)
     HttpClientsMonitoringProperties monitoringProperties = new HttpClientsMonitoringProperties()
-    SslContextFactoryProvider sslContextFactoryProvider = new SslContextFactoryProvider(null, new SslContextProperties())
-    ConsumerSenderConfiguration consumerConfiguration = new ConsumerSenderConfiguration();
+
 
     def setupSpec() {
         port = Ports.nextAvailable()
@@ -40,18 +41,22 @@ class HttpClientMonitoringTest extends Specification {
     }
 
     def setup() {
+        SslContextFactoryProvider sslContextFactoryProvider = new SslContextFactoryProvider(null, new SslContextProperties())
+        ConsumerSenderConfiguration consumerConfiguration = new ConsumerSenderConfiguration();
+        client = consumerConfiguration.http1SerialClient(new HttpClientsFactory(
+                new InstrumentedExecutorServiceFactory(metrics),
+                sslContextFactoryProvider), new Http1ClientProperties()
+        )
         batchClient = Mock(HttpClient)
+        batchClient = Mock(HttpClient) {
+            getRequestListeners() >> Mock(RequestListeners)
+        }
+        client.start()
     }
 
     def "should measure http client"() {
         given:
-        def client = consumerConfiguration.http1SerialClient(new HttpClientsFactory(
-                new InstrumentedExecutorServiceFactory(metrics),
-                sslContextFactoryProvider), metrics, new Http1ClientProperties(), monitoringProperties
-        )
-        client.start()
-        monitoringProperties.requestProcessingMonitoringEnabled = true
-        def reporter = new HttpClientsWorkloadReporter(metrics, client, batchClient, new Http2ClientHolder(null), false, true)
+        def reporter = new HttpClientsWorkloadReporter(metrics, client, batchClient, new Http2ClientHolder(null), false, true, true)
         reporter.start()
 
         when:
@@ -72,12 +77,7 @@ class HttpClientMonitoringTest extends Specification {
     def "should not register metrics for disabled http client monitoring"() {
         given:
         monitoringProperties.requestProcessingMonitoringEnabled = false
-        def client = consumerConfiguration.http1SerialClient(new HttpClientsFactory(
-                new InstrumentedExecutorServiceFactory(metrics),
-                sslContextFactoryProvider), metrics, new Http1ClientProperties(), monitoringProperties
-        )
-        client.start()
-        def reporter = new HttpClientsWorkloadReporter(metrics, client, batchClient, new Http2ClientHolder(null), false, false)
+        def reporter = new HttpClientsWorkloadReporter(metrics, client, batchClient, new Http2ClientHolder(null), false, false, false)
 
         when:
         reporter.start()
