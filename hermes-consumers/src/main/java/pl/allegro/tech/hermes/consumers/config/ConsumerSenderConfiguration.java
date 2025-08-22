@@ -43,7 +43,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.http.EmptyHttpHeadersPro
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.Http1ClientParameters;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.Http2ClientHolder;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpClientsFactory;
-import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpClientsWorkloadReporter;
+import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpClientsMetricsReporter;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpHeadersProvidersFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpMessageBatchSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.http.HttpRequestFactoryProvider;
@@ -135,13 +135,13 @@ public class ConsumerSenderConfiguration {
   }
 
   @Bean(initMethod = "start")
-  public HttpClientsWorkloadReporter httpClientsWorkloadReporter(
+  public HttpClientsMetricsReporter httpClientsWorkloadReporter(
       MetricsFacade metrics,
       @Named("http1-serial-client") HttpClient http1SerialClient,
       @Named("http1-batch-client") HttpClient http1BatchClient,
       Http2ClientHolder http2ClientHolder,
       HttpClientsMonitoringProperties monitoringProperties) {
-    return new HttpClientsWorkloadReporter(
+    return new HttpClientsMetricsReporter(
         metrics,
         http1SerialClient,
         http1BatchClient,

@@ -56,7 +56,7 @@ class HttpClientMonitoringTest extends Specification {
 
     def "should measure http client"() {
         given:
-        def reporter = new HttpClientsWorkloadReporter(metrics, client, batchClient, new Http2ClientHolder(null), false, true, true)
+        def reporter = new HttpClientsMetricsReporter(metrics, client, batchClient, new Http2ClientHolder(null), false, true, true)
         reporter.start()
 
         when:
@@ -77,7 +77,7 @@ class HttpClientMonitoringTest extends Specification {
     def "should not register metrics for disabled http client monitoring"() {
         given:
         monitoringProperties.requestProcessingMonitoringEnabled = false
-        def reporter = new HttpClientsWorkloadReporter(metrics, client, batchClient, new Http2ClientHolder(null), false, false, false)
+        def reporter = new HttpClientsMetricsReporter(metrics, client, batchClient, new Http2ClientHolder(null), false, false, false)
 
         when:
         reporter.start()
