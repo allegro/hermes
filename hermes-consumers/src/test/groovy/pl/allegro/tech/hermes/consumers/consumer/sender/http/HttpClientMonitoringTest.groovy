@@ -10,7 +10,6 @@ import pl.allegro.tech.hermes.common.metric.MetricsFacade
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory
 import pl.allegro.tech.hermes.consumers.config.ConsumerSenderConfiguration
 import pl.allegro.tech.hermes.consumers.config.Http1ClientProperties
-import pl.allegro.tech.hermes.consumers.config.HttpClientsMonitoringProperties
 import pl.allegro.tech.hermes.consumers.config.SslContextProperties
 import pl.allegro.tech.hermes.test.helper.util.Ports
 import spock.lang.Shared
@@ -30,8 +29,6 @@ class HttpClientMonitoringTest extends Specification {
     HttpClient batchClient
     MeterRegistry meterRegistry = new SimpleMeterRegistry()
     MetricsFacade metrics = new MetricsFacade(meterRegistry)
-    HttpClientsMonitoringProperties monitoringProperties = new HttpClientsMonitoringProperties()
-
 
     def setupSpec() {
         port = Ports.nextAvailable()
@@ -65,18 +62,17 @@ class HttpClientMonitoringTest extends Specification {
         and:
         def idleMicrometer = Search.in(meterRegistry).name("http-clients.serial.http1.idle-connections").gauge().value()
         def activeMicrometer = Search.in(meterRegistry).name("http-clients.serial.http1.active-connections").gauge().value()
-        def queueWaitTimer = Search.in(meterRegistry).name("http-clients.serial.http1.request-queue-waiting-time").timer().count()
-        def requestProcessingTimer = Search.in(meterRegistry).name("http-clients.serial.http1.request-processing-time").timer().count()
+        def queueWaitTimerCount = Search.in(meterRegistry).name("http-clients.serial.http1.request-queue-waiting-time").timer().count()
+        def requestProcessingTimerCount = Search.in(meterRegistry).name("http-clients.serial.http1.request-processing-time").timer().count()
 
         then:
         idleMicrometer + activeMicrometer > 0
-        queueWaitTimer == 1
-        requestProcessingTimer == 1
+        queueWaitTimerCount == 1
+        requestProcessingTimerCount == 1
     }
 
     def "should not register metrics for disabled http client monitoring"() {
         given:
-        monitoringProperties.requestProcessingMonitoringEnabled = false
         def reporter = new HttpClientsMetricsReporter(metrics, client, batchClient, new Http2ClientHolder(null), false, false, false)
 
         when:
