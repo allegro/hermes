@@ -273,14 +273,13 @@ export function initializeFullyFilledForm(
 function mapToHeaderFilter(
   filters: MessageFilterSpecification,
 ): HeaderFilter[] {
-  return filters
-    .map((filter: MessageFilterSpecification) => {
-      return {
-        id: generateUUID(),
-        name: filter.name,
-        value: filter.value,
-      };
-    });
+  return filters.map((filter: MessageFilterSpecification) => {
+    return {
+      id: generateUUID(),
+      name: filter.name,
+      value: filter.value,
+    };
+  });
 }
 
 function mapToPathFilter(filters: MessageFilterSpecification): PathFilter[] {
