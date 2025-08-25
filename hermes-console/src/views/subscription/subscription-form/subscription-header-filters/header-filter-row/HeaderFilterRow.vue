@@ -1,27 +1,16 @@
 <script setup lang="ts">
-  import { ref } from 'vue';
   import TextField from '@/components/text-field/TextField.vue';
 
   const props = defineProps<{
     type: 'created' | 'new';
     name?: string;
-    matcher?: string;
+    value?: string;
   }>();
-  const isFormValid = ref(false);
 
-  const emit = defineEmits(['add', 'remove', 'update:name', 'update:matcher']);
-
-  const submit = () => {
-    if (props.type === 'created') {
-      emit('remove');
-    } else if (isFormValid.value) {
-      emit('add');
-    }
-  };
+  const emit = defineEmits(['add', 'remove', 'update:name', 'update:value']);
 </script>
 
 <template>
-  <v-form v-model="isFormValid" @submit.prevent="submit">
     <v-row v-if="props.type === 'created'">
       <v-col cols="5">
         <text-field
@@ -34,8 +23,8 @@
 
       <v-col cols="5">
         <text-field
-          :model-value="props.matcher"
-          @input="$emit('update:matcher', $event.target.value)"
+          :model-value="props.value"
+          @input="$emit('update:value', $event.target.value)"
           label="Matcher"
           placeholder="Matcher for filter"
         />
@@ -43,20 +32,19 @@
 
       <v-col>
         <v-btn
-          type="submit"
-          :ripple="false"
-          variant="text"
-          icon="mdi-delete"
-          color="error"
+            :ripple="false"
+            variant="text"
+            icon="mdi-delete"
+            color="error"
+            @click="$emit('remove')"
         />
       </v-col>
     </v-row>
     <v-row v-else justify="end">
-      <v-btn type="submit" :ripple="false" variant="text" color="success">
+      <v-btn @click="$emit('add')" :ripple="false" variant="text" color="success">
         Add Filter
       </v-btn>
     </v-row>
-  </v-form>
 </template>
 
 <style scoped lang="scss"></style>
