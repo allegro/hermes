@@ -1,5 +1,5 @@
 export interface HeaderFilter {
   id: string;
-  headerName: string;
-  matcher: string;
+  name: string;
+  value: string;
 }

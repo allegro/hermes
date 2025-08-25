@@ -21,7 +21,7 @@
 </script>
 
 <template>
-  <v-row class="mt-0">
+  <v-row class="my-0" v-if="props.type === 'created'">
     <v-col cols="5">
       <v-combobox
         :items="paths"
@@ -55,21 +55,25 @@
 
     <v-col cols="1">
       <v-btn
-        v-if="props.type === 'new'"
-        :ripple="false"
-        color="success"
-        icon="mdi-plus-circle"
-        variant="text"
-        @click="$emit('add')"
-      />
-      <v-btn
-        v-else
         :ripple="false"
         color="error"
         icon="mdi-delete"
         variant="text"
         @click="$emit('remove')"
       />
+    </v-col>
+  </v-row>
+  <v-row class="mt-0" v-else justify="end">
+    <v-col class="pt-0" cols="2">
+      <v-btn
+        v-if="props.type === 'new'"
+        :ripple="false"
+        color="success"
+        variant="text"
+        @click="$emit('add')"
+      >
+        Add Filter
+      </v-btn>
     </v-col>
   </v-row>
 </template>

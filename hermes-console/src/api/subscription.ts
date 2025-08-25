@@ -102,9 +102,8 @@ interface OwnerJson {
 }
 
 interface HeaderFilterJson {
-  type: string;
-  header: string;
-  matcher: string;
+  name: string;
+  value: string;
 }
 
 export interface PathFilterJson {

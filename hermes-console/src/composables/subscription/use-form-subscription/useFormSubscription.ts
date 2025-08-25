@@ -263,7 +263,7 @@ export function initializeFullyFilledForm(
       subscription.subscriptionIdentityHeadersEnabled,
     deleteSubscriptionAutomatically: subscription.autoDeleteWithTopicEnabled,
     pathFilters: mapToPathFilter(subscription.filters),
-    headerFilters: mapToHeaderFilter(subscription.filters),
+    headerFilters: mapToHeaderFilter(subscription.headers),
     endpointAddressResolverMetadata: getEndpointAddressResolverValues(
       subscription.endpointAddressResolverMetadata,
     ),
@@ -273,15 +273,13 @@ export function initializeFullyFilledForm(
 function mapToHeaderFilter(
   filters: MessageFilterSpecification,
 ): HeaderFilter[] {
-  return filters
-    .filter((filter: MessageFilterSpecification) => filter.type === 'header')
-    .map((filter: MessageFilterSpecification) => {
-      return {
-        id: generateUUID(),
-        headerName: filter.header,
-        matcher: filter.matcher,
-      };
-    });
+  return filters.map((filter: MessageFilterSpecification) => {
+    return {
+      id: generateUUID(),
+      name: filter.name,
+      value: filter.value,
+    };
+  });
 }
 
 function mapToPathFilter(filters: MessageFilterSpecification): PathFilter[] {
