@@ -2,22 +2,13 @@ package pl.allegro.tech.hermes.frontend.publishing.message;
 
 import static pl.allegro.tech.hermes.common.message.converter.AvroRecordToBytesConverter.bytesToRecord;
 
-import java.util.List;
-import org.apache.avro.Conversion;
 import org.apache.avro.Schema;
 import pl.allegro.tech.hermes.common.message.wrapper.SchemaAwareSerDe;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
-import tech.allegro.schema.json2avro.converter.AvroJsonConverter;
-import tech.allegro.schema.json2avro.converter.conversions.DecimalAsStringConversion;
+import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
 public class MessageToJsonConverter {
-  private final List<Conversion<?>> defaultConversions =
-      List.of(DecimalAsStringConversion.INSTANCE);
-  private final AvroJsonConverter converter;
-
-  public MessageToJsonConverter() {
-    this.converter = new AvroJsonConverter(defaultConversions.toArray(new Conversion[0]));
-  }
+  private final JsonAvroConverter converter = new JsonAvroConverter();
 
   public byte[] convert(Message message, boolean schemaIdAwareSerializationEnabled) {
     try {
@@ -37,7 +28,6 @@ public class MessageToJsonConverter {
         schemaIdAwareSerializationEnabled
             ? SchemaAwareSerDe.trimMagicByteAndSchemaVersion(avro)
             : avro;
-    return converter.convertToJson(
-        bytesToRecord(schemaAwareAvro, schema.getSchema(), defaultConversions));
+    return converter.convertToJson(bytesToRecord(schemaAwareAvro, schema.getSchema()));
   }
 }

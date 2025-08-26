@@ -1,6 +1,7 @@
 import {
   removeTopic as deleteTopic,
   fetchTopic,
+  getActiveOfflineRetransmissions,
   fetchOfflineClientsSource as getOfflineClientsSource,
   fetchTopic as getTopic,
   fetchTopicClients as getTopicClients,
@@ -22,6 +23,7 @@ import type {
   TopicWithSchema,
 } from '@/api/topic';
 import type { OfflineClientsSource } from '@/api/offline-clients-source';
+import type { OfflineRetransmissionActiveTask } from '@/api/offline-retransmission';
 import type { Owner } from '@/api/owner';
 import type { Ref } from 'vue';
 import type { Subscription } from '@/api/subscription';
@@ -40,6 +42,7 @@ export interface UseTopic {
   fetchOfflineClientsSource: () => Promise<void>;
   removeTopic: () => Promise<boolean>;
   fetchTopicClients: () => Promise<string[] | null>;
+  activeRetransmissions: Ref<OfflineRetransmissionActiveTask[] | undefined>;
 }
 
 export interface UseTopicErrors {
@@ -62,6 +65,7 @@ export function useTopic(topicName: string): UseTopic {
   const subscriptions = ref<Subscription[]>();
   const offlineClientsSource = ref<OfflineClientsSource>();
   const trackingUrls = ref<TrackingUrl[]>();
+  const activeRetransmissions = ref<OfflineRetransmissionActiveTask[]>();
   const loading = ref(false);
   const error = ref<UseTopicErrors>({
     fetchTopic: null,
@@ -83,6 +87,7 @@ export function useTopic(topicName: string): UseTopic {
           fetchTopicMessagesPreview(),
           fetchTopicMetrics(),
           fetchSubscriptions(),
+          fetchActiveOfflineRetransmissions(),
         ]);
       }
     } finally {
@@ -201,6 +206,22 @@ export function useTopic(topicName: string): UseTopic {
     }
   };
 
+  const fetchActiveOfflineRetransmissions = async () => {
+    try {
+      activeRetransmissions.value = (
+        await getActiveOfflineRetransmissions(topicName)
+      ).data;
+    } catch (e: any) {
+      dispatchErrorNotification(
+        e,
+        notificationStore,
+        useGlobalI18n().t(
+          'notifications.offlineRetransmission.fetchActive.failure',
+        ),
+      );
+    }
+  };
+
   fetchTopic();
   fetchTopicTrackingUrls();
 
@@ -217,6 +238,7 @@ export function useTopic(topicName: string): UseTopic {
     fetchOfflineClientsSource,
     removeTopic,
     fetchTopicClients,
+    activeRetransmissions,
   };
 }
 

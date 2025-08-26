@@ -14,6 +14,7 @@
   import MessagesPreview from '@/views/topic/messages-preview/MessagesPreview.vue';
   import MetricsList from '@/views/topic/metrics-list/MetricsList.vue';
   import OfflineClients from '@/views/topic/offline-clients/OfflineClients.vue';
+  import OfflineRetransmissionInfo from '@/views/topic/offline-retransmission/OfflineRetransmissionInfo.vue';
   import PropertiesList from '@/views/topic/properties-list/PropertiesList.vue';
   import SchemaPanel from '@/views/topic/schema-panel/SchemaPanel.vue';
   import SubscriptionsList from '@/views/topic/subscriptions-list/SubscriptionsList.vue';
@@ -42,6 +43,7 @@
     fetchOfflineClientsSource,
     removeTopic,
     fetchTopicClients,
+    activeRetransmissions,
   } = useTopic(topicName);
 
   const breadcrumbsItems = [
@@ -159,6 +161,8 @@
       </v-row>
 
       <schema-panel v-if="topic" :schema="topic.schema" />
+
+      <offline-retransmission-info :tasks="activeRetransmissions" />
 
       <messages-preview
         v-if="

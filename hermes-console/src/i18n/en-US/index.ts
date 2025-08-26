@@ -7,12 +7,19 @@ const en_US = {
       console: 'Console',
       favoriteTopics: 'Favorite topics',
       favoriteSubscriptions: 'Favorite subs',
+      topics: 'Topics',
+      subscriptions: 'Subscriptions',
       runtime: 'Runtime',
       statistics: 'Stats',
       search: 'Search',
       documentation: 'Docs',
       costs: 'Costs',
       adminTools: 'Admin tools',
+      favorites: 'Favorites',
+      readiness: 'Readiness',
+      constraints: 'Constraints',
+      consistency: 'Consistency',
+      inactiveTopics: 'Inactive topics',
     },
   },
   header: {
@@ -667,6 +674,17 @@ const en_US = {
     targetTopic: 'Target topic',
     startTimestamp: 'Start timestamp (UTC)',
     endTimestamp: 'End timestamp (UTC)',
+    monitoringView: {
+      title: 'Active offline retransmissions',
+      allTasksLinkTitle: 'Offline retransmission global queue',
+      monitoringDocsLinkTitle: 'Offline retransmission monitoring docs',
+      idHeader: 'ID',
+      typeHeader: 'Type',
+      logsLinkHeader: 'Logs',
+      metricsLinkHeader: 'Metrics',
+      jobLinkHeader: 'Job Details',
+      allTasksLinkHeader: 'Hermes retransmission global queue',
+    },
   },
   notifications: {
     dashboardUrl: {
@@ -808,6 +826,9 @@ const en_US = {
           'Successfully created retransmission task from topic: “{sourceTopic}“ to topic: “{targetTopic}“',
         failure:
           'Failed to create retransmission task from topic: “{sourceTopic}“ to topic: “{targetTopic}“',
+      },
+      fetchActive: {
+        failure: 'Failed to fetch active retransmission tasks',
       },
     },
     subscriptionFiltersDebug: {

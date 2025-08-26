@@ -2,15 +2,16 @@ import { beforeEach, describe, expect } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
 import { createTestingPinia } from '@pinia/testing';
 import { createTestingPiniaWithState } from '@/dummy/store';
-import { dummyAppConfig } from '@/dummy/app-config';
-import { dummyMetricsDashboardUrl } from '@/dummy/metricsDashboardUrl';
 import {
+  dummyActiveOfflineRetransmissions,
   dummyOfflineClientsSource,
   dummyOwner,
   dummyTopic,
   dummyTopicMessagesPreview,
   dummyTopicMetrics,
 } from '@/dummy/topic';
+import { dummyAppConfig } from '@/dummy/app-config';
+import { dummyMetricsDashboardUrl } from '@/dummy/metricsDashboardUrl';
 import { dummyRoles } from '@/dummy/roles';
 import {
   dummySubscription,
@@ -60,6 +61,7 @@ const useTopicMock: UseTopic = {
   trackingUrls: ref(dummyTrackingUrls),
   fetchOfflineClientsSource: () => Promise.resolve(),
   removeTopic: () => Promise.resolve(true),
+  activeRetransmissions: ref(dummyActiveOfflineRetransmissions),
 };
 
 vi.mock('@/composables/metrics/use-metrics/useMetrics');
