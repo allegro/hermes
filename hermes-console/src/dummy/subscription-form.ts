@@ -205,8 +205,8 @@ export const dummyInitializedEditSubscriptionForm = {
   attachSubscriptionIdentityHeaders:
     dummySubscription.subscriptionIdentityHeadersEnabled,
   deleteSubscriptionAutomatically: dummySubscription.autoDeleteWithTopicEnabled,
-  pathFilters: [],
-  headerFilters: [],
+  pathFilters: dummySubscription.filters,
+  headerFilters: dummySubscription.headers,
   endpointAddressResolverMetadata: {
     supportedMetadata: true,
   },

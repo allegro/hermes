@@ -44,10 +44,9 @@ describe('useEditSubscription', () => {
   });
 
   it('should return initialized form', async () => {
-    //given
+    // given
     server.listen();
     const testSubscription = dummySubscription;
-    testSubscription.filters = [];
 
     // when
     const { form } = useEditSubscription(
@@ -55,9 +54,27 @@ describe('useEditSubscription', () => {
       testSubscription,
     );
 
+    // helper to normalize both actual and expected forms
+    const normalizeFilters = (data: any) => ({
+      ...data,
+      pathFilters: data.pathFilters.map(({ id, type, ...rest }: any) => {
+        void id;
+        void type;
+        return rest;
+      }),
+      headerFilters: data.headerFilters.map(({ id, ...rest }: any) => {
+        void id;
+        return rest;
+      }),
+    });
+
     // then
-    expect(JSON.stringify(form.value)).toMatchObject(
-      JSON.stringify(dummyInitializedEditSubscriptionForm),
+    const normalizedActual = normalizeFilters(form.value);
+    const normalizedExpected = normalizeFilters(
+      dummyInitializedEditSubscriptionForm,
+    );
+    expect(JSON.stringify(normalizedActual)).toMatchObject(
+      JSON.stringify(normalizedExpected),
     );
   });
 
