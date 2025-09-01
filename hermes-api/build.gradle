@@ -4,7 +4,7 @@ plugins {
 }
 
 dependencies {
-    api group: 'org.hibernate.validator', name: 'hibernate-validator', version: '8.0.1.Final'
+    api group: 'org.hibernate.validator', name: 'hibernate-validator', version: '9.0.1.Final'
 
     api group: 'jakarta.ws.rs', name: 'jakarta.ws.rs-api', version: '3.1.0'
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: versions.jackson
