@@ -7,9 +7,8 @@ RUN gradle clean distZip -Pdistribution
 
 FROM eclipse-temurin:21.0.8_9-jre
 
-RUN apt-get clean \
-  && apt-get update \
-  && DEBIAN_FRONTEND=noninteractive apt-get -y install unzip wget bash \
+RUN apt-get update \
+  && apt-get -y install unzip wget bash \
   && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir /app
