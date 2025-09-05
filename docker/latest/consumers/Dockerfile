@@ -1,13 +1,15 @@
-FROM gradle:8.12-jdk21 AS builder
+FROM gradle:8.14.3-jdk21 AS builder
+ENV JAVA_TOOL_OPTIONS="-XX:UseSVE=0"
 
 COPY --chown=gradle:gradle . /home/gradle/src/
 WORKDIR /home/gradle/src/
 RUN gradle clean distZip -Pdistribution
 
-FROM eclipse-temurin:21-jre
+FROM eclipse-temurin:21.0.8_9-jre
 
-RUN apt-get update \
-  && apt-get -y install unzip wget bash \
+RUN apt-get clean \
+  && apt-get update \
+  && DEBIAN_FRONTEND=noninteractive apt-get -y install unzip wget bash \
   && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir /app
