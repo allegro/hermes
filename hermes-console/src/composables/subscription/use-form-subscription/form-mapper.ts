@@ -31,8 +31,8 @@ export function parseFormToRequestBody(
     deliveryType: form.deliveryType,
     description: form.description,
     endpoint: form.endpoint,
-    filters: pathFilters.concat(headerFilters),
-    headers: [],
+    filters: pathFilters,
+    headers: headerFilters,
     http2Enabled: form.deliverUsingHttp2,
     mode: form.mode,
     monitoringDetails: {
@@ -114,8 +114,7 @@ function mapPathFilter(
 
 function mapHeaderFilter(filter: HeaderFilter): SubscriptionFilterJson {
   return {
-    type: 'header',
-    header: filter.headerName,
-    matcher: filter.matcher,
+    name: filter.name,
+    value: filter.value,
   };
 }
