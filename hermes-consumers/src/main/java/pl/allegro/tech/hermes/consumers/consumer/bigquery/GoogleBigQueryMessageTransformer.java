@@ -4,5 +4,5 @@ import pl.allegro.tech.hermes.consumers.consumer.Message;
 
 public interface GoogleBigQueryMessageTransformer<T> {
 
-    T fromHermesMessage(Message message);
+  T fromHermesMessage(Message message);
 }

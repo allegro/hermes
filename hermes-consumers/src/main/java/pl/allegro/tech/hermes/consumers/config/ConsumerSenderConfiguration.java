@@ -248,22 +248,21 @@ public class ConsumerSenderConfiguration {
         batchingSettings,
         transportChannelProvider,
         googlePubSubMessageTransformerCreator);
-    }
+  }
 
-    @Bean(name = "defaultGoogleBigQueryMessageSenderProvider")
-    public ProtocolMessageSenderProvider googleBigQueryMessageSenderProvider(
-            GoogleBigQuerySenderTargetResolver senderTargetResolver,
-            GoogleBigQueryJsonMessageTransformer jsonMessageTransformer,
-            GoogleBigQueryAvroMessageTransformer avroMessageTransformer,
-            GoogleBigQueryJsonDataWriterPool jsonDataWriterPool,
-            GoogleBigQueryAvroDataWriterPool avroDataWriterPool) {
-        return new GoogleBigQueryMessageSenderProvider(
-                senderTargetResolver,
-                jsonMessageTransformer,
-                avroMessageTransformer,
-                jsonDataWriterPool,
-                avroDataWriterPool
-        );
+  @Bean(name = "defaultGoogleBigQueryMessageSenderProvider")
+  public ProtocolMessageSenderProvider googleBigQueryMessageSenderProvider(
+      GoogleBigQuerySenderTargetResolver senderTargetResolver,
+      GoogleBigQueryJsonMessageTransformer jsonMessageTransformer,
+      GoogleBigQueryAvroMessageTransformer avroMessageTransformer,
+      GoogleBigQueryJsonDataWriterPool jsonDataWriterPool,
+      GoogleBigQueryAvroDataWriterPool avroDataWriterPool) {
+    return new GoogleBigQueryMessageSenderProvider(
+        senderTargetResolver,
+        jsonMessageTransformer,
+        avroMessageTransformer,
+        jsonDataWriterPool,
+        avroDataWriterPool);
   }
 
   @Bean

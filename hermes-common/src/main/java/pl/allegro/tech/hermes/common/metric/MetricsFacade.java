@@ -66,7 +66,9 @@ public class MetricsFacade {
     return trackerElasticSearchMetrics;
   }
 
-  public DeadLettersMetrics deadLetters() { return deadLettersMetrics; }
+  public DeadLettersMetrics deadLetters() {
+    return deadLettersMetrics;
+  }
 
   public PersistentBufferMetrics persistentBuffer() {
     return persistentBufferMetrics;

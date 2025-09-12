@@ -40,7 +40,8 @@ public class SingleMessageSendingResult implements MessageSendingResult {
     builder.append(String.format("rootCause: %s\n", getRootCause()));
     if (failure != null) {
       builder.append(String.format("failure: %s\n", failure));
-      builder.append(String.format("failure callstack: %s\n", Throwables.getStackTraceAsString(failure)));
+      builder.append(
+          String.format("failure callstack: %s\n", Throwables.getStackTraceAsString(failure)));
     }
 
     return builder.toString();

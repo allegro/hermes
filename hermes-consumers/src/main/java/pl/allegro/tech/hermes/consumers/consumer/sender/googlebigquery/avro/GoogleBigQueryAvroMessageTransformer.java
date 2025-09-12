@@ -7,13 +7,15 @@ import pl.allegro.tech.hermes.common.message.converter.AvroRecordToBytesConverte
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.bigquery.GoogleBigQueryMessageTransformer;
 
-public class GoogleBigQueryAvroMessageTransformer implements GoogleBigQueryMessageTransformer<GenericRecord> {
-    @Override
-    public GenericRecord fromHermesMessage(Message message) {
+public class GoogleBigQueryAvroMessageTransformer
+    implements GoogleBigQueryMessageTransformer<GenericRecord> {
+  @Override
+  public GenericRecord fromHermesMessage(Message message) {
 
-        Preconditions.checkArgument(message.getContentType().equals(ContentType.AVRO));
-        Preconditions.checkArgument(message.getSchema().isPresent());
+    Preconditions.checkArgument(message.getContentType().equals(ContentType.AVRO));
+    Preconditions.checkArgument(message.getSchema().isPresent());
 
-        return AvroRecordToBytesConverter.bytesToRecord(message.getData(), message.getSchema().get().getSchema());
-    }
+    return AvroRecordToBytesConverter.bytesToRecord(
+        message.getData(), message.getSchema().get().getSchema());
+  }
 }

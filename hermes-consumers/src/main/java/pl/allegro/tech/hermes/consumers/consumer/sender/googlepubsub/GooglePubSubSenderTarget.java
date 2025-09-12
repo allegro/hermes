@@ -1,8 +1,8 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub;
 
 import com.google.pubsub.v1.TopicName;
-import pl.allegro.tech.hermes.consumers.consumer.sender.SenderTarget;
 import java.util.Objects;
+import pl.allegro.tech.hermes.consumers.consumer.sender.SenderTarget;
 
 class GooglePubSubSenderTarget implements SenderTarget {
 

@@ -28,8 +28,7 @@ public class DeadLettersMetrics {
   }
 
   private static class Gauges {
-    public static final String DEADLETTER_BIGQUERY_QUEUE_SIZE =
-        "deadletter.bigquery.queue-size";
+    public static final String DEADLETTER_BIGQUERY_QUEUE_SIZE = "deadletter.bigquery.queue-size";
     public static final String DEADLETTER_BIGQUERY_REMAINING_CAPACITY =
         "deadletter.bigquery.remaining-capacity";
   }

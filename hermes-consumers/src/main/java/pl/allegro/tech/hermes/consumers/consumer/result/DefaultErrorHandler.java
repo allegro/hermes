@@ -1,8 +1,8 @@
 package pl.allegro.tech.hermes.consumers.consumer.result;
 
 import static pl.allegro.tech.hermes.api.SentMessageTrace.Builder.undeliveredMessage;
-import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
 import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toDeadMessage;
+import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
 
 import java.time.Clock;
 import java.util.Map;

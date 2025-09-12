@@ -21,7 +21,7 @@ public class EndpointAddressFormatValidator implements EndpointAddressValidator 
     this.availableProtocol.add("https");
     this.availableProtocol.add("jms");
     this.availableProtocol.add("googlepubsub");
-        this.availableProtocol.add("googlebigquery");
+    this.availableProtocol.add("googlebigquery");
   }
 
   @Override

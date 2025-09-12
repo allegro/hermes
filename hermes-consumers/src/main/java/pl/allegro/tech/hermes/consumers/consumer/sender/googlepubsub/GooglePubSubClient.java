@@ -5,7 +5,6 @@ import com.google.api.core.ApiFutures;
 import com.google.cloud.pubsub.v1.Publisher;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.pubsub.v1.PubsubMessage;
-import pl.allegro.tech.hermes.consumers.consumer.sender.SenderClient;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -13,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
+import pl.allegro.tech.hermes.consumers.consumer.sender.SenderClient;
 
 class GooglePubSubClient implements SenderClient<PubsubMessage> {
 
@@ -24,16 +24,17 @@ class GooglePubSubClient implements SenderClient<PubsubMessage> {
     this.publisher = publisher;
   }
 
-    @Override
-    public void publish(PubsubMessage pubsubMessage, CompletableFuture<MessageSendingResult> resultFuture)
+  @Override
+  public void publish(
+      PubsubMessage pubsubMessage, CompletableFuture<MessageSendingResult> resultFuture)
       throws IOException, ExecutionException, InterruptedException {
     ApiFuture<String> future = publisher.publish(pubsubMessage);
     ApiFutures.addCallback(
         future, new GooglePubSubMessageSentCallback(resultFuture), MoreExecutors.directExecutor());
   }
 
-    @Override
-    public void shutdown() {
+  @Override
+  public void shutdown() {
     publisher.shutdown();
     try {
       publisher.awaitTermination(30, TimeUnit.SECONDS);

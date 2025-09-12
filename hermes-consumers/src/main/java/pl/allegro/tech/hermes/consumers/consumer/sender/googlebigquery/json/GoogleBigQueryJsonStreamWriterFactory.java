@@ -9,43 +9,45 @@ import com.google.cloud.bigquery.storage.v1.BigQueryWriteClient;
 import com.google.cloud.bigquery.storage.v1.BigQueryWriteSettings;
 import com.google.cloud.bigquery.storage.v1.JsonStreamWriter;
 import com.google.protobuf.Descriptors;
+import java.io.IOException;
+import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 import org.threeten.bp.Duration;
 import pl.allegro.tech.hermes.consumers.consumer.bigquery.GoogleBigQueryStreamWriterFactory;
 
-import java.io.IOException;
-import java.util.concurrent.Executors;
+public class GoogleBigQueryJsonStreamWriterFactory
+    implements GoogleBigQueryStreamWriterFactory<JsonStreamWriter> {
 
-public class GoogleBigQueryJsonStreamWriterFactory implements GoogleBigQueryStreamWriterFactory<JsonStreamWriter> {
+  private static final Logger logger = LoggerFactory.getLogger(GoogleBigQueryJsonDataWriter.class);
 
-    private static final Logger logger = LoggerFactory.getLogger(GoogleBigQueryJsonDataWriter.class);
+  private final Credentials credentials;
+  private final BigQueryWriteClient writeClient;
 
-    private final Credentials credentials;
-    private final BigQueryWriteClient writeClient;
+  public GoogleBigQueryJsonStreamWriterFactory(
+      CredentialsProvider credentials, GoogleBigQueryJsonWriteClientProvider writeClientProvider)
+      throws IOException {
+    this.credentials = credentials.getCredentials();
+    this.writeClient = writeClientProvider.getWriteClient();
+  }
 
-    public GoogleBigQueryJsonStreamWriterFactory(CredentialsProvider credentials,  GoogleBigQueryJsonWriteClientProvider writeClientProvider) throws IOException {
-        this.credentials = credentials.getCredentials();
-        this.writeClient = writeClientProvider.getWriteClient();
+  public JsonStreamWriter getWriterForStream(String stream) {
+    try {
+      return JsonStreamWriter.newBuilder(stream, writeClient)
+          .setEnableConnectionPool(true)
+          .setExecutorProvider(FixedExecutorProvider.create(Executors.newScheduledThreadPool(100)))
+          .setFlowControlSettings(FlowControlSettings.newBuilder().build())
+          .setChannelProvider(
+              BigQueryWriteSettings.defaultGrpcTransportProviderBuilder()
+                  .setCredentials(credentials)
+                  .setKeepAliveTime(Duration.ofMinutes(1))
+                  .setKeepAliveWithoutCalls(true)
+                  .setChannelPoolSettings(ChannelPoolSettings.staticallySized(2))
+                  .build())
+          .build();
+    } catch (Descriptors.DescriptorValidationException | IOException | InterruptedException e) {
+      logger.warn("Cannot create JsonStreamWriter for stream {}", stream, e);
+      throw new RuntimeException(e);
     }
-
-    public JsonStreamWriter getWriterForStream(String stream) {
-        try {
-            return JsonStreamWriter.newBuilder(stream, writeClient)
-                    .setEnableConnectionPool(true)
-                    .setExecutorProvider(FixedExecutorProvider.create(Executors.newScheduledThreadPool(100)))
-                    .setFlowControlSettings(FlowControlSettings.newBuilder().build())
-                    .setChannelProvider(BigQueryWriteSettings.defaultGrpcTransportProviderBuilder()
-                            .setCredentials(credentials)
-                            .setKeepAliveTime(Duration.ofMinutes(1))
-                            .setKeepAliveWithoutCalls(true)
-                            .setChannelPoolSettings(ChannelPoolSettings.staticallySized(2))
-                            .build())
-                    .build();
-        } catch (Descriptors.DescriptorValidationException | IOException | InterruptedException e) {
-            logger.warn("Cannot create JsonStreamWriter for stream {}", stream, e);
-            throw new RuntimeException(e);
-        }
-    }
+  }
 }

@@ -38,7 +38,6 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.tracker.consumers.LogRepository;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 import pl.allegro.tech.hermes.tracker.consumers.deadletters.DeadLetters;
-import pl.allegro.tech.hermes.tracker.consumers.deadletters.DeadRepository;
 
 @Configuration
 @EnableConfigurationProperties({
@@ -192,5 +191,4 @@ public class ConsumerConfiguration {
   public Trackers trackers(List<LogRepository> repositories) {
     return new Trackers(repositories);
   }
-
 }

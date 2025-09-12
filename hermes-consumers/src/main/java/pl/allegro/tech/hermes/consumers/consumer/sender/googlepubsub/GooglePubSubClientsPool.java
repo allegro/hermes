@@ -6,15 +6,15 @@ import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.pubsub.v1.Publisher;
-import pl.allegro.tech.hermes.consumers.consumer.sender.SenderClientsPool;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.consumers.consumer.sender.SenderClientsPool;
 
-class GooglePubSubClientsPool extends SenderClientsPool<GooglePubSubSenderTarget, GooglePubSubClient> {
+class GooglePubSubClientsPool
+    extends SenderClientsPool<GooglePubSubSenderTarget, GooglePubSubClient> {
   private static final Logger logger = LoggerFactory.getLogger(GooglePubSubClientsPool.class);
 
   private final CredentialsProvider credentialsProvider;
