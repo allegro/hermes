@@ -331,11 +331,12 @@ public class BatchConsumer implements Consumer {
           });
     } catch (Exception e) {
       if (hasInterruptedException(e)) {
-        logger.debug(
+        logger.info(
             "Batch sending was interrupted [batch_id={}, subscription={}].",
             batch.getId(),
             subscription.getQualifiedName(),
             e);
+        metrics.recordAttemptAsFinished(batch.getMessageCount());
         logger.info("Restoring interrupted status", e);
         Thread.currentThread().interrupt();
       } else {
