@@ -29,3 +29,9 @@ You can also use other *magic words* from [GitHub handbook](https://help.github.
 * when changing old tests use your best judgement as to when rewrite them to `spock`
 * use `JUnit5` with defined environment in `integration-tests` module
 * prepend configuration options with module name, i.e. `frontend.` or `consumer.` when it applies to single module
+
+## Gradle build configuration
+
+When changing Gradle related files or dependencies:
+
+* use `./gradlew buildHealth` to verify build configuration
