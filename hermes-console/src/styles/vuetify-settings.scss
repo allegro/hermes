@@ -1,0 +1,4 @@
+@use "vuetify/settings" with (
+  $table-border-color: rgba(var(--v-border-color), 0.06),
+);
+
