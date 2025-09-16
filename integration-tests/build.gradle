@@ -23,6 +23,8 @@ dependencies {
     testImplementation group: 'com.squareup.okhttp3', name: 'okhttp', version: versions.okhttp
     testImplementation group: 'org.springframework', name: 'spring-webflux', version: versions.spring_web
     testImplementation group: 'org.springframework', name: 'spring-test', version: versions.spring_web
+    testImplementation group: 'com.google.cloud', name: 'google-cloud-pubsub', version: '1.128.1'
+    testImplementation group: 'org.apache.httpcomponents.core5', name: 'httpcore5', version: '5.2.4'
     testImplementation group: 'org.eclipse.jetty', name: 'jetty-reactive-httpclient', version: '4.0.3'
     testImplementation group: 'org.awaitility', name: 'awaitility', version: '4.2.0'
     testImplementation group: 'org.reactivestreams', name: 'reactive-streams', version: '1.0.4'
