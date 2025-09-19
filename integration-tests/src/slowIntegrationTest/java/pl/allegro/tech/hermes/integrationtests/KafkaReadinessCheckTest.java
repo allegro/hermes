@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.testcontainers.lifecycle.Startable;
@@ -33,23 +34,31 @@ public class KafkaReadinessCheckTest {
   private static final KafkaContainerCluster kafka = new KafkaContainerCluster(3);
   private static final ConfluentSchemaRegistryContainer schemaRegistry =
       new ConfluentSchemaRegistryContainer().withKafkaCluster(kafka);
+  private static HermesFrontendTestApp frontendApp =
+      new HermesFrontendTestApp(hermesZookeeper, kafka, schemaRegistry);
   private static Topic topic;
+  private static HermesInitHelper hermesInitHelper;
+  private static HermesTestApp management;
 
   @BeforeAll
   public static void setup() {
     Stream.of(hermesZookeeper, kafka).parallel().forEach(Startable::start);
     schemaRegistry.start();
-    HermesTestApp management =
-        new HermesManagementTestApp(hermesZookeeper, kafka, schemaRegistry).start();
+    management = new HermesManagementTestApp(hermesZookeeper, kafka, schemaRegistry).start();
+    frontendApp.start();
+    hermesInitHelper = new HermesInitHelper(management.getPort());
+  }
 
-    HermesInitHelper hermesInitHelper = new HermesInitHelper(management.getPort());
+  @BeforeEach
+  public void beforeEach() {
     topic = hermesInitHelper.createTopic(topicWithRandomName().withAck(ALL).build());
-    management.stop();
   }
 
   @AfterAll
   public static void clean() {
     Stream.of(hermesZookeeper, kafka, schemaRegistry).parallel().forEach(Startable::stop);
+    frontendApp.stop();
+    management.stop();
   }
 
   @Test
