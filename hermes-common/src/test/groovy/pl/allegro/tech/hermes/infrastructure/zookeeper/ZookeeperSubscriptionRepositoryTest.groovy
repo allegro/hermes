@@ -12,6 +12,7 @@ import pl.allegro.tech.hermes.infrastructure.MalformedDataException
 import pl.allegro.tech.hermes.test.IntegrationTest
 
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 
 import static pl.allegro.tech.hermes.api.PatchData.patchData
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription
@@ -177,8 +178,22 @@ class ZookeeperSubscriptionRepositoryTest extends IntegrationTest {
 
     def "should get list of subscriptions based on names list"() {
         given:
-        def subscription1 = subscription(TOPIC, 'subscription1', EndpointAddress.of('hello')).build()
-        def subscription2 = subscription(TOPIC, 'subscription2', EndpointAddress.of('hello')).build()
+        /*
+            When we retrieve subscriptions from our ZooKeeper repository, their timestamps (createdAt and modifiedAt) are
+            set based on ZooKeeper's internal node stats. This causes them to differ from the timestamps on the original objects we created.
+            Since our equals() and hashCode() methods rely on all fields, including these timestamps, a retrieved subscription
+            will not be considered equal to the original one. To ensure our test assertions pass, we must override the retrieved
+            timestamps to match the original ones. This workaround allows us to confirm that the object retrieved is an exact
+            match for the object we initially persisted.
+         */
+        Instant now = Instant.now().truncatedTo(ChronoUnit.MILLIS)
+        def subscription1 = subscription(TOPIC, 'subscription1', EndpointAddress.of('hello'))
+                .withCreatedAt(now)
+                .withModifiedAt(now).build()
+        def subscription2 = subscription(TOPIC, 'subscription2', EndpointAddress.of('hello'))
+                .withCreatedAt(now)
+                .withModifiedAt(now)
+                .build()
         def subscriptionName1 = new SubscriptionName("subscription1", TOPIC)
         def subscriptionName2 = new SubscriptionName("subscription2", TOPIC)
 
@@ -189,9 +204,15 @@ class ZookeeperSubscriptionRepositoryTest extends IntegrationTest {
         wait.untilSubscriptionCreated(TOPIC, 'subscription2')
 
         when:
-        List<Subscription> retrived = repository.getSubscriptionDetails([subscriptionName1, subscriptionName2])
+        List<Subscription> retrieved = repository.getSubscriptionDetails([subscriptionName1, subscriptionName2])
+        retrieved.forEach {
+            // Set timestamps to match the ones we created before persisting.
+            // The retrieved subscriptions will have timestamps set based on zookeeper node stats.
+            it.setCreatedAt(now.toEpochMilli())
+            it.setModifiedAt(now.toEpochMilli())
+        }
 
         then:
-        retrived.containsAll([subscription1, subscription2])
+        retrieved.containsAll([subscription1, subscription2])
     }
 }
