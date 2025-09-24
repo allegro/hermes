@@ -10,7 +10,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 public class GoogleBigQueryFailedAppendExceptionTest {
   @Test
   public void testGoogleBigQueryFailedAppendException() {
-    // Given
+    // given
     int codeValue = 1;
     String description = "NullPointerException";
     String streamName = "streamName";
@@ -21,11 +21,10 @@ public class GoogleBigQueryFailedAppendExceptionTest {
         new Exceptions.AppendSerializationError(
             codeValue, description, streamName, rowIndexToErrorMessage);
     GoogleBigQueryFailedAppendException exception = new GoogleBigQueryFailedAppendException(cause);
-    // When
+    // when
     String message = exception.getMessage();
-    System.out.println(message);
 
-    // Then
+    // then
     assertThat(message).contains("CANCELLED: NullPointerException");
     assertThat(message)
         .contains("GoogleBigQuery Subscription has failed to append rows to stream streamName");
@@ -33,7 +32,7 @@ public class GoogleBigQueryFailedAppendExceptionTest {
 
   @Test
   public void testGoogleBigQueryFailedAppendExceptionWithColumns() {
-    // Given
+    // given
     int codeValue = 1;
     String description = "NullPointerException";
     String streamName = "streamName";
@@ -47,11 +46,11 @@ public class GoogleBigQueryFailedAppendExceptionTest {
         new Exceptions.AppendSerializationError(
             codeValue, description, streamName, rowIndexToErrorMessage);
     GoogleBigQueryFailedAppendException exception = new GoogleBigQueryFailedAppendException(cause);
-    // When
+    // when
     String message = exception.getMessage();
     System.out.println(message);
 
-    // Then
+    // then
     assertThat(message)
         .contains("GoogleBigQuery Subscription has failed to append rows to stream streamName");
     assertThat(message).contains("CANCELLED: NullPointerException");
@@ -63,7 +62,7 @@ public class GoogleBigQueryFailedAppendExceptionTest {
 
   @Test
   public void testSendingResultNullPointer() {
-    // Given
+    // given
     MessageSendingResult singleMessageSendingResult = null;
     try {
       String a = null;
@@ -72,10 +71,10 @@ public class GoogleBigQueryFailedAppendExceptionTest {
       singleMessageSendingResult = MessageSendingResult.failedResult(new RuntimeException(e));
     }
 
-    // When
+    // when
     String rootCause = singleMessageSendingResult.getRootCause();
 
-    // Then
+    // then
     assertThat(rootCause)
         .isEqualTo(
             "Cannot invoke \"String.contains(java.lang.CharSequence)\" because \"a\" is null");
@@ -83,7 +82,7 @@ public class GoogleBigQueryFailedAppendExceptionTest {
 
   @Test
   public void testSendingResultFailedAppend() {
-    // Given
+    // given
     MessageSendingResult singleMessageSendingResult = null;
     try {
       String a = null;
@@ -96,10 +95,10 @@ public class GoogleBigQueryFailedAppendExceptionTest {
                       1, "NullPointerException", "streamName", Map.of(1, "Column1 not found"))));
     }
 
-    // When
+    // when
     String rootCause = singleMessageSendingResult.getRootCause();
 
-    // Then
+    // then
     assertThat(rootCause).isEqualTo("CANCELLED: NullPointerException");
   }
 }

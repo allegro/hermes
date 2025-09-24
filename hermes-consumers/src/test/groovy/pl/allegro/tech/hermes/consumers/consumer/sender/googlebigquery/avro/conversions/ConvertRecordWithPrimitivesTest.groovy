@@ -37,7 +37,6 @@ class ConvertRecordWithPrimitivesTest  extends Specification implements AvroTrai
 
         DynamicMessage message = converter.convertToProtoMessage(protoDescriptor, record)
 
-
         then:
         message != null
         println(message)
@@ -45,7 +44,6 @@ class ConvertRecordWithPrimitivesTest  extends Specification implements AvroTrai
         def convertedFieldValue = message.getField(field).toString().replace("\\", "").replace("\n", "")
         def expectedRecord = "value_field: ${expectedProtoValue}".replace("\\", "").replace("\n", "")
         expectedRecord == convertedFieldValue
-
 
         where:
         suite               | avroType  | protoDescriptor                                          | avroValue                         | expectedProtoValue | transformResult
@@ -57,7 +55,6 @@ class ConvertRecordWithPrimitivesTest  extends Specification implements AvroTrai
         "record-primitives" | "bytes"   | RecordBytesProto.RecordPrimitivesBytes.getDescriptor()   | ByteBuffer.wrap("123".getBytes()) | "\"123\""          | { c -> new String(c.bytes) }
         "record-primitives" | "float"   | RecordFloatProto.RecordPrimitivesFloat.getDescriptor()   | 1.234f                            | 1.234f             | { c -> c }
         "record-primitives" | "double"  | RecordDoubleProto.RecordPrimitivesDouble.getDescriptor() | 1.234d                            | 1.234d             | { c -> c }
-
 
     }
 

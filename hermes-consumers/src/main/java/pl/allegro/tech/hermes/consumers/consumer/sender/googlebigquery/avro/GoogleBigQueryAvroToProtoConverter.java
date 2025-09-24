@@ -2,11 +2,15 @@ package pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro;
 
 import com.google.cloud.bigquery.storage.v1.TableSchema;
 import com.google.cloud.bigquery.storage.v1.ToProtoConverter;
-import com.google.protobuf.*;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.StreamSupport;
+
+import com.google.protobuf.ByteString;
+import com.google.protobuf.Descriptors;
+import com.google.protobuf.DynamicMessage;
+import com.google.protobuf.Message;
 import org.apache.avro.generic.GenericRecord;
 
 public class GoogleBigQueryAvroToProtoConverter implements ToProtoConverter<GenericRecord> {
@@ -16,7 +20,6 @@ public class GoogleBigQueryAvroToProtoConverter implements ToProtoConverter<Gene
       TableSchema tableSchema,
       Iterable<GenericRecord> inputObjects,
       boolean ignoreUnknownFields) {
-    //        return convertToProtoMessage(protoSchema, inputObjects);
     return StreamSupport.stream(inputObjects.spliterator(), false)
         .map(it -> convertToProtoMessage(protoSchema, it))
         .toList();
@@ -46,33 +49,35 @@ public class GoogleBigQueryAvroToProtoConverter implements ToProtoConverter<Gene
       Descriptors.FieldDescriptor field,
       Message.Builder messageBuilder) {
     String fieldName = field.getName();
-    if (inputObject.hasField(fieldName)) {
+    if (!inputObject.hasField(fieldName)) {
+        return;
+    }
 
-      Object fieldValue = inputObject.get(fieldName);
-
-      if (fieldValue != null) {
-        if (field.isRepeated()) {
-          if (!(fieldValue instanceof Map<?, ?>)) {
-            for (Object el : (Iterable<?>) fieldValue) {
-              messageBuilder.addRepeatedField(field, toProtobufValue(field, el));
-            }
-          } else {
-            for (Map.Entry<?, ?> el : ((Map<?, ?>) fieldValue).entrySet()) {
-              DynamicMessage.Builder entryBuilder =
-                  DynamicMessage.newBuilder(field.getMessageType());
-              Descriptors.FieldDescriptor valueField =
-                  field.getMessageType().findFieldByName("value");
-              entryBuilder.setField(
-                  field.getMessageType().findFieldByName("key"), el.getKey().toString());
-              entryBuilder.setField(valueField, toProtobufValue(valueField, el.getValue()));
-              messageBuilder.addRepeatedField(field, entryBuilder.build());
-            }
-          }
-        } else {
-          messageBuilder.setField(field, toProtobufValue(field, fieldValue));
+    Object fieldValue = inputObject.get(fieldName);
+    if (fieldValue == null) {
+        return;
+    }
+    if (field.isRepeated()) {
+      if (fieldValue instanceof Map<?, ?>) {
+        for (Map.Entry<?, ?> el : ((Map<?, ?>) fieldValue).entrySet()) {
+          DynamicMessage.Builder entryBuilder =
+              DynamicMessage.newBuilder(field.getMessageType());
+          Descriptors.FieldDescriptor valueField =
+              field.getMessageType().findFieldByName("value");
+          entryBuilder.setField(
+              field.getMessageType().findFieldByName("key"), el.getKey().toString());
+          entryBuilder.setField(valueField, toProtobufValue(valueField, el.getValue()));
+          messageBuilder.addRepeatedField(field, entryBuilder.build());
+        }
+      } else {
+        for (Object el : (Iterable<?>) fieldValue) {
+          messageBuilder.addRepeatedField(field, toProtobufValue(field, el));
         }
       }
+    } else {
+      messageBuilder.setField(field, toProtobufValue(field, fieldValue));
     }
+
   }
 
   private <T extends Number> T toNumber(Object object, Class<T> clazz) {

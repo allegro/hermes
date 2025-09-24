@@ -1,18 +1,17 @@
-package pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery;
+package pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro;
 
 import org.junit.Test;
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.GoogleBigQueryAvroSender;
 
 public class GoogleBigQueryAvroSenderTest {
   @Test
   public void shouldProduceRightPartition() {
-    // Given
+    // given
     long timestamp = 1754956797014L; // Example timestamp in milliseconds
 
-    // When
+    // when
     String partition = GoogleBigQueryAvroSender.partitionFromTimestamp(timestamp);
 
-    // Then
+    // then
     assert partition.equals("20250812");
   }
 }

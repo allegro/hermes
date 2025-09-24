@@ -42,9 +42,6 @@ dependencies {
     testImplementation project(':hermes-common')
 
     testImplementation(group: 'org.awaitility', name: 'awaitility-groovy', version: '4.2.1')
-    testImplementation(group: 'com.jayway.awaitility', name: 'awaitility', version: '1.6.1') {
-        exclude group: 'com.jayway.jsonpath', module: 'json-path'
-    }
 
     testImplementation group: 'tech.allegro.schema.json2avro', name: 'converter', version: versions.json2avro
 

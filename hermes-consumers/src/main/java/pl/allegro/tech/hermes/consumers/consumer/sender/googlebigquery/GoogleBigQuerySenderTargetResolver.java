@@ -3,11 +3,16 @@ package pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery;
 import com.google.cloud.bigquery.storage.v1.TableName;
 import com.google.common.base.Preconditions;
 import java.net.URI;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.EndpointAddress;
+import pl.allegro.tech.hermes.consumers.consumer.SerialConsumer;
 
 public class GoogleBigQuerySenderTargetResolver {
 
   public static final String GOOGLE_BQ_PROTOCOL = "googlebigquery";
+  private static final Logger logger = LoggerFactory.getLogger(GoogleBigQuerySenderTargetResolver.class);
 
   private static final String HOST = "projects";
 
@@ -15,16 +20,10 @@ public class GoogleBigQuerySenderTargetResolver {
     try {
       final URI endpointUri = URI.create(endpointAddress.getRawEndpoint());
 
-      System.out.println();
-      System.out.println();
-      System.out.println();
-      System.out.println("scheme: " + endpointUri.getScheme());
-      System.out.println("host: " + endpointUri.getHost());
-      System.out.println("port: " + endpointUri.getPort());
-      System.out.println("path: " + endpointUri.getPath());
-      System.out.println();
-      System.out.println();
-      System.out.println();
+      logger.info("scheme: {}", endpointUri.getScheme());
+      logger.info("host: {}", endpointUri.getHost());
+      logger.info("port: {}", endpointUri.getPort());
+      logger.info("path: {}", endpointUri.getPath());
 
       Preconditions.checkArgument(endpointUri.getScheme().equals(GOOGLE_BQ_PROTOCOL));
       Preconditions.checkArgument(endpointUri.getHost().equals(HOST));

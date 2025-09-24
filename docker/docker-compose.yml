@@ -47,36 +47,36 @@ services:
     depends_on:
       - prometheus
 
-  # frontend:
-  #   build:
-  #     context: ../
-  #     dockerfile: ./docker/latest/frontend/Dockerfile
-  #   ports:
-  #     - "8080:8080"
-  #   depends_on:
-  #     - zk
-  #     - kafka
-  #
-  # consumers:
-  #   build:
-  #     context: ../
-  #     dockerfile: ./docker/latest/consumers/Dockerfile
-  #   ports:
-  #     - "8070:8070"
-  #   depends_on:
-  #     - zk
-  #     - kafka
-  #
-  # management:
-  #   build:
-  #     context: ../
-  #     dockerfile: ./docker/latest/management/Dockerfile
-  #   ports:
-  #     - "8090:8090"
-  #   depends_on:
-  #     - zk
-  #     - kafka
-  #     - prometheus
+   frontend:
+     build:
+       context: ../
+       dockerfile: ./docker/latest/frontend/Dockerfile
+     ports:
+       - "8080:8080"
+     depends_on:
+       - zk
+       - kafka
+
+   consumers:
+     build:
+       context: ../
+       dockerfile: ./docker/latest/consumers/Dockerfile
+     ports:
+       - "8070:8070"
+     depends_on:
+       - zk
+       - kafka
+
+   management:
+     build:
+       context: ../
+       dockerfile: ./docker/latest/management/Dockerfile
+     ports:
+       - "8090:8090"
+     depends_on:
+       - zk
+       - kafka
+       - prometheus
 
   schema-registry:
     image: "confluentinc/cp-schema-registry:${CONFLUENT_IMAGES_TAG}"

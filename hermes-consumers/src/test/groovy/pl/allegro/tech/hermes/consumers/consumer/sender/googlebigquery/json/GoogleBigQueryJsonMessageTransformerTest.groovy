@@ -40,6 +40,7 @@ class GoogleBigQueryJsonMessageTransformerTest extends Specification {
         then:
         thrown(JSONException)
     }
+
     def 'should throw an exception when message is not a json'() {
         given:
         GoogleBigQueryJsonMessageTransformer transformer = new GoogleBigQueryJsonMessageTransformer()

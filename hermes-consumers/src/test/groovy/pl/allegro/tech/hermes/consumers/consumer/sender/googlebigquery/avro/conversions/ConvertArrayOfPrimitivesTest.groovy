@@ -39,14 +39,12 @@ class ConvertArrayOfPrimitivesTest extends Specification implements AvroTrait {
         when:
         DynamicMessage message = converter.convertToProtoMessage(protoDescriptor, record)
 
-
         then:
         message != null
         println(message)
         def field = message.getDescriptorForType().findFieldByName(fieldName)
         def converted_value = message.getField(field).collect { transformResult(it) }
         converted_value == expectedProtoValue
-
 
         where:
         suite              | avroType  | protoDescriptor                                        | avroValue                                                              | expectedProtoValue         | transformResult
@@ -79,14 +77,12 @@ class ConvertArrayOfPrimitivesTest extends Specification implements AvroTrait {
         when:
         DynamicMessage message = converter.convertToProtoMessage(protoDescriptor, record)
 
-
         then:
         message != null
         println(message)
         def field = message.getDescriptorForType().findFieldByName(fieldName)
         def converted_value = message.getField(field).toString().replace("\n", " ")
         converted_value == expectedProtoValue
-
 
         where:
         suite            | avroType  | protoDescriptor                                              | avroValue                                                                        | expectedProtoValue                                                               | transformResult

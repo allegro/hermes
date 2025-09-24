@@ -6,7 +6,7 @@ import pl.allegro.tech.hermes.api.Subscription;
 
 public class TestDeadRepository implements DeadRepository {
   public List<DeadMessage> repo = new ArrayList<>();
-  private boolean supports = true;
+  private boolean supports;
 
   public static TestDeadRepository SUPPORTING() {
     return new TestDeadRepository(true);
