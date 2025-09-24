@@ -6,18 +6,12 @@
 </script>
 
 <template>
-  <v-expansion-panels>
-    <v-expansion-panel :title="$t('topicView.messagesPreview.title')">
-      <v-expansion-panel-text>
-        <div class="d-flex flex-column row-gap-2">
-          <pre
-            v-for="(message, index) in props.messages"
-            :key="index"
-          ><v-code class="raw-schema-snippet">{{ JSON.parse(message.content) }}</v-code></pre>
-        </div>
-      </v-expansion-panel-text>
-    </v-expansion-panel>
-  </v-expansion-panels>
+  <div class="d-flex flex-column row-gap-2">
+    <pre
+      v-for="(message, index) in props.messages"
+      :key="index"
+    ><v-code class="raw-schema-snippet">{{ JSON.parse(message.content) }}</v-code></pre>
+  </div>
 </template>
 
 <style scoped lang="scss">
