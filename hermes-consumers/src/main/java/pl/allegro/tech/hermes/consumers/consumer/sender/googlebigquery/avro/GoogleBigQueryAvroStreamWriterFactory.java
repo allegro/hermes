@@ -17,6 +17,7 @@ import org.apache.avro.generic.GenericRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.threeten.bp.Duration;
+import pl.allegro.tech.hermes.consumers.config.GoogeBigQueryAvroStreamWriterProperties;
 import pl.allegro.tech.hermes.consumers.consumer.bigquery.GoogleBigQueryStreamWriterFactory;
 
 public class GoogleBigQueryAvroStreamWriterFactory
@@ -25,15 +26,18 @@ public class GoogleBigQueryAvroStreamWriterFactory
   private static final Logger logger =
       LoggerFactory.getLogger(GoogleBigQueryAvroStreamWriterFactory.class);
 
+  private final GoogeBigQueryAvroStreamWriterProperties avroStreamWriterProperties;
   private final Credentials credentials;
   private final BigQueryWriteClient writeClient;
   private final ToProtoConverter<GenericRecord> avroToProtoConverter;
 
   public GoogleBigQueryAvroStreamWriterFactory(
+      GoogeBigQueryAvroStreamWriterProperties avroStreamWriterProperties,
       CredentialsProvider credentialsProvider,
       BigQueryWriteSettings writeSettings,
       ToProtoConverter<GenericRecord> avroToProtoConverter)
       throws IOException {
+    this.avroStreamWriterProperties = avroStreamWriterProperties;
     this.credentials = credentialsProvider.getCredentials();
     this.writeClient = BigQueryWriteClient.create(writeSettings);
     this.avroToProtoConverter = avroToProtoConverter;
@@ -42,15 +46,17 @@ public class GoogleBigQueryAvroStreamWriterFactory
   public SchemaAwareStreamWriter<GenericRecord> getWriterForStream(String streamName) {
     try {
       ExecutorProvider executorProvider =
-          FixedExecutorProvider.create(Executors.newScheduledThreadPool(100));
+          FixedExecutorProvider.create(Executors.newScheduledThreadPool(avroStreamWriterProperties.getPoolSize()));
 
       FlowControlSettings flowControlSettings = FlowControlSettings.newBuilder().build();
       TransportChannelProvider channelProvider =
           BigQueryWriteSettings.defaultGrpcTransportProviderBuilder()
               .setCredentials(credentials)
-              .setKeepAliveTime(Duration.ofMinutes(1))
+              .setKeepAliveTime(Duration.ofSeconds(avroStreamWriterProperties.getKeepAliveTimeSeconds()))
               .setKeepAliveWithoutCalls(true)
-              .setChannelPoolSettings(ChannelPoolSettings.staticallySized(2))
+              .setChannelPoolSettings(
+                      ChannelPoolSettings.staticallySized(avroStreamWriterProperties.getChannelPoolStaticSize())
+              )
               .build();
       return SchemaAwareStreamWriter.newBuilder(
               streamName + "/_default", writeClient, avroToProtoConverter)

@@ -4,6 +4,8 @@ import com.google.api.gax.core.CredentialsProvider;
 import com.google.cloud.bigquery.storage.v1.BigQueryWriteSettings;
 import com.google.cloud.bigquery.storage.v1.stub.BigQueryWriteStubSettings;
 import java.io.IOException;
+
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.*;
@@ -14,6 +16,10 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.json.Goog
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.json.GoogleBigQueryJsonWriteClientProvider;
 
 @Configuration
+@EnableConfigurationProperties({
+    GoogeBigQueryJsonStreamWriterProperties.class,
+    GoogeBigQueryAvroStreamWriterProperties.class,
+})
 public class GoogleBigQueryConfiguration {
 
   @Bean
@@ -57,20 +63,26 @@ public class GoogleBigQueryConfiguration {
 
   @Bean
   public GoogleBigQueryAvroStreamWriterFactory avroStreamWriterFactory(
+      GoogeBigQueryAvroStreamWriterProperties avroStreamWriterProperties,
       CredentialsProvider credentialsProvider,
       BigQueryWriteSettings writeSettings,
       GoogleBigQueryAvroToProtoConverter avroToProtoConverter)
       throws IOException {
     return new GoogleBigQueryAvroStreamWriterFactory(
-        credentialsProvider, writeSettings, avroToProtoConverter);
+        avroStreamWriterProperties, credentialsProvider, writeSettings, avroToProtoConverter);
   }
 
   @Bean
   public GoogleBigQueryJsonStreamWriterFactory jsonStreamWriterFactory(
+      GoogeBigQueryJsonStreamWriterProperties jsonStreamWriterProperties,
       CredentialsProvider credentialsProvider,
       GoogleBigQueryJsonWriteClientProvider writeClientProvider)
       throws IOException {
-    return new GoogleBigQueryJsonStreamWriterFactory(credentialsProvider, writeClientProvider);
+    return new GoogleBigQueryJsonStreamWriterFactory(
+            jsonStreamWriterProperties,
+            credentialsProvider,
+            writeClientProvider
+    );
   }
 
   @Bean

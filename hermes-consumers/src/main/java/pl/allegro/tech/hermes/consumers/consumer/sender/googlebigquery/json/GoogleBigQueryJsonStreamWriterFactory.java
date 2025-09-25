@@ -14,6 +14,7 @@ import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.threeten.bp.Duration;
+import pl.allegro.tech.hermes.consumers.config.GoogeBigQueryJsonStreamWriterProperties;
 import pl.allegro.tech.hermes.consumers.consumer.bigquery.GoogleBigQueryStreamWriterFactory;
 
 public class GoogleBigQueryJsonStreamWriterFactory
@@ -21,12 +22,16 @@ public class GoogleBigQueryJsonStreamWriterFactory
 
   private static final Logger logger = LoggerFactory.getLogger(GoogleBigQueryJsonDataWriter.class);
 
+  private final GoogeBigQueryJsonStreamWriterProperties jsonStreamWriterProperties;
   private final Credentials credentials;
   private final BigQueryWriteClient writeClient;
 
   public GoogleBigQueryJsonStreamWriterFactory(
-      CredentialsProvider credentials, GoogleBigQueryJsonWriteClientProvider writeClientProvider)
+      GoogeBigQueryJsonStreamWriterProperties jsonStreamWriterProperties,
+      CredentialsProvider credentials,
+      GoogleBigQueryJsonWriteClientProvider writeClientProvider)
       throws IOException {
+    this.jsonStreamWriterProperties = jsonStreamWriterProperties;
     this.credentials = credentials.getCredentials();
     this.writeClient = writeClientProvider.getWriteClient();
   }
@@ -35,14 +40,16 @@ public class GoogleBigQueryJsonStreamWriterFactory
     try {
       return JsonStreamWriter.newBuilder(stream, writeClient)
           .setEnableConnectionPool(true)
-          .setExecutorProvider(FixedExecutorProvider.create(Executors.newScheduledThreadPool(100)))
+          .setExecutorProvider(FixedExecutorProvider.create(Executors.newScheduledThreadPool(jsonStreamWriterProperties.getPoolSize())))
           .setFlowControlSettings(FlowControlSettings.newBuilder().build())
           .setChannelProvider(
               BigQueryWriteSettings.defaultGrpcTransportProviderBuilder()
                   .setCredentials(credentials)
-                  .setKeepAliveTime(Duration.ofMinutes(1))
+                  .setKeepAliveTime(Duration.ofSeconds(jsonStreamWriterProperties.getKeepAliveTimeSeconds()))
                   .setKeepAliveWithoutCalls(true)
-                  .setChannelPoolSettings(ChannelPoolSettings.staticallySized(2))
+                  .setChannelPoolSettings(
+                          ChannelPoolSettings.staticallySized(jsonStreamWriterProperties.getChannelPoolStaticSize())
+                  )
                   .build())
           .build();
     } catch (Descriptors.DescriptorValidationException | IOException | InterruptedException e) {
