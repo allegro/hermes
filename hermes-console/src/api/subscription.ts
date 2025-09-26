@@ -102,8 +102,9 @@ interface OwnerJson {
 }
 
 interface HeaderFilterJson {
-  name: string;
-  value: string;
+  type: string;
+  header: string;
+  matcher: string;
 }
 
 export interface PathFilterJson {
@@ -115,7 +116,10 @@ export interface PathFilterJson {
 
 export type SubscriptionFilterJson = HeaderFilterJson | PathFilterJson;
 
-interface SubscriptionHeaderJson {}
+interface SubscriptionHeaderJson {
+  name: string;
+  value: string;
+}
 
 interface MonitoringDetailsJson {
   reaction: string;
