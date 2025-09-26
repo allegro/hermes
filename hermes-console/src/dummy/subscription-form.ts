@@ -39,6 +39,7 @@ export const dummySubscriptionForm = {
   deleteSubscriptionAutomatically: false,
   pathFilters: [],
   headerFilters: [],
+  headers: [],
   endpointAddressResolverMetadata: {
     supportedMetadata: false,
   },
@@ -168,6 +169,7 @@ export const dummyInitializedSubscriptionForm = {
   deleteSubscriptionAutomatically: false,
   pathFilters: [],
   headerFilters: [],
+  headers: [],
   endpointAddressResolverMetadata: {
     supportedMetadata: false,
   },
@@ -205,8 +207,13 @@ export const dummyInitializedEditSubscriptionForm = {
   attachSubscriptionIdentityHeaders:
     dummySubscription.subscriptionIdentityHeadersEnabled,
   deleteSubscriptionAutomatically: dummySubscription.autoDeleteWithTopicEnabled,
-  pathFilters: dummySubscription.filters,
-  headerFilters: dummySubscription.headers,
+  pathFilters: dummySubscription.filters.filter(
+    (filter) => filter.type !== 'header',
+  ),
+  headerFilters: dummySubscription.filters.filter(
+    (filter) => filter.type === 'header',
+  ),
+  headers: dummySubscription.headers,
   endpointAddressResolverMetadata: {
     supportedMetadata: true,
   },

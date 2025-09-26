@@ -10,6 +10,7 @@
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import SelectField from '@/components/select-field/SelectField.vue';
   import SubscriptionHeaderFilters from '@/views/subscription/subscription-form/subscription-header-filters/SubscriptionHeaderFilters.vue';
+  import SubscriptionHeaders from '@/views/subscription/subscription-form/subscription-headers/SubscriptionHeaders.vue';
   import SubscriptionPathFilters from '@/views/subscription/subscription-form/subscription-basic-filters/SubscriptionPathFilters.vue';
   import SubscriptionPathFiltersDebug from '@/views/subscription/subscription-form/subscription-basic-filters/SubscriptionPathFiltersDebug.vue';
   import TextField from '@/components/text-field/TextField.vue';
@@ -360,6 +361,8 @@
     <v-divider class="mb-4" />
 
     <subscription-header-filters v-model="form.headerFilters" />
+
+    <subscription-headers v-model="form.headers" />
 
     <v-divider class="mb-4" />
 
