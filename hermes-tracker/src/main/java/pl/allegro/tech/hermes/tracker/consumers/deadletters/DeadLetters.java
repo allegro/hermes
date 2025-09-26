@@ -1,11 +1,10 @@
 package pl.allegro.tech.hermes.tracker.consumers.deadletters;
 
-import java.util.List;
+import static org.slf4j.LoggerFactory.getLogger;
 
+import java.util.List;
 import org.slf4j.Logger;
 import pl.allegro.tech.hermes.api.Subscription;
-
-import static org.slf4j.LoggerFactory.getLogger;
 
 public class DeadLetters {
   private static final Logger logger = getLogger(DeadLetters.class);

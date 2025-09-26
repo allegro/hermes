@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.tracker.consumers.deadletters;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
-
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.Subscription;
