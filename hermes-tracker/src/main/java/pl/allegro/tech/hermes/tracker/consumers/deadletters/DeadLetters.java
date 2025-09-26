@@ -7,7 +7,6 @@ import pl.allegro.tech.hermes.api.Subscription;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
-
 public class DeadLetters {
   private static final Logger logger = getLogger(DeadLetters.class);
   private final List<DeadRepository> repositories;

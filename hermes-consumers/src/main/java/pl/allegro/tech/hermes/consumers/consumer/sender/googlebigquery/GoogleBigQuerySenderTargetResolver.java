@@ -3,16 +3,15 @@ package pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery;
 import com.google.cloud.bigquery.storage.v1.TableName;
 import com.google.common.base.Preconditions;
 import java.net.URI;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.EndpointAddress;
-import pl.allegro.tech.hermes.consumers.consumer.SerialConsumer;
 
 public class GoogleBigQuerySenderTargetResolver {
 
   public static final String GOOGLE_BQ_PROTOCOL = "googlebigquery";
-  private static final Logger logger = LoggerFactory.getLogger(GoogleBigQuerySenderTargetResolver.class);
+  private static final Logger logger =
+      LoggerFactory.getLogger(GoogleBigQuerySenderTargetResolver.class);
 
   private static final String HOST = "projects";
 

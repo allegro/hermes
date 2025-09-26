@@ -46,17 +46,19 @@ public class GoogleBigQueryAvroStreamWriterFactory
   public SchemaAwareStreamWriter<GenericRecord> getWriterForStream(String streamName) {
     try {
       ExecutorProvider executorProvider =
-          FixedExecutorProvider.create(Executors.newScheduledThreadPool(avroStreamWriterProperties.getPoolSize()));
+          FixedExecutorProvider.create(
+              Executors.newScheduledThreadPool(avroStreamWriterProperties.getPoolSize()));
 
       FlowControlSettings flowControlSettings = FlowControlSettings.newBuilder().build();
       TransportChannelProvider channelProvider =
           BigQueryWriteSettings.defaultGrpcTransportProviderBuilder()
               .setCredentials(credentials)
-              .setKeepAliveTime(Duration.ofSeconds(avroStreamWriterProperties.getKeepAliveTimeSeconds()))
+              .setKeepAliveTime(
+                  Duration.ofSeconds(avroStreamWriterProperties.getKeepAliveTimeSeconds()))
               .setKeepAliveWithoutCalls(true)
               .setChannelPoolSettings(
-                      ChannelPoolSettings.staticallySized(avroStreamWriterProperties.getChannelPoolStaticSize())
-              )
+                  ChannelPoolSettings.staticallySized(
+                      avroStreamWriterProperties.getChannelPoolStaticSize()))
               .build();
       return SchemaAwareStreamWriter.newBuilder(
               streamName + "/_default", writeClient, avroToProtoConverter)

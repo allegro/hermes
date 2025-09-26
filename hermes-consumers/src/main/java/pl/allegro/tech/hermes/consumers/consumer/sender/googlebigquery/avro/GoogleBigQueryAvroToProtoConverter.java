@@ -2,15 +2,14 @@ package pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro;
 
 import com.google.cloud.bigquery.storage.v1.TableSchema;
 import com.google.cloud.bigquery.storage.v1.ToProtoConverter;
-import java.nio.ByteBuffer;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.StreamSupport;
-
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.Message;
+import java.nio.ByteBuffer;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.StreamSupport;
 import org.apache.avro.generic.GenericRecord;
 
 public class GoogleBigQueryAvroToProtoConverter implements ToProtoConverter<GenericRecord> {
@@ -50,20 +49,18 @@ public class GoogleBigQueryAvroToProtoConverter implements ToProtoConverter<Gene
       Message.Builder messageBuilder) {
     String fieldName = field.getName();
     if (!inputObject.hasField(fieldName)) {
-        return;
+      return;
     }
 
     Object fieldValue = inputObject.get(fieldName);
     if (fieldValue == null) {
-        return;
+      return;
     }
     if (field.isRepeated()) {
       if (fieldValue instanceof Map<?, ?>) {
         for (Map.Entry<?, ?> el : ((Map<?, ?>) fieldValue).entrySet()) {
-          DynamicMessage.Builder entryBuilder =
-              DynamicMessage.newBuilder(field.getMessageType());
-          Descriptors.FieldDescriptor valueField =
-              field.getMessageType().findFieldByName("value");
+          DynamicMessage.Builder entryBuilder = DynamicMessage.newBuilder(field.getMessageType());
+          Descriptors.FieldDescriptor valueField = field.getMessageType().findFieldByName("value");
           entryBuilder.setField(
               field.getMessageType().findFieldByName("key"), el.getKey().toString());
           entryBuilder.setField(valueField, toProtobufValue(valueField, el.getValue()));
@@ -77,7 +74,6 @@ public class GoogleBigQueryAvroToProtoConverter implements ToProtoConverter<Gene
     } else {
       messageBuilder.setField(field, toProtobufValue(field, fieldValue));
     }
-
   }
 
   private <T extends Number> T toNumber(Object object, Class<T> clazz) {

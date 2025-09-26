@@ -20,7 +20,8 @@ public class DeadLettersTest {
     DeadLetters deadLetters = new DeadLetters(List.of());
 
     // then
-    Assertions.assertThatCode(() -> deadLetters.send(subscription, message)).doesNotThrowAnyException();
+    Assertions.assertThatCode(() -> deadLetters.send(subscription, message))
+        .doesNotThrowAnyException();
   }
 
   @Test

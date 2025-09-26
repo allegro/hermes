@@ -40,16 +40,19 @@ public class GoogleBigQueryJsonStreamWriterFactory
     try {
       return JsonStreamWriter.newBuilder(stream, writeClient)
           .setEnableConnectionPool(true)
-          .setExecutorProvider(FixedExecutorProvider.create(Executors.newScheduledThreadPool(jsonStreamWriterProperties.getPoolSize())))
+          .setExecutorProvider(
+              FixedExecutorProvider.create(
+                  Executors.newScheduledThreadPool(jsonStreamWriterProperties.getPoolSize())))
           .setFlowControlSettings(FlowControlSettings.newBuilder().build())
           .setChannelProvider(
               BigQueryWriteSettings.defaultGrpcTransportProviderBuilder()
                   .setCredentials(credentials)
-                  .setKeepAliveTime(Duration.ofSeconds(jsonStreamWriterProperties.getKeepAliveTimeSeconds()))
+                  .setKeepAliveTime(
+                      Duration.ofSeconds(jsonStreamWriterProperties.getKeepAliveTimeSeconds()))
                   .setKeepAliveWithoutCalls(true)
                   .setChannelPoolSettings(
-                          ChannelPoolSettings.staticallySized(jsonStreamWriterProperties.getChannelPoolStaticSize())
-                  )
+                      ChannelPoolSettings.staticallySized(
+                          jsonStreamWriterProperties.getChannelPoolStaticSize()))
                   .build())
           .build();
     } catch (Descriptors.DescriptorValidationException | IOException | InterruptedException e) {

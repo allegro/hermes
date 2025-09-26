@@ -4,7 +4,6 @@ import com.google.api.gax.core.CredentialsProvider;
 import com.google.cloud.bigquery.storage.v1.BigQueryWriteSettings;
 import com.google.cloud.bigquery.storage.v1.stub.BigQueryWriteStubSettings;
 import java.io.IOException;
-
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,8 +16,8 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.json.Goog
 
 @Configuration
 @EnableConfigurationProperties({
-    GoogeBigQueryJsonStreamWriterProperties.class,
-    GoogeBigQueryAvroStreamWriterProperties.class,
+  GoogeBigQueryJsonStreamWriterProperties.class,
+  GoogeBigQueryAvroStreamWriterProperties.class,
 })
 public class GoogleBigQueryConfiguration {
 
@@ -79,10 +78,7 @@ public class GoogleBigQueryConfiguration {
       GoogleBigQueryJsonWriteClientProvider writeClientProvider)
       throws IOException {
     return new GoogleBigQueryJsonStreamWriterFactory(
-            jsonStreamWriterProperties,
-            credentialsProvider,
-            writeClientProvider
-    );
+        jsonStreamWriterProperties, credentialsProvider, writeClientProvider);
   }
 
   @Bean
