@@ -1,0 +1,20 @@
+{
+  "namespace": "pl.allegro.bigdata.avro.gcpavrotools",
+  "name": "RecordPrimitives",
+  "type": "record",
+  "fields": [
+    {
+      "name": "field",
+      "type": {
+        "name": "bytes",
+        "type": "record",
+        "fields": [
+          {
+            "name": "value_field",
+            "type": "bytes"
+          }
+        ]
+      }
+    }
+  ]
+}
