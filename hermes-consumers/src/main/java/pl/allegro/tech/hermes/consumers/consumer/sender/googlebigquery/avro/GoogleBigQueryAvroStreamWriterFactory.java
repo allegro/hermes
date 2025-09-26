@@ -17,7 +17,7 @@ import org.apache.avro.generic.GenericRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.threeten.bp.Duration;
-import pl.allegro.tech.hermes.consumers.config.GoogeBigQueryAvroStreamWriterProperties;
+import pl.allegro.tech.hermes.consumers.config.GoogleBigQueryAvroStreamWriterProperties;
 import pl.allegro.tech.hermes.consumers.consumer.bigquery.GoogleBigQueryStreamWriterFactory;
 
 public class GoogleBigQueryAvroStreamWriterFactory
@@ -26,13 +26,13 @@ public class GoogleBigQueryAvroStreamWriterFactory
   private static final Logger logger =
       LoggerFactory.getLogger(GoogleBigQueryAvroStreamWriterFactory.class);
 
-  private final GoogeBigQueryAvroStreamWriterProperties avroStreamWriterProperties;
+  private final GoogleBigQueryAvroStreamWriterProperties avroStreamWriterProperties;
   private final Credentials credentials;
   private final BigQueryWriteClient writeClient;
   private final ToProtoConverter<GenericRecord> avroToProtoConverter;
 
   public GoogleBigQueryAvroStreamWriterFactory(
-      GoogeBigQueryAvroStreamWriterProperties avroStreamWriterProperties,
+      GoogleBigQueryAvroStreamWriterProperties avroStreamWriterProperties,
       CredentialsProvider credentialsProvider,
       BigQueryWriteSettings writeSettings,
       ToProtoConverter<GenericRecord> avroToProtoConverter)

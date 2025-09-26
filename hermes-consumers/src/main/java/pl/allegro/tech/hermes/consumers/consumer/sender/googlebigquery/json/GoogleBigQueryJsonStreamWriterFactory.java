@@ -14,7 +14,7 @@ import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.threeten.bp.Duration;
-import pl.allegro.tech.hermes.consumers.config.GoogeBigQueryJsonStreamWriterProperties;
+import pl.allegro.tech.hermes.consumers.config.GoogleBigQueryJsonStreamWriterProperties;
 import pl.allegro.tech.hermes.consumers.consumer.bigquery.GoogleBigQueryStreamWriterFactory;
 
 public class GoogleBigQueryJsonStreamWriterFactory
@@ -22,12 +22,12 @@ public class GoogleBigQueryJsonStreamWriterFactory
 
   private static final Logger logger = LoggerFactory.getLogger(GoogleBigQueryJsonDataWriter.class);
 
-  private final GoogeBigQueryJsonStreamWriterProperties jsonStreamWriterProperties;
+  private final GoogleBigQueryJsonStreamWriterProperties jsonStreamWriterProperties;
   private final Credentials credentials;
   private final BigQueryWriteClient writeClient;
 
   public GoogleBigQueryJsonStreamWriterFactory(
-      GoogeBigQueryJsonStreamWriterProperties jsonStreamWriterProperties,
+      GoogleBigQueryJsonStreamWriterProperties jsonStreamWriterProperties,
       CredentialsProvider credentials,
       GoogleBigQueryJsonWriteClientProvider writeClientProvider)
       throws IOException {

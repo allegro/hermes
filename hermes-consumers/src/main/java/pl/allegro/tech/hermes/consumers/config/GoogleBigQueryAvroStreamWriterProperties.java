@@ -2,8 +2,8 @@ package pl.allegro.tech.hermes.consumers.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "consumer.google.bigquery.json.writer")
-public class GoogeBigQueryJsonStreamWriterProperties {
+@ConfigurationProperties(prefix = "consumer.google.bigquery.avro.writer")
+public class GoogleBigQueryAvroStreamWriterProperties {
 
   private int poolSize = 100;
   private int keepAliveTimeSeconds = 60;

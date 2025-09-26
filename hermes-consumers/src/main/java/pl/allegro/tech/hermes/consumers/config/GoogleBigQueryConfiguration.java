@@ -16,8 +16,8 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.json.Goog
 
 @Configuration
 @EnableConfigurationProperties({
-  GoogeBigQueryJsonStreamWriterProperties.class,
-  GoogeBigQueryAvroStreamWriterProperties.class,
+  GoogleBigQueryJsonStreamWriterProperties.class,
+  GoogleBigQueryAvroStreamWriterProperties.class,
 })
 public class GoogleBigQueryConfiguration {
 
@@ -62,7 +62,7 @@ public class GoogleBigQueryConfiguration {
 
   @Bean
   public GoogleBigQueryAvroStreamWriterFactory avroStreamWriterFactory(
-      GoogeBigQueryAvroStreamWriterProperties avroStreamWriterProperties,
+      GoogleBigQueryAvroStreamWriterProperties avroStreamWriterProperties,
       CredentialsProvider credentialsProvider,
       BigQueryWriteSettings writeSettings,
       GoogleBigQueryAvroToProtoConverter avroToProtoConverter)
@@ -73,7 +73,7 @@ public class GoogleBigQueryConfiguration {
 
   @Bean
   public GoogleBigQueryJsonStreamWriterFactory jsonStreamWriterFactory(
-      GoogeBigQueryJsonStreamWriterProperties jsonStreamWriterProperties,
+      GoogleBigQueryJsonStreamWriterProperties jsonStreamWriterProperties,
       CredentialsProvider credentialsProvider,
       GoogleBigQueryJsonWriteClientProvider writeClientProvider)
       throws IOException {
