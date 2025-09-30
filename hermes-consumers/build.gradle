@@ -11,12 +11,13 @@ configurations {
 
 dependencies {
     implementation project(':hermes-common')
-    implementation project(':hermes-tracker')
+    api project(':hermes-tracker')
     implementation project(':hermes-metrics')
     implementation project(':hermes-schema')
 
-    implementation group: 'org.springframework.boot', name: 'spring-boot-starter', version: versions.spring
-    implementation group: 'org.eclipse.jetty.http2', name: 'jetty-http2-client-transport', version: versions.jetty
+    api group: 'org.springframework.boot', name: 'spring-boot-starter', version: versions.spring
+    api group: 'org.eclipse.jetty', name: 'jetty-alpn-java-client', version: versions.jetty
+    api group: 'org.eclipse.jetty.http2', name: 'jetty-http2-client-transport', version: versions.jetty
     implementation group: 'org.jctools', name: 'jctools-core', version: '4.0.3'
     implementation(group: 'com.github.rholder', name: 'guava-retrying', version: '2.0.0') {
         exclude module: 'guava'
@@ -26,8 +27,8 @@ dependencies {
     implementation(group: 'org.hornetq', name: 'hornetq-jms-client', version: '2.4.1.Final') {
         exclude module: 'hornetq-native'
     }
-    implementation group: 'com.google.cloud', name: 'google-cloud-pubsub', version: '1.128.1'
-    implementation group: 'org.apache.httpcomponents.core5', name: 'httpcore5', version: '5.2.4'
+    api group: 'com.google.cloud', name: 'google-cloud-pubsub', version: '1.128.1'
+    api group: 'org.apache.httpcomponents.core5', name: 'httpcore5', version: '5.2.4'
     implementation group: 'tech.allegro.schema.json2avro', name: 'converter', version: versions.json2avro
 
     testImplementation project(':hermes-test-helper')
