@@ -10,7 +10,6 @@ dependencies {
     implementation group: 'org.glassfish.jersey.core', name: 'jersey-client', version: versions.jersey
     implementation group: 'org.glassfish.jersey.inject', name: 'jersey-hk2', version: versions.jersey
     implementation group: 'org.glassfish.jersey.ext', name: 'jersey-proxy-client', version: versions.jersey
-    implementation group: 'org.eclipse.jetty.http2', name: 'jetty-http2-client-transport', version: versions.jetty
     api group: 'commons-io', name: 'commons-io', version: '2.16.1'
     api group: 'org.wiremock', name: 'wiremock-standalone', version: versions.wiremock
     api (group: 'org.apache.curator', name: 'curator-test', version: versions.curator) {

@@ -19,6 +19,7 @@ dependencies {
     api group: 'org.eclipse.jetty', name: 'jetty-alpn-java-client', version: versions.jetty
     api group: 'org.eclipse.jetty.http2', name: 'jetty-http2-client-transport', version: versions.jetty
     implementation group: 'org.jctools', name: 'jctools-core', version: '4.0.3'
+    api group: 'jakarta.jms', name: 'jakarta.jms-api', version: '3.1.0'
     implementation(group: 'com.github.rholder', name: 'guava-retrying', version: '2.0.0') {
         exclude module: 'guava'
     }
@@ -32,7 +33,7 @@ dependencies {
     implementation group: 'tech.allegro.schema.json2avro', name: 'converter', version: versions.json2avro
 
     testImplementation project(':hermes-test-helper')
-    testRuntimeOnly group: 'org.awaitility', name: 'awaitility-groovy', version: '4.2.1'
+    testImplementation(group: 'org.awaitility', name: 'awaitility-groovy', version: '4.2.1')
     testImplementation group: 'org.spockframework', name: 'spock-core', version: versions.spock
     testImplementation group: 'org.spockframework', name: 'spock-junit4', version: versions.spock
     testRuntimeOnly group: 'org.junit.vintage', name: 'junit-vintage-engine', version: versions.junit_jupiter
