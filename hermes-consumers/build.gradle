@@ -33,7 +33,13 @@ dependencies {
     implementation group: 'tech.allegro.schema.json2avro', name: 'converter', version: versions.json2avro
 
     testImplementation project(':hermes-test-helper')
+    testImplementation group: 'org.apache.curator', name: 'curator-test', version: versions.curator
+    testImplementation group: 'jakarta.servlet', name: 'jakarta.servlet-api', version: '6.0.0'
+
+    testImplementation project(':hermes-common')
+
     testImplementation(group: 'org.awaitility', name: 'awaitility-groovy', version: '4.2.1')
+    testImplementation group: 'tech.allegro.schema.json2avro', name: 'converter', version: versions.json2avro
     testImplementation group: 'org.spockframework', name: 'spock-core', version: versions.spock
     testImplementation group: 'org.spockframework', name: 'spock-junit4', version: versions.spock
     testRuntimeOnly group: 'org.junit.vintage', name: 'junit-vintage-engine', version: versions.junit_jupiter
