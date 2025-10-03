@@ -18,7 +18,7 @@ dependencies {
         exclude group: 'net.openhft', module: 'chronicle-analytics'
     }
     implementation group: 'commons-io', name: 'commons-io', version: '2.16.1'
-    implementation group: 'net.jodah', name: 'failsafe', version: versions.failsafe
+    implementation group: 'dev.failsafe', name: 'failsafe', version: versions.failsafe
 
     testImplementation project(':hermes-test-helper')
 

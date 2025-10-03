@@ -3,14 +3,14 @@ package pl.allegro.tech.hermes.frontend.server;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import dev.failsafe.ExecutionContext;
+import dev.failsafe.Failsafe;
+import dev.failsafe.RetryPolicy;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-import net.jodah.failsafe.ExecutionContext;
-import net.jodah.failsafe.Failsafe;
-import net.jodah.failsafe.RetryPolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
@@ -35,9 +35,10 @@ class TopicSchemaLoader implements AutoCloseable {
         new ThreadFactoryBuilder().setNameFormat("topic-schema-loader-%d").build();
     this.scheduler = Executors.newScheduledThreadPool(threadPoolSize, threadFactory);
     this.retryPolicy =
-        new RetryPolicy<SchemaLoadingResult>()
+        RetryPolicy.<SchemaLoadingResult>builder()
             .withMaxRetries(retryCount)
-            .handleIf((resp, cause) -> resp.isFailure());
+            .handleIf((resp, cause) -> resp.isFailure())
+            .build();
   }
 
   CompletableFuture<SchemaLoadingResult> loadTopicSchema(Topic topic) {
