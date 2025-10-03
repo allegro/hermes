@@ -2,8 +2,12 @@ package pl.allegro.tech.hermes.client;
 
 import static pl.allegro.tech.hermes.client.HermesMessage.hermesMessage;
 
+import dev.failsafe.Failsafe;
+import dev.failsafe.RetryPolicy;
+import dev.failsafe.event.ExecutionAttemptedEvent;
+import dev.failsafe.event.ExecutionCompletedEvent;
 import java.net.URI;
-import java.time.temporal.ChronoUnit;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -16,10 +20,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
-import net.jodah.failsafe.Failsafe;
-import net.jodah.failsafe.RetryPolicy;
-import net.jodah.failsafe.event.ExecutionAttemptedEvent;
-import net.jodah.failsafe.event.ExecutionCompletedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,19 +57,22 @@ public class HermesClient {
       Predicate<HermesResponse> retryCondition,
       long retrySleepInMillis,
       long maxRetrySleepInMillis) {
-    RetryPolicy<HermesResponse> retryPolicy =
-        new RetryPolicy<HermesResponse>()
+
+    var builder =
+        RetryPolicy.<HermesResponse>builder()
+            .handleResultIf(retryCondition::test)
             .withMaxRetries(retries)
-            .handleIf((resp, cause) -> retryCondition.test(resp))
-            .onRetriesExceeded((e) -> handleMaxRetriesExceeded(e))
-            .onRetry((e) -> handleFailedAttempt(e))
-            .onFailure((e) -> handleFailure(e))
-            .onSuccess((e) -> handleSuccessfulRetry(e));
+            .onRetriesExceeded(this::handleMaxRetriesExceeded)
+            .onRetry(this::handleFailedAttempt)
+            .onFailure(this::handleFailure)
+            .onSuccess(this::handleSuccessfulRetry);
 
     if (retrySleepInMillis > 0) {
-      retryPolicy.withBackoff(retrySleepInMillis, maxRetrySleepInMillis, ChronoUnit.MILLIS);
+      builder.withBackoff(
+          Duration.ofMillis(retrySleepInMillis), Duration.ofMillis(maxRetrySleepInMillis));
     }
-    return retryPolicy;
+
+    return builder.build();
   }
 
   private String createUri(URI uri) {
