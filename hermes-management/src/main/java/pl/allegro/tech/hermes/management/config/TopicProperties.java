@@ -83,10 +83,6 @@ public class TopicProperties {
     this.partitionsPerDc = partitionsPerDc;
   }
 
-  public int getPartitionsForDatacenter(String datacenterName) {
-    return partitionsPerDc.getOrDefault(datacenterName, partitions);
-  }
-
   public boolean isAllowRemoval() {
     return allowRemoval;
   }
