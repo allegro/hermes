@@ -6,22 +6,22 @@
 </script>
 
 <template>
-  <v-card>
+  <v-card border flat rounded="lg">
     <template #title>
       <div class="d-flex justify-space-between">
         <p class="font-weight-bold">
           {{ $t('costsCard.title') }}
         </p>
-        <v-card-actions>
-          <v-btn
-            class="text-none"
-            prepend-icon="mdi-open-in-new"
-            target="_blank"
-            :href="detailsUrl"
-          >
-            {{ $t('costsCard.detailsButton') }}
-          </v-btn>
-        </v-card-actions>
+        <v-btn
+          class="text-none"
+          prepend-icon="mdi-open-in-new"
+          target="_blank"
+          :href="detailsUrl"
+          variant="text"
+          color="primary"
+        >
+          {{ $t('costsCard.detailsButton') }}
+        </v-btn>
       </div>
     </template>
     <v-card-item>

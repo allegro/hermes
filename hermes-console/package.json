@@ -29,7 +29,7 @@
     "vue-i18n": "9.13.0",
     "vue-router": "4.3.2",
     "vue3-ace-editor": "2.2.4",
-    "vuetify": "3.5.16"
+    "vuetify": "3.7.13"
   },
   "devDependencies": {
     "@mdi/font": "7.4.47",

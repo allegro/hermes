@@ -113,10 +113,12 @@
   });
 </script>
 <template>
-  <v-col class="md-4 text-right">
+  <div class="md-4 text-right">
     <v-btn
       color="green"
+      class="text-capitalize"
       @click="onDebugOpen"
+      variant="text"
       prepend-icon="mdi-console"
       data-testid="openFilterDebugButton"
     >
@@ -161,5 +163,5 @@
         </v-card-item>
       </v-card>
     </v-dialog>
-  </v-col>
+  </div>
 </template>
