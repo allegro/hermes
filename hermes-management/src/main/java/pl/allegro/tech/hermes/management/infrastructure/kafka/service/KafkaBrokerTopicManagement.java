@@ -60,7 +60,7 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
                     Collections.singletonList(
                         new NewTopic(
                                 k.name().asString(),
-                                topicProperties.getPartitions(),
+                                topicProperties.getPartitionsForDatacenter(datacenterName),
                                 (short) topicProperties.getReplicationFactor())
                             .configs(config))))
         .map(CreateTopicsResult::all)
