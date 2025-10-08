@@ -6,6 +6,8 @@ import static pl.allegro.tech.hermes.frontend.producer.kafka.TopicMetadataLoader
 import static pl.allegro.tech.hermes.frontend.utils.CompletableFuturesHelper.allComplete;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import dev.failsafe.Failsafe;
+import dev.failsafe.RetryPolicy;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,8 +19,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import net.jodah.failsafe.Failsafe;
-import net.jodah.failsafe.RetryPolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.TopicName;
@@ -40,10 +40,11 @@ class TopicMetadataLoadingExecutor {
         new ThreadFactoryBuilder().setNameFormat("topic-metadata-loader-%d").build();
     this.scheduler = Executors.newScheduledThreadPool(threadPoolSize, threadFactory);
     this.retryPolicy =
-        new RetryPolicy<MetadataLoadingResult>()
+        RetryPolicy.<MetadataLoadingResult>builder()
             .withMaxRetries(retryCount)
             .withDelay(retryInterval)
-            .handleIf((resp, cause) -> resp.isFailure());
+            .handleIf((resp, cause) -> resp.isFailure())
+            .build();
   }
 
   boolean execute(List<TopicMetadataLoader> loaders) {
