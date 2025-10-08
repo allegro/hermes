@@ -150,6 +150,7 @@ function initializeForm(
     deleteSubscriptionAutomatically: false,
     pathFilters: [],
     headerFilters: [],
+    headers: [],
     endpointAddressResolverMetadata: form.value.endpointAddressResolverMetadata,
   };
 }

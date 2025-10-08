@@ -26,9 +26,12 @@ describe('FiltersCard', () => {
         const row = getByText(index + 1).closest('tr')!;
         expect(within(row).getByText(index + 1)).toBeVisible();
         expect(within(row).getByText(type)).toBeVisible();
-        expect(within(row).getByText(path)).toBeVisible();
         expect(within(row).getByText(matcher)).toBeVisible();
-        expect(within(row).getByText(matchingStrategy)).toBeVisible();
+
+        if (type !== 'header') {
+          expect(within(row).getByText(path)).toBeVisible();
+          expect(within(row).getByText(matchingStrategy)).toBeVisible();
+        }
       },
     );
   });

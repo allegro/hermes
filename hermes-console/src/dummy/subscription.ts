@@ -55,6 +55,11 @@ export const dummySubscription: Subscription = {
       matcher: 'true',
       matchingStrategy: 'all',
     },
+    {
+      type: 'header',
+      header: 'X-My-Header',
+      matcher: 'true',
+    },
   ],
   mode: SubscriptionMode.ANYCAST,
   headers: [
