@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.management.config;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.api.ContentType;
@@ -14,6 +15,8 @@ public class TopicProperties {
   private int replicationFactor = 1;
 
   private int partitions = 10;
+
+  private Map<String, Integer> partitionsPerDc = Collections.emptyMap();
 
   private boolean allowRemoval = false;
 
@@ -70,6 +73,14 @@ public class TopicProperties {
 
   public void setPartitions(int partitions) {
     this.partitions = partitions;
+  }
+
+  public Map<String, Integer> getPartitionsPerDc() {
+    return partitionsPerDc;
+  }
+
+  public void setPartitionsPerDc(Map<String, Integer> partitionsPerDc) {
+    this.partitionsPerDc = partitionsPerDc;
   }
 
   public boolean isAllowRemoval() {
