@@ -47,14 +47,13 @@ public abstract class GoogleBigQueryDataWriter<
     } catch (Exceptions.AppendSerializationError e) {
       logger.warn(
           "Writer {} has failed to append rows to stream {}", getWriterId(), getStreamName(), e);
-        logger.warn(
-                "Writer {} has failed because of errors: \n{}",
-                getWriterId(),
-                e.getRowIndexToErrorMessage()
-                        .entrySet().stream()
-                        .map(entry -> String.format("\t row %d: %s", entry.getKey(), entry.getValue()))
-                        .collect(Collectors.joining("\n")),
-                e);
+      logger.warn(
+          "Writer {} has failed because of errors: \n{}",
+          getWriterId(),
+          e.getRowIndexToErrorMessage().entrySet().stream()
+              .map(entry -> String.format("\t row %d: %s", entry.getKey(), entry.getValue()))
+              .collect(Collectors.joining("\n")),
+          e);
 
       resultFuture.complete(
           MessageSendingResult.failedResult(new GoogleBigQueryFailedAppendException(e)));

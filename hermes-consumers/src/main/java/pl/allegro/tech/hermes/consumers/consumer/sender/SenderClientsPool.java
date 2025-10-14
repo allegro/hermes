@@ -9,8 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Pool of sender clients. It creates and keeps clients for different targets.
- * It is thread-safe.
+ * Pool of sender clients. It creates and keeps clients for different targets. It is thread-safe.
  *
  * @param <T> type of the target
  * @param <C> type of the client
@@ -22,22 +21,23 @@ public abstract class SenderClientsPool<T extends SenderTarget, C extends Sender
   private final Map<T, C> clients = new ConcurrentHashMap<T, C>();
 
   public C acquire(T resolvedTarget) throws IOException {
-      return clients.computeIfAbsent(resolvedTarget, key -> {
+    return clients.computeIfAbsent(
+        resolvedTarget,
+        key -> {
           try {
-              return createClient(key);
+            return createClient(key);
           } catch (IOException e) {
-              throw new RuntimeException(e);
+            throw new RuntimeException(e);
           }
-      });
+        });
   }
-
 
   public void release(T resolvedTarget) {
     C client = clients.remove(resolvedTarget);
     if (client != null) {
-        client.shutdown();
+      client.shutdown();
     } else {
-        logger.warn("Attempt to release client that is not acquired");
+      logger.warn("Attempt to release client that is not acquired");
     }
   }
 

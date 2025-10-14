@@ -41,5 +41,4 @@ public class TestDeadRepository implements DeadRepository {
   public boolean supports(Subscription subscription) {
     return supports;
   }
-
 }

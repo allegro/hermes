@@ -21,13 +21,16 @@ public class DeadLetters {
           repository.logDeadLetter(message);
         } catch (Exception e) {
           // Log the error and continue to the next repository
-          logger.error("Failed to send message to dead letter repository.\nsubscription name: {}\ndeadletter repository: {}\nmessage id: {}", subscription.getName(), repository, message.getMessageId(), e);
+          logger.error(
+              "Failed to send message to dead letter repository.\nsubscription name: {}\ndeadletter repository: {}\nmessage id: {}",
+              subscription.getName(),
+              repository,
+              message.getMessageId(),
+              e);
         }
       }
     }
   }
 
-  public void close() {
-
-  }
+  public void close() {}
 }

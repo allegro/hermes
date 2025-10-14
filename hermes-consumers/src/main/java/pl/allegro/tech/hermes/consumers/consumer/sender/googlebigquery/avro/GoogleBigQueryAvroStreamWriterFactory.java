@@ -12,7 +12,6 @@ import com.google.cloud.bigquery.storage.v1.BigQueryWriteSettings;
 import com.google.cloud.bigquery.storage.v1.SchemaAwareStreamWriter;
 import com.google.cloud.bigquery.storage.v1.ToProtoConverter;
 import java.io.IOException;
-import java.util.concurrent.Executors;
 import org.apache.avro.generic.GenericRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

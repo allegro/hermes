@@ -76,7 +76,11 @@ public class GoogleBigQueryConfiguration {
       GoogleBigQueryAvroToProtoConverter avroToProtoConverter)
       throws IOException {
     return new GoogleBigQueryAvroStreamWriterFactory(
-        avroStreamWriterProperties, credentialsProvider, threadPoolProvider, writeSettings, avroToProtoConverter);
+        avroStreamWriterProperties,
+        credentialsProvider,
+        threadPoolProvider,
+        writeSettings,
+        avroToProtoConverter);
   }
 
   @Bean

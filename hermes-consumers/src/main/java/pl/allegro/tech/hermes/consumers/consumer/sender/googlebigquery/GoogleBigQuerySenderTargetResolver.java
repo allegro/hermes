@@ -3,8 +3,6 @@ package pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery;
 import com.google.cloud.bigquery.storage.v1.TableName;
 import com.google.common.base.Preconditions;
 import java.net.URI;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 
 public class GoogleBigQuerySenderTargetResolver {

@@ -58,49 +58,50 @@ public class GoogleBigQueryAvroToProtoConverter implements ToProtoConverter<Gene
     }
     if (field.isRepeated()) {
       if (fieldValue instanceof Map<?, ?>) {
-          convertMap(field, messageBuilder, (Map<?, ?>) fieldValue);
+        convertMap(field, messageBuilder, (Map<?, ?>) fieldValue);
       } else {
-          convertArray(field, messageBuilder, (Iterable<?>) fieldValue);
+        convertArray(field, messageBuilder, (Iterable<?>) fieldValue);
       }
     } else {
       messageBuilder.setField(field, toProtobufValue(field, fieldValue));
     }
   }
 
-    private void convertArray(Descriptors.FieldDescriptor field, Message.Builder messageBuilder, Iterable<?> fieldValue) {
-        for (Object el : fieldValue) {
-          messageBuilder.addRepeatedField(field, toProtobufValue(field, el));
-        }
+  private void convertArray(
+      Descriptors.FieldDescriptor field, Message.Builder messageBuilder, Iterable<?> fieldValue) {
+    for (Object el : fieldValue) {
+      messageBuilder.addRepeatedField(field, toProtobufValue(field, el));
     }
+  }
 
-    private void convertMap(Descriptors.FieldDescriptor field, Message.Builder messageBuilder, Map<?, ?> fieldValue) {
-        for (Map.Entry<?, ?> el : fieldValue.entrySet()) {
-          DynamicMessage.Builder entryBuilder = DynamicMessage.newBuilder(field.getMessageType());
-          Descriptors.FieldDescriptor valueField = field.getMessageType().findFieldByName("value");
-          entryBuilder.setField(
-              field.getMessageType().findFieldByName("key"), el.getKey().toString());
-          entryBuilder.setField(valueField, toProtobufValue(valueField, el.getValue()));
-          messageBuilder.addRepeatedField(field, entryBuilder.build());
-        }
+  private void convertMap(
+      Descriptors.FieldDescriptor field, Message.Builder messageBuilder, Map<?, ?> fieldValue) {
+    for (Map.Entry<?, ?> el : fieldValue.entrySet()) {
+      DynamicMessage.Builder entryBuilder = DynamicMessage.newBuilder(field.getMessageType());
+      Descriptors.FieldDescriptor valueField = field.getMessageType().findFieldByName("value");
+      entryBuilder.setField(field.getMessageType().findFieldByName("key"), el.getKey().toString());
+      entryBuilder.setField(valueField, toProtobufValue(valueField, el.getValue()));
+      messageBuilder.addRepeatedField(field, entryBuilder.build());
     }
+  }
 
-    private <T extends Number> T toNumber(Object object, Class<T> clazz) {
-        return switch (object) {
-            case Number number -> numberToSpecific(number, clazz);
-            case String s -> numberToSpecific(Double.parseDouble(s), clazz);
-            case Boolean b -> numberToSpecific(b ? 1 : 0, clazz);
-            case null, default -> clazz.cast(object);
-        };
+  private <T extends Number> T toNumber(Object object, Class<T> clazz) {
+    return switch (object) {
+      case Number number -> numberToSpecific(number, clazz);
+      case String s -> numberToSpecific(Double.parseDouble(s), clazz);
+      case Boolean b -> numberToSpecific(b ? 1 : 0, clazz);
+      case null, default -> clazz.cast(object);
+    };
   }
 
   private <T extends Number> T numberToSpecific(Number object, Class<T> clazz) {
-      return switch (clazz.getSimpleName()) {
-          case "Integer" -> clazz.cast(object.intValue());
-          case "Long" -> clazz.cast(object.longValue());
-          case "Float" -> clazz.cast(object.floatValue());
-          case "Double" -> clazz.cast(object.doubleValue());
-          default -> clazz.cast(object);
-      };
+    return switch (clazz.getSimpleName()) {
+      case "Integer" -> clazz.cast(object.intValue());
+      case "Long" -> clazz.cast(object.longValue());
+      case "Float" -> clazz.cast(object.floatValue());
+      case "Double" -> clazz.cast(object.doubleValue());
+      default -> clazz.cast(object);
+    };
   }
 
   private Object toProtobufValue(Descriptors.FieldDescriptor fieldDescriptor, Object value) {

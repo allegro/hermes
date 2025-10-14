@@ -6,5 +6,4 @@ public interface DeadRepository {
   void logDeadLetter(DeadMessage message);
 
   boolean supports(Subscription subscription);
-
 }
