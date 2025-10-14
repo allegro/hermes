@@ -18,7 +18,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.threeten.bp.Duration;
 import pl.allegro.tech.hermes.consumers.config.GoogleBigQueryAvroStreamWriterProperties;
-import pl.allegro.tech.hermes.consumers.consumer.bigquery.GoogleBigQueryStreamWriterFactory;
+import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.GoogleBigQueryStreamWriterFactory;
+import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.ThreadPoolProvider;
 
 public class GoogleBigQueryAvroStreamWriterFactory
     implements GoogleBigQueryStreamWriterFactory<SchemaAwareStreamWriter<GenericRecord>> {
@@ -28,17 +29,20 @@ public class GoogleBigQueryAvroStreamWriterFactory
 
   private final GoogleBigQueryAvroStreamWriterProperties avroStreamWriterProperties;
   private final Credentials credentials;
+  private final ThreadPoolProvider threadPoolProvider;
   private final BigQueryWriteClient writeClient;
   private final ToProtoConverter<GenericRecord> avroToProtoConverter;
 
   public GoogleBigQueryAvroStreamWriterFactory(
       GoogleBigQueryAvroStreamWriterProperties avroStreamWriterProperties,
       CredentialsProvider credentialsProvider,
+      ThreadPoolProvider threadPoolProvider,
       BigQueryWriteSettings writeSettings,
       ToProtoConverter<GenericRecord> avroToProtoConverter)
       throws IOException {
     this.avroStreamWriterProperties = avroStreamWriterProperties;
     this.credentials = credentialsProvider.getCredentials();
+    this.threadPoolProvider = threadPoolProvider;
     this.writeClient = BigQueryWriteClient.create(writeSettings);
     this.avroToProtoConverter = avroToProtoConverter;
   }
@@ -46,8 +50,7 @@ public class GoogleBigQueryAvroStreamWriterFactory
   public SchemaAwareStreamWriter<GenericRecord> getWriterForStream(String streamName) {
     try {
       ExecutorProvider executorProvider =
-          FixedExecutorProvider.create(
-              Executors.newScheduledThreadPool(avroStreamWriterProperties.getPoolSize()));
+          FixedExecutorProvider.create(threadPoolProvider.getExecutorService());
 
       FlowControlSettings flowControlSettings = FlowControlSettings.newBuilder().build();
       TransportChannelProvider channelProvider =
@@ -68,7 +71,7 @@ public class GoogleBigQueryAvroStreamWriterFactory
           .setChannelProvider(channelProvider)
           .build();
     } catch (Exception e) {
-      logger.warn("Cannot create SchemaAwareStreamWriter for stream {}", streamName, e);
+      logger.error("Cannot create SchemaAwareStreamWriter for stream {}", streamName, e);
       throw new RuntimeException(e);
     }
   }

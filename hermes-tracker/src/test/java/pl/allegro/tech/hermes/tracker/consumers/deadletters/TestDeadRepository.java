@@ -42,6 +42,4 @@ public class TestDeadRepository implements DeadRepository {
     return supports;
   }
 
-  @Override
-  public void close() {}
 }

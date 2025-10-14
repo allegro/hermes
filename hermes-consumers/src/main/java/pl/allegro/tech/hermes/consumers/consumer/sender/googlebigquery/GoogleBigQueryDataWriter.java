@@ -7,12 +7,12 @@ import com.google.cloud.bigquery.storage.v1.Exceptions;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.Descriptors;
 import java.io.IOException;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.consumers.consumer.bigquery.GoogleBigQueryStreamWriterFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.SenderClient;
 
@@ -47,9 +47,14 @@ public abstract class GoogleBigQueryDataWriter<
     } catch (Exceptions.AppendSerializationError e) {
       logger.warn(
           "Writer {} has failed to append rows to stream {}", getWriterId(), getStreamName(), e);
-      for (Map.Entry<Integer, String> entry : e.getRowIndexToErrorMessage().entrySet()) {
-        logger.warn("Writer {} has failed because of {}", getWriterId(), entry.getValue(), e);
-      }
+        logger.warn(
+                "Writer {} has failed because of errors: \n{}",
+                getWriterId(),
+                e.getRowIndexToErrorMessage()
+                        .entrySet().stream()
+                        .map(entry -> String.format("\t row %d: %s", entry.getKey(), entry.getValue()))
+                        .collect(Collectors.joining("\n")),
+                e);
 
       resultFuture.complete(
           MessageSendingResult.failedResult(new GoogleBigQueryFailedAppendException(e)));

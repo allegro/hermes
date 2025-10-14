@@ -15,24 +15,28 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.threeten.bp.Duration;
 import pl.allegro.tech.hermes.consumers.config.GoogleBigQueryJsonStreamWriterProperties;
-import pl.allegro.tech.hermes.consumers.consumer.bigquery.GoogleBigQueryStreamWriterFactory;
+import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.GoogleBigQueryStreamWriterFactory;
+import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.ThreadPoolProvider;
 
 public class GoogleBigQueryJsonStreamWriterFactory
     implements GoogleBigQueryStreamWriterFactory<JsonStreamWriter> {
 
-  private static final Logger logger = LoggerFactory.getLogger(GoogleBigQueryJsonDataWriter.class);
+  private static final Logger logger = LoggerFactory.getLogger(GoogleBigQueryJsonStreamWriterFactory.class);
 
   private final GoogleBigQueryJsonStreamWriterProperties jsonStreamWriterProperties;
   private final Credentials credentials;
   private final BigQueryWriteClient writeClient;
+  private final ThreadPoolProvider threadPoolProvider;
 
   public GoogleBigQueryJsonStreamWriterFactory(
       GoogleBigQueryJsonStreamWriterProperties jsonStreamWriterProperties,
       CredentialsProvider credentials,
+      ThreadPoolProvider threadPoolProvider,
       GoogleBigQueryJsonWriteClientProvider writeClientProvider)
       throws IOException {
     this.jsonStreamWriterProperties = jsonStreamWriterProperties;
     this.credentials = credentials.getCredentials();
+    this.threadPoolProvider = threadPoolProvider;
     this.writeClient = writeClientProvider.getWriteClient();
   }
 
@@ -41,8 +45,7 @@ public class GoogleBigQueryJsonStreamWriterFactory
       return JsonStreamWriter.newBuilder(stream, writeClient)
           .setEnableConnectionPool(true)
           .setExecutorProvider(
-              FixedExecutorProvider.create(
-                  Executors.newScheduledThreadPool(jsonStreamWriterProperties.getPoolSize())))
+              FixedExecutorProvider.create(threadPoolProvider.getExecutorService()))
           .setFlowControlSettings(FlowControlSettings.newBuilder().build())
           .setChannelProvider(
               BigQueryWriteSettings.defaultGrpcTransportProviderBuilder()
@@ -56,7 +59,7 @@ public class GoogleBigQueryJsonStreamWriterFactory
                   .build())
           .build();
     } catch (Descriptors.DescriptorValidationException | IOException | InterruptedException e) {
-      logger.warn("Cannot create JsonStreamWriter for stream {}", stream, e);
+      logger.error("Cannot create JsonStreamWriter for stream {}", stream, e);
       throw new RuntimeException(e);
     }
   }

@@ -7,5 +7,4 @@ public interface DeadRepository {
 
   boolean supports(Subscription subscription);
 
-  void close();
 }

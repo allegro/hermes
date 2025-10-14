@@ -18,6 +18,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.json.Goog
 @EnableConfigurationProperties({
   GoogleBigQueryJsonStreamWriterProperties.class,
   GoogleBigQueryAvroStreamWriterProperties.class,
+  GoogleBigQueryThreadPoolProperties.class,
 })
 public class GoogleBigQueryConfiguration {
 
@@ -61,24 +62,32 @@ public class GoogleBigQueryConfiguration {
   }
 
   @Bean
+  public ThreadPoolProvider threadPoolProvider(
+      GoogleBigQueryThreadPoolProperties googleBigQueryThreadPoolProperties) {
+    return new ThreadPoolProvider(googleBigQueryThreadPoolProperties);
+  }
+
+  @Bean
   public GoogleBigQueryAvroStreamWriterFactory avroStreamWriterFactory(
       GoogleBigQueryAvroStreamWriterProperties avroStreamWriterProperties,
       CredentialsProvider credentialsProvider,
+      ThreadPoolProvider threadPoolProvider,
       BigQueryWriteSettings writeSettings,
       GoogleBigQueryAvroToProtoConverter avroToProtoConverter)
       throws IOException {
     return new GoogleBigQueryAvroStreamWriterFactory(
-        avroStreamWriterProperties, credentialsProvider, writeSettings, avroToProtoConverter);
+        avroStreamWriterProperties, credentialsProvider, threadPoolProvider, writeSettings, avroToProtoConverter);
   }
 
   @Bean
   public GoogleBigQueryJsonStreamWriterFactory jsonStreamWriterFactory(
       GoogleBigQueryJsonStreamWriterProperties jsonStreamWriterProperties,
       CredentialsProvider credentialsProvider,
+      ThreadPoolProvider threadPoolProvider,
       GoogleBigQueryJsonWriteClientProvider writeClientProvider)
       throws IOException {
     return new GoogleBigQueryJsonStreamWriterFactory(
-        jsonStreamWriterProperties, credentialsProvider, writeClientProvider);
+        jsonStreamWriterProperties, credentialsProvider, threadPoolProvider, writeClientProvider);
   }
 
   @Bean
