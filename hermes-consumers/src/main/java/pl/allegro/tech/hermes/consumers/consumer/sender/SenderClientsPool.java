@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
  * @param <T> type of the target
  * @param <C> type of the client
  */
-public abstract class SenderClientsPool<T extends SenderTarget, C extends SenderClient<T>> {
+public abstract class SenderClientsPool<T extends SenderTarget, C extends SenderClient> {
 
   private static final Logger logger = LoggerFactory.getLogger(SenderClientsPool.class);
 
