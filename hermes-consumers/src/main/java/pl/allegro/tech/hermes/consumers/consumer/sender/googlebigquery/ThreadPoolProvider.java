@@ -1,9 +1,8 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery;
 
-import pl.allegro.tech.hermes.consumers.config.GoogleBigQueryThreadPoolProperties;
-
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import pl.allegro.tech.hermes.consumers.config.GoogleBigQueryThreadPoolProperties;
 
 public class ThreadPoolProvider {
   ScheduledExecutorService scheduledExecutorService;

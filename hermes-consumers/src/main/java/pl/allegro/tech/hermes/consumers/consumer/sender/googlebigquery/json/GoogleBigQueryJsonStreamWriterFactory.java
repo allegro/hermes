@@ -20,7 +20,8 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.ThreadPoo
 public class GoogleBigQueryJsonStreamWriterFactory
     implements GoogleBigQueryStreamWriterFactory<JsonStreamWriter> {
 
-  private static final Logger logger = LoggerFactory.getLogger(GoogleBigQueryJsonStreamWriterFactory.class);
+  private static final Logger logger =
+      LoggerFactory.getLogger(GoogleBigQueryJsonStreamWriterFactory.class);
 
   private final GoogleBigQueryJsonStreamWriterProperties jsonStreamWriterProperties;
   private final Credentials credentials;

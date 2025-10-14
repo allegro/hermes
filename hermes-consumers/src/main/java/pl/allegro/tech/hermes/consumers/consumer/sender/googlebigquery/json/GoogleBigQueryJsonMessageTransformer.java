@@ -8,7 +8,8 @@ import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.GoogleBigQueryMessageTransformer;
 
-public class GoogleBigQueryJsonMessageTransformer implements GoogleBigQueryMessageTransformer<JSONObject> {
+public class GoogleBigQueryJsonMessageTransformer
+    implements GoogleBigQueryMessageTransformer<JSONObject> {
   @Override
   public JSONObject fromHermesMessage(Message message) {
     Preconditions.checkArgument(message.getContentType().equals(ContentType.JSON));
