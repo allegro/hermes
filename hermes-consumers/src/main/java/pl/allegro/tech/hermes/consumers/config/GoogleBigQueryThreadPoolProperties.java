@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.consumers.config;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
 
 public abstract class GoogleBigQueryThreadPoolProperties {
   boolean commonThreadPool = true;
