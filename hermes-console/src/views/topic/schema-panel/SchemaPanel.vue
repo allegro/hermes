@@ -33,7 +33,7 @@
     <div>
       <AvroViewer v-show="!showRawSchema" :schema="props.schema" />
       <v-card>
-        <json-viewer :json="props.schema" v-show="showRawSchema" />
+        <json-viewer v-show="showRawSchema" :json="props.schema" />
       </v-card>
     </div>
   </div>

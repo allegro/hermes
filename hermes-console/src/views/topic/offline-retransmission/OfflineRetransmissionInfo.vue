@@ -6,8 +6,9 @@
   import { useRouter } from 'vue-router';
   import OfflineRetransmissionDialog from '@/views/topic/offline-retransmission/OfflineRetransmissionDialog.vue';
   import type { OfflineRetransmissionActiveTask } from '@/api/offline-retransmission';
-  import type { TopicWithSchema } from '@/api/topic';
   import type { Role } from '@/api/role';
+  import type { TopicWithSchema } from '@/api/topic';
+  import SimpleLink from '@/components/link/SimpleLink.vue';
 
   const { t } = useI18n();
   const router = useRouter();
@@ -79,11 +80,17 @@
 
 <template>
   <v-card>
-    <template #title>
+    <v-card-item class="border-b">
       <div class="d-flex justify-space-between">
-        <p class="font-weight-bold">
-          {{ t('offlineRetransmission.monitoringView.title') }}
-        </p>
+        <div>
+          <v-card-title class="font-weight-bold">
+            {{ t('offlineRetransmission.monitoringView.title') }}
+          </v-card-title>
+          <v-card-subtitle
+            >{{ props.tasks.length }} active task(s)
+          </v-card-subtitle>
+        </div>
+
         <div class="d-flex justify-space-between row-gap-2">
           <v-btn
             v-if="
@@ -129,8 +136,8 @@
           </v-btn>
         </div>
       </div>
-    </template>
-    <template #subtitle>{{ props.tasks.length }} active task(s)</template>
+    </v-card-item>
+
     <v-card-text>
       <v-data-table
         :items="props.tasks"
@@ -138,37 +145,21 @@
         items-per-page="-1"
       >
         <template v-slot:[`item.logsUrl`]="{ item }">
-          <a
-            :href="item.logsUrl"
-            target="_blank"
-            class="text-decoration-none text-button text-none text-primary"
-            >View logs</a
-          >
-          <v-icon color="primary" size="x-small" class="ml-1"
-            >mdi-open-in-new</v-icon
-          >
+          <simple-link :href="item.logsUrl" text="View logs" open-in-new-tab />
         </template>
         <template v-slot:[`item.metricsUrl`]="{ item }">
-          <a
+          <simple-link
             :href="item.metricsUrl"
-            target="_blank"
-            class="text-decoration-none text-button text-none text-primary"
-            >View metrics</a
-          >
-          <v-icon color="primary" size="x-small" class="ml-1"
-            >mdi-open-in-new</v-icon
-          >
+            text="View metrics"
+            open-in-new-tab
+          />
         </template>
         <template v-slot:[`item.jobDetailsUrl`]="{ item }">
-          <a
+          <simple-link
             :href="item.jobDetailsUrl"
-            target="_blank"
-            class="text-decoration-none text-button text-none text-primary"
-            >View details</a
-          >
-          <v-icon color="primary" size="x-small" class="ml-1"
-            >mdi-open-in-new</v-icon
-          >
+            text="View details"
+            open-in-new-tab
+          />
         </template>
       </v-data-table>
     </v-card-text>

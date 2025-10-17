@@ -421,7 +421,7 @@ const en_US = {
         text: 'Are you sure you want to activate subscription {subscriptionId}',
       },
       retransmit: {
-        title: 'Confirm subscription messages retransmission',
+        title: 'Confirm messages retransmission',
         text: 'This action will re-send all messages on subscription “{subscriptionFqn}“ from {fromDate} (UTC). Do you want to continue?',
       },
       skipAllMessages: {
@@ -669,9 +669,9 @@ const en_US = {
   },
   offlineRetransmission: {
     title: 'Offline retransmission',
-    titleRetransmissionFromView: 'Docs for retransmission from View',
+    titleRetransmissionFromView: 'Docs',
     subtitle:
-      'Offline retransmission allows retransmitting events from GCP (BigQuery) to Hermes.',
+      'Offline retransmission allows retransmitting events from GCP (BigQuery) to Hermes. To read more about it, go to ',
     targetTopic: 'Target topic',
     startTimestamp: 'Start timestamp (UTC)',
     endTimestamp: 'End timestamp (UTC)',

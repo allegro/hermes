@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import { ref } from 'vue';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
+  import SimpleLink from '@/components/link/SimpleLink.vue';
 
   const emit = defineEmits<{
     retransmit: [targetTopic: string, from: string, to: string];
@@ -25,23 +26,31 @@
 <template>
   <v-form @submit.prevent>
     <v-card>
-      <v-card-title>
-        {{ $t('offlineRetransmission.title') }}
-        <v-btn
-          density="compact"
-          variant="outlined"
-          prepend-icon="mdi-open-in-new"
-          target="_blank"
-          :href="
-            configStore.loadedConfig.topic.offlineRetransmission.fromViewDocsUrl
-          "
-        >
-          {{ $t('offlineRetransmission.titleRetransmissionFromView') }}
-        </v-btn>
-      </v-card-title>
-      <v-card-subtitle
-        >{{ $t('offlineRetransmission.subtitle') }}
-      </v-card-subtitle>
+      <v-card-item class="border-b">
+        <div class="d-flex justify-space-between align-start">
+          <div>
+            <v-card-title>
+              {{ $t('offlineRetransmission.title') }}
+            </v-card-title>
+            <div class="d-flex">
+              <v-card-subtitle
+                >{{ $t('offlineRetransmission.subtitle') }}
+                <simple-link
+                  :href="
+                    configStore.loadedConfig.topic.offlineRetransmission
+                      .fromViewDocsUrl
+                  "
+                  :text="
+                    $t('offlineRetransmission.titleRetransmissionFromView')
+                  "
+                  open-in-new-tab
+                />
+              </v-card-subtitle>
+            </div>
+          </div>
+        </div>
+      </v-card-item>
+
       <v-card-item>
         <v-text-field
           :label="$t('offlineRetransmission.targetTopic')"

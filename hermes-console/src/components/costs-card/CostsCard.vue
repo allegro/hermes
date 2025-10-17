@@ -7,11 +7,12 @@
 
 <template>
   <v-card border flat rounded="lg">
-    <template #title>
-      <div class="d-flex justify-space-between">
-        <p class="font-weight-bold">
+    <v-card-item class="border-b">
+      <div class="d-flex justify-space-between align-start">
+        <v-card-title class="font-weight-bold">
           {{ $t('costsCard.title') }}
-        </p>
+        </v-card-title>
+
         <v-btn
           class="text-none"
           prepend-icon="mdi-open-in-new"
@@ -23,7 +24,8 @@
           {{ $t('costsCard.detailsButton') }}
         </v-btn>
       </div>
-    </template>
+    </v-card-item>
+
     <v-card-item>
       <iframe
         height="100%"

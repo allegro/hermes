@@ -24,13 +24,10 @@
   const statusTextColor: Record<State, string> = {
     [State.ACTIVE]: 'green',
     [State.PENDING]: 'orange',
-    [State.SUSPENDED]: 'red',
+    [State.SUSPENDED]: 'error',
   };
 
-  const subscriptionTableHeaders = [
-    { key: 'name', title: 'name' },
-    { key: 'state', title: 'state', align: 'end' },
-  ];
+  const subscriptionTableHeaders = [{ key: 'name', title: 'name' }];
 
   const showSubscriptionCreationForm = ref(false);
 
@@ -60,13 +57,14 @@
         <template #activator>
           <div>
             <v-text-field
+              variant="outlined"
+              base-color="rgba(var(--v-border-color), 0.31)"
               single-line
               :label="$t('topicView.subscriptions.search')"
               density="compact"
               v-model="filter"
               prepend-inner-icon="mdi-magnify"
               hide-details
-              variant="outlined"
               style="min-width: 300px"
             />
           </div>
@@ -88,17 +86,25 @@
               variant="outlined"
               @click="showSubscriptionForm()"
               class="text-capitalize"
-              >{{ $t('topicView.subscriptions.create') }}</v-btn
-            >
+              >{{ $t('topicView.subscriptions.create') }}
+            </v-btn>
           </div>
         </template>
         <v-card>
-          <v-card-title>
-            <span class="text-h5">{{
-              $t('topicView.subscriptions.create')
-            }}</span>
-          </v-card-title>
-          <v-card-text>
+          <v-card-item class="border-b">
+            <div class="d-flex justify-space-between align-center">
+              <v-card-title>
+                {{ $t('topicView.subscriptions.create') }}
+              </v-card-title>
+              <v-btn
+                icon="mdi-close"
+                variant="text"
+                @click="hideSubscriptionForm"
+              />
+            </div>
+          </v-card-item>
+
+          <v-card-text class="pt-4">
             <SubscriptionForm
               operation="add"
               :subscription="null"
@@ -118,12 +124,20 @@
       :headers="subscriptionTableHeaders"
       hover
       :items-per-page="-1"
-      @click:row="(e, row) => pushToSubscription(row.item.name)"
     >
-      <template v-slot:item.state="{ value }: { value: State }">
-        <v-chip size="small" :color="statusTextColor[value]"
-          >{{ value }}
-        </v-chip>
+      <template #item="{ item }">
+        <v-list-item
+          :href="`/ui/groups/${props.groupId}/topics/${props.topicName}/subscriptions/${item.name}`"
+        >
+          <div class="d-flex justify-space-between align-center">
+            <div>{{ item.name }}</div>
+            <div>
+              <v-chip size="small" :color="statusTextColor[item.state]"
+                >{{ item.state }}
+              </v-chip>
+            </div>
+          </div>
+        </v-list-item>
       </template>
     </v-data-table>
   </div>

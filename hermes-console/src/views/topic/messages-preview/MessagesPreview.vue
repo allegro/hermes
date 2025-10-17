@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import { formatTimestampMillis } from '@/utils/date-formatter/date-formatter';
   import { ref } from 'vue';
+  import JsonViewer from '@/components/json-viewer/JsonViewer.vue';
   import type { MessagePreview } from '@/api/topic';
   import type {
     ParsedMessagePreview,
@@ -34,6 +35,7 @@
     dialog.value = true;
     console.log(message);
   }
+
   function closeMessageDialog() {
     dialog.value = false;
     selectedMessage.value = null;
@@ -74,34 +76,43 @@
   <v-dialog
     v-model="dialog"
     min-width="800"
-    min-height="800"
+    max-height="800"
     v-if="selectedMessage"
   >
     <v-card>
-      <v-card-title>Message details</v-card-title>
-      <v-card-text>
-        <div>
-          <strong>Message Id:</strong>
-          {{ selectedMessage.parsedContent.__metadata?.messageId }}
+      <v-card-item class="border-b">
+        <div class="d-flex justify-space-between align-start">
+          <div>
+            <v-card-title>Message details</v-card-title>
+            <v-card-subtitle>
+              Inspect the event payload and metadata.
+            </v-card-subtitle>
+          </div>
+          <v-btn icon="mdi-close" variant="text" @click="closeMessageDialog" />
         </div>
-        <div>
-          <strong>Timestamp:</strong>
-          {{
+      </v-card-item>
+
+      <v-card-text class="pt-4 d-flex flex-column row-gap-4">
+        <div class="d-flex flex-column">
+          <span class="text-body-2 text-medium-emphasis">Message ID</span>
+          <span>{{ selectedMessage.parsedContent.__metadata?.messageId }}</span>
+        </div>
+        <div class="d-flex flex-column">
+          <span class="text-body-2 text-medium-emphasis">Timestamp</span>
+          <span>{{
             formatTimestampMillis(
               Number(selectedMessage.parsedContent.__metadata?.timestamp),
             )
-          }}
+          }}</span>
         </div>
-        <div class="raw-schema-snippet mt-4">
-          <pre>{{
-            JSON.stringify(selectedMessage.parsedContent, null, 2)
-          }}</pre>
+        <div>
+          <span class="text-body-2 text-medium-emphasis">Payload</span>
+          <json-viewer
+            :json="selectedMessage.content"
+            class="border-thin rounded-lg"
+          />
         </div>
       </v-card-text>
-      <v-card-actions>
-        <v-spacer />
-        <v-btn color="primary" @click="closeMessageDialog">Close</v-btn>
-      </v-card-actions>
     </v-card>
   </v-dialog>
 </template>

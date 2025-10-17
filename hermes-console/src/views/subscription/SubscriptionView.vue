@@ -285,7 +285,7 @@
         <v-tabs-window-item :value="Tab.Messages">
           <v-container class="py-0">
             <v-row dense>
-              <v-col md="6">
+              <v-col md="12">
                 <manage-messages-card
                   v-if="isSubscriptionOwnerOrAdmin(roles)"
                   :topic="topicId"
@@ -294,12 +294,6 @@
                   :skippingAllMessages="skippingAllMessages"
                   @retransmit="onRetransmit"
                   @skipAllMessages="skipAllMessages"
-                />
-              </v-col>
-              <v-col md="6">
-                <tracking-card
-                  v-if="subscription?.trackingEnabled"
-                  :tracking-urls="trackingUrls"
                 />
               </v-col>
             </v-row>
@@ -318,13 +312,19 @@
             </v-row>
 
             <v-row dense>
-              <v-col md="12">
+              <v-col md="6">
                 <last-undelivered-message
                   v-if="
                     subscriptionLastUndeliveredMessage &&
                     isSubscriptionOwnerOrAdmin(roles)
                   "
                   :last-undelivered="subscriptionLastUndeliveredMessage"
+                />
+              </v-col>
+              <v-col md="6">
+                <tracking-card
+                  v-if="subscription?.trackingEnabled"
+                  :tracking-urls="trackingUrls"
                 />
               </v-col>
             </v-row>

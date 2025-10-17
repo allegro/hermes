@@ -5,9 +5,11 @@
 </script>
 
 <template>
-  <pre class="raw-schema-snippet pa-3" v-show="showRawSchema">{{
-    JSON.parse(props.json)
-  }}</pre>
+  <div>
+    <pre class="raw-schema-snippet pa-3 language-json bg-grey-lighten-5">{{
+      JSON.parse(props.json)
+    }}</pre>
+  </div>
 </template>
 
 <style scoped lang="scss">
@@ -15,7 +17,7 @@
     line-height: 1.2;
     font-size: 0.9rem;
     max-height: 500px;
-    overflow: scroll;
+    overflow: auto;
     cursor: text;
   }
 </style>

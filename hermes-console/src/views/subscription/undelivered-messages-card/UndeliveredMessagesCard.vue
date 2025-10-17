@@ -9,44 +9,47 @@
 
 <template>
   <v-card>
-    <template #title>
-      <p class="font-weight-bold">
-        {{ $t('subscription.undeliveredMessagesCard.title') }}
-      </p>
-    </template>
-    <v-table density="compact">
-      <thead>
-        <tr>
-          <th class="text-left">
-            {{ $t('subscription.undeliveredMessagesCard.index') }}
-          </th>
-          <th class="text-left">
-            {{ $t('subscription.undeliveredMessagesCard.messageId') }}
-          </th>
-          <th class="text-left">
-            {{ $t('subscription.undeliveredMessagesCard.status') }}
-          </th>
-          <th class="text-left">
-            {{ $t('subscription.undeliveredMessagesCard.reason') }}
-          </th>
-          <th class="text-left">
-            {{ $t('subscription.undeliveredMessagesCard.timestamp') }}
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          v-for="(message, index) in props.undeliveredMessages.slice(0, 100)"
-          :key="index"
-        >
-          <td>{{ index + 1 }}</td>
-          <td>{{ message.messageId }}</td>
-          <td>{{ message.status }}</td>
-          <td>{{ message.reason }}</td>
-          <td>{{ formatTimestampMillis(message.timestamp) }}</td>
-        </tr>
-      </tbody>
-    </v-table>
+    <v-card-item class="border-b">
+      <v-card-title class="font-weight-bold">{{
+        $t('subscription.undeliveredMessagesCard.title')
+      }}</v-card-title>
+    </v-card-item>
+
+    <v-card-item>
+      <v-table density="compact">
+        <thead>
+          <tr>
+            <th class="text-left pl-0">
+              {{ $t('subscription.undeliveredMessagesCard.index') }}
+            </th>
+            <th class="text-left">
+              {{ $t('subscription.undeliveredMessagesCard.messageId') }}
+            </th>
+            <th class="text-left">
+              {{ $t('subscription.undeliveredMessagesCard.status') }}
+            </th>
+            <th class="text-left">
+              {{ $t('subscription.undeliveredMessagesCard.reason') }}
+            </th>
+            <th class="text-left">
+              {{ $t('subscription.undeliveredMessagesCard.timestamp') }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="(message, index) in props.undeliveredMessages.slice(0, 100)"
+            :key="index"
+          >
+            <td class="pl-0">{{ index + 1 }}</td>
+            <td>{{ message.messageId }}</td>
+            <td>{{ message.status }}</td>
+            <td>{{ message.reason }}</td>
+            <td>{{ formatTimestampMillis(message.timestamp) }}</td>
+          </tr>
+        </tbody>
+      </v-table>
+    </v-card-item>
   </v-card>
 </template>
 

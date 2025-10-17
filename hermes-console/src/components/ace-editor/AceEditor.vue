@@ -43,7 +43,7 @@
       style="height: 300px"
       @update:value="$emit('update:modelValue', $event)"
     />
-    <v-btn color="primary" variant="outlined" @click="beautify">
+    <v-btn color="primary" variant="outlined" @click="beautify" class="text-capitalize">
       {{ t('topicForm.fields.beautify') }}
     </v-btn>
   </div>

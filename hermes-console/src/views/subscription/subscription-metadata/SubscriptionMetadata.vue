@@ -65,16 +65,24 @@
         :persistent="true"
       >
         <v-card>
-          <v-card-title>
-            <span class="text-h5">
-              {{
-                t('subscription.subscriptionMetadata.editSubscription', {
-                  subscriptionName: subscription.name,
-                })
-              }}
-            </span>
-          </v-card-title>
-          <v-card-text>
+          <v-card-item class="border-b">
+            <div class="d-flex justify-space-between align-center">
+              <v-card-title>
+                {{
+                  t('subscription.subscriptionMetadata.editSubscription', {
+                    subscriptionName: subscription.name,
+                  })
+                }}
+              </v-card-title>
+              <v-btn
+                icon="mdi-close"
+                variant="text"
+                @click="hideSubscriptionForm"
+              />
+            </div>
+          </v-card-item>
+
+          <v-card-text class="pt-4">
             <SubscriptionForm
               operation="edit"
               :subscription="subscription"
@@ -106,7 +114,7 @@
             />
             <v-chip
               :color="
-                props.subscription.state === State.ACTIVE ? 'green' : 'red'
+                props.subscription.state === State.ACTIVE ? 'green' : 'error'
               "
               size="small"
               class="align-self-center"
@@ -263,7 +271,7 @@
         </v-btn>
         <v-btn
           :disabled="!isSubscriptionOwnerOrAdmin(roles)"
-          color="red"
+          color="error"
           prepend-icon="mdi-delete"
           @click="emit('remove')"
           class="text-capitalize"

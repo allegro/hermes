@@ -62,16 +62,19 @@
     <div class="d-flex justify-end mr-4 mb-1">
       <v-dialog v-model="showTopicEditForm" min-width="800" :persistent="true">
         <v-card>
-          <v-card-title>
-            <span class="text-h5">
-              {{
-                t('topicView.header.editTopic', {
-                  topicName: topic.name,
-                })
-              }}
-            </span>
-          </v-card-title>
-          <v-card-text>
+          <v-card-item class="border-b">
+            <div class="d-flex justify-space-between align-center">
+              <v-card-title>
+                {{
+                  t('topicView.header.editTopic', {
+                    topicName: topic.name,
+                  })
+                }}
+              </v-card-title>
+              <v-btn icon="mdi-close" variant="text" @click="hideTopicForm" />
+            </div>
+          </v-card-item>
+          <v-card-text class="pt-4">
             <TopicForm
               operation="edit"
               :topic="topic"
@@ -181,7 +184,7 @@
         </v-btn>
 
         <v-btn
-          color="red"
+          color="error"
           prepend-icon="mdi-delete"
           class="text-capitalize"
           @click="emit('remove')"

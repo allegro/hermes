@@ -18,9 +18,11 @@ const vuetify = createVuetify({
           primary: '#3766a5',
           secondary: '#144c71',
           accent: '#1c65a1',
-          error: '#ff5252',
           background: '#f8fafc',
           surface: '#ffffff',
+        },
+        variables: {
+          // 'border-color': colors.red.base,
         },
       },
       dark: {
@@ -28,7 +30,6 @@ const vuetify = createVuetify({
           primary: '#1c65a1',
           secondary: '#144c71',
           accent: '#0a3040',
-          error: '#ff5252',
           background: '#212121',
         },
       },
@@ -55,6 +56,9 @@ const vuetify = createVuetify({
     },
     VRow: {
       dense: true,
+    },
+    VTextField: {
+      bgColor: 'surface',
     },
   },
 });
