@@ -28,7 +28,7 @@
 </script>
 
 <template>
-  <v-navigation-drawer :rail="rail" permanent @click="rail = false">
+  <v-navigation-drawer :rail="rail" permanent @click="rail = false" border="0">
     <v-list density="compact" nav>
       <v-list-item class="pa-0">
         <environment-select

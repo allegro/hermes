@@ -7,6 +7,7 @@ import { createPinia } from 'pinia';
 import { createVuetify } from 'vuetify';
 import { i18n } from '@/i18n';
 import App from './App.vue';
+import colors from 'vuetify/util/colors';
 import piniaPluginPersistedState from 'pinia-plugin-persistedstate';
 import router from './router';
 
@@ -19,18 +20,13 @@ const vuetify = createVuetify({
           secondary: '#144c71',
           accent: '#1c65a1',
           background: '#f8fafc',
-          surface: '#ffffff',
-        },
-        variables: {
-          // 'border-color': colors.red.base,
         },
       },
       dark: {
         colors: {
-          primary: '#1c65a1',
-          secondary: '#144c71',
-          accent: '#0a3040',
-          background: '#212121',
+          primary: colors.blue.darken2,
+          secondary: colors.blue.darken3,
+          accent: colors.blue.accent1,
         },
       },
     },

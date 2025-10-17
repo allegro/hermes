@@ -108,11 +108,11 @@
       </v-card-item>
 
       <v-card-text class="pt-4 d-flex flex-column row-gap-4">
-        <div class="d-flex flex-column">
+        <div class="d-flex flex-column row-gap-1">
           <span class="text-body-2 text-medium-emphasis">Message ID</span>
           <span>{{ selectedMessage.messageId || 'Not available' }}</span>
         </div>
-        <div class="d-flex flex-column">
+        <div class="d-flex flex-column row-gap-1">
           <span class="text-body-2 text-medium-emphasis">Timestamp</span>
           <span>{{
             selectedMessage?.timestamp
@@ -120,7 +120,7 @@
               : 'Not available'
           }}</span>
         </div>
-        <div>
+        <div class="d-flex flex-column row-gap-1">
           <span class="text-body-2 text-medium-emphasis">Payload</span>
           <json-viewer
             v-if="selectedMessage.parsedContent"

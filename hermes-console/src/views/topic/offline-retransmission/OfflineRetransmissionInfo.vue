@@ -162,9 +162,7 @@
           />
         </template>
         <template v-slot:[`item.type`]="{ item }">
-          <v-chip size="small" color="blue-grey-darken-1">{{
-            item.type
-          }}</v-chip>
+          <v-chip size="small" color="accent">{{ item.type }} </v-chip>
         </template>
       </v-data-table>
     </v-card-text>

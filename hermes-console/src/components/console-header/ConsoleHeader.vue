@@ -28,7 +28,7 @@
 </script>
 
 <template>
-  <v-app-bar flat density="compact" color="surface" class="border-b-sm">
+  <v-app-bar flat density="compact" color="surface">
     <div class="header">
       <!-- TODO: navigate to home -->
       <div class="header-left">
