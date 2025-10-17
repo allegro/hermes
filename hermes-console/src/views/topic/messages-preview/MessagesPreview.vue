@@ -81,6 +81,9 @@
               : 'Not available'
           }}
         </template>
+        <template #[`item.content`]="{ item }">
+          <span class="table-row-content-cell">{{ item.content }}</span>
+        </template>
       </v-data-table>
     </v-card-text>
   </v-card>
@@ -144,5 +147,18 @@
     cursor: text;
     border: 1px rgba(var(--v-border-color), var(--v-border-opacity)) solid;
     border-radius: settings.$border-radius-root;
+  }
+
+  .table-row-content-cell {
+    display: block;
+    max-height: 70px;
+    white-space: wrap;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-wrap: break-word;
+    text-overflow: ellipsis;
   }
 </style>
