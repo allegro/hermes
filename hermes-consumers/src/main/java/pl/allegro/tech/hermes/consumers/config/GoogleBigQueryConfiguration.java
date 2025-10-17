@@ -18,7 +18,8 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.json.Goog
 @EnableConfigurationProperties({
   GoogleBigQueryJsonStreamWriterProperties.class,
   GoogleBigQueryAvroStreamWriterProperties.class,
-  GoogleBigQueryThreadPoolProperties.class,
+  GoogleBigQueryJsonThreadPoolProperties.class,
+  GoogleBigQueryAvroThreadPoolProperties.class,
 })
 public class GoogleBigQueryConfiguration {
 
@@ -62,19 +63,14 @@ public class GoogleBigQueryConfiguration {
   }
 
   @Bean
-  public ThreadPoolProvider threadPoolProvider(
-      GoogleBigQueryThreadPoolProperties googleBigQueryThreadPoolProperties) {
-    return new ThreadPoolProvider(googleBigQueryThreadPoolProperties);
-  }
-
-  @Bean
   public GoogleBigQueryAvroStreamWriterFactory avroStreamWriterFactory(
       GoogleBigQueryAvroStreamWriterProperties avroStreamWriterProperties,
+      GoogleBigQueryAvroThreadPoolProperties avroThreadPoolProperties,
       CredentialsProvider credentialsProvider,
-      ThreadPoolProvider threadPoolProvider,
       BigQueryWriteSettings writeSettings,
       GoogleBigQueryAvroToProtoConverter avroToProtoConverter)
       throws IOException {
+    ThreadPoolProvider threadPoolProvider = new ThreadPoolProvider(avroThreadPoolProperties);
     return new GoogleBigQueryAvroStreamWriterFactory(
         avroStreamWriterProperties,
         credentialsProvider,
@@ -86,10 +82,11 @@ public class GoogleBigQueryConfiguration {
   @Bean
   public GoogleBigQueryJsonStreamWriterFactory jsonStreamWriterFactory(
       GoogleBigQueryJsonStreamWriterProperties jsonStreamWriterProperties,
+      GoogleBigQueryAvroThreadPoolProperties jsonThreadPoolProperties,
       CredentialsProvider credentialsProvider,
-      ThreadPoolProvider threadPoolProvider,
       GoogleBigQueryJsonWriteClientProvider writeClientProvider)
       throws IOException {
+    ThreadPoolProvider threadPoolProvider = new ThreadPoolProvider(jsonThreadPoolProperties);
     return new GoogleBigQueryJsonStreamWriterFactory(
         jsonStreamWriterProperties, credentialsProvider, threadPoolProvider, writeClientProvider);
   }
