@@ -18,10 +18,10 @@ public class ThreadPoolProvider {
   }
 
   public java.util.concurrent.ScheduledExecutorService getExecutorService() {
-      if (googleBigQueryThreadPoolProperties.isCommonThreadPool()) {
-          return scheduledExecutorService;
-      } else {
-            return newScheduledExecutorService();
-      }
+    if (googleBigQueryThreadPoolProperties.isCommonThreadPool()) {
+      return scheduledExecutorService;
+    } else {
+      return newScheduledExecutorService();
+    }
   }
 }
