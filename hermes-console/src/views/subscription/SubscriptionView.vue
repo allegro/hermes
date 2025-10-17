@@ -111,10 +111,6 @@
     await retransmitMessages(fromDate);
   };
 
-  const onSkipAllMessages = async () => {
-    await skipAllMessages();
-  };
-
   const breadcrumbsItems = [
     {
       title: t('subscription.subscriptionBreadcrumbs.home'),

@@ -47,7 +47,7 @@
 
     <v-list class="pa-0">
       <v-list-item v-for="(item, i) in knownEnvironments" :key="i" :value="i">
-        <v-list-item-title @click="event => switchToEnv(item, event)">{{
+        <v-list-item-title @click="(event) => switchToEnv(item, event)">{{
           item.name
         }}</v-list-item-title>
       </v-list-item>

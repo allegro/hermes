@@ -4,7 +4,6 @@
   import { getAvroPaths } from '@/utils/json-avro/jsonAvroUtils';
   import { isAdmin, isSubscriptionOwnerOrAdmin } from '@/utils/roles-util';
   import { ref } from 'vue';
-  import type { Subscription } from '@/api/subscription';
   import { State } from '@/api/subscription';
   import { subscriptionFqn } from '@/utils/subscription-utils/subscription-utils';
   import { useFavorites } from '@/store/favorites/useFavorites';
@@ -14,6 +13,7 @@
   import TooltipIcon from '@/components/tooltip-icon/TooltipIcon.vue';
   import type { Owner } from '@/api/owner';
   import type { Role } from '@/api/role';
+  import type { Subscription } from '@/api/subscription';
 
   const { t } = useI18n();
 

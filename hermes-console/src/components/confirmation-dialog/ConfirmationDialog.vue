@@ -1,7 +1,6 @@
 <script setup lang="ts">
   import { ref } from 'vue';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
-  import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
 
   const props = defineProps<{
     actionButtonEnabled: boolean;

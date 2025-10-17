@@ -1,6 +1,6 @@
 <script setup lang="ts">
-  import type { TrackingUrl } from '@/api/tracking-url';
   import SimpleLink from '@/components/link/SimpleLink.vue';
+  import type { TrackingUrl } from '@/api/tracking-url';
 
   const props = defineProps<{
     trackingUrls: TrackingUrl[];

@@ -16,9 +16,6 @@
   const authStore = useAuthStore();
 
   const isLoggedIn = computed(() => authStore.isUserAuthorized);
-  const knownEnvironments = computed(
-    () => configStore.appConfig?.console.knownEnvironments || [],
-  );
 
   function logIn() {
     authStore.login(window.location.pathname);
@@ -70,7 +67,6 @@
         >
           {{ t('header.logout') }}
         </v-btn>
-        <v-avatar color="grey" size="small"><span>G</span></v-avatar>
       </div>
     </div>
   </v-app-bar>
