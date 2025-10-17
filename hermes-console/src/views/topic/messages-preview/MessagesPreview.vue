@@ -12,13 +12,25 @@
     messages: MessagePreview[];
   }>();
 
-  const parsedMessages = props.messages.map(
-    (message) =>
-      ({
-        ...message,
-        parsedContent: JSON.parse(message.content || '{}'),
-      }) satisfies ParsedMessagePreview,
-  );
+  const parsedMessages = props.messages.map((message) => {
+    let parsedContent: any | null = null;
+    try {
+      if (!message.truncated) {
+        parsedContent = JSON.parse(message.content || '{}');
+      }
+    } catch (e) {
+      /* empty */
+    }
+
+    return {
+      ...message,
+      messageId: parsedContent?.__metadata?.messageId || 'Not available',
+      timestamp: parsedContent?.__metadata?.timestamp
+        ? Number(parsedContent?.__metadata?.timestamp)
+        : null,
+      parsedContent,
+    };
+  });
 
   const messagesTableHeaders = [
     { title: 'Message Id', key: 'messageId' },
@@ -40,8 +52,6 @@
     dialog.value = false;
     selectedMessage.value = null;
   }
-
-  // TODO: Handle truncated messages properly
 </script>
 
 <template>
@@ -62,13 +72,13 @@
         "
       >
         <template #[`item.messageId`]="{ item }">
-          {{ item?.parsedContent?.__metadata?.messageId }}
+          {{ item?.messageId || 'Not available' }}
         </template>
         <template #[`item.timestamp`]="{ item }">
           {{
-            formatTimestampMillis(
-              Number(item?.parsedContent?.__metadata?.timestamp),
-            )
+            item?.timestamp
+              ? formatTimestampMillis(item?.timestamp)
+              : 'Not available'
           }}
         </template>
       </v-data-table>
@@ -97,22 +107,26 @@
       <v-card-text class="pt-4 d-flex flex-column row-gap-4">
         <div class="d-flex flex-column">
           <span class="text-body-2 text-medium-emphasis">Message ID</span>
-          <span>{{ selectedMessage.parsedContent.__metadata?.messageId }}</span>
+          <span>{{ selectedMessage.messageId || 'Not available' }}</span>
         </div>
         <div class="d-flex flex-column">
           <span class="text-body-2 text-medium-emphasis">Timestamp</span>
           <span>{{
-            formatTimestampMillis(
-              Number(selectedMessage.parsedContent.__metadata?.timestamp),
-            )
+            selectedMessage?.timestamp
+              ? formatTimestampMillis(selectedMessage.timestamp)
+              : 'Not available'
           }}</span>
         </div>
         <div>
           <span class="text-body-2 text-medium-emphasis">Payload</span>
           <json-viewer
+            v-if="selectedMessage.parsedContent"
             :json="selectedMessage.content"
             class="border-thin rounded-lg"
           />
+          <div class="raw-schema-snippet pa-3 bg-grey-lighten-5" v-else>
+            {{ selectedMessage.content }}
+          </div>
         </div>
       </v-card-text>
     </v-card>
@@ -120,10 +134,15 @@
 </template>
 
 <style scoped lang="scss">
+  @use 'vuetify/settings';
+
   .raw-schema-snippet {
-    line-height: 1.4;
-    max-height: 200px;
-    overflow: scroll;
-    border: #cccccc 1px solid;
+    line-height: 1.2;
+    font-size: 0.9rem;
+    max-height: 500px;
+    overflow: auto;
+    cursor: text;
+    border: 1px rgba(var(--v-border-color), var(--v-border-opacity)) solid;
+    border-radius: settings.$border-radius-root;
   }
 </style>

@@ -6,7 +6,7 @@
 
 <template>
   <div>
-    <pre class="raw-schema-snippet pa-3 language-json bg-grey-lighten-5">{{
+    <pre class="raw-schema-snippet pa-3 bg-grey-lighten-5">{{
       JSON.parse(props.json)
     }}</pre>
   </div>
