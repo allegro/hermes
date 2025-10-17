@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.consumers.config;
 
-
 public abstract class GoogleBigQueryThreadPoolProperties {
   boolean commonThreadPool = true;
   int poolSize = 100;
