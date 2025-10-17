@@ -116,7 +116,10 @@ export interface PathFilterJson {
 
 export type SubscriptionFilterJson = HeaderFilterJson | PathFilterJson;
 
-interface SubscriptionHeaderJson {}
+interface SubscriptionHeaderJson {
+  name: string;
+  value: string;
+}
 
 interface MonitoringDetailsJson {
   reaction: string;

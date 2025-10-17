@@ -1,11 +1,13 @@
 import type {
   BatchSubscriptionPolicyJson,
   CreateSubscriptionFormRequestBody,
+  Header,
   SerialSubscriptionPolicyJson,
   SubscriptionFilterJson,
   SubscriptionPolicyJson,
 } from '@/api/subscription';
 import type { HeaderFilter } from '@/views/subscription/subscription-form/subscription-header-filters/types';
+import type { HeaderWithId } from '@/views/subscription/subscription-form/subscription-headers/types';
 import type { PathFilter } from '@/views/subscription/subscription-form/subscription-basic-filters/types';
 import type { SubscriptionForm } from '@/composables/subscription/use-form-subscription/types';
 
@@ -32,7 +34,7 @@ export function parseFormToRequestBody(
     description: form.description,
     endpoint: form.endpoint,
     filters: pathFilters.concat(headerFilters),
-    headers: [],
+    headers: mapHeaders(form.headers),
     http2Enabled: form.deliverUsingHttp2,
     mode: form.mode,
     monitoringDetails: {
@@ -115,7 +117,11 @@ function mapPathFilter(
 function mapHeaderFilter(filter: HeaderFilter): SubscriptionFilterJson {
   return {
     type: 'header',
-    header: filter.headerName,
+    header: filter.header,
     matcher: filter.matcher,
   };
+}
+
+function mapHeaders(headers: HeaderWithId[]): Header[] {
+  return headers.map(({ name, value }) => ({ name, value }));
 }

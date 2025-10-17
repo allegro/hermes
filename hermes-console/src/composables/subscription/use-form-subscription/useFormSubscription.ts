@@ -1,5 +1,5 @@
 import { computed, ref } from 'vue';
-import { DeliveryType } from '@/api/subscription';
+import { DeliveryType, type Header } from '@/api/subscription';
 import { fetchOwnersSources, searchOwners } from '@/api/hermes-client';
 import { v4 as generateUUID } from 'uuid';
 import { matchRegex, max, min, required } from '@/utils/validators';
@@ -14,6 +14,7 @@ import type {
 } from '@/composables/subscription/use-form-subscription/types';
 import type { EndpointAddressResolverMetadata } from '@/api/subscription';
 import type { HeaderFilter } from '@/views/subscription/subscription-form/subscription-header-filters/types';
+import type { HeaderWithId } from '@/views/subscription/subscription-form/subscription-headers/types';
 import type {
   MessageFilterSpecification,
   Subscription,
@@ -200,6 +201,7 @@ function createEmptyForm(): Ref<SubscriptionForm> {
     deleteSubscriptionAutomatically: false,
     pathFilters: [],
     headerFilters: [],
+    headers: [],
     endpointAddressResolverMetadata: getEndpointAddressResolverDefaultValues(),
   });
 }
@@ -264,6 +266,7 @@ export function initializeFullyFilledForm(
     deleteSubscriptionAutomatically: subscription.autoDeleteWithTopicEnabled,
     pathFilters: mapToPathFilter(subscription.filters),
     headerFilters: mapToHeaderFilter(subscription.filters),
+    headers: mapToHeaders(subscription.headers),
     endpointAddressResolverMetadata: getEndpointAddressResolverValues(
       subscription.endpointAddressResolverMetadata,
     ),
@@ -278,7 +281,7 @@ function mapToHeaderFilter(
     .map((filter: MessageFilterSpecification) => {
       return {
         id: generateUUID(),
-        headerName: filter.header,
+        header: filter.header,
         matcher: filter.matcher,
       };
     });
@@ -295,6 +298,14 @@ function mapToPathFilter(filters: MessageFilterSpecification): PathFilter[] {
         matchingStrategy: filter.matchingStrategy,
       };
     });
+}
+
+function mapToHeaders(header: Header[]): HeaderWithId[] {
+  return header.map((h) => ({
+    id: generateUUID(),
+    name: h.name,
+    value: h.value,
+  }));
 }
 
 export function watchOwnerSearch(
