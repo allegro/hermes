@@ -1,26 +1,15 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery
 
-import com.google.api.gax.core.NoCredentialsProvider
-import com.google.cloud.bigquery.storage.v1.BigQueryWriteSettings
-import pl.allegro.tech.hermes.api.ContentType
-import pl.allegro.tech.hermes.api.DeliveryType
-import pl.allegro.tech.hermes.api.EndpointAddress
-import pl.allegro.tech.hermes.api.Subscription
-import pl.allegro.tech.hermes.api.SubscriptionMode
+
+import pl.allegro.tech.hermes.api.*
 import pl.allegro.tech.hermes.api.subscription.metrics.SubscriptionMetricsConfig
 import pl.allegro.tech.hermes.consumers.consumer.ResilientMessageSender
-import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender
 import pl.allegro.tech.hermes.consumers.consumer.sender.SingleRecipientMessageSenderAdapter
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.GoogleBigQueryAvroDataWriterPool
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.GoogleBigQueryAvroMessageTransformer
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.GoogleBigQueryAvroStreamWriterFactory
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.GoogleBigQueryAvroToProtoConverter
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.json.GoogleBigQueryJsonDataWriterPool
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.json.GoogleBigQueryJsonMessageTransformer
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.json.GoogleBigQueryJsonSender
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.json.GoogleBigQueryJsonStreamWriterFactory
-import pl.allegro.tech.hermes.domain.CredentialsRepository
 import spock.lang.Specification
 
 class GoogleBigQueryMessageSenderProviderTest extends Specification {
@@ -30,8 +19,8 @@ class GoogleBigQueryMessageSenderProviderTest extends Specification {
                 Mock(GoogleBigQuerySenderTargetResolver),
                 Mock(GoogleBigQueryJsonMessageTransformer),
                 Mock(GoogleBigQueryAvroMessageTransformer),
-                Mock(GoogleBigQueryJsonDataWriterPool),
-                Mock(GoogleBigQueryAvroDataWriterPool)
+                Mock(GoogleBigQueryJsonStreamWriterFactory),
+                Mock(GoogleBigQueryAvroStreamWriterFactory)
         )
 
         EndpointAddress endpointAddress = EndpointAddress.of("googlebigquery://projects/project/datasets/dataset/tables/table")
@@ -71,8 +60,8 @@ class GoogleBigQueryMessageSenderProviderTest extends Specification {
         (sender as SingleRecipientMessageSenderAdapter).getAdaptee().getClass().name == adapteeClassName
 
         where:
-        contentType || adapteeClassName
-        ContentType.JSON    || "pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.json.GoogleBigQueryJsonSender"
-        ContentType.AVRO    || "pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.GoogleBigQueryAvroSender"
+        contentType      || adapteeClassName
+        ContentType.JSON || "pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.json.GoogleBigQueryJsonSender"
+        ContentType.AVRO || "pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.GoogleBigQueryAvroSender"
     }
 }

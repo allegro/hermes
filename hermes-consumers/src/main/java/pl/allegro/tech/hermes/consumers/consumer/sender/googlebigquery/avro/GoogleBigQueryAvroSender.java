@@ -23,11 +23,11 @@ public class GoogleBigQueryAvroSender implements CompletableFutureAwareMessageSe
   public GoogleBigQueryAvroSender(
       GoogleBigQueryAvroMessageTransformer avroMessageTransformer,
       Subscription subscription,
-      GoogleBigQueryAvroDataWriterPool avroDataWriterPool) {
+      GoogleBigQueryAvroStreamWriterFactory avroStreamWriterFactory) {
 
     this.avroMessageTransformer = avroMessageTransformer;
     this.subscription = subscription;
-    this.avroDataWriterPool = avroDataWriterPool;
+    this.avroDataWriterPool = new GoogleBigQueryAvroDataWriterPool(avroStreamWriterFactory);
   }
 
   @Override

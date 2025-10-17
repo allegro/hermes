@@ -9,12 +9,12 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.CompletableFutureAwareMe
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.SingleRecipientMessageSenderAdapter;
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.GoogleBigQueryAvroDataWriterPool;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.GoogleBigQueryAvroMessageTransformer;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.GoogleBigQueryAvroSender;
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.json.GoogleBigQueryJsonDataWriterPool;
+import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.GoogleBigQueryAvroStreamWriterFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.json.GoogleBigQueryJsonMessageTransformer;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.json.GoogleBigQueryJsonSender;
+import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.json.GoogleBigQueryJsonStreamWriterFactory;
 
 public class GoogleBigQueryMessageSenderProvider implements ProtocolMessageSenderProvider {
 
@@ -23,20 +23,20 @@ public class GoogleBigQueryMessageSenderProvider implements ProtocolMessageSende
   private final GoogleBigQuerySenderTargetResolver targetResolver;
   private final GoogleBigQueryJsonMessageTransformer jsonMessageTransformer;
   private final GoogleBigQueryAvroMessageTransformer avroMessageTransformer;
-  private final GoogleBigQueryAvroDataWriterPool avroDataWriterPool;
-  private final GoogleBigQueryJsonDataWriterPool jsonDataWriterPool;
+  private final GoogleBigQueryAvroStreamWriterFactory avroStreamWriterFactory;
+  private final GoogleBigQueryJsonStreamWriterFactory jsonStreamWriterFactory;
 
   public GoogleBigQueryMessageSenderProvider(
       GoogleBigQuerySenderTargetResolver targetResolver,
       GoogleBigQueryJsonMessageTransformer jsonMessageTransformer,
       GoogleBigQueryAvroMessageTransformer avroMessageTransformer,
-      GoogleBigQueryJsonDataWriterPool jsonDataWriterPool,
-      GoogleBigQueryAvroDataWriterPool avroDataWriterPool) {
+      GoogleBigQueryJsonStreamWriterFactory jsonStreamWriterFactory,
+      GoogleBigQueryAvroStreamWriterFactory avroStreamWriterFactory) {
     this.targetResolver = targetResolver;
     this.jsonMessageTransformer = jsonMessageTransformer;
-    this.jsonDataWriterPool = jsonDataWriterPool;
     this.avroMessageTransformer = avroMessageTransformer;
-    this.avroDataWriterPool = avroDataWriterPool;
+    this.jsonStreamWriterFactory = jsonStreamWriterFactory;
+    this.avroStreamWriterFactory = avroStreamWriterFactory;
   }
 
   @Override
@@ -45,10 +45,12 @@ public class GoogleBigQueryMessageSenderProvider implements ProtocolMessageSende
     GoogleBigQuerySenderTarget target = targetResolver.resolve(subscription.getEndpoint());
     CompletableFutureAwareMessageSender sender;
     if (subscription.getContentType().equals(ContentType.JSON)) {
-      sender = new GoogleBigQueryJsonSender(jsonMessageTransformer, target, jsonDataWriterPool);
+      sender =
+          new GoogleBigQueryJsonSender(jsonMessageTransformer, target, jsonStreamWriterFactory);
     } else {
       sender =
-          new GoogleBigQueryAvroSender(avroMessageTransformer, subscription, avroDataWriterPool);
+          new GoogleBigQueryAvroSender(
+              avroMessageTransformer, subscription, avroStreamWriterFactory);
     }
 
     return new SingleRecipientMessageSenderAdapter(sender, resilientMessageSender);
@@ -63,8 +65,5 @@ public class GoogleBigQueryMessageSenderProvider implements ProtocolMessageSende
   public void start() throws Exception {}
 
   @Override
-  public void stop() throws Exception {
-    jsonDataWriterPool.shutdown();
-    avroDataWriterPool.shutdown();
-  }
+  public void stop() {}
 }

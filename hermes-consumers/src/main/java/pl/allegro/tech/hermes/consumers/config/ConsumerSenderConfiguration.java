@@ -33,10 +33,10 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.GoogleBigQueryMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.GoogleBigQuerySenderTargetResolver;
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.GoogleBigQueryAvroDataWriterPool;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.GoogleBigQueryAvroMessageTransformer;
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.json.GoogleBigQueryJsonDataWriterPool;
+import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.GoogleBigQueryAvroStreamWriterFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.json.GoogleBigQueryJsonMessageTransformer;
+import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.json.GoogleBigQueryJsonStreamWriterFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubMessageTransformerCreator;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub.GooglePubSubSenderTargetResolver;
@@ -256,14 +256,14 @@ public class ConsumerSenderConfiguration {
       GoogleBigQuerySenderTargetResolver senderTargetResolver,
       GoogleBigQueryJsonMessageTransformer jsonMessageTransformer,
       GoogleBigQueryAvroMessageTransformer avroMessageTransformer,
-      GoogleBigQueryJsonDataWriterPool jsonDataWriterPool,
-      GoogleBigQueryAvroDataWriterPool avroDataWriterPool) {
+      GoogleBigQueryAvroStreamWriterFactory avroStreamWriterFactory,
+      GoogleBigQueryJsonStreamWriterFactory jsonStreamWriterFactory) {
     return new GoogleBigQueryMessageSenderProvider(
         senderTargetResolver,
         jsonMessageTransformer,
         avroMessageTransformer,
-        jsonDataWriterPool,
-        avroDataWriterPool);
+        jsonStreamWriterFactory,
+        avroStreamWriterFactory);
   }
 
   @Bean

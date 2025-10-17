@@ -14,15 +14,15 @@ public class GoogleBigQueryJsonSender implements CompletableFutureAwareMessageSe
 
   private final GoogleBigQueryJsonMessageTransformer messageTransformer;
   private final GoogleBigQuerySenderTarget senderTarget;
-  private final GoogleBigQueryJsonDataWriterPool dataWriterPool;
+  private final GoogleBigQueryJsonDataWriterPool jsondataWriterPool;
 
   public GoogleBigQueryJsonSender(
       GoogleBigQueryJsonMessageTransformer messageTransformer,
       GoogleBigQuerySenderTarget senderTarget,
-      GoogleBigQueryJsonDataWriterPool dataWriterPool) {
+      GoogleBigQueryJsonStreamWriterFactory jsonStreamWriterFactory) {
     this.messageTransformer = messageTransformer;
     this.senderTarget = senderTarget;
-    this.dataWriterPool = dataWriterPool;
+    this.jsondataWriterPool = new GoogleBigQueryJsonDataWriterPool(jsonStreamWriterFactory);
   }
 
   @Override
@@ -32,7 +32,7 @@ public class GoogleBigQueryJsonSender implements CompletableFutureAwareMessageSe
     data.put(jsonObject);
 
     try {
-      dataWriterPool.acquire(senderTarget).publish(data, resultFuture);
+      jsondataWriterPool.acquire(senderTarget).publish(data, resultFuture);
     } catch (IOException | ExecutionException | InterruptedException e) {
       resultFuture.complete(MessageSendingResult.failedResult(e));
     }
@@ -40,6 +40,6 @@ public class GoogleBigQueryJsonSender implements CompletableFutureAwareMessageSe
 
   @Override
   public void stop() {
-    dataWriterPool.shutdown();
+    jsondataWriterPool.shutdown();
   }
 }
