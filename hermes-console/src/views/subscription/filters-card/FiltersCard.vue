@@ -37,8 +37,8 @@
           <v-card-subtitle
             >Define rules to filter incoming messages based on their content.
             Only messages that match the specified criteria will be delivered to
-            your endpoint.</v-card-subtitle
-          >
+            your endpoint.
+          </v-card-subtitle>
         </div>
         <div class="d-flex justify-space-between">
           <subscription-path-filters-debug
@@ -72,13 +72,23 @@
             </th>
           </tr>
         </thead>
-        <tbody>
-          <tr v-for="(filter, index) in props.filters ?? []" :key="index">
+        <tbody v-if="props.filters.length > 0">
+          <tr v-for="(filter, index) in props.filters" :key="index">
             <td class="pl-0">{{ index + 1 }}</td>
             <td>{{ filter.type }}</td>
             <td>{{ filter.path }}{{ filter.header }}</td>
             <td>{{ filter.matcher }}</td>
             <td>{{ filter.matchingStrategy }}</td>
+          </tr>
+        </tbody>
+        <tbody v-else>
+          <tr>
+            <td
+              colspan="5"
+              class="text-center text-medium-emphasis text-body-2"
+            >
+              <span>No filters defined</span>
+            </td>
           </tr>
         </tbody>
       </v-table>

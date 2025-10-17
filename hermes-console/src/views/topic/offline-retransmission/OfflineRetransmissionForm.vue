@@ -53,43 +53,42 @@
 
       <v-card-item>
         <v-text-field
+          variant="outlined"
           :label="$t('offlineRetransmission.targetTopic')"
           type="text"
           v-model="targetTopic"
           data-testid="offlineRetransmissionTargetTopicNameInput"
-        >
-        </v-text-field>
-      </v-card-item>
-      <v-card-item>
+        />
+
         <v-text-field
+          variant="outlined"
           :label="$t('offlineRetransmission.startTimestamp')"
           type="datetime-local"
           v-model="startTimestamp"
           data-testid="offlineRetransmissionStartTimestampInput"
-        >
-        </v-text-field>
-      </v-card-item>
-      <v-card-item>
+        />
+
         <v-text-field
+          variant="outlined"
           :label="$t('offlineRetransmission.endTimestamp')"
           type="datetime-local"
           v-model="endTimestamp"
           data-testid="offlineRetransmissionEndTimestampInput"
-        >
-        </v-text-field>
+        />
       </v-card-item>
+
       <v-card-item class="text-right">
         <v-btn
           color="primary"
-          class="mr-4"
+          class="mr-4 text-capitalize"
           @click="onRetransmit"
           data-testid="offlineRetransmissionRetransmit"
         >
-          {{ $t('constraints.createForm.save') }}
+          {{ $t('constraints.createForm.create') }}
         </v-btn>
         <v-btn
-          color="orange"
           @click="emit('cancel')"
+          class="text-capitalize"
           data-testid="offlineRetransmissionCancel"
         >
           {{ $t('constraints.createForm.cancel') }}

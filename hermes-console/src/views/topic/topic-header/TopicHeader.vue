@@ -58,7 +58,7 @@
 </script>
 
 <template>
-  <v-card density="compact" flat color="transparent" border="false">
+  <v-card density="compact" color="transparent" border="false">
     <div class="d-flex justify-end mr-4 mb-1">
       <v-dialog v-model="showTopicEditForm" min-width="800" :persistent="true">
         <v-card>
@@ -164,7 +164,6 @@
       <div class="d-flex column-gap-2">
         <v-btn
           prepend-icon="mdi-export"
-          :disabled="!isTopicOwnerOrAdmin(roles)"
           class="text-capitalize"
           variant="outlined"
           @click="exportTopic"

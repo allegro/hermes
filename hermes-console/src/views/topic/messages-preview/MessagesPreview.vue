@@ -40,6 +40,8 @@
     dialog.value = false;
     selectedMessage.value = null;
   }
+
+  // TODO: Handle truncated messages properly
 </script>
 
 <template>

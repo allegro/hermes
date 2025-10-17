@@ -10,9 +10,9 @@
 <template>
   <v-card>
     <v-card-item class="border-b">
-      <v-card-title class="font-weight-bold">{{
-        $t('subscription.undeliveredMessagesCard.title')
-      }}</v-card-title>
+      <v-card-title class="font-weight-bold"
+        >{{ $t('subscription.undeliveredMessagesCard.title') }}
+      </v-card-title>
     </v-card-item>
 
     <v-card-item>
@@ -36,7 +36,11 @@
             </th>
           </tr>
         </thead>
-        <tbody>
+        <tbody
+          v-if="
+            props.undeliveredMessages && props.undeliveredMessages.length > 0
+          "
+        >
           <tr
             v-for="(message, index) in props.undeliveredMessages.slice(0, 100)"
             :key="index"
@@ -46,6 +50,16 @@
             <td>{{ message.status }}</td>
             <td>{{ message.reason }}</td>
             <td>{{ formatTimestampMillis(message.timestamp) }}</td>
+          </tr>
+        </tbody>
+        <tbody v-else>
+          <tr>
+            <td
+              colspan="5"
+              class="text-center text-medium-emphasis text-body-2"
+            >
+              <span>There's no undelivered messages</span>
+            </td>
           </tr>
         </tbody>
       </v-table>

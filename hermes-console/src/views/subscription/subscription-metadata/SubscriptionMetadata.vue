@@ -57,7 +57,7 @@
   }
 </script>
 <template>
-  <v-card density="compact" flat color="transparent" border="false">
+  <v-card density="compact" color="transparent" border="false">
     <div class="d-flex justify-end mr-4 mb-1">
       <v-dialog
         v-model="showSubscriptionEditForm"
@@ -241,7 +241,6 @@
           {{ $t('subscription.subscriptionMetadata.actions.edit') }}
         </v-btn>
         <v-btn
-          :disabled="!isSubscriptionOwnerOrAdmin(roles)"
           prepend-icon="mdi-export"
           @click="exportSubscription"
           class="text-capitalize"

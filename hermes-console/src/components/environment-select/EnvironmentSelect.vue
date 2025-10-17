@@ -33,7 +33,7 @@
   <v-menu>
     <template v-slot:activator="{ props }">
       <v-btn
-        :color="isCurrentEnvironmentCritical ? 'red-accent-2' : 'primary'"
+        :color="isCurrentEnvironmentCritical ? 'error' : 'primary'"
         v-bind="props"
         block
         prepend-icon="mdi-server-outline"

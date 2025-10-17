@@ -111,6 +111,10 @@
     await retransmitMessages(fromDate);
   };
 
+  const onSkipAllMessages = async () => {
+    await skipAllMessages();
+  };
+
   const breadcrumbsItems = [
     {
       title: t('subscription.subscriptionBreadcrumbs.home'),
@@ -130,7 +134,6 @@
     },
     {
       title: subscriptionId,
-      active: true,
     },
   ];
 
@@ -268,7 +271,7 @@
             <v-row dense>
               <v-col md="12">
                 <filters-card
-                  :filters="subscription?.filters!!"
+                  :filters="subscription?.filters || []"
                   :schema="topic?.schema"
                   :topic="topicId"
                 />
@@ -289,7 +292,7 @@
                   :retransmitting="retransmitting"
                   :skippingAllMessages="skippingAllMessages"
                   @retransmit="onRetransmit"
-                  @skipAllMessages="skipAllMessages"
+                  @skipAllMessages="onSkipAllMessages"
                 />
               </v-col>
             </v-row>
@@ -297,12 +300,8 @@
             <v-row dense>
               <v-col md="12">
                 <undelivered-messages-card
-                  v-if="
-                    subscriptionUndeliveredMessages &&
-                    subscriptionUndeliveredMessages?.length > 0 &&
-                    isSubscriptionOwnerOrAdmin(roles)
-                  "
-                  :undelivered-messages="subscriptionUndeliveredMessages"
+                  v-if="isSubscriptionOwnerOrAdmin(roles)"
+                  :undelivered-messages="subscriptionUndeliveredMessages || []"
                 />
               </v-col>
             </v-row>

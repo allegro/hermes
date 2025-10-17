@@ -7,7 +7,7 @@
 </script>
 
 <template>
-  <v-card class="mb-2" border flat>
+  <v-card class="mb-2">
     <v-card-item class="border-b">
       <div class="d-flex justify-space-between align-start">
         <div>
@@ -37,11 +37,21 @@
             </th>
           </tr>
         </thead>
-        <tbody>
-          <tr v-for="(header, index) in props.headers ?? []" :key="index">
+        <tbody v-if="props.headers && props.headers.length > 0">
+          <tr v-for="(header, index) in props.headers" :key="index">
             <td class="pl-0">{{ index + 1 }}</td>
             <td>{{ header.name }}</td>
             <td>{{ header.value }}</td>
+          </tr>
+        </tbody>
+        <tbody v-else>
+          <tr>
+            <td
+              colspan="5"
+              class="text-center text-medium-emphasis text-body-2"
+            >
+              <span>No headers defined</span>
+            </td>
           </tr>
         </tbody>
       </v-table>

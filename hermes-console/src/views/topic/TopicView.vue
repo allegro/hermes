@@ -203,7 +203,7 @@
             <subscriptions-list
               :groupId="groupId"
               :topic-name="topicName"
-              :subscriptions="subscriptions ? subscriptions : []"
+              :subscriptions="subscriptions || []"
               :roles="roles"
               @copyClientsClick="copyClientsToClipboard"
             />
@@ -241,7 +241,7 @@
                     configStore.appConfig?.topic.messagePreviewEnabled &&
                     isTopicOwnerOrAdmin(roles)
                   "
-                  :messages="messages"
+                  :messages="messages || []"
                 />
               </v-col>
             </v-row>

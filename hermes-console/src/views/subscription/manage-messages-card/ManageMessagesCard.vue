@@ -90,7 +90,7 @@
     @action="skipMessages"
     @cancel="closeSkipAllMessagesDialog"
   />
-  <v-card border flat>
+  <v-card>
     <v-card-item class="border-b">
       <div>
         <v-card-title class="font-weight-bold">

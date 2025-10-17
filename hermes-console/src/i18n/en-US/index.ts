@@ -156,7 +156,7 @@ const en_US = {
       subscriptionName: 'Subscription name',
       consumersNumber: 'Consumers count',
       reason: 'Reason',
-      save: 'Save',
+      create: 'Create',
       cancel: 'Cancel',
     },
     editForm: {
@@ -668,7 +668,7 @@ const en_US = {
     },
   },
   offlineRetransmission: {
-    title: 'Offline retransmission',
+    title: 'New retransmission task',
     titleRetransmissionFromView: 'Docs',
     subtitle:
       'Offline retransmission allows retransmitting events from GCP (BigQuery) to Hermes. To read more about it, go to ',
