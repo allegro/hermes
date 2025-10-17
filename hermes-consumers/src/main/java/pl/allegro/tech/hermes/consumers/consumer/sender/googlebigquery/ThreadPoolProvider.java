@@ -6,13 +6,22 @@ import pl.allegro.tech.hermes.consumers.config.GoogleBigQueryThreadPoolPropertie
 
 public class ThreadPoolProvider {
   ScheduledExecutorService scheduledExecutorService;
+  GoogleBigQueryThreadPoolProperties googleBigQueryThreadPoolProperties;
 
   public ThreadPoolProvider(GoogleBigQueryThreadPoolProperties googleBigQueryThreadPoolProperties) {
-    this.scheduledExecutorService =
-        Executors.newScheduledThreadPool(googleBigQueryThreadPoolProperties.getPoolSize());
+    this.googleBigQueryThreadPoolProperties = googleBigQueryThreadPoolProperties;
+    this.scheduledExecutorService = newScheduledExecutorService();
+  }
+
+  private ScheduledExecutorService newScheduledExecutorService() {
+    return Executors.newScheduledThreadPool(googleBigQueryThreadPoolProperties.getPoolSize());
   }
 
   public java.util.concurrent.ScheduledExecutorService getExecutorService() {
-    return scheduledExecutorService;
+      if (googleBigQueryThreadPoolProperties.isCommonThreadPool()) {
+          return scheduledExecutorService;
+      } else {
+            return newScheduledExecutorService();
+      }
   }
 }
