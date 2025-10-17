@@ -5,7 +5,7 @@
   import { useOfflineRetransmission } from '@/composables/topic/use-offline-retransmission/useOfflineRetransmission';
   import { useRouter } from 'vue-router';
   import OfflineRetransmissionDialog from '@/views/topic/offline-retransmission/OfflineRetransmissionDialog.vue';
-  import SimpleLink from '@/components/link/SimpleLink.vue';
+  import SimpleLink from '@/components/simple-link/SimpleLink.vue';
   import type { OfflineRetransmissionActiveTask } from '@/api/offline-retransmission';
   import type { Role } from '@/api/role';
   import type { TopicWithSchema } from '@/api/topic';

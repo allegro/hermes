@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { ref } from 'vue';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
-  import SimpleLink from '@/components/link/SimpleLink.vue';
+  import SimpleLink from '@/components/simple-link/SimpleLink.vue';
 
   const emit = defineEmits<{
     retransmit: [targetTopic: string, from: string, to: string];

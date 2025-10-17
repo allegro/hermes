@@ -17,7 +17,7 @@
     );
   }
 
-  function switchToEnv(env: ConsoleEnvironment, event): string {
+  function switchToEnv(env: ConsoleEnvironment, event: Event): string {
     const currentUrl = location.href;
     const currentEnv: ConsoleEnvironment = getCurrentEnv();
     const switchedUrl = currentUrl.replace(currentEnv.url, env.url);
@@ -47,9 +47,9 @@
 
     <v-list class="pa-0">
       <v-list-item v-for="(item, i) in knownEnvironments" :key="i" :value="i">
-        <v-list-item-title @click="(event) => switchToEnv(item, event)">{{
-          item.name
-        }}</v-list-item-title>
+        <v-list-item-title @click="(event: Event) => switchToEnv(item, event)"
+          >{{ item.name }}
+        </v-list-item-title>
       </v-list-item>
     </v-list>
   </v-menu>
