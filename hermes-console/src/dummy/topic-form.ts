@@ -127,6 +127,7 @@ export const dummyInitializedTopicForm = {
   maxMessageSize: defaultMaxMessageSize,
   ack: '',
   schema: '',
+  fallbackToRemoteDatacenterEnabled: false,
 };
 
 export const dummyInitializedEditTopicForm = {

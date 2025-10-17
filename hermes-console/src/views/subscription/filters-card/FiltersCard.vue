@@ -35,9 +35,7 @@
             >{{ $t('subscription.filtersCard.title') }}
           </v-card-title>
           <v-card-subtitle
-            >Define rules to filter incoming messages based on their content.
-            Only messages that match the specified criteria will be delivered to
-            your endpoint.
+            >{{ $t('subscription.filtersCard.subtitle') }}
           </v-card-subtitle>
         </div>
         <div class="d-flex justify-space-between">
@@ -87,7 +85,7 @@
               colspan="5"
               class="text-center text-medium-emphasis text-body-2"
             >
-              <span>No filters defined</span>
+              <span>{{ $t('subscription.filtersCard.noFilters') }}</span>
             </td>
           </tr>
         </tbody>

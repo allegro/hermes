@@ -3,6 +3,7 @@
   import { defineProps, ref } from 'vue';
   import AvroViewer from '@/views/topic/schema-panel/avro-viewer/AvroViewer.vue';
   import JsonViewer from '@/components/json-viewer/JsonViewer.vue';
+
   const props = defineProps<{
     schema: string;
   }>();
@@ -18,8 +19,12 @@
         density="compact"
         variant="outlined"
       >
-        <v-btn :value="false" class="text-capitalize">Structure</v-btn>
-        <v-btn :value="true" class="text-capitalize">Raw schema</v-btn>
+        <v-btn :value="false" class="text-capitalize">{{
+          $t('topicView.schema.structure')
+        }}</v-btn>
+        <v-btn :value="true" class="text-capitalize">{{
+          $t('topicView.schema.rawSchema')
+        }}</v-btn>
       </v-btn-toggle>
       <v-btn
         @click="copyToClipboard(props.schema)"

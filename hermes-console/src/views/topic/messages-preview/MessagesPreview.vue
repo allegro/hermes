@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import { formatTimestampMillis } from '@/utils/date-formatter/date-formatter';
   import { ref } from 'vue';
+  import { useI18n } from 'vue-i18n';
   import JsonViewer from '@/components/json-viewer/JsonViewer.vue';
   import type { MessagePreview } from '@/api/topic';
   import type {
@@ -11,6 +12,8 @@
   const props = defineProps<{
     messages: MessagePreview[];
   }>();
+
+  const { t } = useI18n();
 
   const parsedMessages = props.messages.map((message) => {
     let parsedContent: any | null = null;
@@ -33,10 +36,22 @@
   });
 
   const messagesTableHeaders = [
-    { title: 'Message Id', key: 'messageId' },
-    { title: 'Timestamp', key: 'timestamp' },
-    { title: 'Message', key: 'content' },
-    { title: 'Truncated', key: 'truncated' },
+    {
+      title: t('topicView.messagesPreview.tableHeaders.messageId'),
+      key: 'messageId',
+    },
+    {
+      title: t('topicView.messagesPreview.tableHeaders.timestamp'),
+      key: 'timestamp',
+    },
+    {
+      title: t('topicView.messagesPreview.tableHeaders.content'),
+      key: 'content',
+    },
+    {
+      title: t('topicView.messagesPreview.tableHeaders.truncated'),
+      key: 'truncated',
+    },
   ];
 
   const selectedMessage = ref<ParsedMessagePreview | null>(null);
@@ -58,7 +73,9 @@
   <v-card>
     <template #title>
       <div class="d-flex justify-space-between">
-        <p class="font-weight-bold">Messages Preview</p>
+        <p class="font-weight-bold">
+          {{ $t('topicView.messagesPreview.title') }}
+        </p>
       </div>
     </template>
     <v-card-text>
@@ -72,13 +89,16 @@
         "
       >
         <template #[`item.messageId`]="{ item }">
-          {{ item?.messageId || 'Not available' }}
+          {{
+            item?.messageId ||
+            $t('topicView.messagesPreview.messageDetails.notAvailable')
+          }}
         </template>
         <template #[`item.timestamp`]="{ item }">
           {{
             item?.timestamp
               ? formatTimestampMillis(item?.timestamp)
-              : 'Not available'
+              : $t('topicView.messagesPreview.messageDetails.notAvailable')
           }}
         </template>
         <template #[`item.content`]="{ item }">
@@ -98,9 +118,11 @@
       <v-card-item class="border-b">
         <div class="d-flex justify-space-between align-start">
           <div>
-            <v-card-title>Message details</v-card-title>
+            <v-card-title>{{
+              $t('topicView.messagesPreview.messageDetails.title')
+            }}</v-card-title>
             <v-card-subtitle>
-              Inspect the event payload and metadata.
+              {{ $t('topicView.messagesPreview.messageDetails.subtitle') }}
             </v-card-subtitle>
           </div>
           <v-btn icon="mdi-close" variant="text" @click="closeMessageDialog" />
@@ -109,19 +131,28 @@
 
       <v-card-text class="pt-4 d-flex flex-column row-gap-4">
         <div class="d-flex flex-column row-gap-1">
-          <span class="text-body-2 text-medium-emphasis">Message ID</span>
-          <span>{{ selectedMessage.messageId || 'Not available' }}</span>
-        </div>
-        <div class="d-flex flex-column row-gap-1">
-          <span class="text-body-2 text-medium-emphasis">Timestamp</span>
+          <span class="text-body-2 text-medium-emphasis">{{
+            $t('topicView.messagesPreview.messageDetails.messageId')
+          }}</span>
           <span>{{
-            selectedMessage?.timestamp
-              ? formatTimestampMillis(selectedMessage.timestamp)
-              : 'Not available'
+            selectedMessage.messageId ||
+            $t('topicView.messagesPreview.messageDetails.notAvailable')
           }}</span>
         </div>
         <div class="d-flex flex-column row-gap-1">
-          <span class="text-body-2 text-medium-emphasis">Payload</span>
+          <span class="text-body-2 text-medium-emphasis">{{
+            $t('topicView.messagesPreview.messageDetails.timestamp')
+          }}</span>
+          <span>{{
+            selectedMessage?.timestamp
+              ? formatTimestampMillis(selectedMessage.timestamp)
+              : $t('topicView.messagesPreview.messageDetails.notAvailable')
+          }}</span>
+        </div>
+        <div class="d-flex flex-column row-gap-1">
+          <span class="text-body-2 text-medium-emphasis">{{
+            $t('topicView.messagesPreview.messageDetails.content')
+          }}</span>
           <json-viewer
             v-if="selectedMessage.parsedContent"
             :json="selectedMessage.content"

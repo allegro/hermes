@@ -152,19 +152,23 @@
 
       <v-container class="py-0">
         <v-tabs v-model="currentTab" color="primary" class="topic-view__tabs">
-          <v-tab :value="Tab.General" class="text-capitalize">General</v-tab>
-          <v-tab :value="Tab.Schema" class="text-capitalize">Schema</v-tab>
+          <v-tab :value="Tab.General" class="text-capitalize">{{
+            $t('topicView.tabs.general')
+          }}</v-tab>
+          <v-tab :value="Tab.Schema" class="text-capitalize">{{
+            $t('topicView.tabs.schema')
+          }}</v-tab>
           <v-tab :value="Tab.Subscriptions" class="text-capitalize">
-            Subscriptions
+            {{ $t('topicView.tabs.subscriptions') }}
           </v-tab>
           <v-tab :value="Tab.OfflineClients" class="text-capitalize">
-            Offline clients
+            {{ $t('topicView.tabs.offlineClients') }}
           </v-tab>
           <v-tab :value="Tab.Messages" class="text-capitalize">
-            Messages
+            {{ $t('topicView.tabs.messages') }}
           </v-tab>
           <v-tab :value="Tab.OfflineRetransmission" class="text-capitalize">
-            Offline Retransmission
+            {{ $t('topicView.tabs.offlineRetransmission') }}
           </v-tab>
         </v-tabs>
       </v-container>

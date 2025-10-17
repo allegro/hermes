@@ -233,9 +233,15 @@
           color="primary"
           class="subscription-view__tabs"
         >
-          <v-tab :value="Tab.General" class="text-capitalize">General</v-tab>
-          <v-tab :value="Tab.Filters" class="text-capitalize">Filters</v-tab>
-          <v-tab :value="Tab.Messages" class="text-capitalize">Messages</v-tab>
+          <v-tab :value="Tab.General" class="text-capitalize">{{
+            $t('subscription.tabs.general')
+          }}</v-tab>
+          <v-tab :value="Tab.Filters" class="text-capitalize">{{
+            $t('subscription.tabs.filters')
+          }}</v-tab>
+          <v-tab :value="Tab.Messages" class="text-capitalize">{{
+            $t('subscription.tabs.messages')
+          }}</v-tab>
         </v-tabs>
       </v-container>
 

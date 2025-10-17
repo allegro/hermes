@@ -97,7 +97,7 @@
           {{ $t('subscription.manageMessagesCard.title') }}
         </v-card-title>
         <v-card-subtitle>
-          Perform bulk operations on messages for this subscription.
+          {{ $t('subscription.manageMessagesCard.subtitle') }}
         </v-card-subtitle>
       </div>
     </v-card-item>
@@ -108,7 +108,6 @@
             <p class="font-weight-bold">
               {{ $t('subscription.manageMessagesCard.retransmitTitle') }}
             </p>
-            <p class="text-medium-emphasis"></p>
             <v-row align="center" class="mt-2">
               <v-col>
                 <v-text-field
@@ -148,7 +147,9 @@
               {{ $t('subscription.manageMessagesCard.skipAllMessagesTitle') }}
             </p>
             <p class="text-medium-emphasis">
-              This will discard all pending messages.
+              {{
+                $t('subscription.manageMessagesCard.skipAllMessagesSubtitle')
+              }}
             </p>
             <v-btn
               :disabled="retransmitting || skippingAllMessages"

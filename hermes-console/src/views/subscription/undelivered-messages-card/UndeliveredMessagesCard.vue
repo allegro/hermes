@@ -58,7 +58,9 @@
               colspan="5"
               class="text-center text-medium-emphasis text-body-2"
             >
-              <span>There's no undelivered messages</span>
+              <span>{{
+                $t('subscription.undeliveredMessagesCard.noUndeliveredMessages')
+              }}</span>
             </td>
           </tr>
         </tbody>

@@ -3,6 +3,7 @@
   import { ref } from 'vue';
   import { Role } from '@/api/role';
   import { State } from '@/api/subscription';
+  import { useI18n } from 'vue-i18n';
   import { useRouter } from 'vue-router';
   import SubscriptionForm from '@/views/subscription/subscription-form/SubscriptionForm.vue';
   import type { Subscription } from '@/api/subscription';
@@ -17,6 +18,8 @@
     roles: Role[] | undefined;
   }>();
 
+  const { t } = useI18n();
+
   const emit = defineEmits<{
     copyClientsClick: [];
   }>();
@@ -27,7 +30,9 @@
     [State.SUSPENDED]: 'error',
   };
 
-  const subscriptionTableHeaders = [{ key: 'name', title: 'name' }];
+  const subscriptionTableHeaders = [
+    { key: 'name', title: t('topicView.subscriptions.tableHeaders.name') },
+  ];
 
   const showSubscriptionCreationForm = ref(false);
 

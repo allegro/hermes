@@ -16,9 +16,7 @@ describe('JsonViewer', () => {
     // then
     const preElement = container.querySelector('pre');
     expect(preElement).not.toBeNull();
-    expect(preElement?.textContent).toEqual(
-      JSON.stringify(jsonData, null, 2),
-    );
+    expect(preElement?.textContent).toEqual(JSON.stringify(jsonData, null, 2));
   });
 
   it('should render a valid json', () => {
@@ -50,8 +48,6 @@ describe('JsonViewer', () => {
     // then
     const preElement = container.querySelector('pre');
     expect(preElement).not.toBeNull();
-    expect(preElement?.textContent).toEqual(
-      JSON.stringify({}, null, 2),
-    );
+    expect(preElement?.textContent).toEqual(JSON.stringify({}, null, 2));
   });
 });

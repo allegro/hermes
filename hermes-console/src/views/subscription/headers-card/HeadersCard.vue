@@ -15,8 +15,7 @@
             >{{ $t('subscription.headersCard.title') }}
           </v-card-title>
           <v-card-subtitle
-            >Specify custom HTTP headers that will be consistently added to
-            every request sent to this subscription's endpoint.
+            >{{ $t('subscription.headersCard.subtitle') }}
           </v-card-subtitle>
         </div>
       </div>
@@ -50,7 +49,7 @@
               colspan="5"
               class="text-center text-medium-emphasis text-body-2"
             >
-              <span>No headers defined</span>
+              <span>{{ $t('subscription.headersCard.noHeaders') }}</span>
             </td>
           </tr>
         </tbody>

@@ -87,7 +87,8 @@
             {{ t('offlineRetransmission.monitoringView.title') }}
           </v-card-title>
           <v-card-subtitle
-            >{{ props.tasks.length }} active task(s)
+            >{{ props.tasks.length }}
+            {{ $t('offlineRetransmission.monitoringView.activeTasks') }}
           </v-card-subtitle>
         </div>
 
@@ -145,24 +146,28 @@
         items-per-page="-1"
       >
         <template v-slot:[`item.logsUrl`]="{ item }">
-          <simple-link :href="item.logsUrl" text="View logs" open-in-new-tab />
+          <simple-link
+            :href="item.logsUrl"
+            :text="$t('offlineRetransmission.monitoringView.logsLinkTitle')"
+            open-in-new-tab
+          />
         </template>
         <template v-slot:[`item.metricsUrl`]="{ item }">
           <simple-link
             :href="item.metricsUrl"
-            text="View metrics"
+            :text="$t('offlineRetransmission.monitoringView.metricsLinkTitle')"
             open-in-new-tab
           />
         </template>
         <template v-slot:[`item.jobDetailsUrl`]="{ item }">
           <simple-link
             :href="item.jobDetailsUrl"
-            text="View details"
+            :text="$t('offlineRetransmission.monitoringView.detailsLinkTitle')"
             open-in-new-tab
           />
         </template>
         <template v-slot:[`item.type`]="{ item }">
-          <v-chip size="small" color="accent">{{ item.type }} </v-chip>
+          <v-chip size="small" color="accent">{{ item.type }}</v-chip>
         </template>
       </v-data-table>
     </v-card-text>
