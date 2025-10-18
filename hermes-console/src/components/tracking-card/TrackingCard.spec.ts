@@ -34,7 +34,7 @@ describe('TrackingCard', () => {
   it('should render message when no tracking urls', () => {
     // given
     const emptyProps = { trackingUrls: [] };
-    const { getByText } = render(TrackingCard, { emptyProps });
+    const { getByText } = render(TrackingCard, { props: emptyProps });
 
     // then
     const row = getByText('trackingCard.noTrackingUrls');

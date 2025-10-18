@@ -5,8 +5,13 @@
 </script>
 
 <template>
-  <iframe height="400" style="border: none" width="100%" :src="props.source">
-  </iframe>
+  <iframe
+    height="400"
+    style="border: none"
+    width="100%"
+    :src="props.source"
+    data-testid="offline-clients"
+  />
 </template>
 
 <style scoped lang="scss"></style>

@@ -1,7 +1,7 @@
 <script async setup lang="ts">
+  import { computed, ref } from 'vue';
   import { copyToClipboard } from '@/utils/copy-utils';
   import { isTopicOwnerOrAdmin } from '@/utils/roles-util';
-  import { ref } from 'vue';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import { useDialog } from '@/composables/dialog/use-dialog/useDialog';
   import { useI18n } from 'vue-i18n';
@@ -107,6 +107,13 @@
     detailsUrl: resolveCostsUrl(configStore.appConfig?.costs.topicDetailsUrl),
   };
 
+  const showOfflineClientsTab = computed(
+    () =>
+      configStore.appConfig?.topic.offlineClientsEnabled &&
+      offlineClientsSource.value?.source &&
+      topic.value?.offlineStorage.enabled,
+  );
+
   const Tab = {
     General: 'general',
     Schema: 'schema',
@@ -152,16 +159,20 @@
 
       <v-container class="py-0">
         <v-tabs v-model="currentTab" color="primary" class="topic-view__tabs">
-          <v-tab :value="Tab.General" class="text-capitalize">{{
-            $t('topicView.tabs.general')
-          }}</v-tab>
-          <v-tab :value="Tab.Schema" class="text-capitalize">{{
-            $t('topicView.tabs.schema')
-          }}</v-tab>
+          <v-tab :value="Tab.General" class="text-capitalize"
+            >{{ $t('topicView.tabs.general') }}
+          </v-tab>
+          <v-tab :value="Tab.Schema" class="text-capitalize"
+            >{{ $t('topicView.tabs.schema') }}
+          </v-tab>
           <v-tab :value="Tab.Subscriptions" class="text-capitalize">
             {{ $t('topicView.tabs.subscriptions') }}
           </v-tab>
-          <v-tab :value="Tab.OfflineClients" class="text-capitalize">
+          <v-tab
+            v-if="showOfflineClientsTab"
+            :value="Tab.OfflineClients"
+            class="text-capitalize"
+          >
             {{ $t('topicView.tabs.offlineClients') }}
           </v-tab>
           <v-tab :value="Tab.Messages" class="text-capitalize">
@@ -214,16 +225,12 @@
           </v-container>
         </v-tabs-window-item>
 
-        <v-tabs-window-item :value="Tab.OfflineClients">
+        <v-tabs-window-item
+          v-if="showOfflineClientsTab"
+          :value="Tab.OfflineClients"
+        >
           <v-container class="py-0">
-            <offline-clients
-              v-if="
-                configStore.appConfig?.topic.offlineClientsEnabled &&
-                offlineClientsSource?.source &&
-                topic?.offlineStorage.enabled
-              "
-              :source="offlineClientsSource.source"
-            />
+            <offline-clients :source="offlineClientsSource.source" />
           </v-container>
         </v-tabs-window-item>
 
@@ -240,8 +247,7 @@
             <v-row>
               <v-col md="12">
                 <messages-preview
-                  v-if="
-                    messages &&
+                  :enabled="
                     configStore.appConfig?.topic.messagePreviewEnabled &&
                     isTopicOwnerOrAdmin(roles)
                   "

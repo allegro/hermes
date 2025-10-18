@@ -16,7 +16,7 @@
   const props = defineProps<{
     topic: TopicWithSchema;
     roles: Role[] | undefined;
-    tasks: Array<OfflineRetransmissionActiveTask>;
+    tasks: OfflineRetransmissionActiveTask[];
   }>();
 
   const TOPIC_RETRANSMISSION = 'topic';
@@ -96,15 +96,16 @@
           <v-btn
             v-if="
               configStore.loadedConfig.topic.offlineRetransmission.enabled &&
-              topic.offlineStorage.enabled &&
-              isTopicOwnerOrAdmin(roles)
+              props.topic.offlineStorage.enabled &&
+              isTopicOwnerOrAdmin(props.roles)
             "
             variant="text"
             color="primary"
             prepend-icon="mdi-plus"
-            data-testid="offlineRetransmissionButton"
             class="text-capitalize"
-            >New retransmission task
+            >{{
+              $t('offlineRetransmission.monitoringView.newRetransmissionTask')
+            }}
             <OfflineRetransmissionDialog @retransmit="onRetransmit" />
           </v-btn>
           <v-btn

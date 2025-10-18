@@ -1,11 +1,15 @@
 import type { MessagePreview } from '@/api/topic';
 
 export interface ParsedMessagePreview extends MessagePreview {
-  parsedContent: {
-    __metadata: {
-      messageId: string;
-      timestamp: string;
-    };
+  messageId: string | null;
+  timestamp: number | null;
+  parsedContent: MessagePartiallyParsedContent | null;
+}
+
+export interface MessagePartiallyParsedContent {
+  __metadata: {
+    messageId: string;
+    timestamp: string;
   };
 }
 

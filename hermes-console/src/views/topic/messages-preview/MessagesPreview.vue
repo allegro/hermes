@@ -2,38 +2,43 @@
   import { formatTimestampMillis } from '@/utils/date-formatter/date-formatter';
   import { ref } from 'vue';
   import { useI18n } from 'vue-i18n';
-  import JsonViewer from '@/components/json-viewer/JsonViewer.vue';
-  import type { MessagePreview } from '@/api/topic';
+  import MessagePreviewDialog from '@/views/topic/messages-preview/message-preview-dialog/MessagePreviewDialog.vue';
   import type {
+    MessagePartiallyParsedContent,
     ParsedMessagePreview,
     SelectedRow,
   } from '@/views/topic/messages-preview/types';
+  import type { MessagePreview } from '@/api/topic';
 
   const props = defineProps<{
     messages: MessagePreview[];
+    enabled: boolean;
   }>();
 
   const { t } = useI18n();
 
-  const parsedMessages = props.messages.map((message) => {
-    let parsedContent: any | null = null;
-    try {
-      if (!message.truncated) {
-        parsedContent = JSON.parse(message.content || '{}');
+  const parsedMessages: ParsedMessagePreview[] = props.messages.map(
+    (message) => {
+      let parsedContent: MessagePartiallyParsedContent | null = null;
+      try {
+        if (!message.truncated) {
+          parsedContent = JSON.parse(message.content || '{}');
+        }
+      } catch (e) {
+        /* empty */
       }
-    } catch (e) {
-      /* empty */
-    }
 
-    return {
-      ...message,
-      messageId: parsedContent?.__metadata?.messageId || 'Not available',
-      timestamp: parsedContent?.__metadata?.timestamp
-        ? Number(parsedContent?.__metadata?.timestamp)
-        : null,
-      parsedContent,
-    };
-  });
+      return {
+        key: message,
+        ...message,
+        messageId: parsedContent?.__metadata?.messageId || null,
+        timestamp: parsedContent?.__metadata?.timestamp
+          ? Number(parsedContent?.__metadata?.timestamp)
+          : null,
+        parsedContent,
+      };
+    },
+  );
 
   const messagesTableHeaders = [
     {
@@ -60,7 +65,6 @@
   function openMessageDialog(message: ParsedMessagePreview) {
     selectedMessage.value = message;
     dialog.value = true;
-    console.log(message);
   }
 
   function closeMessageDialog() {
@@ -80,12 +84,17 @@
     </template>
     <v-card-text>
       <v-data-table
-        :items="parsedMessages"
+        :items="enabled ? parsedMessages : []"
         :headers="messagesTableHeaders"
         hover
         @click:row="
           (_: Event, row: SelectedRow<ParsedMessagePreview>) =>
             openMessageDialog(row.item)
+        "
+        :no-data-text="
+          enabled
+            ? $t('topicView.messagesPreview.messageDetails.noMessages')
+            : $t('topicView.messagesPreview.messageDetails.disabled')
         "
       >
         <template #[`item.messageId`]="{ item }">
@@ -114,56 +123,10 @@
     max-height="800"
     v-if="selectedMessage"
   >
-    <v-card>
-      <v-card-item class="border-b">
-        <div class="d-flex justify-space-between align-start">
-          <div>
-            <v-card-title>{{
-              $t('topicView.messagesPreview.messageDetails.title')
-            }}</v-card-title>
-            <v-card-subtitle>
-              {{ $t('topicView.messagesPreview.messageDetails.subtitle') }}
-            </v-card-subtitle>
-          </div>
-          <v-btn icon="mdi-close" variant="text" @click="closeMessageDialog" />
-        </div>
-      </v-card-item>
-
-      <v-card-text class="pt-4 d-flex flex-column row-gap-4">
-        <div class="d-flex flex-column row-gap-1">
-          <span class="text-body-2 text-medium-emphasis">{{
-            $t('topicView.messagesPreview.messageDetails.messageId')
-          }}</span>
-          <span>{{
-            selectedMessage.messageId ||
-            $t('topicView.messagesPreview.messageDetails.notAvailable')
-          }}</span>
-        </div>
-        <div class="d-flex flex-column row-gap-1">
-          <span class="text-body-2 text-medium-emphasis">{{
-            $t('topicView.messagesPreview.messageDetails.timestamp')
-          }}</span>
-          <span>{{
-            selectedMessage?.timestamp
-              ? formatTimestampMillis(selectedMessage.timestamp)
-              : $t('topicView.messagesPreview.messageDetails.notAvailable')
-          }}</span>
-        </div>
-        <div class="d-flex flex-column row-gap-1">
-          <span class="text-body-2 text-medium-emphasis">{{
-            $t('topicView.messagesPreview.messageDetails.content')
-          }}</span>
-          <json-viewer
-            v-if="selectedMessage.parsedContent"
-            :json="selectedMessage.content"
-            class="border-thin rounded-lg"
-          />
-          <div class="raw-schema-snippet pa-3 bg-grey-lighten-5" v-else>
-            {{ selectedMessage.content }}
-          </div>
-        </div>
-      </v-card-text>
-    </v-card>
+    <message-preview-dialog
+      :message="selectedMessage"
+      @close="closeMessageDialog"
+    />
   </v-dialog>
 </template>
 

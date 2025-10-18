@@ -287,11 +287,11 @@
       "truncated": false
     },
     {
-      "content": "{\"__metadata\":{\"x-request-id\":\"44a558de-5e12-456f-1d3c-vc55f7v3ffd7\",\"messageId\":\"b33fcc74-2016-24f9-3cb3-ebc4bg49e5e2\",\"trace-sampled\":\"0\",\"timestamp\":\"1755668809834\"},\"waybillId\":{\"waybill\":\"1234567890000\",\"carrierId\":\"SAMPLE\"},\"notificationId\":\"12a3456d-b78e-9efa-a150-28c2f9f2f747\",\"userId\":\"98765432\", \"someOtherField\": 1222222, \"anotherField\": \"Some long text that makes the message exceed the preview\"}",
+      "content": "{\"__metadata\":{\"x-request-id\":\"44a558de-5e12-456f-1d3c-vc55f7v3ffd8\",\"messageId\":\"b33fcc74-2016-24f9-3cb3-ebc4bg49e5e8\",\"trace-sampled\":\"0\",\"timestamp\":\"1755668809834\"},\"waybillId\":{\"waybill\":\"1234567890000\",\"carrierId\":\"SAMPLE\"},\"notificationId\":\"12a3456d-b78e-9efa-a150-28c2f9f2f747\",\"userId\":\"98765432\", \"someOtherField\": 1222222, \"anotherField\": \"Some long text that makes the message exceed the preview\"}",
       "truncated": false
     },
     {
-      "content": "{\"__metadata\":{\"x-request-id\":\"44a558de-5e12-456f-1d3c-vc55f7v3ffd7\",\"messageId\":\"b33fcc74-2016-24f9-3cb3-ebc4bg49e5e2\",\"trace-sampled\":\"0\",\"timestamp\":\"1755668809834\"},\"waybillId\":{\"waybill\":\"1234567890000\",\"carrierId\":\"SAMPLE\"},\"notificationId\":\"12a3456d-b78e-9efa-a150-28c2f9f2f747\",\"userId\":\"98765432\", \"someOtherField\": 1222222, \"anotherField\": \"Some long text that makes the message exceed",
+      "content": "{\"__metadata\":{\"x-request-id\":\"44a558de-5e12-456f-1d3c-vc55f7v3ffd9\",\"messageId\":\"b33fcc74-2016-24f9-3cb3-ebc4bg49e5e9\",\"trace-sampled\":\"0\",\"timestamp\":\"1755668809834\"},\"waybillId\":{\"waybill\":\"1234567890000\",\"carrierId\":\"SAMPLE\"},\"notificationId\":\"12a3456d-b78e-9efa-a150-28c2f9f2f747\",\"userId\":\"98765432\", \"someOtherField\": 1222222, \"anotherField\": \"Some long text that makes the message exceed",
       "truncated": true
     }
   ],

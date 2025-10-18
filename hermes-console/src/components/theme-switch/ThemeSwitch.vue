@@ -6,14 +6,14 @@
   const theme = useTheme();
 
   onMounted(() => {
-    theme.global.name.value = loadTheme() ?? 'light';
+    theme.change(loadTheme() ?? 'light');
   });
 
   function toggleTheme() {
     if (theme.global.name.value === 'dark') {
-      theme.global.name.value = 'light';
+      theme.change('light');
     } else {
-      theme.global.name.value = 'dark';
+      theme.change('dark');
     }
     storeTheme(theme.global.name.value);
   }

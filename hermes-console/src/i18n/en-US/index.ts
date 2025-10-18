@@ -407,6 +407,9 @@ const en_US = {
         timestamp: 'Timestamp',
         content: 'Payload',
         notAvailable: 'Not available',
+        noMessages: 'There are no messages',
+        disabled:
+          "Messages preview feature is not available (they are either disabled or you don't have sufficient access).",
       },
     },
     offlineClients: {
@@ -730,6 +733,7 @@ const en_US = {
       metricsLinkTitle: 'View metrics',
       detailsLinkTitle: 'View details',
       activeTasks: 'active task(s)',
+      newRetransmissionTask: 'New retransmission task',
     },
   },
   notifications: {

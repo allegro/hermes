@@ -19,12 +19,12 @@
         density="compact"
         variant="outlined"
       >
-        <v-btn :value="false" class="text-capitalize">{{
-          $t('topicView.schema.structure')
-        }}</v-btn>
-        <v-btn :value="true" class="text-capitalize">{{
-          $t('topicView.schema.rawSchema')
-        }}</v-btn>
+        <v-btn :value="false" class="text-capitalize"
+          >{{ $t('topicView.schema.structure') }}
+        </v-btn>
+        <v-btn :value="true" class="text-capitalize"
+          >{{ $t('topicView.schema.rawSchema') }}
+        </v-btn>
       </v-btn-toggle>
       <v-btn
         @click="copyToClipboard(props.schema)"
@@ -36,9 +36,17 @@
       </v-btn>
     </div>
     <div>
-      <AvroViewer v-show="!showRawSchema" :schema="props.schema" />
+      <avro-viewer
+        v-show="!showRawSchema"
+        :schema="props.schema"
+        data-testid="avro-viewer"
+      />
       <v-card>
-        <json-viewer v-show="showRawSchema" :json="props.schema" />
+        <json-viewer
+          v-show="showRawSchema"
+          :json="props.schema"
+          data-testid="json-viewer"
+        />
       </v-card>
     </div>
   </div>
