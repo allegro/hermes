@@ -117,6 +117,7 @@ function createEmptyForm(): Ref<TopicForm> {
     maxMessageSize: 1,
     ack: '',
     schema: '',
+    fallbackToRemoteDatacenterEnabled: false,
   });
 }
 
@@ -154,6 +155,7 @@ export function initializeFullyFilledForm(
     maxMessageSize: topic.maxMessageSize!!,
     ack: topic.ack,
     schema: topic.schema ? topic.schema : '',
+    fallbackToRemoteDatacenterEnabled: topic.fallbackToRemoteDatacenterEnabled,
   };
 }
 

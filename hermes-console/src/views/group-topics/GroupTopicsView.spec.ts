@@ -21,7 +21,6 @@ import type { UseRoles } from '@/composables/roles/use-roles/useRoles';
 
 vi.mock('@/composables/groups/use-groups/useGroups');
 vi.mock('@/composables/roles/use-roles/useRoles');
-
 vi.mock('@/composables/topic/use-create-topic/useCreateTopic');
 
 const useCreateTopicStub: UseCreateTopic = {
@@ -176,7 +175,7 @@ describe('GroupTopicsView', () => {
     await fireEvent.click(getByText('groups.actions.createTopic'));
 
     // then
-    // expect(getAllByText('groups.actions.createTopic')[0]).toBeInTheDocument();
-    // expect(getByText('topicForm.actions.create')).toBeInTheDocument();
+    expect(getAllByText('groups.actions.createTopic')[0]).toBeInTheDocument();
+    expect(getByText('topicForm.actions.create')).toBeInTheDocument();
   });
 });
