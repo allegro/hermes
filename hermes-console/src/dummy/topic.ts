@@ -27,7 +27,7 @@ export const dummyTopic: TopicWithSchema = {
   ack: Ack.LEADER,
   trackingEnabled: false,
   migratedFromJsonType: false,
-  fallbackToRemoteDatacenterEnabled: true,
+  fallbackToRemoteDatacenterEnabled: false,
   schemaIdAwareSerializationEnabled: false,
   contentType: ContentType.AVRO,
   maxMessageSize: defaultMaxMessageSize,

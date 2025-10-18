@@ -106,7 +106,7 @@ describe('TopicView', () => {
     });
     vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
 
-    const expectedTitles = [
+    const expectedTabs = [
       'topicView.tabs.general',
       'topicView.tabs.schema',
       'topicView.tabs.subscriptions',
@@ -121,12 +121,19 @@ describe('TopicView', () => {
     });
 
     // then
-    expectedTitles.forEach((title) => {
+    expectedTabs.forEach((title) => {
       expect(getByText(title)).toBeVisible();
     });
   });
 
-  it('should activate tab on click', async () => {
+  it.each([
+    'topicView.tabs.general',
+    'topicView.tabs.schema',
+    'topicView.tabs.subscriptions',
+    'topicView.tabs.offlineClients',
+    'topicView.tabs.messages',
+    'topicView.tabs.offlineRetransmission',
+  ])('should activate tab on click', async (tab: string) => {
     // given
     const user = userEvent.setup();
     vi.mocked(useTopic).mockReturnValueOnce({
@@ -134,30 +141,19 @@ describe('TopicView', () => {
       offlineClientsSource: ref(dummyOfflineClientsSource),
     });
     vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
-
-    const tabTitles = [
-      'topicView.tabs.general',
-      'topicView.tabs.schema',
-      'topicView.tabs.subscriptions',
-      'topicView.tabs.offlineClients',
-      'topicView.tabs.messages',
-      'topicView.tabs.offlineRetransmission',
-    ];
-
-    // when
     const { getByText } = render(TopicView, {
       testPinia: createTestingPiniaWithState(),
     });
 
+    // when
+    const tabElement = getByText(tab).closest('button')!;
+    await user.click(tabElement);
+
     // then
-    for (const title of tabTitles) {
-      const tab = getByText(title).closest('button')!;
-      await user.click(tab);
-      expect(tab).toHaveClass('v-tab--selected');
-    }
+    expect(tabElement).toHaveClass('v-tab--selected');
   });
 
-  it('should show sections on general tab click', async () => {
+  it('should show appropriate sections on general tab click', async () => {
     // given
     const user = userEvent.setup();
     vi.mocked(useTopic).mockReturnValueOnce(useTopicMock);
@@ -167,8 +163,7 @@ describe('TopicView', () => {
     });
 
     // when
-    const tabElement = getByText('topicView.tabs.general');
-    await user.click(tabElement);
+    await user.click(getByText('topicView.tabs.general'));
 
     // then
     expect(getByText('topicView.metrics.title')).toBeVisible();
@@ -186,8 +181,7 @@ describe('TopicView', () => {
     });
 
     // when
-    const tabElement = getByText('topicView.tabs.schema');
-    await user.click(tabElement);
+    await user.click(getByText('topicView.tabs.schema'));
 
     // then
     expect(getByTestId('avro-viewer')).toBeVisible();
@@ -203,8 +197,7 @@ describe('TopicView', () => {
     });
 
     // when
-    const tabElement = getByText('topicView.tabs.subscriptions');
-    await user.click(tabElement);
+    await user.click(getByText('topicView.tabs.subscriptions'));
 
     // then
     expect(getByText(dummySubscription.name)).toBeVisible();
@@ -223,8 +216,7 @@ describe('TopicView', () => {
     });
 
     // when
-    const tabElement = getByText('topicView.tabs.offlineClients');
-    await user.click(tabElement);
+    await user.click(getByText('topicView.tabs.offlineClients'));
 
     // then
     expect(getByTestId('offline-clients')).toBeVisible();
@@ -240,8 +232,7 @@ describe('TopicView', () => {
     });
 
     // when
-    const tabElement = getByText('topicView.tabs.messages');
-    await user.click(tabElement);
+    await user.click(getByText('topicView.tabs.messages'));
 
     // then
     expect(getByText('topicView.messagesPreview.title')).toBeVisible();
@@ -258,8 +249,7 @@ describe('TopicView', () => {
     });
 
     // when
-    const tabElement = getByText('topicView.tabs.offlineRetransmission');
-    await user.click(tabElement);
+    await user.click(getByText('topicView.tabs.offlineRetransmission'));
 
     // then
     expect(

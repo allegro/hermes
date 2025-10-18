@@ -37,4 +37,4 @@ vi.mocked(useGlobalI18n, {
   t: (key) => key,
 });
 
-vi.stubGlobal('visualViewport', new EventTarget())
+vi.stubGlobal('visualViewport', new EventTarget());

@@ -55,9 +55,7 @@ describe('TopicHeader', () => {
     // then
     expect(getByText('topicView.header.topic')).toBeVisible();
     expect(getByText(dummyTopic.name)).toBeVisible();
-    expect(
-      getByText(`topicView.header.owner`),
-    ).toBeVisible();
+    expect(getByText(`topicView.header.owner`)).toBeVisible();
     expect(getByText(dummyOwner.name)).toBeVisible();
     expect(getByText(dummyTopic.description)).toBeVisible();
   });

@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import { dummyTopicMessagesPreview } from '@/dummy/topic';
+import { formatTimestampMillis } from '@/utils/date-formatter/date-formatter';
 import { render, renderWithEmits } from '@/utils/test-utils';
 import MessagePreviewDialog from '@/views/topic/messages-preview/message-preview-dialog/MessagePreviewDialog.vue';
-import { dummyTopicMessagesPreview } from '@/dummy/topic';
 import type { ParsedMessagePreview } from '@/views/topic/messages-preview/types';
-import { formatTimestampMillis } from '@/utils/date-formatter/date-formatter';
 
 const messageWithParsedContent: ParsedMessagePreview = {
   ...dummyTopicMessagesPreview[0],

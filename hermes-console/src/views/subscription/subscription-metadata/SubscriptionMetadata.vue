@@ -37,9 +37,11 @@
   }>();
 
   const showSubscriptionEditForm = ref(false);
+
   function showSubscriptionForm() {
     showSubscriptionEditForm.value = true;
   }
+
   function hideSubscriptionForm() {
     showSubscriptionEditForm.value = false;
   }
@@ -70,7 +72,7 @@
               <v-card-title>
                 {{
                   t('subscription.subscriptionMetadata.editSubscription', {
-                    subscriptionName: subscription.name,
+                    subscriptionName: props.subscription.name,
                   })
                 }}
               </v-card-title>
@@ -85,10 +87,10 @@
           <v-card-text class="pt-4">
             <SubscriptionForm
               operation="edit"
-              :subscription="subscription"
-              :topic="subscription.topicName"
-              :roles="roles"
-              :paths="getAvroPaths(schema)"
+              :subscription="props.subscription"
+              :topic="props.subscription.topicName"
+              :roles="props.roles"
+              :paths="getAvroPaths(props.schema)"
               @created="refreshPage"
               @cancel="hideSubscriptionForm"
             />
@@ -107,7 +109,7 @@
               {{ props.subscription.name }}
             </p>
             <tooltip-icon
-              v-if="!isSubscriptionOwnerOrAdmin(roles)"
+              v-if="!isSubscriptionOwnerOrAdmin(props.roles)"
               :content="
                 $t('subscription.subscriptionMetadata.unauthorizedTooltip')
               "
@@ -134,7 +136,10 @@
                 v-bind="props"
                 @click="
                   copyToClipboard(
-                    subscriptionFqn(subscription.topicName, subscription.name),
+                    subscriptionFqn(
+                      props.subscription.topicName,
+                      props.subscription.name,
+                    ),
                   )
                 "
               />
@@ -143,7 +148,10 @@
           <span
             v-if="
               favorites.subscriptions.includes(
-                subscriptionFqn(subscription.topicName, subscription.name),
+                subscriptionFqn(
+                  props.subscription.topicName,
+                  props.subscription.name,
+                ),
               )
             "
           >
@@ -161,8 +169,8 @@
                   v-bind="props"
                   @click="
                     favorites.removeSubscription(
-                      subscription.topicName,
-                      subscription.name,
+                      props.subscription.topicName,
+                      props.subscription.name,
                     )
                   "
                 />
@@ -188,8 +196,8 @@
                   v-bind="props"
                   @click="
                     favorites.addSubscription(
-                      subscription.topicName,
-                      subscription.name,
+                      props.subscription.topicName,
+                      props.subscription.name,
                     )
                   "
                 />
@@ -223,7 +231,7 @@
       </div>
       <div class="d-flex column-gap-2">
         <v-btn
-          v-if="isAdmin(roles)"
+          v-if="isAdmin(props.roles)"
           :to="`${route.path}/diagnostics`"
           prepend-icon="mdi-doctor"
           class="text-capitalize"
@@ -232,7 +240,7 @@
           {{ $t('subscription.subscriptionMetadata.actions.diagnostics') }}
         </v-btn>
         <v-btn
-          :disabled="!isSubscriptionOwnerOrAdmin(roles)"
+          :disabled="!isSubscriptionOwnerOrAdmin(props.roles)"
           prepend-icon="mdi-pencil"
           @click="showSubscriptionForm"
           class="text-capitalize"
@@ -250,7 +258,7 @@
         </v-btn>
         <v-btn
           v-if="props.subscription.state === State.SUSPENDED"
-          :disabled="!isSubscriptionOwnerOrAdmin(roles)"
+          :disabled="!isSubscriptionOwnerOrAdmin(props.roles)"
           color="green"
           prepend-icon="mdi-publish"
           @click="emit('activate')"
@@ -260,7 +268,7 @@
         </v-btn>
         <v-btn
           v-if="props.subscription.state === State.ACTIVE"
-          :disabled="!isSubscriptionOwnerOrAdmin(roles)"
+          :disabled="!isSubscriptionOwnerOrAdmin(props.roles)"
           color="orange"
           prepend-icon="mdi-publish-off"
           @click="emit('suspend')"
@@ -269,7 +277,7 @@
           {{ $t('subscription.subscriptionMetadata.actions.suspend') }}
         </v-btn>
         <v-btn
-          :disabled="!isSubscriptionOwnerOrAdmin(roles)"
+          :disabled="!isSubscriptionOwnerOrAdmin(props.roles)"
           color="error"
           prepend-icon="mdi-delete"
           @click="emit('remove')"

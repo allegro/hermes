@@ -7,6 +7,23 @@ import ManageMessagesCard from '@/views/subscription/manage-messages-card/Manage
 import userEvent from '@testing-library/user-event';
 
 describe('ManageMessagesCard', () => {
+  it('should render a card', () => {
+    // when
+    const { getByText } = render(ManageMessagesCard, {
+      props: {
+        topic: dummyTopic.name,
+        subscription: dummySubscription.name,
+        retransmitting: false,
+        skippingAllMessages: false,
+      },
+      testPinia: createTestingPiniaWithState(),
+    });
+
+    // then
+    expect(getByText('subscription.manageMessagesCard.title')).toBeVisible();
+    expect(getByText('subscription.manageMessagesCard.subtitle')).toBeVisible();
+  });
+
   it('should open confirmation popup when retransmit button is clicked', async () => {
     // given
     const user = userEvent.setup();
