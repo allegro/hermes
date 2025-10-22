@@ -156,7 +156,7 @@ const en_US = {
       subscriptionName: 'Subscription name',
       consumersNumber: 'Consumers count',
       reason: 'Reason',
-      save: 'Save',
+      create: 'Create',
       cancel: 'Cancel',
     },
     editForm: {

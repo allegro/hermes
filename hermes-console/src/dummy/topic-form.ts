@@ -35,6 +35,7 @@ export const dummyTopicForm = {
   maxMessageSize: 1,
   ack: '',
   schema: '',
+  fallbackToRemoteDatacenterEnabled: false,
 };
 
 export const dummyTopicFormValidator = {
@@ -127,6 +128,7 @@ export const dummyInitializedTopicForm = {
   maxMessageSize: defaultMaxMessageSize,
   ack: '',
   schema: '',
+  fallbackToRemoteDatacenterEnabled: false,
 };
 
 export const dummyInitializedEditTopicForm = {
@@ -161,4 +163,5 @@ export const dummyInitializedEditTopicForm = {
   maxMessageSize: dummyTopic.maxMessageSize!!,
   ack: dummyTopic.ack,
   schema: dummyTopic.schema ? dummyTopic.schema : '',
+  fallbackToRemoteDatacenterEnabled: false,
 };

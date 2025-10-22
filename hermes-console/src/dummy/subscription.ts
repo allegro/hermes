@@ -30,7 +30,7 @@ export const dummySubscription: Subscription = {
     retryClientErrors: true,
     backoffMaxIntervalMillis: 600000,
   },
-  trackingEnabled: false,
+  trackingEnabled: true,
   trackingMode: 'trackingOff',
   owner: {
     source: 'Service Catalog',
