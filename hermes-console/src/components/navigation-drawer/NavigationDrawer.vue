@@ -5,11 +5,16 @@
   import { useRoute } from 'vue-router';
 
   import { computed, ref } from 'vue';
+  import EnvironmentSelect from '@/components/environment-select/EnvironmentSelect.vue';
   import NavigationItem from '@/components/navigation-drawer/NavigationItem.vue';
+
   const route = useRoute();
   const routeName = computed(() => route.name);
 
   const configStore = useAppConfigStore();
+  const knownEnvironments = computed(
+    () => configStore.appConfig?.console.knownEnvironments || [],
+  );
   const roles = useRoles(null, null)?.roles;
   const rail = ref(true);
 
@@ -23,25 +28,15 @@
 </script>
 
 <template>
-  <v-navigation-drawer :rail="rail" permanent @click="rail = false">
-    <v-list>
-      <v-list-item>
-        <div class="d-flex align-center justify-center" style="width: 100%">
-          <v-btn
-            v-if="rail"
-            icon="mdi-chevron-right"
-            variant="text"
-            @click.stop="rail = !rail"
-          ></v-btn>
-        </div>
-        <div class="d-flex justify-end" style="width: 100%">
-          <v-btn
-            v-if="!rail"
-            icon="mdi-chevron-left"
-            variant="text"
-            @click.stop="rail = !rail"
-          ></v-btn>
-        </div>
+  <v-navigation-drawer :rail="rail" permanent @click="rail = false" border="0">
+    <v-list density="compact" nav>
+      <v-list-item class="pa-0">
+        <environment-select
+          :known-environments="knownEnvironments"
+          :is-current-environment-critical="
+            configStore.loadedConfig.console.criticalEnvironment
+          "
+        />
       </v-list-item>
     </v-list>
 
@@ -144,5 +139,27 @@
         />
       </v-list-group>
     </v-list>
+
+    <template #append>
+      <v-divider />
+      <v-list-item>
+        <div class="d-flex align-center justify-center" style="width: 100%">
+          <v-btn
+            v-if="rail"
+            icon="mdi-chevron-right"
+            variant="text"
+            @click.stop="rail = !rail"
+          ></v-btn>
+        </div>
+        <div class="d-flex justify-end" style="width: 100%">
+          <v-btn
+            v-if="!rail"
+            icon="mdi-chevron-left"
+            variant="text"
+            @click.stop="rail = !rail"
+          ></v-btn>
+        </div>
+      </v-list-item>
+    </template>
   </v-navigation-drawer>
 </template>

@@ -91,62 +91,83 @@
     @cancel="closeSkipAllMessagesDialog"
   />
   <v-card>
-    <template #title>
-      <p class="font-weight-bold">
-        {{ $t('subscription.manageMessagesCard.title') }}
-      </p>
-    </template>
+    <v-card-item class="border-b">
+      <div>
+        <v-card-title class="font-weight-bold">
+          {{ $t('subscription.manageMessagesCard.title') }}
+        </v-card-title>
+        <v-card-subtitle>
+          {{ $t('subscription.manageMessagesCard.subtitle') }}
+        </v-card-subtitle>
+      </div>
+    </v-card-item>
     <v-form @submit.prevent>
-      <v-card-item>
-        <p class="font-weight-bold">
-          {{ $t('subscription.manageMessagesCard.retransmitTitle') }}
-        </p>
-        <v-row align="center" class="mt-2">
-          <v-col md="8">
-            <v-text-field
-              :label="
-                $t(
-                  'subscription.manageMessagesCard.retransmitStartTimestampLabel',
-                )
-              "
-              type="datetime-local"
-              v-model="retransmitFrom"
-            >
-            </v-text-field>
-          </v-col>
-          <v-col md="3">
+      <v-row>
+        <v-col md="6">
+          <v-card-item>
+            <p class="font-weight-bold">
+              {{ $t('subscription.manageMessagesCard.retransmitTitle') }}
+            </p>
+            <v-row align="center" class="mt-2">
+              <v-col>
+                <v-text-field
+                  variant="outlined"
+                  density="compact"
+                  :label="
+                    $t(
+                      'subscription.manageMessagesCard.retransmitStartTimestampLabel',
+                    )
+                  "
+                  type="datetime-local"
+                  v-model="retransmitFrom"
+                  hide-details
+                />
+              </v-col>
+              <v-col>
+                <v-btn
+                  :disabled="retransmitting || skippingAllMessages"
+                  color="primary"
+                  class="text-capitalize"
+                  @click="openRetransmitDialog"
+                  data-testid="retransmitButton"
+                >
+                  <loading-spinner v-if="retransmitting"></loading-spinner>
+                  <span v-else>
+                    {{ $t('subscription.manageMessagesCard.retransmitButton') }}
+                  </span>
+                </v-btn>
+              </v-col>
+            </v-row>
+          </v-card-item>
+        </v-col>
+
+        <v-col md="6">
+          <v-card-item>
+            <p class="font-weight-bold">
+              {{ $t('subscription.manageMessagesCard.skipAllMessagesTitle') }}
+            </p>
+            <p class="text-medium-emphasis">
+              {{
+                $t('subscription.manageMessagesCard.skipAllMessagesSubtitle')
+              }}
+            </p>
             <v-btn
               :disabled="retransmitting || skippingAllMessages"
-              color="red"
-              @click="openRetransmitDialog"
-              data-testid="retransmitButton"
+              color="error"
+              class="mt-2 text-capitalize"
+              @click="openSkipAllMessagesDialog"
+              data-testid="skipAllMessagesButton"
             >
-              <loading-spinner v-if="retransmitting"></loading-spinner>
+              <loading-spinner v-if="skippingAllMessages"></loading-spinner>
               <span v-else>
-                {{ $t('subscription.manageMessagesCard.retransmitButton') }}
+                {{
+                  $t('subscription.manageMessagesCard.skipAllMessagesButton')
+                }}
               </span>
             </v-btn>
-          </v-col>
-        </v-row>
-      </v-card-item>
-      <v-divider></v-divider>
-      <v-card-item>
-        <p class="font-weight-bold">
-          {{ $t('subscription.manageMessagesCard.skipAllMessagesTitle') }}
-        </p>
-        <v-btn
-          :disabled="retransmitting || skippingAllMessages"
-          color="red"
-          class="mt-2"
-          @click="openSkipAllMessagesDialog"
-          data-testid="skipAllMessagesButton"
-        >
-          <loading-spinner v-if="skippingAllMessages"></loading-spinner>
-          <span v-else>
-            {{ $t('subscription.manageMessagesCard.skipAllMessagesButton') }}
-          </span>
-        </v-btn>
-      </v-card-item>
+          </v-card-item>
+        </v-col>
+      </v-row>
     </v-form>
   </v-card>
 </template>

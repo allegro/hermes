@@ -29,7 +29,7 @@
 <style scoped lang="scss">
   .main {
     margin: 0 auto;
-    max-width: 1300px;
+    max-width: 1800px;
     width: 100%;
   }
 </style>

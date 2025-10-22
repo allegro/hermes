@@ -33,4 +33,16 @@ describe('UndeliveredMessagesCard', () => {
       expect(within(row).getByText(expectedTimestamp)).toBeVisible();
     });
   });
+
+  it('should display "no undelivered messages" message when the list is empty', () => {
+    // when
+    const { getByText } = render(UndeliveredMessagesCard, {
+      props: { undeliveredMessages: [] },
+    });
+
+    // then
+    expect(
+      getByText('subscription.undeliveredMessagesCard.noUndeliveredMessages'),
+    ).toBeVisible();
+  });
 });

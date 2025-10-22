@@ -1,14 +1,10 @@
 <script setup lang="ts">
-  import { computed } from 'vue';
   import type { ConsoleEnvironment } from '@/api/app-configuration';
 
   const props = defineProps<{
+    isCurrentEnvironmentCritical?: boolean;
     knownEnvironments: ConsoleEnvironment[];
   }>();
-
-  const selectedEnv = computed(() =>
-    props.knownEnvironments.indexOf(getCurrentEnv()),
-  );
 
   function getCurrentEnv(): ConsoleEnvironment {
     const url = location.href;
@@ -21,7 +17,7 @@
     );
   }
 
-  function switchToEnv(env: ConsoleEnvironment, event): string {
+  function switchToEnv(env: ConsoleEnvironment, event: Event): string {
     const currentUrl = location.href;
     const currentEnv: ConsoleEnvironment = getCurrentEnv();
     const switchedUrl = currentUrl.replace(currentEnv.url, env.url);
@@ -34,16 +30,29 @@
 </script>
 
 <template>
-  <v-btn-toggle color="primary" rounded="0" v-model="selectedEnv" group>
-    <v-btn
-      v-for="env in knownEnvironments"
-      min-width="100"
-      v-bind:key="env.name"
-      @click="switchToEnv(env, $event)"
-    >
-      {{ env.name }}
-    </v-btn>
-  </v-btn-toggle>
+  <v-menu>
+    <template v-slot:activator="{ props }">
+      <v-btn
+        :color="isCurrentEnvironmentCritical ? 'error' : 'primary'"
+        v-bind="props"
+        block
+        prepend-icon="mdi-server-outline"
+        append-icon="mdi-unfold-more-horizontal"
+        flat
+        class="font-weight-bold justify-space-between"
+      >
+        <div>{{ getCurrentEnv().name }}</div>
+      </v-btn>
+    </template>
+
+    <v-list class="pa-0">
+      <v-list-item v-for="(item, i) in knownEnvironments" :key="i" :value="i">
+        <v-list-item-title @click="(event: Event) => switchToEnv(item, event)"
+          >{{ item.name }}
+        </v-list-item-title>
+      </v-list-item>
+    </v-list>
+  </v-menu>
 </template>
 
 <style scoped lang="scss"></style>

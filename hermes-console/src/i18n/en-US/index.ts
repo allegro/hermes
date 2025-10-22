@@ -307,6 +307,14 @@ const en_US = {
     },
   },
   topicView: {
+    tabs: {
+      general: 'General',
+      schema: 'Schema',
+      subscriptions: 'Subscriptions',
+      offlineClients: 'Offline clients',
+      messages: 'Messages',
+      offlineRetransmission: 'Offline retransmission',
+    },
     confirmationDialog: {
       remove: {
         title: 'Confirm topic deletion',
@@ -317,7 +325,7 @@ const en_US = {
       editTopic: 'Edit topic: {topicName}',
       unauthorizedTooltip: "You don't have permissions to manage this topic",
       topic: 'TOPIC',
-      owner: 'OWNER:',
+      owner: 'Owner:',
       actions: {
         edit: 'Edit',
         export: 'Export',
@@ -329,7 +337,7 @@ const en_US = {
       },
     },
     metrics: {
-      dashboard: 'DASHBOARD',
+      dashboard: 'Dashboard',
       title: 'Metrics',
       rate: 'Rate',
       deliveryRate: 'Delivery rate',
@@ -385,7 +393,24 @@ const en_US = {
       authorizedPublishersNotSet: 'Not set',
     },
     messagesPreview: {
-      title: 'Topic messages preview',
+      title: 'Messages preview',
+      tableHeaders: {
+        messageId: 'Message ID',
+        timestamp: 'Timestamp',
+        content: 'Payload',
+        truncated: 'Truncated',
+      },
+      messageDetails: {
+        title: 'Message details',
+        subtitle: 'Inspect the event payload and metadata.',
+        messageId: 'Message ID',
+        timestamp: 'Timestamp',
+        content: 'Payload',
+        notAvailable: 'Not available',
+        noMessages: 'There are no messages',
+        disabled:
+          "Messages preview feature is not available (they are either disabled or you don't have sufficient access).",
+      },
     },
     offlineClients: {
       title: 'Offline clients',
@@ -393,6 +418,8 @@ const en_US = {
     schema: {
       copy: 'Copy to clipboard',
       default: 'Default',
+      rawSchema: 'Raw schema',
+      structure: 'Structure',
       showRawSchema: 'Show raw schema',
       title: 'Message schema',
     },
@@ -401,12 +428,20 @@ const en_US = {
       create: 'Create subscription',
       search: 'Search...',
       copy: 'Copy clients to clipboard',
+      tableHeaders: {
+        name: 'Name',
+      },
     },
     errorMessage: {
       topicFetchFailed: 'Could not fetch {topicName} topic details',
     },
   },
   subscription: {
+    tabs: {
+      general: 'General',
+      messages: 'Messages',
+      filters: 'Filters',
+    },
     confirmationDialog: {
       remove: {
         title: 'Confirm subscription deletion',
@@ -421,7 +456,7 @@ const en_US = {
         text: 'Are you sure you want to activate subscription {subscriptionId}',
       },
       retransmit: {
-        title: 'Confirm subscription messages retransmission',
+        title: 'Confirm messages retransmission',
         text: 'This action will re-send all messages on subscription “{subscriptionFqn}“ from {fromDate} (UTC). Do you want to continue?',
       },
       skipAllMessages: {
@@ -435,18 +470,24 @@ const en_US = {
     },
     filtersCard: {
       title: 'Subscription message filters',
+      subtitle:
+        'Define rules to filter incoming messages based on their content. Only messages that match the specified criteria will be delivered to your endpoint.',
       index: '#',
       type: 'Type',
       path: 'Path/Header',
       matcher: 'Matcher',
       matchingStrategy: 'Matching strategy',
       debug: 'Debug',
+      noFilters: 'No filters defined',
     },
     headersCard: {
       title: 'Fixed HTTP headers',
+      subtitle:
+        "Specify custom HTTP headers that will be consistently added to every request sent to this subscription's endpoint.",
       index: '#',
       name: 'Name',
       value: 'Value',
+      noHeaders: 'No filters defined',
     },
     healthProblemsAlerts: {
       lagging: {
@@ -492,16 +533,18 @@ const en_US = {
     },
     manageMessagesCard: {
       title: 'Manage subscription messages',
+      subtitle: 'Perform bulk operations on messages for this subscription.',
       retransmitTitle: 'Retransmit messages from the past',
       retransmitStartTimestampLabel: 'Retransmit since timestamp (UTC)',
       retransmitButton: 'Retransmit',
       skipAllMessagesTitle: 'Skip all messages',
+      skipAllMessagesSubtitle: 'This will discard all pending messages.',
       skipAllMessagesButton: 'Skip messages',
     },
     metricsCard: {
       title: 'Subscription metrics',
       deliveryRate: 'Delivery rate',
-      dashboard: 'DASHBOARD',
+      dashboard: 'Dashboard',
       subscriberLatency: 'Subscriber latency',
       delivered: 'Delivered',
       discarded: 'Discarded',
@@ -612,7 +655,8 @@ const en_US = {
     subscriptionMetadata: {
       editSubscription: 'Edit subscription {subscriptionName}',
       subscription: 'Subscription',
-      owners: 'OWNER:',
+      owners: 'Owner:',
+      endpoint: 'Endpoint:',
       unauthorizedTooltip:
         "You don't have permissions to manage this subscription",
       actions: {
@@ -634,6 +678,7 @@ const en_US = {
       status: 'Status',
       reason: 'Reason',
       timestamp: 'Timestamp',
+      noUndeliveredMessages: "There's no undelivered messages",
     },
   },
   search: {
@@ -667,23 +712,28 @@ const en_US = {
     },
   },
   offlineRetransmission: {
-    title: 'Offline retransmission',
-    titleRetransmissionFromView: 'Docs for retransmission from View',
+    title: 'New retransmission task',
+    titleRetransmissionFromView: 'Docs',
     subtitle:
-      'Offline retransmission allows retransmitting events from GCP (BigQuery) to Hermes.',
+      'Offline retransmission allows retransmitting events from GCP (BigQuery) to Hermes. To read more about it, go to ',
     targetTopic: 'Target topic',
     startTimestamp: 'Start timestamp (UTC)',
     endTimestamp: 'End timestamp (UTC)',
     monitoringView: {
       title: 'Active offline retransmissions',
-      allTasksLinkTitle: 'Offline retransmission global queue',
-      monitoringDocsLinkTitle: 'Offline retransmission monitoring docs',
-      idHeader: 'ID',
+      allTasksLinkTitle: 'Global queue',
+      monitoringDocsLinkTitle: 'Monitoring docs',
+      idHeader: 'Task ID',
       typeHeader: 'Type',
       logsLinkHeader: 'Logs',
       metricsLinkHeader: 'Metrics',
       jobLinkHeader: 'Job Details',
       allTasksLinkHeader: 'Hermes retransmission global queue',
+      logsLinkTitle: 'View logs',
+      metricsLinkTitle: 'View metrics',
+      detailsLinkTitle: 'View details',
+      activeTasks: 'active task(s)',
+      newRetransmissionTask: 'New retransmission task',
     },
   },
   notifications: {
@@ -856,7 +906,7 @@ const en_US = {
   },
   costsCard: {
     title: 'Costs',
-    detailsButton: 'DASHBOARD',
+    detailsButton: 'Dashboard',
   },
   trackingCard: {
     title: 'Tracking',
