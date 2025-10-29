@@ -437,7 +437,7 @@ const en_US = {
       title: 'Subscription message filters',
       index: '#',
       type: 'Type',
-      path: 'Path',
+      path: 'Path/Header',
       matcher: 'Matcher',
       matchingStrategy: 'Matching strategy',
       debug: 'Debug',

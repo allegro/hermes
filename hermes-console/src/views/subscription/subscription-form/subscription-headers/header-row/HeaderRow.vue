@@ -3,24 +3,19 @@
 
   const props = defineProps<{
     type: 'created' | 'new';
-    header?: string;
-    matcher?: string;
+    name?: string;
+    value?: string;
   }>();
 
-  const emit = defineEmits([
-    'add',
-    'remove',
-    'update:header',
-    'update:matcher',
-  ]);
+  const emit = defineEmits(['add', 'remove', 'update:name', 'update:value']);
 </script>
 
 <template>
   <v-row v-if="props.type === 'created'">
     <v-col cols="5">
       <text-field
-        :model-value="props.header"
-        @input="emit('update:header', $event.target.value)"
+        :model-value="props.name"
+        @input="emit('update:name', $event.target.value)"
         label="Name"
         placeholder="Header name"
       />
@@ -28,10 +23,10 @@
 
     <v-col cols="5">
       <text-field
-        :model-value="props.matcher"
-        @input="emit('update:matcher', $event.target.value)"
-        label="Matcher"
-        placeholder="Matcher for filter"
+        :model-value="props.value"
+        @input="emit('update:value', $event.target.value)"
+        label="Value"
+        placeholder="Header value"
       />
     </v-col>
 
@@ -47,7 +42,7 @@
   </v-row>
   <v-row v-else justify="end">
     <v-btn @click="emit('add')" :ripple="false" variant="text" color="success">
-      Add Filter
+      Add Header
     </v-btn>
   </v-row>
 </template>
