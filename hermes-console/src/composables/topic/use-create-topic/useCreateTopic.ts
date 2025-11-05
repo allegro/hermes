@@ -105,6 +105,6 @@ function initializeForm(form: Ref<TopicForm>): void {
     maxMessageSize: defaultMaxMessageSize,
     ack: '',
     schema: '',
-    fallbackToRemoteDatacenterEnabled: false,
+    fallbackToRemoteDatacenterEnabled: true,
   };
 }

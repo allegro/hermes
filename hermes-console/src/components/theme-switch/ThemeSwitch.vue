@@ -10,11 +10,7 @@
   });
 
   function toggleTheme() {
-    if (theme.global.name.value === 'dark') {
-      theme.change('light');
-    } else {
-      theme.change('dark');
-    }
+    theme.toggle();
     storeTheme(theme.global.name.value);
   }
 
