@@ -117,7 +117,7 @@ function createEmptyForm(): Ref<TopicForm> {
     maxMessageSize: 1,
     ack: '',
     schema: '',
-    fallbackToRemoteDatacenterEnabled: false,
+    fallbackToRemoteDatacenterEnabled: true,
   });
 }
 
