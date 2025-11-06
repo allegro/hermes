@@ -4,8 +4,17 @@ Hermes console written in Vue 3.
 
 ## Requirements
 
-* node >=20.0.0
+* node >=22.12.0
 * yarn
+
+## Node setup
+
+There is .nvmrc file included in the project with the required node version.
+To use the correct Node version, run:
+
+```sh
+nvm use
+```
 
 ## Project Setup
 

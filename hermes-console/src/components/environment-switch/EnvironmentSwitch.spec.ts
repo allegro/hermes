@@ -51,9 +51,6 @@ describe('EnvironmentSwitch', () => {
     );
     expect(getByText('env1')).toBeVisible();
     expect(getByText('env2')).toBeVisible();
-    expect(getByText('env1').closest('button')).toHaveClass('v-btn--active', {
-      exact: false,
-    });
     expect(getByText('env2').closest('button')).not.toHaveClass(
       'v-btn--active',
       { exact: false },

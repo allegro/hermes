@@ -7,7 +7,7 @@ describe('ThemeSwitch', () => {
   const testVuetify = createVuetify();
 
   beforeEach(() => {
-    testVuetify.theme.global.name.value = 'light';
+    testVuetify.theme.change('light');
     window.localStorage.clear();
   });
 
@@ -27,7 +27,7 @@ describe('ThemeSwitch', () => {
     async (initialTheme: string, changedTheme: string) => {
       // given
       const { getByRole } = render(ThemeSwitch, { testVuetify });
-      testVuetify.theme.global.name.value = initialTheme;
+      testVuetify.theme.change(initialTheme);
 
       // when
       await fireEvent.click(getByRole('button'));
@@ -40,7 +40,7 @@ describe('ThemeSwitch', () => {
   it('should persist theme preference in local storage', async () => {
     // given
     const { getByRole } = render(ThemeSwitch, { testVuetify });
-    testVuetify.theme.global.name.value = 'light';
+    testVuetify.theme.change('light');
 
     // when
     await fireEvent.click(getByRole('button'));

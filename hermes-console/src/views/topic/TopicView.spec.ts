@@ -42,7 +42,7 @@ const useRolesStub: UseRoles = {
 };
 
 const useTopicMock: UseTopic = {
-  topic: ref(dummyTopic),
+  topic: ref({ ...dummyTopic, trackingEnabled: true }),
   owner: ref(dummyOwner),
   messages: ref(dummyTopicMessagesPreview),
   metrics: ref(dummyTopicMetrics),
@@ -61,6 +61,7 @@ const useTopicMock: UseTopic = {
   trackingUrls: ref(dummyTrackingUrls),
   fetchOfflineClientsSource: () => Promise.resolve(),
   removeTopic: () => Promise.resolve(true),
+  fetchTopicClients: () => Promise.resolve([dummySubscription.name]),
   activeRetransmissions: ref(dummyActiveOfflineRetransmissions),
 };
 

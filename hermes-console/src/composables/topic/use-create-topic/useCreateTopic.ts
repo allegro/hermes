@@ -45,7 +45,7 @@ export function useCreateTopic(group: string): UseCreateTopic {
       });
       return true;
     } catch (e: any) {
-      await dispatchErrorNotification(
+      dispatchErrorNotification(
         e,
         notificationsStore,
         useGlobalI18n().t('notifications.topic.create.failure'),
@@ -105,5 +105,6 @@ function initializeForm(form: Ref<TopicForm>): void {
     maxMessageSize: defaultMaxMessageSize,
     ack: '',
     schema: '',
+    fallbackToRemoteDatacenterEnabled: true,
   };
 }
