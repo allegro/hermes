@@ -5,6 +5,7 @@
   import { useI18n } from 'vue-i18n';
   import { useRouter } from 'vue-router';
   import { useTheme } from 'vuetify';
+  import EnvironmentBadge from '@/components/environment-badge/EnviromentBadge.vue';
   import ThemeSwitch from '@/components/theme-switch/ThemeSwitch.vue';
 
   const { t } = useI18n();
@@ -48,6 +49,14 @@
             alt="Hermes"
           />
         </router-link>
+        <environment-badge
+          :environment-name="
+            configStore.appConfig?.console.environmentName || ''
+          "
+          :is-critical-environment="
+            configStore.appConfig?.console.criticalEnvironment || false
+          "
+        />
       </div>
       <div class="d-flex align-center ga-2 pr-2">
         <theme-switch />
