@@ -1,10 +1,7 @@
 <script setup lang="ts">
   import { copyToClipboard } from '@/utils/copy-utils';
   import { download } from '@/utils/download-utils';
-  import {
-    isSubscriptionOwnerOrAdmin,
-    isTopicOwnerOrAdmin,
-  } from '@/utils/roles-util';
+  import { isTopicOwnerOrAdmin } from '@/utils/roles-util';
   import { ref } from 'vue';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import { useFavorites } from '@/store/favorites/useFavorites';
@@ -100,7 +97,7 @@
             {{ props.topic.name }}
           </p>
           <tooltip-icon
-            v-if="!isSubscriptionOwnerOrAdmin(roles)"
+            v-if="!isTopicOwnerOrAdmin(roles)"
             :content="$t('topicView.header.unauthorizedTooltip')"
           />
         </div>

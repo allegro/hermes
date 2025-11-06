@@ -32,6 +32,7 @@ describe('EnvironmentSelect', () => {
     // when
     const { getByText } = render(EnvironmentSelect, {
       props: {
+        currentEnvironment: 'env1',
         knownEnvironments: [
           {
             name: 'env1',
@@ -52,6 +53,34 @@ describe('EnvironmentSelect', () => {
     expect(getByText('env1')).toBeVisible();
   });
 
+  it('should show currently selected environment even if not in known environments', () => {
+    // given
+    mockHref.mockReturnValue(TEST_URL_ENV_1);
+
+    // when
+    const { getByText } = render(EnvironmentSelect, {
+      props: {
+        currentEnvironment: 'env3',
+        knownEnvironments: [
+          {
+            name: 'env1',
+            url: 'localhost:3000',
+          },
+          {
+            name: 'env2',
+            url: '127.0.0.1:3000',
+          },
+        ],
+      },
+    });
+
+    // then
+    expect(location.href).toBe(
+      'http://localhost:3000/ui/groups/pl.example.hermes/topics/pl.example.hermes.TemperatureChanged',
+    );
+    expect(getByText('env3')).toBeVisible();
+  });
+
   it('should show all available environments in the dropdown', async () => {
     // given
     mockHref.mockReturnValue(TEST_URL_ENV_1);
@@ -59,6 +88,7 @@ describe('EnvironmentSelect', () => {
     // and
     const { getByText } = render(EnvironmentSelect, {
       props: {
+        currentEnvironment: 'env1',
         knownEnvironments: [
           {
             name: 'env1',
@@ -84,6 +114,7 @@ describe('EnvironmentSelect', () => {
     mockHref.mockReturnValue(TEST_URL_ENV_1);
     const { getByText } = render(EnvironmentSelect, {
       props: {
+        currentEnvironment: 'env1',
         knownEnvironments: [
           {
             name: 'env1',
@@ -114,6 +145,7 @@ describe('EnvironmentSelect', () => {
     // and
     const { getByText } = render(EnvironmentSelect, {
       props: {
+        currentEnvironment: 'env1',
         knownEnvironments: [
           {
             name: 'env1',
@@ -145,6 +177,7 @@ describe('EnvironmentSelect', () => {
     // and
     const { getByText } = render(EnvironmentSelect, {
       props: {
+        currentEnvironment: 'env1',
         knownEnvironments: [
           {
             name: 'env1',

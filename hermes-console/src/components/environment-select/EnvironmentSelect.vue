@@ -3,23 +3,21 @@
 
   const props = defineProps<{
     isCurrentEnvironmentCritical?: boolean;
+    currentEnvironment: string;
     knownEnvironments: ConsoleEnvironment[];
   }>();
 
   function getCurrentEnv(): ConsoleEnvironment {
-    const url = location.href;
-    const envs = props.knownEnvironments;
-    return envs.find(
-      (env) =>
-        url.startsWith(env.url) ||
-        url.startsWith(`http://${env.url}`) ||
-        url.startsWith(`https://${env.url}`),
+    return (
+      props.knownEnvironments.find(
+        (env) => env.name === props.currentEnvironment,
+      ) || { name: props.currentEnvironment, url: '' }
     );
   }
 
-  function switchToEnv(env: ConsoleEnvironment, event: Event): string {
+  function switchToEnv(env: ConsoleEnvironment, event: Event) {
     const currentUrl = location.href;
-    const currentEnv: ConsoleEnvironment = getCurrentEnv();
+    const currentEnv = getCurrentEnv();
     const switchedUrl = currentUrl.replace(currentEnv.url, env.url);
     if (event.ctrlKey || event.metaKey) {
       window.open(switchedUrl, '_blank');

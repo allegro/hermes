@@ -15,6 +15,9 @@
   const knownEnvironments = computed(
     () => configStore.appConfig?.console.knownEnvironments || [],
   );
+  const currentEnvironment = computed(
+    () => configStore.appConfig?.console.environmentName || '',
+  );
   const roles = useRoles(null, null)?.roles;
   const rail = ref(true);
 
@@ -32,6 +35,7 @@
     <v-list density="compact" nav>
       <v-list-item class="pa-0">
         <environment-select
+          :current-environment="currentEnvironment"
           :known-environments="knownEnvironments"
           :is-current-environment-critical="
             configStore.loadedConfig.console.criticalEnvironment
