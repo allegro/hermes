@@ -165,6 +165,22 @@ describe('SubscriptionView', () => {
 
     // then
     expect(getByText('subscription.filtersCard.title')).toBeVisible();
+  });
+
+  it('should show appropriate sections on mutations tab click', async () => {
+    // given
+    const user = userEvent.setup();
+    vi.mocked(useSubscription).mockReturnValueOnce(useSubscriptionStub);
+    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
+    vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
+    const { getByText } = render(SubscriptionView, {
+      testPinia: createTestingPiniaWithState(),
+    });
+
+    // when
+    await user.click(getByText('subscription.tabs.mutations'));
+
+    // then
     expect(getByText('subscription.headersCard.title')).toBeVisible();
   });
 

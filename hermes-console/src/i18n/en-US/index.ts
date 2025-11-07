@@ -441,6 +441,7 @@ const en_US = {
       general: 'General',
       messages: 'Messages',
       filters: 'Filters',
+      mutations: 'Mutations',
     },
     confirmationDialog: {
       remove: {
@@ -487,7 +488,7 @@ const en_US = {
       index: '#',
       name: 'Name',
       value: 'Value',
-      noHeaders: 'No filters defined',
+      noHeaders: 'No fixed headers defined',
     },
     healthProblemsAlerts: {
       lagging: {

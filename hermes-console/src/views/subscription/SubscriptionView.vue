@@ -160,6 +160,7 @@
     General: 'general',
     Messages: 'messages',
     Filters: 'filters',
+    Mutations: 'mutations',
   };
   const currentTab = ref<string>(Tab.General);
 </script>
@@ -239,6 +240,9 @@
           <v-tab :value="Tab.Filters" class="text-capitalize">{{
             $t('subscription.tabs.filters')
           }}</v-tab>
+          <v-tab :value="Tab.Mutations" class="text-capitalize">{{
+            $t('subscription.tabs.mutations')
+          }}</v-tab>
           <v-tab :value="Tab.Messages" class="text-capitalize">{{
             $t('subscription.tabs.messages')
           }}</v-tab>
@@ -281,6 +285,15 @@
                   :schema="topic?.schema"
                   :topic="topicId"
                 />
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-tabs-window-item>
+
+        <v-tabs-window-item :value="Tab.Mutations">
+          <v-container class="py-0">
+            <v-row dense>
+              <v-col md="12">
                 <headers-card :headers="subscription?.headers" />
               </v-col>
             </v-row>
