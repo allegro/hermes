@@ -21,7 +21,6 @@ dependencies {
 
     implementation group: 'org.jctools', name: 'jctools-core', version: '4.0.3'
     api group: 'jakarta.jms', name: 'jakarta.jms-api', version: '3.1.0'
-    implementation group: 'joda-time', name: 'joda-time', version: '2.12.7'
     implementation(group: 'com.github.rholder', name: 'guava-retrying', version: '2.0.0') {
         exclude module: 'guava'
     }
@@ -31,6 +30,7 @@ dependencies {
         exclude module: 'hornetq-native'
     }
     api group: 'org.apache.httpcomponents.core5', name: 'httpcore5', version: '5.2.4'
+    implementation group: 'tech.allegro.schema.json2avro', name: 'converter', version: versions.json2avro
     api group: 'com.google.cloud', name: 'google-cloud-pubsub', version: '1.140.2'
     api(group: 'com.google.cloud', name: 'google-cloud-bigquery', version: '2.52.0') {
         exclude(group: 'io.netty')
@@ -44,8 +44,6 @@ dependencies {
     testImplementation project(':hermes-common')
 
     testImplementation(group: 'org.awaitility', name: 'awaitility-groovy', version: '4.2.1')
-
-    testImplementation group: 'tech.allegro.schema.json2avro', name: 'converter', version: versions.json2avro
 
     testImplementation group: 'org.spockframework', name: 'spock-core', version: versions.spock
     testImplementation group: 'org.spockframework', name: 'spock-junit4', version: versions.spock

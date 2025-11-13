@@ -69,7 +69,7 @@ allprojects {
             okhttp            : '3.9.1',
             undertow          : '2.3.12.Final',
             spring_web        : '6.1.6',
-            failsafe          : '2.4.4',
+            failsafe          : '3.3.2',
             junit_jupiter     : '5.10.2',
             testcontainers    : '1.19.8',
             spring            : '3.2.4',
@@ -96,7 +96,6 @@ allprojects {
 
         testImplementation group: 'junit', name: 'junit', version: '4.11'
         testImplementation group: 'com.tngtech.java', name: 'junit-dataprovider', version: '1.10.0'
-        testImplementation group: 'pl.pragmatists', name: 'JUnitParams', version: '1.0.2'
         testImplementation group: 'org.mockito', name: 'mockito-core', version: '5.11.0'
         testImplementation group: 'org.assertj', name: 'assertj-core', version: versions.assertj
         testImplementation group: 'org.awaitility', name: 'awaitility', version: '4.2.1'
@@ -213,4 +212,17 @@ subprojects {
 
 def getIntProperty(String name, int defaultValue) {
     Integer.valueOf(project.findProperty(name) ?: defaultValue)
+}
+
+dependencyAnalysis {
+    issues {
+        all {
+            onAny {
+                severity("warn")
+            }
+        }
+    }
+    reporting {
+        printBuildHealth(true)
+    }
 }

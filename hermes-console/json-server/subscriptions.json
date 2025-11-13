@@ -42,6 +42,11 @@
         "path": ".foo.bar.baz",
         "matcher": "true",
         "matchingStrategy": "all"
+      },
+      {
+        "type": "header",
+        "header": "service-number",
+        "matcher": "xyz93"
       }
     ],
     "mode": "ANYCAST",

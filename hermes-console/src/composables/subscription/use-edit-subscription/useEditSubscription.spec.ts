@@ -46,31 +46,35 @@ describe('useEditSubscription', () => {
   it('should return initialized form', async () => {
     // given
     server.listen();
-    const testSubscription = dummySubscription;
 
     // when
     const { form } = useEditSubscription(
       dummySubscription.topicName,
-      testSubscription,
+      dummySubscription,
     );
 
     // helper to normalize both actual and expected forms
-    const normalizeFilters = (data: any) => ({
+    const normalizeForms = (data: any) => ({
       ...data,
       pathFilters: data.pathFilters.map(({ id, type, ...rest }: any) => {
         void id;
         void type;
         return rest;
       }),
-      headerFilters: data.headerFilters.map(({ id, ...rest }: any) => {
+      headerFilters: data.headerFilters.map(({ id, type, ...rest }: any) => {
+        void id;
+        void type;
+        return rest;
+      }),
+      headers: data.headers.map(({ id, ...rest }: any) => {
         void id;
         return rest;
       }),
     });
 
     // then
-    const normalizedActual = normalizeFilters(form.value);
-    const normalizedExpected = normalizeFilters(
+    const normalizedActual = normalizeForms(form.value);
+    const normalizedExpected = normalizeForms(
       dummyInitializedEditSubscriptionForm,
     );
     expect(JSON.stringify(normalizedActual)).toMatchObject(
