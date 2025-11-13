@@ -16,8 +16,34 @@ const router = createRouter({
     },
     {
       path: '/ui/groups',
-      name: 'groups',
-      component: () => import('@/views/groups/GroupsView.vue'),
+      children: [
+        {
+          path: '',
+          name: 'groups',
+          component: () => import('@/views/groups/GroupsView.vue'),
+        },
+        {
+          path: ':groupId',
+          name: 'groupTopics',
+          component: () => import('@/views/group-topics/GroupTopicsView.vue'),
+        },
+        {
+          path: ':groupId/topics/:topicName',
+          name: 'topic',
+          component: () => import('@/views/topic/TopicView.vue'),
+        },
+        {
+          path: ':groupId/topics/:topicId/subscriptions/:subscriptionId',
+          name: 'subscription',
+          component: () => import('@/views/subscription/SubscriptionView.vue'),
+        },
+        {
+          path: ':groupId/topics/:topicId/subscriptions/:subscriptionId/diagnostics/',
+          name: 'consumerGroups',
+          component: () =>
+            import('@/views/admin/consumer-groups/ConsumerGroupsView.vue'),
+        },
+      ],
     },
     {
       path: '/ui/favorite-topics',
@@ -29,21 +55,6 @@ const router = createRouter({
       name: 'favoriteSubscriptions',
       component: () =>
         import('@/views/favorite/subscriptions/FavoriteSubscriptionsView.vue'),
-    },
-    {
-      path: '/ui/groups/:groupId',
-      name: 'groupTopics',
-      component: () => import('@/views/group-topics/GroupTopicsView.vue'),
-    },
-    {
-      path: '/ui/groups/:groupId/topics/:topicName',
-      name: 'topic',
-      component: () => import('@/views/topic/TopicView.vue'),
-    },
-    {
-      path: '/ui/groups/:groupId/topics/:topicId/subscriptions/:subscriptionId',
-      name: 'subscription',
-      component: () => import('@/views/subscription/SubscriptionView.vue'),
     },
     {
       path: '/ui/readiness',
@@ -63,30 +74,30 @@ const router = createRouter({
     },
     {
       path: '/ui/consistency',
-      name: 'consistency',
-      component: () => import('@/views/admin/consistency/ConsistencyView.vue'),
-    },
-    {
-      path: '/ui/consistency/:groupId',
-      name: 'groupConsistency',
-      component: () =>
-        import(
-          '@/views/admin/consistency/inconsistent-group/InconsistentGroup.vue'
-        ),
-    },
-    {
-      path: '/ui/consistency/:groupId/topics/:topicId',
-      name: 'topicConsistency',
-      component: () =>
-        import(
-          '@/views/admin/consistency/inconsistent-topic/InconsistentTopic.vue'
-        ),
-    },
-    {
-      path: '/ui/groups/:groupId/topics/:topicId/subscriptions/:subscriptionId/diagnostics/',
-      name: 'consumerGroups',
-      component: () =>
-        import('@/views/admin/consumer-groups/ConsumerGroupsView.vue'),
+      children: [
+        {
+          path: '',
+          name: 'consistency',
+          component: () =>
+            import('@/views/admin/consistency/ConsistencyView.vue'),
+        },
+        {
+          path: ':groupId',
+          name: 'groupConsistency',
+          component: () =>
+            import(
+              '@/views/admin/consistency/inconsistent-group/InconsistentGroup.vue'
+            ),
+        },
+        {
+          path: ':groupId/topics/:topicId',
+          name: 'topicConsistency',
+          component: () =>
+            import(
+              '@/views/admin/consistency/inconsistent-topic/InconsistentTopic.vue'
+            ),
+        },
+      ],
     },
     {
       path: '/ui/stats',

@@ -7,21 +7,12 @@ import userEvent from '@testing-library/user-event';
 describe('SchemaPanel', () => {
   const props = { schema: dummyTopic.schema };
 
-  it('should render proper heading', () => {
-    // when
-    const { getByText } = render(SchemaPanel, { props });
-
-    // then
-    expect(getByText('topicView.schema.title')).toBeVisible();
-  });
-
-  it('should render avro formatted schema', async () => {
+  it('should render avro formatted schema by default', async () => {
     // given
-    const { getByText, container } = render(SchemaPanel, { props });
+    const { getByTestId } = render(SchemaPanel, { props });
 
     // when
-    await userEvent.click(getByText('topicView.schema.title'));
-    const codeElement = container.querySelector('.avro-schema')!!;
+    const codeElement = getByTestId('avro-viewer');
 
     // then
     expect(codeElement).toBeVisible();
@@ -29,17 +20,29 @@ describe('SchemaPanel', () => {
 
   it('should render avro json schema', async () => {
     // given
-    const { getByText, container } = render(SchemaPanel, { props });
+    const { getByTestId, getByText } = render(SchemaPanel, { props });
 
     // when
-    await userEvent.click(getByText('topicView.schema.title'));
-    await userEvent.click(getByText('topicView.schema.showRawSchema'));
-    const codeElement = container.querySelector('.v-code')!!;
+    await userEvent.click(getByText('topicView.schema.rawSchema'));
+    const codeElement = getByTestId('json-viewer')!!;
 
     // then
     expect(codeElement).toBeVisible();
     expect(codeElement.textContent).toEqual(
       JSON.stringify(JSON.parse(props.schema), null, 2),
     );
+  });
+
+  it('should go back to avro formatted schema', async () => {
+    // given
+    const { getByTestId, getByText } = render(SchemaPanel, { props });
+
+    // when
+    await userEvent.click(getByText('topicView.schema.rawSchema'));
+    await userEvent.click(getByText('topicView.schema.structure'));
+    const codeElement = getByTestId('avro-viewer');
+
+    // then
+    expect(codeElement).toBeVisible();
   });
 });

@@ -8,54 +8,64 @@
 </script>
 
 <template>
-  <v-card class="mb-2">
-    <template #title>
-      <p class="font-weight-bold">
-        {{ $t('subscription.undeliveredMessagesCard.title') }}
-      </p>
-    </template>
-    <v-table density="compact">
-      <thead>
-        <tr>
-          <th class="text-left">
-            {{ $t('subscription.undeliveredMessagesCard.index') }}
-          </th>
-          <th class="text-left">
-            {{ $t('subscription.undeliveredMessagesCard.messageId') }}
-          </th>
-          <th class="text-left">
-            {{ $t('subscription.undeliveredMessagesCard.status') }}
-          </th>
-          <th class="text-left">
-            {{ $t('subscription.undeliveredMessagesCard.reason') }}
-          </th>
-          <th class="text-left">
-            {{ $t('subscription.undeliveredMessagesCard.timestamp') }}
-          </th>
-          <th class="text-left"></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          v-for="(message, index) in props.undeliveredMessages.slice(0, 100)"
-          :key="index"
+  <v-card>
+    <v-card-item class="border-b">
+      <v-card-title class="font-weight-bold"
+        >{{ $t('subscription.undeliveredMessagesCard.title') }}
+      </v-card-title>
+    </v-card-item>
+
+    <v-card-item>
+      <v-table density="compact">
+        <thead>
+          <tr>
+            <th class="text-left pl-0">
+              {{ $t('subscription.undeliveredMessagesCard.index') }}
+            </th>
+            <th class="text-left">
+              {{ $t('subscription.undeliveredMessagesCard.messageId') }}
+            </th>
+            <th class="text-left">
+              {{ $t('subscription.undeliveredMessagesCard.status') }}
+            </th>
+            <th class="text-left">
+              {{ $t('subscription.undeliveredMessagesCard.reason') }}
+            </th>
+            <th class="text-left">
+              {{ $t('subscription.undeliveredMessagesCard.timestamp') }}
+            </th>
+          </tr>
+        </thead>
+        <tbody
+          v-if="
+            props.undeliveredMessages && props.undeliveredMessages.length > 0
+          "
         >
-          <td>{{ index + 1 }}</td>
-          <td>{{ message.messageId }}</td>
-          <td>{{ message.status }}</td>
-          <td>{{ message.reason }}</td>
-          <td>{{ formatTimestampMillis(message.timestamp) }}</td>
-          <td>
-            <v-btn
-              density="compact"
-              icon="mdi-magnify"
-              size="small"
-              variant="flat"
-            />
-          </td>
-        </tr>
-      </tbody>
-    </v-table>
+          <tr
+            v-for="(message, index) in props.undeliveredMessages.slice(0, 100)"
+            :key="index"
+          >
+            <td class="pl-0">{{ index + 1 }}</td>
+            <td>{{ message.messageId }}</td>
+            <td>{{ message.status }}</td>
+            <td>{{ message.reason }}</td>
+            <td>{{ formatTimestampMillis(message.timestamp) }}</td>
+          </tr>
+        </tbody>
+        <tbody v-else>
+          <tr>
+            <td
+              colspan="5"
+              class="text-center text-medium-emphasis text-body-2"
+            >
+              <span>{{
+                $t('subscription.undeliveredMessagesCard.noUndeliveredMessages')
+              }}</span>
+            </td>
+          </tr>
+        </tbody>
+      </v-table>
+    </v-card-item>
   </v-card>
 </template>
 

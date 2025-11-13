@@ -1,8 +1,9 @@
 <script setup lang="ts">
-  import { computed, ref } from 'vue';
   import { isAny } from '@/utils/roles-util';
+  import { ref } from 'vue';
   import { Role } from '@/api/role';
   import { State } from '@/api/subscription';
+  import { useI18n } from 'vue-i18n';
   import { useRouter } from 'vue-router';
   import SubscriptionForm from '@/views/subscription/subscription-form/SubscriptionForm.vue';
   import type { Subscription } from '@/api/subscription';
@@ -17,31 +18,21 @@
     roles: Role[] | undefined;
   }>();
 
+  const { t } = useI18n();
+
   const emit = defineEmits<{
     copyClientsClick: [];
   }>();
 
-  const statusTextColor: Record<State, String> = {
+  const statusTextColor: Record<State, string> = {
     [State.ACTIVE]: 'green',
     [State.PENDING]: 'orange',
-    [State.SUSPENDED]: 'red',
+    [State.SUSPENDED]: 'error',
   };
 
-  const subscriptionItems = computed(() =>
-    props.subscriptions
-      ?.filter((subscription) =>
-        subscription.name.toLowerCase().includes(filter.value.toLowerCase()),
-      )
-      ?.map((subscription) => {
-        const currentUrl = window.location.href;
-        return {
-          name: subscription.name,
-          color: statusTextColor[subscription.state],
-          statusText: subscription.state,
-          href: `${currentUrl}/subscriptions/${subscription.name}`,
-        };
-      }),
-  );
+  const subscriptionTableHeaders = [
+    { key: 'name', title: t('topicView.subscriptions.tableHeaders.name') },
+  ];
 
   const showSubscriptionCreationForm = ref(false);
 
@@ -61,94 +52,98 @@
 </script>
 
 <template>
-  <v-expansion-panels>
-    <v-expansion-panel
-      :title="`${$t('topicView.subscriptions.title')} (${
-        subscriptions?.length
-      })`"
-    >
-      <v-expansion-panel-text class="d-flex flex-row subscriptions-panel">
-        <div class="d-flex justify-end mr-4 mb-1">
-          <v-dialog
-            v-model="showSubscriptionCreationForm"
-            min-width="800"
-            :persistent="true"
-          >
-            <template #activator>
-              <v-text-field
-                single-line
-                :label="$t('topicView.subscriptions.search')"
-                density="compact"
-                style="height: 30px; margin-right: 20px"
-                v-model="filter"
-                prepend-inner-icon="mdi-magnify"
-              />
-              <v-btn
-                v-if="subscriptions.length > 0"
-                :disabled="!isAny(roles)"
-                prepend-icon="mdi-content-copy"
-                density="comfortable"
-                @click="emit('copyClientsClick')"
-                style="margin-right: 10px"
-              >
-                {{ $t('topicView.subscriptions.copy') }}
-              </v-btn>
-              <v-btn
-                :disabled="!isAny(roles)"
-                prepend-icon="mdi-plus"
-                density="comfortable"
-                @click="showSubscriptionForm()"
-                >{{ $t('topicView.subscriptions.create') }}</v-btn
-              >
-            </template>
-            <v-card>
+  <div class="d-flex flex-column row-gap-2">
+    <div class="d-flex justify-space-between">
+      <v-dialog
+        v-model="showSubscriptionCreationForm"
+        min-width="800"
+        :persistent="true"
+      >
+        <template #activator>
+          <div>
+            <v-text-field
+              variant="outlined"
+              base-color="rgba(var(--v-border-color), 0.31)"
+              single-line
+              :label="$t('topicView.subscriptions.search')"
+              density="compact"
+              v-model="filter"
+              prepend-inner-icon="mdi-magnify"
+              hide-details
+              style="min-width: 300px"
+            />
+          </div>
+          <div>
+            <v-btn
+              v-if="subscriptions.length > 0"
+              :disabled="!isAny(roles)"
+              prepend-icon="mdi-content-copy"
+              @click="emit('copyClientsClick')"
+              style="margin-right: 10px"
+              variant="outlined"
+              class="text-capitalize"
+            >
+              {{ $t('topicView.subscriptions.copy') }}
+            </v-btn>
+            <v-btn
+              :disabled="!isAny(roles)"
+              prepend-icon="mdi-plus"
+              variant="outlined"
+              @click="showSubscriptionForm()"
+              class="text-capitalize"
+              >{{ $t('topicView.subscriptions.create') }}
+            </v-btn>
+          </div>
+        </template>
+        <v-card>
+          <v-card-item class="border-b">
+            <div class="d-flex justify-space-between align-center">
               <v-card-title>
-                <span class="text-h5">{{
-                  $t('topicView.subscriptions.create')
-                }}</span>
+                {{ $t('topicView.subscriptions.create') }}
               </v-card-title>
-              <v-card-text>
-                <SubscriptionForm
-                  operation="add"
-                  :subscription="null"
-                  :topic="props.topicName"
-                  :roles="roles"
-                  @created="pushToSubscription"
-                  @cancel="hideSubscriptionForm"
-                />
-              </v-card-text>
-            </v-card>
-          </v-dialog>
-        </div>
+              <v-btn
+                icon="mdi-close"
+                variant="text"
+                @click="hideSubscriptionForm"
+              />
+            </div>
+          </v-card-item>
 
-        <v-list open-strategy="single">
-          <v-list-item
-            v-for="subscription in subscriptionItems"
-            :key="subscription.name"
-            :href="subscription.href"
-          >
-            <v-list-item-title>{{ subscription.name }}</v-list-item-title>
-            <template v-slot:append>
-              <v-chip size="small" :color="subscription.color"
-                >{{ subscription.statusText }}
+          <v-card-text class="pt-4">
+            <SubscriptionForm
+              operation="add"
+              :subscription="null"
+              :topic="props.topicName"
+              :roles="roles"
+              @created="pushToSubscription"
+              @cancel="hideSubscriptionForm"
+            />
+          </v-card-text>
+        </v-card>
+      </v-dialog>
+    </div>
+
+    <v-data-table
+      :items="props.subscriptions"
+      :search="filter"
+      :headers="subscriptionTableHeaders"
+      hover
+      :items-per-page="-1"
+    >
+      <template #item="{ item }">
+        <v-list-item
+          :href="`/ui/groups/${props.groupId}/topics/${props.topicName}/subscriptions/${item.name}`"
+        >
+          <div class="d-flex justify-space-between align-center">
+            <div>{{ item.name }}</div>
+            <div>
+              <v-chip size="small" :color="statusTextColor[item.state]"
+                >{{ item.state }}
               </v-chip>
-            </template>
-          </v-list-item>
-        </v-list>
-      </v-expansion-panel-text>
-    </v-expansion-panel>
-  </v-expansion-panels>
+            </div>
+          </div>
+        </v-list-item>
+      </template>
+    </v-data-table>
+  </div>
 </template>
-
-<style lang="scss" scoped>
-  @use '@/settings';
-
-  .v-list-item:not(:last-child) {
-    border-bottom: settings.$list-item-border-thin-width
-      settings.$list-item-border-style settings.$list-item-border-color;
-  }
-
-  .subscriptions-panel {
-    margin: 0 -16px 0;
-  }
-</style>

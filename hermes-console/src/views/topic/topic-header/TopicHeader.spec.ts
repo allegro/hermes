@@ -17,15 +17,8 @@ import { ref } from 'vue';
 import { render } from '@/utils/test-utils';
 import { Role } from '@/api/role';
 import { useEditTopic } from '@/composables/topic/use-edit-topic/useEditTopic';
-import { useOfflineRetransmission } from '@/composables/topic/use-offline-retransmission/useOfflineRetransmission';
 import TopicHeader from '@/views/topic/topic-header/TopicHeader.vue';
-import userEvent from '@testing-library/user-event';
 import type { UseEditTopic } from '@/composables/topic/use-edit-topic/types';
-import type { UseOfflineRetransmission } from '@/composables/topic/use-offline-retransmission/useOfflineRetransmission';
-
-const useOfflineRetransmissionStub: UseOfflineRetransmission = {
-  retransmit: () => Promise.resolve(true),
-};
 
 vi.mock(
   '@/composables/topic/use-offline-retransmission/useOfflineRetransmission',
@@ -62,9 +55,8 @@ describe('TopicHeader', () => {
     // then
     expect(getByText('topicView.header.topic')).toBeVisible();
     expect(getByText(dummyTopic.name)).toBeVisible();
-    expect(
-      getByText(`topicView.header.owner ${dummyOwner.name}`),
-    ).toBeVisible();
+    expect(getByText(`topicView.header.owner`)).toBeVisible();
+    expect(getByText(dummyOwner.name)).toBeVisible();
     expect(getByText(dummyTopic.description)).toBeVisible();
   });
 
@@ -107,27 +99,6 @@ describe('TopicHeader', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('should open offline retransmission dialog when user clicks offline retransmission button', async () => {
-    vi.mocked(useOfflineRetransmission).mockReturnValueOnce(
-      useOfflineRetransmissionStub,
-    );
-    const user = userEvent.setup();
-
-    // when
-    const { getByTestId, queryByText } = render(TopicHeader, {
-      props,
-      testPinia: createTestingPinia({
-        initialState: {
-          appConfig: appConfigStoreState,
-        },
-      }),
-    });
-
-    // then
-    await user.click(getByTestId('offlineRetransmissionButton'));
-    expect(queryByText('offlineRetransmission.title')).toBeVisible();
-  });
-
   it.each([
     { roles: [], disabled: true },
     { roles: [Role.ANY], disabled: true },
@@ -153,17 +124,11 @@ describe('TopicHeader', () => {
           getByText('topicView.header.actions.edit').closest('button'),
         ).toBeDisabled();
         expect(
-          getByText('topicView.header.actions.export').closest('button'),
-        ).toBeDisabled();
-        expect(
           getByText('topicView.header.actions.remove').closest('button'),
         ).toBeDisabled();
       } else {
         expect(
           getByText('topicView.header.actions.edit').closest('button'),
-        ).toBeEnabled();
-        expect(
-          getByText('topicView.header.actions.export').closest('button'),
         ).toBeEnabled();
         expect(
           getByText('topicView.header.actions.remove').closest('button'),
@@ -201,82 +166,6 @@ describe('TopicHeader', () => {
         expect(
           getByText('topicView.header.actions.edit').closest('button'),
         ).toBeEnabled();
-      }
-    },
-  );
-
-  it.each([
-    {
-      offlineRetransmission: {
-        enabled: false,
-      },
-      offlineStorageEnabled: false,
-      show: false,
-    },
-    {
-      offlineRetransmission: {
-        enabled: true,
-      },
-      offlineStorageEnabled: false,
-      show: false,
-    },
-    {
-      offlineRetransmission: {
-        enabled: false,
-      },
-      offlineStorageEnabled: true,
-      show: false,
-    },
-    {
-      offlineRetransmission: {
-        enabled: true,
-      },
-      offlineStorageEnabled: true,
-      show: true,
-    },
-  ])(
-    'should show or hide offline retransmission button',
-    ({ offlineRetransmission, offlineStorageEnabled, show }) => {
-      // when
-      const testPinia = createTestingPinia({
-        initialState: {
-          appConfig: {
-            ...appConfigStoreState,
-            appConfig: {
-              ...dummyAppConfig,
-              topic: { ...dummyAppConfig.topic, offlineRetransmission },
-            },
-          },
-        },
-      });
-      const props = {
-        topic: {
-          ...dummyTopic,
-          offlineStorage: {
-            enabled: offlineStorageEnabled,
-            retentionTime: {
-              duration: 60,
-              infinite: false,
-            },
-          },
-        },
-        owner: dummyOwner,
-        roles: dummyRoles,
-      };
-      const { queryByText } = render(TopicHeader, {
-        props,
-        testPinia,
-      });
-
-      // then
-      if (show) {
-        expect(
-          queryByText('topicView.header.actions.offlineRetransmission'),
-        ).toBeVisible();
-      } else {
-        expect(
-          queryByText('topicView.header.actions.offlineRetransmission'),
-        ).not.toBeInTheDocument();
       }
     },
   );

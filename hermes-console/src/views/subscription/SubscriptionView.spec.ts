@@ -17,13 +17,14 @@ import { dummyTrackingUrls } from '@/dummy/tracking-urls';
 import { fireEvent } from '@testing-library/vue';
 import { render } from '@/utils/test-utils';
 import { Role } from '@/api/role';
-import { State } from '@/api/subscription';
+import { State, type Subscription } from '@/api/subscription';
 import { useMetrics } from '@/composables/metrics/use-metrics/useMetrics';
 import { useRoles } from '@/composables/roles/use-roles/useRoles';
 import { useSubscription } from '@/composables/subscription/use-subscription/useSubscription';
 import router from '@/router';
 import SubscriptionView from '@/views/subscription/SubscriptionView.vue';
 import TopicView from '@/views/topic/TopicView.vue';
+import userEvent from '@testing-library/user-event';
 import type { UseMetrics } from '@/composables/metrics/use-metrics/useMetrics';
 import type { UseRoles } from '@/composables/roles/use-roles/useRoles';
 
@@ -86,7 +87,7 @@ describe('SubscriptionView', () => {
     );
   });
 
-  it('should render data boxes if subscription data was successfully fetched', () => {
+  it('should render all tabs if subscription data was successfully fetched', () => {
     // given
     vi.mocked(useSubscription).mockReturnValueOnce(useSubscriptionStub);
     vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
@@ -98,54 +99,150 @@ describe('SubscriptionView', () => {
     });
 
     // then
-    const cardTitles = [
-      'subscription.metricsCard.title',
-      'costsCard.title',
-      'subscription.manageMessagesCard.title',
-      'subscription.propertiesCard.title',
-      'subscription.lastUndeliveredMessage.title',
-      'subscription.filtersCard.title',
-      'subscription.headersCard.title',
-      'subscription.undeliveredMessagesCard.title',
+    const expectedTabs = [
+      'subscription.tabs.general',
+      'subscription.tabs.filters',
+      'subscription.tabs.messages',
     ];
-    cardTitles.forEach((boxTitle) => {
+    expectedTabs.forEach((boxTitle) => {
       expect(getByText(boxTitle)).toBeVisible();
     });
   });
 
-  it('should not render some boxes if user is unauthorized', () => {
+  it.each([
+    'subscription.tabs.general',
+    'subscription.tabs.filters',
+    'subscription.tabs.messages',
+  ])('should activate tab on click', async (tab: string) => {
     // given
+    const user = userEvent.setup();
     vi.mocked(useSubscription).mockReturnValueOnce(useSubscriptionStub);
-    vi.mocked(useRoles).mockReturnValueOnce({
-      ...useRolesStub,
-      roles: ref([]),
-    });
+    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
     vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
-
-    // when
-    const { queryByText, getByText } = render(SubscriptionView, {
+    const { getByText } = render(SubscriptionView, {
       testPinia: createTestingPiniaWithState(),
     });
 
+    // when
+    const tabElement = getByText(tab).closest('button')!;
+    await user.click(tabElement);
+
     // then
-    const visibleCardTitles = [
-      'subscription.metricsCard.title',
-      'subscription.propertiesCard.title',
-      'subscription.filtersCard.title',
-      'subscription.headersCard.title',
-    ];
-    const notVisibleCardTitles = [
-      'subscription.manageMessagesCard.title',
-      'subscription.lastUndeliveredMessage.title',
-      'subscription.undeliveredMessagesCard.title',
-    ];
-    visibleCardTitles.forEach((boxTitle) => {
-      expect(getByText(boxTitle)).toBeVisible();
-    });
-    notVisibleCardTitles.forEach((boxTitle) => {
-      expect(queryByText(boxTitle)).not.toBeInTheDocument();
-    });
+    expect(tabElement).toHaveClass('v-tab--selected');
   });
+
+  it('should show appropriate sections on general tab click', async () => {
+    // given
+    const user = userEvent.setup();
+    vi.mocked(useSubscription).mockReturnValueOnce(useSubscriptionStub);
+    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
+    vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
+    const { getByText } = render(SubscriptionView, {
+      testPinia: createTestingPiniaWithState(),
+    });
+
+    // when
+    await user.click(getByText('subscription.tabs.general'));
+
+    // then
+    expect(getByText('subscription.metricsCard.title')).toBeVisible();
+    expect(getByText('costsCard.title')).toBeVisible();
+    expect(getByText('subscription.propertiesCard.title')).toBeVisible();
+  });
+
+  it('should show appropriate sections on filters tab click', async () => {
+    // given
+    const user = userEvent.setup();
+    vi.mocked(useSubscription).mockReturnValueOnce(useSubscriptionStub);
+    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
+    vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
+    const { getByText } = render(SubscriptionView, {
+      testPinia: createTestingPiniaWithState(),
+    });
+
+    // when
+    await user.click(getByText('subscription.tabs.filters'));
+
+    // then
+    expect(getByText('subscription.filtersCard.title')).toBeVisible();
+  });
+
+  it('should show appropriate sections on mutations tab click', async () => {
+    // given
+    const user = userEvent.setup();
+    vi.mocked(useSubscription).mockReturnValueOnce(useSubscriptionStub);
+    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
+    vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
+    const { getByText } = render(SubscriptionView, {
+      testPinia: createTestingPiniaWithState(),
+    });
+
+    // when
+    await user.click(getByText('subscription.tabs.mutations'));
+
+    // then
+    expect(getByText('subscription.headersCard.title')).toBeVisible();
+  });
+
+  it('should show appropriate sections on messages tab click', async () => {
+    // given
+    const user = userEvent.setup();
+    vi.mocked(useSubscription).mockReturnValueOnce(useSubscriptionStub);
+    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
+    vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
+    const { getByText } = render(SubscriptionView, {
+      testPinia: createTestingPiniaWithState(),
+    });
+
+    // when
+    await user.click(getByText('subscription.tabs.messages'));
+
+    // then
+    expect(getByText('subscription.manageMessagesCard.title')).toBeVisible();
+    expect(
+      getByText('subscription.undeliveredMessagesCard.title'),
+    ).toBeVisible();
+    expect(
+      getByText('subscription.lastUndeliveredMessage.title'),
+    ).toBeVisible();
+    expect(getByText('trackingCard.title')).toBeVisible();
+  });
+
+  it.each([
+    {
+      tab: 'subscription.tabs.messages',
+      box: 'subscription.manageMessagesCard.title',
+    },
+    {
+      tab: 'subscription.tabs.messages',
+      box: 'subscription.undeliveredMessagesCard.title',
+    },
+    {
+      tab: 'subscription.tabs.messages',
+      box: 'subscription.lastUndeliveredMessage.title',
+    },
+  ])(
+    'should not render some boxes if user is unauthorized',
+    async ({ tab, box }: { tab: string; box: string }) => {
+      // given
+      const user = userEvent.setup();
+      vi.mocked(useSubscription).mockReturnValueOnce(useSubscriptionStub);
+      vi.mocked(useRoles).mockReturnValueOnce({
+        ...useRolesStub,
+        roles: ref([]),
+      });
+      vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
+
+      // when
+      const { queryByText, getByText } = render(SubscriptionView, {
+        testPinia: createTestingPiniaWithState(),
+      });
+      await user.click(getByText(tab));
+
+      // then
+      expect(queryByText(box)).not.toBeInTheDocument();
+    },
+  );
 
   it('should render subscription health alert', () => {
     // given
@@ -355,12 +452,16 @@ describe('SubscriptionView', () => {
     expect(queryByText('costsCard.title')).not.toBeInTheDocument();
   });
 
-  it('should render tracking card when tracking is enabled', () => {
+  it('should not render tracking when it is disabled', async () => {
     // given
-    const dummySubscription2 = dummySubscription;
-    dummySubscription2.trackingEnabled = true;
+    const user = userEvent.setup();
+    const dummySubscription2: Subscription = {
+      ...dummySubscription,
+      trackingEnabled: false,
+    };
 
     // and
+    vi.mocked(useSubscription).mockReset();
     vi.mocked(useSubscription).mockReturnValueOnce({
       ...useSubscriptionStub,
       subscription: ref(dummySubscription2),
@@ -369,11 +470,12 @@ describe('SubscriptionView', () => {
     vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
 
     // when
-    const { getByText } = render(SubscriptionView, {
+    const { getByText, queryByText } = render(SubscriptionView, {
       testPinia: createTestingPiniaWithState(),
     });
+    await user.click(getByText('subscription.tabs.messages'));
 
     // then
-    expect(getByText('trackingCard.title')).toBeVisible();
+    expect(queryByText('trackingCard.title')).not.toBeInTheDocument();
   });
 });

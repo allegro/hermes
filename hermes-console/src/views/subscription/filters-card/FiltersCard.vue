@@ -28,49 +28,69 @@
 
 <template>
   <v-card class="mb-2">
-    <template #title>
-      <p class="font-weight-bold">
-        {{ $t('subscription.filtersCard.title') }}
-      </p>
-    </template>
-    <v-table density="compact">
-      <thead>
-        <tr>
-          <th class="text-left">
-            {{ $t('subscription.filtersCard.index') }}
-          </th>
-          <th class="text-left">
-            {{ $t('subscription.filtersCard.type') }}
-          </th>
-          <th class="text-left">
-            {{ $t('subscription.filtersCard.path') }}
-          </th>
-          <th class="text-left">
-            {{ $t('subscription.filtersCard.matcher') }}
-          </th>
-          <th class="text-left">
-            {{ $t('subscription.filtersCard.matchingStrategy') }}
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(filter, index) in props.filters ?? []" :key="index">
-          <td>{{ index + 1 }}</td>
-          <td>{{ filter.type }}</td>
-          <td>{{ filter.path }}{{ filter.header }}</td>
-          <td>{{ filter.matcher }}</td>
-          <td>{{ filter.matchingStrategy }}</td>
-        </tr>
-      </tbody>
-    </v-table>
-    <template #actions>
-      <subscription-path-filters-debug
-        :topic="props.topic"
-        :paths="getAvroPaths(props.schema)"
-        :model-value="pathFilters(props.filters)"
-        :edit-enabled="false"
-      />
-    </template>
+    <v-card-item class="border-b">
+      <div class="d-flex justify-space-between align-start">
+        <div>
+          <v-card-title class="font-weight-bold"
+            >{{ $t('subscription.filtersCard.title') }}
+          </v-card-title>
+          <v-card-subtitle
+            >{{ $t('subscription.filtersCard.subtitle') }}
+          </v-card-subtitle>
+        </div>
+        <div class="d-flex justify-space-between">
+          <subscription-path-filters-debug
+            :topic="props.topic"
+            :paths="getAvroPaths(props.schema)"
+            :model-value="pathFilters(props.filters)"
+            :edit-enabled="false"
+          />
+        </div>
+      </div>
+    </v-card-item>
+
+    <v-card-item>
+      <v-table density="compact">
+        <thead>
+          <tr>
+            <th class="text-left pl-0">
+              {{ $t('subscription.filtersCard.index') }}
+            </th>
+            <th class="text-left">
+              {{ $t('subscription.filtersCard.type') }}
+            </th>
+            <th class="text-left">
+              {{ $t('subscription.filtersCard.path') }}
+            </th>
+            <th class="text-left">
+              {{ $t('subscription.filtersCard.matcher') }}
+            </th>
+            <th class="text-left">
+              {{ $t('subscription.filtersCard.matchingStrategy') }}
+            </th>
+          </tr>
+        </thead>
+        <tbody v-if="props.filters.length > 0">
+          <tr v-for="(filter, index) in props.filters" :key="index">
+            <td class="pl-0">{{ index + 1 }}</td>
+            <td>{{ filter.type }}</td>
+            <td>{{ filter.path }}{{ filter.header }}</td>
+            <td>{{ filter.matcher }}</td>
+            <td>{{ filter.matchingStrategy }}</td>
+          </tr>
+        </tbody>
+        <tbody v-else>
+          <tr>
+            <td
+              colspan="5"
+              class="text-center text-medium-emphasis text-body-2"
+            >
+              <span>{{ $t('subscription.filtersCard.noFilters') }}</span>
+            </td>
+          </tr>
+        </tbody>
+      </v-table>
+    </v-card-item>
   </v-card>
 </template>
 

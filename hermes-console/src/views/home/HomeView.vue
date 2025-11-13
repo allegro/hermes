@@ -76,6 +76,7 @@
       <v-col cols="3">
         <v-btn
           block
+          color="primary"
           :href="configStore.loadedConfig.dashboard.metrics"
           target="_blank"
         >
@@ -84,19 +85,6 @@
         </v-btn>
       </v-col>
       <v-col cols="3">
-        <v-btn
-          block
-          :href="configStore.loadedConfig.dashboard.docs"
-          target="_blank"
-        >
-          <v-icon left icon="mdi-book-open-variant"></v-icon>
-          <span class="ml-1">{{ $t('homeView.links.documentation') }}</span>
-        </v-btn>
-      </v-col>
-    </v-row>
-
-    <v-row justify="center" v-if="configStore.loadedConfig.costs.enabled">
-      <v-col cols="6">
         <v-btn
           color="primary"
           block

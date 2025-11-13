@@ -27,6 +27,7 @@ describe('TopicForm', () => {
     topic: dummyTopic,
     operation: 'add',
     modelValue: true,
+    roles: [],
   };
 
   it('renders properly', () => {

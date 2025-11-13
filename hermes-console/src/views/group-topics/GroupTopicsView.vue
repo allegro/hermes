@@ -48,9 +48,11 @@
   }
 
   const showTopicCreationForm = ref(false);
+
   function showTopicForm() {
     showTopicCreationForm.value = true;
   }
+
   function hideTopicForm() {
     showTopicCreationForm.value = false;
   }
@@ -129,16 +131,24 @@
                   prepend-icon="mdi-plus"
                   density="comfortable"
                   @click="showTopicForm()"
-                  >{{ $t('groups.actions.createTopic') }}</v-btn
-                >
+                  >{{ $t('groups.actions.createTopic') }}
+                </v-btn>
               </template>
               <v-card>
-                <v-card-title>
-                  <span class="text-h5">{{
-                    $t('groups.actions.createTopic')
-                  }}</span>
-                </v-card-title>
-                <v-card-text>
+                <v-card-item class="border-b">
+                  <div class="d-flex justify-space-between align-center">
+                    <v-card-title>{{
+                      $t('groups.actions.createTopic')
+                    }}</v-card-title>
+                    <v-btn
+                      icon="mdi-close"
+                      variant="text"
+                      @click="hideTopicForm"
+                    />
+                  </div>
+                </v-card-item>
+
+                <v-card-text class="pt-4">
                   <TopicForm
                     operation="add"
                     :group="groupId"
@@ -157,6 +167,8 @@
     <v-row dense>
       <v-col md="12">
         <v-text-field
+          variant="outlined"
+          base-color="rgba(var(--v-border-color), 0.31)"
           single-line
           :label="t('groups.actions.search')"
           density="compact"

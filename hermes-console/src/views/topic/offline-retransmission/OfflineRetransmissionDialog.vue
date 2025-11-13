@@ -26,7 +26,6 @@
     min-width="50%"
     v-model="showDialog"
   >
-    <OfflineRetransmissionForm @retransmit="onRetransmit" @cancel="onCancel">
-    </OfflineRetransmissionForm>
+    <OfflineRetransmissionForm @retransmit="onRetransmit" @cancel="onCancel" />
   </v-dialog>
 </template>

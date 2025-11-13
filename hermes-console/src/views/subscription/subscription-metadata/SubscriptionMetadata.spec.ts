@@ -56,7 +56,11 @@ describe('SubscriptionMetadata', () => {
       getByText('subscription.subscriptionMetadata.subscription'),
     ).toBeVisible();
     expect(getByText('subscription-name')).toBeVisible();
-    expect(getByText('service://subscription-name/dummy')).toBeVisible();
+    expect(
+      getByText(
+        'subscription.subscriptionMetadata.endpoint service://subscription-name/dummy',
+      ),
+    ).toBeVisible();
     expect(getByText('some description')).toBeVisible();
   });
 
@@ -141,9 +145,11 @@ describe('SubscriptionMetadata', () => {
     const { getByText } = render(SubscriptionMetadata, { props });
 
     // then
-    expect(
-      getByText('subscription.subscriptionMetadata.owners your-super-service'),
-    ).toBeVisible();
+    expect(getByText('your-super-service')).toBeVisible();
+    expect(getByText('your-super-service')).toHaveAttribute(
+      'href',
+      dummyOwner.url,
+    );
   });
 
   it('should render diagnostics button', () => {
@@ -217,11 +223,6 @@ describe('SubscriptionMetadata', () => {
     ).toBeDisabled();
     expect(
       getByText('subscription.subscriptionMetadata.actions.edit').closest(
-        'button',
-      ),
-    ).toBeDisabled();
-    expect(
-      getByText('subscription.subscriptionMetadata.actions.export').closest(
         'button',
       ),
     ).toBeDisabled();

@@ -1,7 +1,6 @@
 <script setup lang="ts">
   import { ref } from 'vue';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
-  import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
 
   const props = defineProps<{
     actionButtonEnabled: boolean;
@@ -18,11 +17,17 @@
   <v-dialog width="100%" min-width="30%">
     <v-form @submit.prevent>
       <v-card>
-        <v-card-title v-if="title" class="text-wrap">
-          {{ props.title }}
-        </v-card-title>
-        <v-card-text v-if="text">
-          <console-alert :text="props.text" type="warning" />
+        <v-card-item class="border-b">
+          <v-card-title v-if="title" class="text-wrap">
+            <v-avatar variant="tonal" color="error" start>
+              <v-icon color="error" size="24">mdi-alert</v-icon>
+            </v-avatar>
+            {{ props.title }}
+          </v-card-title>
+        </v-card-item>
+
+        <v-card-text class="pt-4">
+          <span class="text-body-1">{{ props.text }}</span>
         </v-card-text>
         <v-card-text
           v-if="configStore.loadedConfig.console.criticalEnvironment"
@@ -34,11 +39,12 @@
             prepend-inner-icon="mdi-alert"
           />
         </v-card-text>
+
         <v-card-actions>
-          <v-col class="text-right">
+          <v-col class="d-flex column-gap-2 justify-end">
             <v-btn
-              type="confirm"
-              color="primary"
+              variant="flat"
+              color="error"
               @click="$emit('action')"
               :disabled="
                 (configStore.loadedConfig.console.criticalEnvironment &&
@@ -48,7 +54,7 @@
             >
               {{ $t('confirmationDialog.confirm') }}
             </v-btn>
-            <v-btn @click="$emit('cancel')">
+            <v-btn variant="flat" @click="$emit('cancel')">
               {{ $t('confirmationDialog.cancel') }}
             </v-btn>
           </v-col>

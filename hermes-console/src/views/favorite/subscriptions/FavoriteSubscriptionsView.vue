@@ -37,6 +37,8 @@
     <v-row dense>
       <v-col md="12">
         <v-text-field
+          variant="outlined"
+          base-color="rgba(var(--v-border-color), 0.31)"
           single-line
           :label="t('favorites.subscriptions.actions.search')"
           density="compact"
