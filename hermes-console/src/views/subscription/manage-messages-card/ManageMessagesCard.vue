@@ -130,9 +130,9 @@
                   class="text-capitalize"
                   @click="openRetransmitDialog"
                   data-testid="retransmitButton"
+                  :loading="retransmitting"
                 >
-                  <loading-spinner v-if="retransmitting"></loading-spinner>
-                  <span v-else>
+                  <span>
                     {{ $t('subscription.manageMessagesCard.retransmitButton') }}
                   </span>
                 </v-btn>

@@ -82,9 +82,7 @@ describe('ManageMessagesCard', () => {
     // then
     expect(getByTestId('retransmitButton')).toBeDisabled();
     expect(getByTestId('skipAllMessagesButton')).toBeDisabled();
-    expect(getByTestId('retransmitButton')).toContainElement(
-      getByTestId('loading-spinner'),
-    );
+    expect(getByTestId('retransmitButton')).toHaveClass('v-btn--loading');
   });
 
   it('should disable buttons and show spinner when skipping all messages is in progress', async () => {

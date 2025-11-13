@@ -14,7 +14,7 @@
   <v-app class="fill-height">
     <div v-if="configStore.loadedConfig">
       <console-header />
-      <navigation-drawer v-if="$route.name && $route.name !== 'home'" />
+      <navigation-drawer />
       <v-main class="main">
         <app-notification-provider>
           <router-view />
