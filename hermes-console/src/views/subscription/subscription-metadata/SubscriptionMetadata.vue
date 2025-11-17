@@ -129,11 +129,11 @@
           <v-tooltip
             :text="$t('subscription.subscriptionMetadata.actions.copyName')"
           >
-            <template v-slot:activator="{ props }">
+            <template v-slot:activator="{ props: activatorProps }">
               <v-btn
                 icon="mdi-content-copy"
                 variant="plain"
-                v-bind="props"
+                v-bind="activatorProps"
                 @click="
                   copyToClipboard(
                     subscriptionFqn(
@@ -142,6 +142,7 @@
                     ),
                   )
                 "
+                data-testid="copy-subscription-name-button"
               />
             </template>
           </v-tooltip>
@@ -162,17 +163,18 @@
                 )
               "
             >
-              <template v-slot:activator="{ props }">
+              <template v-slot:activator="{ props: activatorProps }">
                 <v-btn
                   icon="mdi-star"
                   variant="plain"
-                  v-bind="props"
+                  v-bind="activatorProps"
                   @click="
                     favorites.removeSubscription(
                       props.subscription.topicName,
                       props.subscription.name,
                     )
                   "
+                  data-testid="remove-favorite-subscription-button"
                 />
               </template>
             </v-tooltip>
@@ -189,17 +191,18 @@
                 $t('subscription.subscriptionMetadata.actions.addToFavorites')
               "
             >
-              <template v-slot:activator="{ props }">
+              <template v-slot:activator="{ props: activatorProps }">
                 <v-btn
                   icon="mdi-star-outline"
                   variant="plain"
-                  v-bind="props"
+                  v-bind="activatorProps"
                   @click="
                     favorites.addSubscription(
                       props.subscription.topicName,
                       props.subscription.name,
                     )
                   "
+                  data-testid="add-favorite-subscription-button"
                 />
               </template>
             </v-tooltip>

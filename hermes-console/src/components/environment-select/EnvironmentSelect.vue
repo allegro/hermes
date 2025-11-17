@@ -15,7 +15,7 @@
     );
   }
 
-  function switchToEnv(env: ConsoleEnvironment, event: Event) {
+  function switchToEnv(env: ConsoleEnvironment, event: KeyboardEvent) {
     const currentUrl = location.href;
     const currentEnv = getCurrentEnv();
     const switchedUrl = currentUrl.replace(currentEnv.url, env.url);

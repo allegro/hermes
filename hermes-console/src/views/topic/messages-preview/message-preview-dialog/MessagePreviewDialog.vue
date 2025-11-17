@@ -61,7 +61,10 @@
           class="border-thin rounded-lg"
           data-testid="json-viewer"
         />
-        <div class="raw-schema-snippet pa-3 bg-grey-lighten-5" v-else>
+        <div
+          class="raw-schema-snippet rounded-lg pa-3 raw-message-content"
+          v-else
+        >
           {{ props.message.content }}
         </div>
       </div>
@@ -69,4 +72,16 @@
   </v-card>
 </template>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+  @use 'vuetify/settings';
+
+  .raw-message-content {
+    font-size: settings.$code-font-size;
+    line-height: 1.2;
+    max-height: 500px;
+    overflow: auto;
+    cursor: text;
+    color: settings.$code-color;
+    background-color: settings.$code-background-color;
+  }
+</style>

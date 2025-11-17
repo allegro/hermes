@@ -144,7 +144,6 @@
   }
 
   .table-row-content-cell {
-    display: block;
     max-height: 70px;
     white-space: wrap;
     display: -webkit-box;
@@ -154,5 +153,6 @@
     overflow: hidden;
     word-wrap: break-word;
     text-overflow: ellipsis;
+    margin: 4px 0;
   }
 </style>
