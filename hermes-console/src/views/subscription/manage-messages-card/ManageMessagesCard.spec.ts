@@ -100,8 +100,6 @@ describe('ManageMessagesCard', () => {
     // then
     expect(getByTestId('retransmitButton')).toBeDisabled();
     expect(getByTestId('skipAllMessagesButton')).toBeDisabled();
-    expect(getByTestId('skipAllMessagesButton')).toContainElement(
-      getByTestId('loading-spinner'),
-    );
+    expect(getByTestId('skipAllMessagesButton')).toHaveClass('v-btn--loading');
   });
 });

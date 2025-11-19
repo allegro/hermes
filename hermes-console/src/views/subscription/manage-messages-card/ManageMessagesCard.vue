@@ -4,7 +4,6 @@
   import { useDialog } from '@/composables/dialog/use-dialog/useDialog';
   import { useI18n } from 'vue-i18n';
   import ConfirmationDialog from '@/components/confirmation-dialog/ConfirmationDialog.vue';
-  import LoadingSpinner from '@/components/loading-spinner/LoadingSpinner.vue';
 
   const { t } = useI18n();
 
@@ -157,9 +156,9 @@
               class="mt-2 text-capitalize"
               @click="openSkipAllMessagesDialog"
               data-testid="skipAllMessagesButton"
+              :loading="skippingAllMessages"
             >
-              <loading-spinner v-if="skippingAllMessages"></loading-spinner>
-              <span v-else>
+              <span>
                 {{
                   $t('subscription.manageMessagesCard.skipAllMessagesButton')
                 }}
