@@ -1,107 +1,178 @@
 <script setup lang="ts">
+  import { isTopicOwnerOrAdmin } from '@/utils/roles-util';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import { useI18n } from 'vue-i18n';
+  import { useOfflineRetransmission } from '@/composables/topic/use-offline-retransmission/useOfflineRetransmission';
+  import { useRouter } from 'vue-router';
+  import OfflineRetransmissionDialog from '@/views/topic/offline-retransmission/OfflineRetransmissionDialog.vue';
+  import SimpleLink from '@/components/simple-link/SimpleLink.vue';
   import type { OfflineRetransmissionActiveTask } from '@/api/offline-retransmission';
+  import type { Role } from '@/api/role';
+  import type { TopicWithSchema } from '@/api/topic';
 
   const { t } = useI18n();
+  const router = useRouter();
 
   const props = defineProps<{
-    tasks: Array<OfflineRetransmissionActiveTask>;
+    topic: TopicWithSchema;
+    roles: Role[] | undefined;
+    tasks: OfflineRetransmissionActiveTask[];
   }>();
 
+  const TOPIC_RETRANSMISSION = 'topic';
+
+  const taskTableHeaders = [
+    {
+      title: t('offlineRetransmission.monitoringView.idHeader'),
+      key: 'taskId',
+    },
+    {
+      title: t('offlineRetransmission.monitoringView.typeHeader'),
+      key: 'type',
+    },
+    {
+      title: t('offlineRetransmission.monitoringView.logsLinkHeader'),
+      key: 'logsUrl',
+      sortable: false,
+    },
+    {
+      title: t('offlineRetransmission.monitoringView.metricsLinkHeader'),
+      key: 'metricsUrl',
+      sortable: false,
+    },
+    {
+      title: t('offlineRetransmission.monitoringView.jobLinkHeader'),
+      key: 'jobDetailsUrl',
+      sortable: false,
+    },
+  ];
+
   const configStore = useAppConfigStore();
+
+  const offlineRetransmission = useOfflineRetransmission();
+
+  const onRetransmit = async (
+    targetTopic: string,
+    startTimestamp: string,
+    endTimestamp: string,
+  ) => {
+    let retransmitted = await offlineRetransmission.retransmit({
+      type: TOPIC_RETRANSMISSION,
+      sourceTopic: props.topic.name,
+      targetTopic,
+      startTimestamp,
+      endTimestamp,
+    });
+
+    /*
+    This is needed as we want to refresh an active offline retransmissions component
+    so it fetches newest monitoring info from management.
+   */
+    if (retransmitted) {
+      refreshPage();
+    }
+  };
+
+  function refreshPage() {
+    router.go(0);
+  }
 </script>
 
 <template>
-  <v-expansion-panels>
-    <v-expansion-panel
-      :title="`${t('offlineRetransmission.monitoringView.title')} (${props.tasks.length})`"
-    >
-      <v-expansion-panel-text>
-        <v-btn
-          class="mt-2"
-          :href="
-            configStore.loadedConfig.topic.offlineRetransmission
-              .globalTaskQueueUrl
-          "
-          target="_blank"
-        >
-          {{ $t('offlineRetransmission.monitoringView.allTasksLinkTitle') }}
-        </v-btn>
-        <v-btn
-          class="mt-2"
-          :href="
-            configStore.loadedConfig.topic.offlineRetransmission
-              .monitoringDocsUrl
-          "
-          target="_blank"
-        >
-          {{
-            $t('offlineRetransmission.monitoringView.monitoringDocsLinkTitle')
-          }}
-        </v-btn>
-        <v-table density="comfortable" hover>
-          <thead>
-            <tr>
-              <th>{{ $t('offlineRetransmission.monitoringView.idHeader') }}</th>
-              <th>
-                {{ $t('offlineRetransmission.monitoringView.typeHeader') }}
-              </th>
-              <th>
-                {{ $t('offlineRetransmission.monitoringView.logsLinkHeader') }}
-              </th>
-              <th>
-                {{
-                  $t('offlineRetransmission.monitoringView.metricsLinkHeader')
-                }}
-              </th>
-              <th>
-                {{ $t('offlineRetransmission.monitoringView.jobLinkHeader') }}
-              </th>
-            </tr>
-          </thead>
-          <tr v-for="task in props.tasks" v-bind:key="task.taskId">
-            <td class="text-medium-emphasis">
-              {{ task.taskId }}
-            </td>
-            <td class="text-medium-emphasis">
-              {{ task.type }}
-            </td>
-            <td class="font-weight-medium">
-              <v-btn
-                :href="task.logsUrl"
-                target="_blank"
-                variant="text"
-                color="blue"
-              >
-                Link
-              </v-btn>
-            </td>
-            <td class="font-weight-medium">
-              <v-btn
-                :href="task.metricsUrl"
-                target="_blank"
-                variant="text"
-                color="blue"
-              >
-                Link
-              </v-btn>
-            </td>
-            <td class="font-weight-medium">
-              <v-btn
-                :href="task.jobDetailsUrl"
-                target="_blank"
-                variant="text"
-                color="blue"
-              >
-                Link
-              </v-btn>
-            </td>
-          </tr>
-        </v-table>
-      </v-expansion-panel-text>
-    </v-expansion-panel>
-  </v-expansion-panels>
+  <v-card>
+    <v-card-item class="border-b">
+      <div class="d-flex justify-space-between">
+        <div>
+          <v-card-title class="font-weight-bold">
+            {{ t('offlineRetransmission.monitoringView.title') }}
+          </v-card-title>
+          <v-card-subtitle
+            >{{ props.tasks.length }}
+            {{ $t('offlineRetransmission.monitoringView.activeTasks') }}
+          </v-card-subtitle>
+        </div>
+
+        <div class="d-flex justify-space-between row-gap-2">
+          <v-btn
+            v-if="
+              configStore.loadedConfig.topic.offlineRetransmission.enabled &&
+              props.topic.offlineStorage.enabled &&
+              isTopicOwnerOrAdmin(props.roles)
+            "
+            variant="text"
+            color="primary"
+            prepend-icon="mdi-plus"
+            class="text-capitalize"
+            >{{
+              $t('offlineRetransmission.monitoringView.newRetransmissionTask')
+            }}
+            <OfflineRetransmissionDialog @retransmit="onRetransmit" />
+          </v-btn>
+          <v-btn
+            class="text-capitalize"
+            prepend-icon="mdi-open-in-new"
+            :href="
+              configStore.loadedConfig.topic.offlineRetransmission
+                .globalTaskQueueUrl
+            "
+            target="_blank"
+            variant="text"
+            color="primary"
+          >
+            {{ $t('offlineRetransmission.monitoringView.allTasksLinkTitle') }}
+          </v-btn>
+          <v-btn
+            class="text-capitalize"
+            prepend-icon="mdi-open-in-new"
+            :href="
+              configStore.loadedConfig.topic.offlineRetransmission
+                .monitoringDocsUrl
+            "
+            target="_blank"
+            variant="text"
+            color="primary"
+          >
+            {{
+              $t('offlineRetransmission.monitoringView.monitoringDocsLinkTitle')
+            }}
+          </v-btn>
+        </div>
+      </div>
+    </v-card-item>
+
+    <v-card-text>
+      <v-data-table
+        :items="props.tasks"
+        :headers="taskTableHeaders"
+        items-per-page="-1"
+      >
+        <template v-slot:[`item.logsUrl`]="{ item }">
+          <simple-link
+            :href="item.logsUrl"
+            :text="$t('offlineRetransmission.monitoringView.logsLinkTitle')"
+            open-in-new-tab
+          />
+        </template>
+        <template v-slot:[`item.metricsUrl`]="{ item }">
+          <simple-link
+            :href="item.metricsUrl"
+            :text="$t('offlineRetransmission.monitoringView.metricsLinkTitle')"
+            open-in-new-tab
+          />
+        </template>
+        <template v-slot:[`item.jobDetailsUrl`]="{ item }">
+          <simple-link
+            :href="item.jobDetailsUrl"
+            :text="$t('offlineRetransmission.monitoringView.detailsLinkTitle')"
+            open-in-new-tab
+          />
+        </template>
+        <template v-slot:[`item.type`]="{ item }">
+          <v-chip size="small" color="accent">{{ item.type }}</v-chip>
+        </template>
+      </v-data-table>
+    </v-card-text>
+  </v-card>
 </template>
 
 <style scoped lang="scss"></style>

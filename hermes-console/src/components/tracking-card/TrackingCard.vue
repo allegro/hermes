@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import SimpleLink from '@/components/simple-link/SimpleLink.vue';
   import type { TrackingUrl } from '@/api/tracking-url';
 
   const props = defineProps<{
@@ -8,26 +9,28 @@
 
 <template>
   <v-card>
-    <template #title>
-      <div class="d-flex justify-space-between">
-        <p class="font-weight-bold">
-          {{ $t('trackingCard.title') }}
-        </p>
-      </div>
-    </template>
-    <v-card-item v-if="props.trackingUrls && props.trackingUrls.length > 0">
-      <p v-for="trackingUrl in props.trackingUrls" :key="trackingUrl.name">
-        <v-btn
-          :href="trackingUrl.url"
-          target="_blank"
-          variant="text"
-          color="blue"
-        >
-          {{ trackingUrl.name }}
-        </v-btn>
-      </p>
+    <v-card-item class="border-b">
+      <v-card-title class="font-weight-bold">
+        {{ $t('trackingCard.title') }}
+      </v-card-title>
     </v-card-item>
-    <v-card-item v-else> {{ $t('trackingCard.noTrackingUrls') }} </v-card-item>
+    <v-list
+      v-if="props.trackingUrls && props.trackingUrls.length > 0"
+      open-strategy="single"
+    >
+      <v-list-item
+        v-for="trackingUrl in props.trackingUrls"
+        :key="trackingUrl.name"
+        :href="trackingUrl.url"
+      >
+        <simple-link
+          :href="trackingUrl.url"
+          :text="trackingUrl.name"
+          open-in-new-tab
+        />
+      </v-list-item>
+    </v-list>
+    <v-card-item v-else> {{ $t('trackingCard.noTrackingUrls') }}</v-card-item>
   </v-card>
 </template>
 
