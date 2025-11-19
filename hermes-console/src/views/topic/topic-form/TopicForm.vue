@@ -346,6 +346,7 @@
       <v-btn
         variant="outlined"
         color="primary"
+        class="text-capitalize"
         :disabled="creatingOrUpdatingTopic"
         @click="$emit('cancel')"
         >{{ $t('topicForm.actions.cancel') }}
@@ -354,6 +355,7 @@
         type="submit"
         variant="flat"
         color="primary"
+        class="text-capitalize"
         :loading="creatingOrUpdatingTopic"
         >{{
           props.operation === 'add'

@@ -13,9 +13,9 @@
   <v-alert
     :title="props.title ?? ''"
     :text="props.text"
-    variant="elevated"
     :type="props.type"
     border="start"
+    variant="flat"
     :icon="icon ?? `\$${type}`"
   >
     <a
