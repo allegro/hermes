@@ -1,7 +1,9 @@
 import {
   appConfigStoreState,
   createTestingPiniaWithState,
+  favoritesStoreState,
 } from '@/dummy/store';
+import { copyToClipboard } from '@/utils/copy-utils';
 import { createTestingPinia } from '@pinia/testing';
 import {
   dummyDataSources,
@@ -15,12 +17,15 @@ import { fireEvent } from '@testing-library/vue';
 import { ref } from 'vue';
 import { render } from '@/utils/test-utils';
 import { Role } from '@/api/role';
+import { setActivePinia } from 'pinia';
 import { State } from '@/api/subscription';
 import { useEditSubscription } from '@/composables/subscription/use-edit-subscription/useEditSubscription';
+import { useFavorites } from '@/store/favorites/useFavorites';
 import SubscriptionMetadata from '@/views/subscription/subscription-metadata/SubscriptionMetadata.vue';
 import type { UseEditSubscription } from '@/composables/subscription/use-edit-subscription/types';
 
 vi.mock('@/composables/subscription/use-edit-subscription/useEditSubscription');
+vi.mock('@/utils/copy-utils');
 
 const useEditSubscriptionStub: UseEditSubscription = {
   form: ref(dummyInitializedSubscriptionForm),
@@ -56,16 +61,18 @@ describe('SubscriptionMetadata', () => {
       getByText('subscription.subscriptionMetadata.subscription'),
     ).toBeVisible();
     expect(getByText('subscription-name')).toBeVisible();
-    expect(getByText('service://subscription-name/dummy')).toBeVisible();
+    expect(
+      getByText(
+        'subscription.subscriptionMetadata.endpoint service://subscription-name/dummy',
+      ),
+    ).toBeVisible();
     expect(getByText('some description')).toBeVisible();
   });
 
   it('should show add subscription to favorites button', async () => {
     // given
     const props = {
-      subscription: {
-        dummySubscription,
-      },
+      subscription: dummySubscription,
       owner: dummyOwner,
       roles: [],
     };
@@ -85,6 +92,38 @@ describe('SubscriptionMetadata', () => {
         'subscription.subscriptionMetadata.actions.removeFromFavorites',
       ),
     ).not.toBeInTheDocument();
+  });
+
+  it('should add subscription to favorites', async () => {
+    // given
+    const pinia = createTestingPinia({
+      createSpy: vi.fn,
+      initialState: { favorites: favoritesStoreState },
+    });
+    setActivePinia(pinia);
+    const favoritesStore = useFavorites();
+    vi.mocked(favoritesStore.addSubscription).mockReturnValueOnce(
+      Promise.resolve(),
+    );
+    const props = {
+      subscription: dummySubscription,
+      owner: dummyOwner,
+      roles: [],
+    };
+    const { getByTestId } = render(SubscriptionMetadata, {
+      testPinia: pinia,
+      props,
+    });
+
+    // when
+    await fireEvent.click(getByTestId('add-favorite-subscription-button'));
+
+    // then
+    expect(favoritesStore.addSubscription).toHaveBeenCalledOnce();
+    expect(favoritesStore.addSubscription).toHaveBeenCalledWith(
+      'pl.allegro.public.group.DummyEvent',
+      'foobar-service',
+    );
   });
 
   it('should show remove subscription from favorites button', async () => {
@@ -123,6 +162,46 @@ describe('SubscriptionMetadata', () => {
     ).toBeInTheDocument();
   });
 
+  it('should remove subscription from favorites', async () => {
+    // given
+    const pinia = createTestingPinia({
+      createSpy: vi.fn,
+      initialState: {
+        favorites: {
+          ...favoritesStoreState,
+          subscriptions: [
+            `${dummySubscription.topicName}$${dummySubscription.name}`,
+          ],
+        },
+        appConfig: appConfigStoreState,
+      },
+    });
+    setActivePinia(pinia);
+    const favoritesStore = useFavorites();
+    vi.mocked(favoritesStore.addSubscription).mockReturnValueOnce(
+      Promise.resolve(),
+    );
+    const props = {
+      subscription: dummySubscription,
+      owner: dummyOwner,
+      roles: [],
+    };
+    const { getByTestId } = render(SubscriptionMetadata, {
+      testPinia: pinia,
+      props,
+    });
+
+    // when
+    await fireEvent.click(getByTestId('remove-favorite-subscription-button'));
+
+    // then
+    expect(favoritesStore.removeSubscription).toHaveBeenCalledOnce();
+    expect(favoritesStore.removeSubscription).toHaveBeenCalledWith(
+      'pl.allegro.public.group.DummyEvent',
+      'foobar-service',
+    );
+  });
+
   it('should render owners button', () => {
     // given
     const props = {
@@ -141,9 +220,11 @@ describe('SubscriptionMetadata', () => {
     const { getByText } = render(SubscriptionMetadata, { props });
 
     // then
-    expect(
-      getByText('subscription.subscriptionMetadata.owners your-super-service'),
-    ).toBeVisible();
+    expect(getByText('your-super-service')).toBeVisible();
+    expect(getByText('your-super-service')).toHaveAttribute(
+      'href',
+      dummyOwner.url,
+    );
   });
 
   it('should render diagnostics button', () => {
@@ -217,11 +298,6 @@ describe('SubscriptionMetadata', () => {
     ).toBeDisabled();
     expect(
       getByText('subscription.subscriptionMetadata.actions.edit').closest(
-        'button',
-      ),
-    ).toBeDisabled();
-    expect(
-      getByText('subscription.subscriptionMetadata.actions.export').closest(
         'button',
       ),
     ).toBeDisabled();
@@ -306,5 +382,27 @@ describe('SubscriptionMetadata', () => {
       getByText('subscription.subscriptionMetadata.editSubscription'),
     ).toBeInTheDocument();
     expect(getByText('subscriptionForm.actions.update')).toBeInTheDocument();
+  });
+
+  it('should copy subscription name to clipboard on button click', async () => {
+    // given
+    const props = {
+      subscription: dummySubscription,
+      owner: dummyOwner,
+      roles: [],
+    };
+    const { getByTestId } = render(SubscriptionMetadata, {
+      props,
+      testPinia: createTestingPiniaWithState(),
+    });
+
+    // when
+    await fireEvent.click(getByTestId('copy-subscription-name-button'));
+
+    // then
+    expect(copyToClipboard).toHaveBeenCalledOnce();
+    expect(copyToClipboard).toHaveBeenCalledWith(
+      'pl.allegro.public.group.DummyEvent$foobar-service',
+    );
   });
 });

@@ -26,6 +26,7 @@ import { useRoles } from '@/composables/roles/use-roles/useRoles';
 import { useTopic } from '@/composables/topic/use-topic/useTopic';
 import router from '@/router';
 import TopicView from '@/views/topic/TopicView.vue';
+import userEvent from '@testing-library/user-event';
 import type { UseMetrics } from '@/composables/metrics/use-metrics/useMetrics';
 import type { UseRoles } from '@/composables/roles/use-roles/useRoles';
 import type { UseTopic } from '@/composables/topic/use-topic/useTopic';
@@ -42,7 +43,7 @@ const useRolesStub: UseRoles = {
 };
 
 const useTopicMock: UseTopic = {
-  topic: ref(dummyTopic),
+  topic: ref({ ...dummyTopic, trackingEnabled: true }),
   owner: ref(dummyOwner),
   messages: ref(dummyTopicMessagesPreview),
   metrics: ref(dummyTopicMetrics),
@@ -61,6 +62,7 @@ const useTopicMock: UseTopic = {
   trackingUrls: ref(dummyTrackingUrls),
   fetchOfflineClientsSource: () => Promise.resolve(),
   removeTopic: () => Promise.resolve(true),
+  fetchTopicClients: () => Promise.resolve([dummySubscription.name]),
   activeRetransmissions: ref(dummyActiveOfflineRetransmissions),
 };
 
@@ -96,7 +98,7 @@ describe('TopicView', () => {
     expect(useTopic).toHaveBeenCalledWith(dummyTopic.name);
   });
 
-  it('should render all view boxes', () => {
+  it('should render all tabs', () => {
     // given
     vi.mocked(useTopic).mockReturnValueOnce({
       ...useTopicMock,
@@ -104,15 +106,13 @@ describe('TopicView', () => {
     });
     vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
 
-    const expectedTitles = [
-      'topicView.header.topic',
-      'topicView.metrics.title',
-      'costsCard.title',
-      'topicView.properties.title',
-      'topicView.messagesPreview.title',
-      'topicView.schema.title',
-      'topicView.subscriptions.title (2)',
-      'topicView.offlineClients.title',
+    const expectedTabs = [
+      'topicView.tabs.general',
+      'topicView.tabs.schema',
+      'topicView.tabs.subscriptions',
+      'topicView.tabs.offlineClients',
+      'topicView.tabs.messages',
+      'topicView.tabs.offlineRetransmission',
     ];
 
     // when
@@ -121,18 +121,150 @@ describe('TopicView', () => {
     });
 
     // then
-    expectedTitles.forEach((title) => {
+    expectedTabs.forEach((title) => {
       expect(getByText(title)).toBeVisible();
     });
   });
 
-  it('should not render messages preview when they are disabled in app config', () => {
+  it.each([
+    'topicView.tabs.general',
+    'topicView.tabs.schema',
+    'topicView.tabs.subscriptions',
+    'topicView.tabs.offlineClients',
+    'topicView.tabs.messages',
+    'topicView.tabs.offlineRetransmission',
+  ])('should activate tab on click', async (tab: string) => {
     // given
+    const user = userEvent.setup();
+    vi.mocked(useTopic).mockReturnValueOnce({
+      ...useTopicMock,
+      offlineClientsSource: ref(dummyOfflineClientsSource),
+    });
+    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
+    const { getByText } = render(TopicView, {
+      testPinia: createTestingPiniaWithState(),
+    });
+
+    // when
+    const tabElement = getByText(tab).closest('button')!;
+    await user.click(tabElement);
+
+    // then
+    expect(tabElement).toHaveClass('v-tab--selected');
+  });
+
+  it('should show appropriate sections on general tab click', async () => {
+    // given
+    const user = userEvent.setup();
+    vi.mocked(useTopic).mockReturnValueOnce(useTopicMock);
+    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
+    const { getByText } = render(TopicView, {
+      testPinia: createTestingPiniaWithState(),
+    });
+
+    // when
+    await user.click(getByText('topicView.tabs.general'));
+
+    // then
+    expect(getByText('topicView.metrics.title')).toBeVisible();
+    expect(getByText('topicView.properties.title')).toBeVisible();
+    expect(getByText('costsCard.title')).toBeVisible();
+  });
+
+  it('should show schema on schema tab click', async () => {
+    // given
+    const user = userEvent.setup();
+    vi.mocked(useTopic).mockReturnValueOnce(useTopicMock);
+    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
+    const { getByText, getByTestId } = render(TopicView, {
+      testPinia: createTestingPiniaWithState(),
+    });
+
+    // when
+    await user.click(getByText('topicView.tabs.schema'));
+
+    // then
+    expect(getByTestId('avro-viewer')).toBeVisible();
+  });
+
+  it('should show list of subscriptions on subscriptions tab click', async () => {
+    // given
+    const user = userEvent.setup();
+    vi.mocked(useTopic).mockReturnValueOnce(useTopicMock);
+    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
+    const { getByText } = render(TopicView, {
+      testPinia: createTestingPiniaWithState(),
+    });
+
+    // when
+    await user.click(getByText('topicView.tabs.subscriptions'));
+
+    // then
+    expect(getByText(dummySubscription.name)).toBeVisible();
+  });
+
+  it('should show offline clients on offline clients tab click', async () => {
+    // given
+    const user = userEvent.setup();
+    vi.mocked(useTopic).mockReturnValueOnce({
+      ...useTopicMock,
+      offlineClientsSource: ref(dummyOfflineClientsSource),
+    });
+    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
+    const { getByText, getByTestId } = render(TopicView, {
+      testPinia: createTestingPiniaWithState(),
+    });
+
+    // when
+    await user.click(getByText('topicView.tabs.offlineClients'));
+
+    // then
+    expect(getByTestId('offline-clients')).toBeVisible();
+  });
+
+  it('should show appropriate sections on messages tab click', async () => {
+    // given
+    const user = userEvent.setup();
+    vi.mocked(useTopic).mockReturnValueOnce(useTopicMock);
+    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
+    const { getByText } = render(TopicView, {
+      testPinia: createTestingPiniaWithState(),
+    });
+
+    // when
+    await user.click(getByText('topicView.tabs.messages'));
+
+    // then
+    expect(getByText('topicView.messagesPreview.title')).toBeVisible();
+    expect(getByText('trackingCard.title')).toBeVisible();
+  });
+
+  it('should show appropriate sections on offline retransmission tab click', async () => {
+    // given
+    const user = userEvent.setup();
+    vi.mocked(useTopic).mockReturnValueOnce(useTopicMock);
+    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
+    const { getByText } = render(TopicView, {
+      testPinia: createTestingPiniaWithState(),
+    });
+
+    // when
+    await user.click(getByText('topicView.tabs.offlineRetransmission'));
+
+    // then
+    expect(
+      getByText('offlineRetransmission.monitoringView.title'),
+    ).toBeVisible();
+  });
+
+  it('should not display messages preview when they are disabled in app config', async () => {
+    // given
+    const user = userEvent.setup();
     vi.mocked(useTopic).mockReturnValueOnce(useTopicMock);
     vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
 
     // when
-    const { queryByText } = render(TopicView, {
+    const { getByText } = render(TopicView, {
       testPinia: createTestingPinia({
         initialState: {
           appConfig: {
@@ -149,14 +281,17 @@ describe('TopicView', () => {
       }),
     });
 
+    await user.click(getByText('topicView.tabs.messages'));
+
     // then
     expect(
-      queryByText('topicView.messagesPreview.title'),
-    ).not.toBeInTheDocument();
+      getByText('topicView.messagesPreview.messageDetails.disabled'),
+    ).toBeVisible();
   });
 
-  it('should not render messages preview when unauthorized', () => {
+  it('should not display messages preview when unauthorized', async () => {
     // given
+    const user = userEvent.setup();
     vi.mocked(useTopic).mockReturnValueOnce(useTopicMock);
     vi.mocked(useRoles).mockReturnValueOnce({
       ...useRolesStub,
@@ -164,17 +299,19 @@ describe('TopicView', () => {
     });
 
     // when
-    const { queryByText } = render(TopicView, {
+    const { getByText } = render(TopicView, {
       testPinia: createTestingPiniaWithState(),
     });
 
+    await user.click(getByText('topicView.tabs.messages'));
+
     // then
     expect(
-      queryByText('topicView.messagesPreview.title'),
-    ).not.toBeInTheDocument();
+      getByText('topicView.messagesPreview.messageDetails.disabled'),
+    ).toBeVisible();
   });
 
-  it('should not render offline clients when they are disabled in app config', () => {
+  it('should not show offline clients tab when they are disabled in app config', async () => {
     // given
     vi.mocked(useTopic).mockReturnValueOnce(useTopicMock);
     vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
@@ -199,17 +336,18 @@ describe('TopicView', () => {
 
     // then
     expect(
-      queryByText('topicView.offlineClients.title'),
+      queryByText('topicView.tabs.offlineClients'),
     ).not.toBeInTheDocument();
   });
 
-  it('should not render costs card when it is disabled in app config', () => {
+  it('should not render costs card when it is disabled in app config', async () => {
     // given
+    const user = userEvent.setup();
     vi.mocked(useTopic).mockReturnValueOnce(useTopicMock);
     vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
 
     // when
-    const { queryByText } = render(TopicView, {
+    const { getByText, queryByText } = render(TopicView, {
       testPinia: createTestingPinia({
         initialState: {
           appConfig: {
@@ -228,11 +366,13 @@ describe('TopicView', () => {
       }),
     });
 
+    await user.click(getByText('topicView.tabs.general'));
+
     // then
     expect(queryByText('costsCard.title')).not.toBeInTheDocument();
   });
 
-  it('should not render offline clients when topic has disabled offline storage', () => {
+  it('should not show offline clients tab when topic has disabled offline storage', () => {
     // given
     vi.mocked(useTopic).mockReturnValueOnce({
       ...useTopicMock,
@@ -256,7 +396,7 @@ describe('TopicView', () => {
 
     // then
     expect(
-      queryByText('topicView.offlineClients.title'),
+      queryByText('topicView.tabs.offlineClients'),
     ).not.toBeInTheDocument();
   });
 
@@ -351,26 +491,5 @@ describe('TopicView', () => {
     expect(
       getByText('topicView.confirmationDialog.remove.text'),
     ).toBeInTheDocument();
-  });
-
-  it('should render tracking card when tracking is enabled', () => {
-    // given
-    const dummyTopic2 = dummyTopic;
-    dummyTopic2.trackingEnabled = true;
-
-    // and
-    vi.mocked(useTopic).mockReturnValueOnce({
-      ...useTopicMock,
-      topic: ref(dummyTopic2),
-    });
-    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
-
-    // when
-    const { getByText } = render(TopicView, {
-      testPinia: createTestingPiniaWithState(),
-    });
-
-    // then
-    expect(getByText('trackingCard.title')).toBeVisible();
   });
 });

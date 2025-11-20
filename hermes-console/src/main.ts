@@ -7,6 +7,7 @@ import { createPinia } from 'pinia';
 import { createVuetify } from 'vuetify';
 import { i18n } from '@/i18n';
 import App from './App.vue';
+import colors from 'vuetify/util/colors';
 import piniaPluginPersistedState from 'pinia-plugin-persistedstate';
 import router from './router';
 
@@ -15,19 +16,17 @@ const vuetify = createVuetify({
     themes: {
       light: {
         colors: {
-          primary: '#0a3040',
+          primary: '#3766a5',
           secondary: '#144c71',
           accent: '#1c65a1',
-          error: '#ff5252',
-          background: '#f5f5f5',
+          background: '#f8fafc',
         },
       },
       dark: {
         colors: {
-          primary: '#1c65a1',
-          secondary: '#144c71',
-          accent: '#0a3040',
-          error: '#ff5252',
+          primary: colors.blue.darken2,
+          secondary: colors.blue.darken3,
+          accent: colors.blue.accent1,
         },
       },
     },
@@ -37,6 +36,25 @@ const vuetify = createVuetify({
     aliases,
     sets: {
       mdi,
+    },
+  },
+  defaults: {
+    VCard: {
+      border: true,
+      flat: true,
+      rounded: 'lg',
+    },
+    VBreadcrumbs: {
+      density: 'compact',
+    },
+    VBtn: {
+      variant: 'flat',
+    },
+    VRow: {
+      dense: true,
+    },
+    VTextField: {
+      bgColor: 'surface',
     },
   },
 });

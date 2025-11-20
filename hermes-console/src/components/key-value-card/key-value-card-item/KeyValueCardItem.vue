@@ -11,7 +11,7 @@
 
 <template>
   <tr>
-    <th class="text-body-2 font-weight-light user-select-text">
+    <th class="text-body-2 font-weight-light user-select-text pa-0">
       <a v-if="nameHref" :href="nameHref">{{ props.name }}</a>
       <span v-else>{{ props.name }}</span>
     </th>
