@@ -92,7 +92,9 @@ public class Subscription implements Anonymizable {
       long profilingThresholdMs,
       boolean subscriptionIdentityHeadersEnabled,
       boolean autoDeleteWithTopicEnabled,
-      SubscriptionMetricsConfig metricsConfig) {
+      SubscriptionMetricsConfig metricsConfig,
+      Instant createdAt,
+      Instant modifiedAt) {
     this.topicName = topicName;
     this.name = name;
     this.endpoint = endpoint;
@@ -123,6 +125,8 @@ public class Subscription implements Anonymizable {
     this.subscriptionIdentityHeadersEnabled = subscriptionIdentityHeadersEnabled;
     this.autoDeleteWithTopicEnabled = autoDeleteWithTopicEnabled;
     this.metricsConfig = metricsConfig == null ? SubscriptionMetricsConfig.DISABLED : metricsConfig;
+    this.createdAt = createdAt;
+    this.modifiedAt = modifiedAt;
   }
 
   public static Subscription createSerialSubscription(
@@ -147,7 +151,9 @@ public class Subscription implements Anonymizable {
       long profilingThresholdMs,
       boolean subscriptionIdentityHeadersEnabled,
       boolean autoDeleteWithTopicEnabled,
-      SubscriptionMetricsConfig metricsConfig) {
+      SubscriptionMetricsConfig metricsConfig,
+      Instant createdAt,
+      Instant modifiedAt) {
     return new Subscription(
         topicName,
         name,
@@ -171,7 +177,9 @@ public class Subscription implements Anonymizable {
         profilingThresholdMs,
         subscriptionIdentityHeadersEnabled,
         autoDeleteWithTopicEnabled,
-        metricsConfig);
+        metricsConfig,
+        createdAt,
+        modifiedAt);
   }
 
   public static Subscription createBatchSubscription(
@@ -192,7 +200,9 @@ public class Subscription implements Anonymizable {
       SubscriptionOAuthPolicy oAuthPolicy,
       boolean http2Enabled,
       boolean subscriptionIdentityHeadersEnabled,
-      boolean autoDeleteWithTopicEnabled) {
+      boolean autoDeleteWithTopicEnabled,
+      Instant createdAt,
+      Instant modifiedAt) {
     return new Subscription(
         topicName,
         name,
@@ -216,7 +226,9 @@ public class Subscription implements Anonymizable {
         0,
         subscriptionIdentityHeadersEnabled,
         autoDeleteWithTopicEnabled,
-        SubscriptionMetricsConfig.DISABLED);
+        SubscriptionMetricsConfig.DISABLED,
+        createdAt,
+        modifiedAt);
   }
 
   @JsonCreator
@@ -284,7 +296,9 @@ public class Subscription implements Anonymizable {
         profilingThresholdMs,
         subscriptionIdentityHeadersEnabled,
         autoDeleteWithTopicEnabled,
-        metricsConfig);
+        metricsConfig,
+        null,
+        null);
   }
 
   @Override
@@ -308,7 +322,9 @@ public class Subscription implements Anonymizable {
         oAuthPolicy,
         http2Enabled,
         subscriptionIdentityHeadersEnabled,
-        metricsConfig);
+        metricsConfig,
+        createdAt,
+        modifiedAt);
   }
 
   @Override
@@ -344,7 +360,9 @@ public class Subscription implements Anonymizable {
         && Objects.equals(
             this.subscriptionIdentityHeadersEnabled, other.subscriptionIdentityHeadersEnabled)
         && Objects.equals(this.autoDeleteWithTopicEnabled, other.autoDeleteWithTopicEnabled)
-        && Objects.equals(this.metricsConfig, other.metricsConfig);
+        && Objects.equals(this.metricsConfig, other.metricsConfig)
+        && Objects.equals(this.createdAt, other.createdAt)
+        && Objects.equals(this.modifiedAt, other.modifiedAt);
   }
 
   @JsonIgnore
@@ -538,7 +556,9 @@ public class Subscription implements Anonymizable {
           profilingThresholdMs,
           subscriptionIdentityHeadersEnabled,
           autoDeleteWithTopicEnabled,
-          metricsConfig);
+          metricsConfig,
+          createdAt,
+          modifiedAt);
     }
     return this;
   }
