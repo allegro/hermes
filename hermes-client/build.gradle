@@ -17,7 +17,7 @@ dependencies {
     compileOnly group: 'org.springframework', name: 'spring-webflux', version: versions.spring_web
     compileOnly group: 'com.squareup.okhttp3', name: 'okhttp', version: versions.okhttp
 
-    implementation group: 'net.jodah', name: 'failsafe', version: versions.failsafe
+    implementation group: 'dev.failsafe', name: 'failsafe', version: versions.failsafe
     api group: 'io.projectreactor', name: 'reactor-core', version: '3.6.5'
 
     testImplementation group: 'org.spockframework', name: 'spock-core', version: versions.spock

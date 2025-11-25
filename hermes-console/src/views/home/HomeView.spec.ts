@@ -37,7 +37,6 @@ describe('HomeView', () => {
     { text: 'homeView.links.runtime' },
     { text: 'homeView.links.statistics' },
     { text: 'homeView.links.search' },
-    { text: 'homeView.links.documentation' },
   ])('should render proper buttons', ({ text }) => {
     // when
     const { getByText } = render(HomeView, {

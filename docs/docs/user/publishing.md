@@ -1,6 +1,6 @@
 # Publishing
 
-Simplest way to start publishing to Hermes is sending POST request on topic endpoint::
+Simplest way to start publishing to Hermes is sending POST request on topic endpoint (currently you can publish only one message per request):
 
 ```
 curl -X POST -H "Content-Type: application/json" http://hermes-frontend/topics/group.topic -d '{"message": "Hello world!"}'

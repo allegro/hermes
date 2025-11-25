@@ -30,7 +30,7 @@ export const dummySubscription: Subscription = {
     retryClientErrors: true,
     backoffMaxIntervalMillis: 600000,
   },
-  trackingEnabled: false,
+  trackingEnabled: true,
   trackingMode: 'trackingOff',
   owner: {
     source: 'Service Catalog',
@@ -54,6 +54,11 @@ export const dummySubscription: Subscription = {
       path: '.foo.bar.baz',
       matcher: 'true',
       matchingStrategy: 'all',
+    },
+    {
+      type: 'header',
+      header: 'X-My-Header',
+      matcher: 'true',
     },
   ],
   mode: SubscriptionMode.ANYCAST,

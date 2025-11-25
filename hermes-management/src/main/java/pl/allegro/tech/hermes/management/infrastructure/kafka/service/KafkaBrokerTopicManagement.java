@@ -60,7 +60,7 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
                     Collections.singletonList(
                         new NewTopic(
                                 k.name().asString(),
-                                topicProperties.getPartitions(),
+                                getPartitionsForDatacenter(datacenterName),
                                 (short) topicProperties.getReplicationFactor())
                             .configs(config))))
         .map(CreateTopicsResult::all)
@@ -98,7 +98,7 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
                   Collections.singletonList(
                       new NewTopic(
                               kafkaTopics.getPrimary().name().asString(),
-                              topicProperties.getPartitions(),
+                              getPartitionsForDatacenter(datacenterName),
                               (short) topicProperties.getReplicationFactor())
                           .configs(config)))
               .all();
@@ -163,5 +163,11 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
     } catch (InterruptedException | ExecutionException e) {
       throw new BrokersClusterCommunicationException(e);
     }
+  }
+
+  private int getPartitionsForDatacenter(String datacenterName) {
+    return topicProperties
+        .getPartitionsPerDc()
+        .getOrDefault(datacenterName, topicProperties.getPartitions());
   }
 }

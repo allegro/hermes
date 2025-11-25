@@ -1,4 +1,5 @@
 import { dummySubscription } from '@/dummy/subscription';
+import { expect, it } from 'vitest';
 import { render } from '@/utils/test-utils';
 import { within } from '@testing-library/vue';
 import FiltersCard from '@/views/subscription/filters-card/FiltersCard.vue';
@@ -26,10 +27,25 @@ describe('FiltersCard', () => {
         const row = getByText(index + 1).closest('tr')!;
         expect(within(row).getByText(index + 1)).toBeVisible();
         expect(within(row).getByText(type)).toBeVisible();
-        expect(within(row).getByText(path)).toBeVisible();
         expect(within(row).getByText(matcher)).toBeVisible();
-        expect(within(row).getByText(matchingStrategy)).toBeVisible();
+
+        if (type !== 'header') {
+          expect(within(row).getByText(path)).toBeVisible();
+          expect(within(row).getByText(matchingStrategy)).toBeVisible();
+        }
       },
     );
+  });
+
+  it('should display "no filters" message when no filters are defined', () => {
+    // given
+    const { getByText } = render(FiltersCard, {
+      props: {
+        filters: [],
+      },
+    });
+
+    // then
+    expect(getByText('subscription.filtersCard.noFilters')).toBeVisible();
   });
 });
