@@ -1,3 +1,7 @@
+## Note for users 📣
+
+We are reorganizing the project and we disabled the Issues tab. Please use discussions from now on. 
+
 Hermes
 ======
 
