@@ -68,8 +68,8 @@ const messages = {
     },
   },
   actions: {
-    create: 'Create topic',
-    update: 'Update topic',
+    create: 'Create',
+    update: 'Update',
     cancel: 'Cancel',
     import: 'Import from file',
   },

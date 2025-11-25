@@ -53,7 +53,7 @@ export function useEditTopic(topic: TopicWithSchema): UseEditTopic {
       });
       return true;
     } catch (e: any) {
-      await dispatchErrorNotification(
+      dispatchErrorNotification(
         e,
         notificationsStore,
         useGlobalI18n().t('notifications.topic.edit.failure'),

@@ -14,7 +14,7 @@
   <v-app class="fill-height">
     <div v-if="configStore.loadedConfig">
       <console-header />
-      <navigation-drawer v-if="$route.name && $route.name !== 'home'" />
+      <navigation-drawer />
       <v-main class="main">
         <app-notification-provider>
           <router-view />
@@ -29,7 +29,7 @@
 <style scoped lang="scss">
   .main {
     margin: 0 auto;
-    max-width: 1300px;
+    max-width: 1800px;
     width: 100%;
   }
 </style>

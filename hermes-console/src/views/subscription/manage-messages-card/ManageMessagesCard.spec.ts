@@ -7,6 +7,23 @@ import ManageMessagesCard from '@/views/subscription/manage-messages-card/Manage
 import userEvent from '@testing-library/user-event';
 
 describe('ManageMessagesCard', () => {
+  it('should render a card', () => {
+    // when
+    const { getByText } = render(ManageMessagesCard, {
+      props: {
+        topic: dummyTopic.name,
+        subscription: dummySubscription.name,
+        retransmitting: false,
+        skippingAllMessages: false,
+      },
+      testPinia: createTestingPiniaWithState(),
+    });
+
+    // then
+    expect(getByText('subscription.manageMessagesCard.title')).toBeVisible();
+    expect(getByText('subscription.manageMessagesCard.subtitle')).toBeVisible();
+  });
+
   it('should open confirmation popup when retransmit button is clicked', async () => {
     // given
     const user = userEvent.setup();
@@ -65,9 +82,7 @@ describe('ManageMessagesCard', () => {
     // then
     expect(getByTestId('retransmitButton')).toBeDisabled();
     expect(getByTestId('skipAllMessagesButton')).toBeDisabled();
-    expect(getByTestId('retransmitButton')).toContainElement(
-      getByTestId('loading-spinner'),
-    );
+    expect(getByTestId('retransmitButton')).toHaveClass('v-btn--loading');
   });
 
   it('should disable buttons and show spinner when skipping all messages is in progress', async () => {
@@ -85,8 +100,6 @@ describe('ManageMessagesCard', () => {
     // then
     expect(getByTestId('retransmitButton')).toBeDisabled();
     expect(getByTestId('skipAllMessagesButton')).toBeDisabled();
-    expect(getByTestId('skipAllMessagesButton')).toContainElement(
-      getByTestId('loading-spinner'),
-    );
+    expect(getByTestId('skipAllMessagesButton')).toHaveClass('v-btn--loading');
   });
 });

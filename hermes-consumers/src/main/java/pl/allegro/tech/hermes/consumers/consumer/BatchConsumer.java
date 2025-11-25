@@ -331,17 +331,39 @@ public class BatchConsumer implements Consumer {
                 subscription.getBatchSubscriptionPolicy().getRequestTimeout());
           });
     } catch (Exception e) {
-      logger.error(
-          "Batch was rejected [batch_id={}, subscription={}].",
-          batch.getId(),
-          subscription.getQualifiedName(),
-          e);
-      metrics.recordAttemptAsFinished(batch.getMessageCount());
-      metrics.markDiscarded(batch);
-      batch
-          .getMessagesMetadata()
-          .forEach(m -> trackers.get(subscription).logDiscarded(m, e.getMessage()));
+      if (hasInterruptedException(e)) {
+        logger.info(
+            "Batch sending was interrupted [batch_id={}, subscription={}].",
+            batch.getId(),
+            subscription.getQualifiedName(),
+            e);
+        metrics.recordAttemptAsFinished(batch.getMessageCount());
+        logger.info("Restoring interrupted status", e);
+        Thread.currentThread().interrupt();
+      } else {
+        logger.error(
+            "Batch was rejected [batch_id={}, subscription={}].",
+            batch.getId(),
+            subscription.getQualifiedName(),
+            e);
+        metrics.recordAttemptAsFinished(batch.getMessageCount());
+        metrics.markDiscarded(batch);
+        batch
+            .getMessagesMetadata()
+            .forEach(m -> trackers.get(subscription).logDiscarded(m, e.getMessage()));
+      }
     }
+  }
+
+  private static boolean hasInterruptedException(Throwable e) {
+    Throwable currentException = e;
+    while (currentException != null) {
+      if (currentException instanceof InterruptedException) {
+        return true;
+      }
+      currentException = currentException.getCause();
+    }
+    return false;
   }
 
   private void clean(MessageBatch batch) {

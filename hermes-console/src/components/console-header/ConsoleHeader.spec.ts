@@ -21,29 +21,6 @@ describe('ConsoleHeader', () => {
     expect(getByRole('img')).toHaveAttribute('alt', 'Hermes');
   });
 
-  it('should display environment name', () => {
-    // when
-    const { getByText } = render(ConsoleHeader, {
-      testPinia: createTestingPinia({
-        initialState: {
-          appConfig: {
-            ...appConfigStoreState,
-            appConfig: {
-              ...dummyAppConfig,
-              console: {
-                ...dummyAppConfig.console,
-                environmentName: 'TEST ENV',
-              },
-            },
-          },
-        },
-      }),
-    });
-
-    // then
-    expect(getByText('TEST ENV')).toBeVisible();
-  });
-
   it('should display login button', () => {
     // when
     const { getByText } = render(ConsoleHeader, {

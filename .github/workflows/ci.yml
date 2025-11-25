@@ -19,7 +19,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
       - name: Run linter
         run: yarn && yarn lint
       - name: Run frontend tests
@@ -53,7 +53,7 @@ jobs:
           java-version: 21
           distribution: 'temurin'
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/actions/setup-gradle@v4
       - name: Build with Gradle
         run: ./gradlew assemble
       - name: Run task with Gradle
@@ -116,7 +116,7 @@ jobs:
           ref: gh-pages
           path: gh-pages
       - name: Build test report
-        uses: simple-elf/allure-report-action@v1.9
+        uses: simple-elf/allure-report-action@v1.13
         if: always()
         with:
           gh_pages: gh-pages

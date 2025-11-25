@@ -9,16 +9,16 @@
   }>();
   const emit = defineEmits(['update:modelValue']);
 
-  const newFilterHeaderName = ref('');
+  const newFilterHeader = ref('');
   const newFilterMatcher = ref('');
   function addFilter() {
     const newFilter = {
       id: generateUUID(),
-      headerName: newFilterHeaderName.value,
+      header: newFilterHeader.value,
       matcher: newFilterMatcher.value,
     };
     const updatedFilters = props.modelValue.concat([newFilter]);
-    newFilterHeaderName.value = '';
+    newFilterHeader.value = '';
     newFilterMatcher.value = '';
     emit('update:modelValue', updatedFilters);
   }
@@ -35,17 +35,18 @@
   <header-filter-row
     v-for="filter in props.modelValue"
     :key="filter.id"
-    v-model:name="filter.headerName"
+    v-model:header="filter.header"
     v-model:matcher="filter.matcher"
     @remove="removeFilter(filter)"
     type="created"
   />
 
   <header-filter-row
-    v-model:name="newFilterHeaderName"
+    v-model:header="newFilterHeader"
     v-model:matcher="newFilterMatcher"
     @add="addFilter()"
     type="new"
+    class="mb-3"
   />
 </template>
 
