@@ -278,7 +278,15 @@ public class TopicService {
   }
 
   public List<Topic> queryTopic(Query<Topic> query) {
-    return query.filter(getAllTopics()).collect(toList());
+    var currentTime = Instant.now();
+    List<Topic> topics = getAllTopics();
+    var nextTime = Instant.now();
+    logger.info("Fetched all topics in {} ms", Duration.between(currentTime, nextTime).toMillis());
+    currentTime = Instant.now();
+    var filteredTopics = query.filter(topics).toList();
+    nextTime = Instant.now();
+    logger.info("Filtered topics in {} ms", Duration.between(currentTime, nextTime).toMillis());
+    return filteredTopics;
   }
 
   public List<Topic> getAllTopics() {
