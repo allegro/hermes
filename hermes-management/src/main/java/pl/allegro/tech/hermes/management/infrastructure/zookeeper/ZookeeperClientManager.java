@@ -92,7 +92,7 @@ public class ZookeeperClientManager {
     CuratorFrameworkFactory.Builder builder =
         CuratorFrameworkFactory.builder()
             .connectString(clusterProperties.getConnectionString())
-            .sessionTimeoutMs(clusterProperties.getSessionTimeout())
+            .sessionTimeoutMs((int) clusterProperties.getSessionTimeout().toMillis())
             .connectionTimeoutMs(clusterProperties.getConnectTimeout())
             .retryPolicy(retryPolicy);
 
