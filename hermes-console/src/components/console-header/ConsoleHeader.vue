@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { computed } from 'vue';
+  import { computed, onMounted, onBeforeUnmount, ref } from 'vue';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import { useAuthStore } from '@/store/auth/useAuthStore';
   import { useI18n } from 'vue-i18n';
@@ -7,6 +7,8 @@
   import { useTheme } from 'vuetify';
   import EnvironmentBadge from '@/components/environment-badge/EnviromentBadge.vue';
   import ThemeSwitch from '@/components/theme-switch/ThemeSwitch.vue';
+  import SearchBar from '@/components/search-bar/SearchBar.vue';
+  import CommandPalette from '@/components/command-palette/CommandPalette.vue';
 
   const { t } = useI18n();
 
@@ -17,6 +19,7 @@
   const authStore = useAuthStore();
 
   const isLoggedIn = computed(() => authStore.isUserAuthorized);
+  const isCommandPaletteOpen = ref(false);
 
   function logIn() {
     authStore.login(window.location.pathname);
@@ -26,6 +29,40 @@
     authStore.logout();
     router.go(0);
   }
+
+  function openCommandPalette() {
+    isCommandPaletteOpen.value = true;
+  }
+
+  function closeCommandPalette() {
+    isCommandPaletteOpen.value = false;
+  }
+
+  function handleKeyDown(event: KeyboardEvent) {
+    if (
+      event.key === '/' &&
+      !event.ctrlKey &&
+      !event.metaKey &&
+      !event.altKey
+    ) {
+      const tag = (event.target as HTMLElement | null)?.tagName?.toLowerCase();
+      const isInputElement =
+        tag === 'input' || tag === 'textarea' || tag === 'select';
+
+      if (!isInputElement) {
+        event.preventDefault();
+        openCommandPalette();
+      }
+    }
+  }
+
+  onMounted(() => {
+    window.addEventListener('keydown', handleKeyDown);
+  });
+
+  onBeforeUnmount(() => {
+    window.removeEventListener('keydown', handleKeyDown);
+  });
 </script>
 
 <template>
@@ -58,6 +95,11 @@
           "
         />
       </div>
+
+      <div class="d-flex align-center flex-grow-1 ga-4 px-4">
+        <search-bar @open="openCommandPalette" />
+      </div>
+
       <div class="d-flex align-center ga-2 pr-2">
         <theme-switch />
         <v-btn
@@ -78,6 +120,11 @@
         </v-btn>
       </div>
     </div>
+
+    <command-palette
+      v-model="isCommandPaletteOpen"
+      @update:modelValue="(value) => (isCommandPaletteOpen = value)"
+    />
   </v-app-bar>
 </template>
 

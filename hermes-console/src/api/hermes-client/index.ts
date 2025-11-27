@@ -49,6 +49,7 @@ import type { SubscriptionHealth } from '@/api/subscription-health';
 import type { SubscriptionMetrics } from '@/api/subscription-metrics';
 import type { TopicForm } from '@/composables/topic/use-form-topic/types';
 import type { TrackingUrl } from '@/api/tracking-url';
+import type { SearchResults } from '@/api/SearchResults';
 
 const acceptHeader = 'Accept';
 const contentTypeHeader = 'Content-Type';
@@ -303,6 +304,12 @@ export function querySubscriptions(
   return axios.post<Subscription[]>(`/query/subscriptions`, queryJSON, {
     headers: { 'Content-Type': 'application/json' },
   });
+}
+
+export function search(query: string): ResponsePromise<SearchResults> {
+  return axios.get<SearchResults>(
+    `/search/query?q=${encodeURIComponent(query)}`,
+  );
 }
 
 export function fetchRoles(path: string): ResponsePromise<Role[]> {
