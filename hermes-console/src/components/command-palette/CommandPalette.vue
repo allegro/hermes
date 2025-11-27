@@ -4,6 +4,7 @@
   import { useRouter } from 'vue-router';
   import CommandPeletteItem from '@/components/command-palette/command-palette-item/CommandPeletteItem.vue';
   import type { SearchResultItem, SearchResults } from '@/api/SearchResults';
+  import type { CommandPaletteElement } from '@/components/command-palette/types';
 
   const props = defineProps<{
     modelValue: boolean;
@@ -38,12 +39,7 @@
     return Object.entries(groups).map(([type, items]) => ({
       type,
       items,
-      label:
-        type
-          .toString()
-          .toLowerCase()
-          .replace(/_/g, ' ')
-          .replace(/^(.)/, (m) => m.toUpperCase()) + 's',
+      label: type,
     }));
   });
 
@@ -68,6 +64,36 @@
         return 'mdi-help-circle-outline';
     }
   };
+
+  const items = computed<CommandPaletteElement[]>(() => {
+    const flat: CommandPaletteElement[] = [];
+
+    groupedResults.value.forEach((section) => {
+      const sectionId = `section-${section.type}`;
+
+      flat.push({
+        type: 'title',
+        id: `${sectionId}-title`,
+        title: section.label,
+      });
+
+      section.items.forEach((item) => {
+        flat.push({
+          type: 'item',
+          id: `${sectionId}-item-${item.type}:${item.name}`,
+          title: item.name,
+          subtitle: item.type,
+          icon: getTypeIcon(item.type),
+          label: item.type.toLocaleLowerCase(),
+          labelColor: getTypeColor(item.type),
+        });
+      });
+
+      flat.push({ type: 'divider', id: `${sectionId}-divider` });
+    });
+
+    return flat;
+  });
 
   function close() {
     isOpen.value = false;
@@ -152,23 +178,25 @@
         </div>
 
         <template v-else>
-          <div v-for="section in groupedResults" :key="section.type">
-            <v-list density="compact" subheader>
-              <v-list-subheader>{{ section.label }}</v-list-subheader>
-              <command-pelette-item
-                v-for="item in section.items"
-                :key="section.type + ':' + item.name"
-                :title="item.name"
-                :subtitle="item.type"
-                :icon="getTypeIcon(item.type)"
-                :label="item.type.toLocaleLowerCase()"
-                :label-color="getTypeColor(item.type)"
-                @click="navigateToResult(item)"
-              />
-            </v-list>
+          <v-list density="compact">
+            <template v-for="item in items" :key="item.id">
+              <v-list-subheader v-if="item.type === 'title'">
+                {{ item.title }}
+              </v-list-subheader>
 
-            <v-divider />
-          </div>
+              <v-divider v-else-if="item.type === 'divider'" />
+
+              <command-pelette-item
+                v-else-if="item.type === 'item'"
+                :title="item.title"
+                :subtitle="item.subtitle"
+                :icon="item.icon"
+                :label="item.label"
+                :label-color="item.labelColor"
+                @click="navigateToResult(item.raw)"
+              />
+            </template>
+          </v-list>
         </template>
       </v-card-text>
 
