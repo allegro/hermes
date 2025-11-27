@@ -22,4 +22,5 @@ export interface CommandPaletteItemElement {
   icon: string;
   label: string;
   labelColor: string;
+  onClick?: () => void;
 }

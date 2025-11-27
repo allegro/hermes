@@ -1,14 +1,14 @@
 <script setup lang="ts">
-  import { computed, onMounted, onBeforeUnmount, ref } from 'vue';
+  import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import { useAuthStore } from '@/store/auth/useAuthStore';
   import { useI18n } from 'vue-i18n';
   import { useRouter } from 'vue-router';
   import { useTheme } from 'vuetify';
   import EnvironmentBadge from '@/components/environment-badge/EnviromentBadge.vue';
+  import SearchBar from '@/components/search-commander/SearchBar.vue';
+  import SearchCommander from '@/components/search-commander/SearchCommander.vue';
   import ThemeSwitch from '@/components/theme-switch/ThemeSwitch.vue';
-  import SearchBar from '@/components/search-bar/SearchBar.vue';
-  import CommandPalette from '@/components/command-palette/CommandPalette.vue';
 
   const { t } = useI18n();
 
@@ -32,10 +32,6 @@
 
   function openCommandPalette() {
     isCommandPaletteOpen.value = true;
-  }
-
-  function closeCommandPalette() {
-    isCommandPaletteOpen.value = false;
   }
 
   function handleKeyDown(event: KeyboardEvent) {
@@ -120,9 +116,9 @@
       </div>
     </div>
 
-    <command-palette
+    <search-commander
       v-model="isCommandPaletteOpen"
-      @update:modelValue="(value) => (isCommandPaletteOpen = value)"
+      @update:modelValue="(value: boolean) => (isCommandPaletteOpen = value)"
     />
   </v-app-bar>
 </template>

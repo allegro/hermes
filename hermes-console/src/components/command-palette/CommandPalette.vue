@@ -1,151 +1,28 @@
 <script setup lang="ts">
-  import { computed, ref, watch } from 'vue';
-  import { search } from '@/api/hermes-client';
-  import { useRouter } from 'vue-router';
-  import CommandPeletteItem from '@/components/command-palette/command-palette-item/CommandPeletteItem.vue';
-  import type { SearchResultItem, SearchResults } from '@/api/SearchResults';
+  import { computed } from 'vue';
+  import CommandPaletteItem from '@/components/command-palette/command-palette-item/CommandPaletteItem.vue';
   import type { CommandPaletteElement } from '@/components/command-palette/types';
 
   const props = defineProps<{
+    items: CommandPaletteElement[];
+    search: string;
+    loading: boolean;
     modelValue: boolean;
   }>();
 
   const emit = defineEmits<{
     (e: 'update:modelValue', value: boolean): void;
+    (e: 'update:search', value: string): void;
   }>();
-
-  const router = useRouter();
-
-  const term = ref('');
-  const loading = ref(false);
-  const results = ref<SearchResultItem[]>([]);
-  const totalCount = ref(0);
 
   const isOpen = computed({
     get: () => props.modelValue,
     set: (value: boolean) => emit('update:modelValue', value),
   });
 
-  const groupedResults = computed(() => {
-    const groups: Record<string, SearchResultItem[]> = {};
-
-    for (const item of results.value) {
-      if (!groups[item.type]) {
-        groups[item.type] = [];
-      }
-      groups[item.type].push(item);
-    }
-
-    return Object.entries(groups).map(([type, items]) => ({
-      type,
-      items,
-      label: type,
-    }));
-  });
-
-  const getTypeColor = (type: string): string => {
-    switch (type) {
-      case 'TOPIC':
-        return 'red';
-      case 'SUBSCRIPTION':
-        return 'secondary';
-      default:
-        return 'grey';
-    }
-  };
-
-  const getTypeIcon = (type: string): string => {
-    switch (type) {
-      case 'TOPIC':
-        return 'mdi-book-open-page-variant';
-      case 'SUBSCRIPTION':
-        return 'mdi-rss';
-      default:
-        return 'mdi-help-circle-outline';
-    }
-  };
-
-  const items = computed<CommandPaletteElement[]>(() => {
-    const flat: CommandPaletteElement[] = [];
-
-    groupedResults.value.forEach((section) => {
-      const sectionId = `section-${section.type}`;
-
-      flat.push({
-        type: 'title',
-        id: `${sectionId}-title`,
-        title: section.label,
-      });
-
-      section.items.forEach((item) => {
-        flat.push({
-          type: 'item',
-          id: `${sectionId}-item-${item.type}:${item.name}`,
-          title: item.name,
-          subtitle: item.type,
-          icon: getTypeIcon(item.type),
-          label: item.type.toLocaleLowerCase(),
-          labelColor: getTypeColor(item.type),
-        });
-      });
-
-      flat.push({ type: 'divider', id: `${sectionId}-divider` });
-    });
-
-    return flat;
-  });
-
-  function close() {
-    isOpen.value = false;
-    term.value = '';
-    results.value = [];
-    totalCount.value = 0;
-  }
-
-  function navigateToResult(item: SearchResultItem) {
-    if (item.type === 'TOPIC') {
-      const [groupId, topicId] = item.name.split('.');
-      if (groupId && topicId) {
-        router.push({
-          name: 'topic',
-          params: { groupId, topicName: item.name },
-        });
-      }
-    } else if (item.type === 'SUBSCRIPTION') {
-      const [groupId, topicId, subscriptionId] = item.name.split('.');
-      if (groupId && topicId && subscriptionId) {
-        router.push({
-          name: 'subscription',
-          params: { groupId, topicId: `${groupId}.${topicId}`, subscriptionId },
-        });
-      }
-    }
-    // For unknown types we currently do nothing; can be extended later
-    close();
-  }
-
-  watch(term, (newValue, _oldValue, onCleanup) => {
-    if (!newValue) {
-      results.value = [];
-      totalCount.value = 0;
-      return;
-    }
-
-    const handle = setTimeout(async () => {
-      loading.value = true;
-      try {
-        const response = await search(newValue);
-        const data: SearchResults = response.data;
-        results.value = data.results;
-        totalCount.value = data.totalCount;
-      } finally {
-        loading.value = false;
-      }
-    }, 300);
-
-    onCleanup(() => {
-      clearTimeout(handle);
-    });
+  const _search = computed({
+    get: () => props.search,
+    set: (value: string) => emit('update:search', value),
   });
 </script>
 
@@ -159,7 +36,7 @@
     <v-card class="command-palette-card">
       <v-card-title class="pa-0">
         <v-text-field
-          v-model="term"
+          v-model="_search"
           autofocus
           variant="solo"
           placeholder="Search topics and subscriptions"
@@ -173,7 +50,7 @@
       <v-card-text class="pa-0 command-palette-results">
         <v-progress-linear v-if="loading" indeterminate color="primary" />
 
-        <div v-if="!loading && results.length === 0 && term">
+        <div v-if="!loading && items.length === 0 && _search.length > 0">
           <p class="pa-4 text-medium-emphasis">No results</p>
         </div>
 
@@ -186,14 +63,14 @@
 
               <v-divider v-else-if="item.type === 'divider'" />
 
-              <command-pelette-item
+              <command-palette-item
                 v-else-if="item.type === 'item'"
                 :title="item.title"
                 :subtitle="item.subtitle"
                 :icon="item.icon"
                 :label="item.label"
                 :label-color="item.labelColor"
-                @click="navigateToResult(item.raw)"
+                @click="item.onClick"
               />
             </template>
           </v-list>
@@ -204,7 +81,7 @@
 
       <v-card-actions class="justify-end">
         <span class="text-caption text-medium-emphasis mr-4">
-          {{ totalCount }} results
+          {{ items.length }} results
         </span>
       </v-card-actions>
     </v-card>
@@ -215,7 +92,7 @@
   .command-palette-dialog {
     align-items: flex-start;
     justify-content: center;
-    padding-top: 10vh; // roughly around 1/3 screen height visually
+    padding-top: 10vh;
   }
 
   .command-palette-card {
