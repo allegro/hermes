@@ -39,20 +39,19 @@
   }
 
   function handleKeyDown(event: KeyboardEvent) {
-    if (
-      event.key === '/' &&
-      !event.ctrlKey &&
-      !event.metaKey &&
-      !event.altKey
-    ) {
+    const isInputElement = (() => {
       const tag = (event.target as HTMLElement | null)?.tagName?.toLowerCase();
-      const isInputElement =
-        tag === 'input' || tag === 'textarea' || tag === 'select';
+      return tag === 'input' || tag === 'textarea' || tag === 'select';
+    })();
 
-      if (!isInputElement) {
-        event.preventDefault();
-        openCommandPalette();
-      }
+    const isCmdOrCtrlK =
+      (event.key === 'k' || event.key === 'K') &&
+      (event.metaKey || event.ctrlKey) &&
+      !event.altKey;
+
+    if (!isInputElement && isCmdOrCtrlK) {
+      event.preventDefault();
+      openCommandPalette();
     }
   }
 

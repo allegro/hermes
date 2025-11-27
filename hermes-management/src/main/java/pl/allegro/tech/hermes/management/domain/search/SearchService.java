@@ -6,7 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.SearchItem;
 import pl.allegro.tech.hermes.api.SearchResults;
+import pl.allegro.tech.hermes.api.SubscriptionSearchItem;
+import pl.allegro.tech.hermes.api.TopicSearchItem;
 import pl.allegro.tech.hermes.management.domain.search.cache.CachedItem;
+import pl.allegro.tech.hermes.management.domain.search.cache.CachedSubscriptionItem;
+import pl.allegro.tech.hermes.management.domain.search.cache.CachedTopicItem;
 import pl.allegro.tech.hermes.management.domain.search.cache.SearchCache;
 
 @Component
@@ -49,9 +53,14 @@ public class SearchService {
   }
 
   private SearchItem toSearchItem(CachedItem cachedItem) {
-    return new SearchItem(
-        cachedItem.getType().name(),
-        cachedItem.getName()
-    );
+    return switch (cachedItem) {
+      case CachedTopicItem item ->
+          new TopicSearchItem(item.getType().name(), item.name());
+      case CachedSubscriptionItem item -> new SubscriptionSearchItem(
+          item.getType().name(),
+          item.name(),
+          new SubscriptionSearchItem.Subscription(item.topicName())
+      );
+    };
   }
 }

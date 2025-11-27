@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.management.domain.search.cache;
 
-public interface CachedItem {
+sealed public interface CachedItem permits CachedSubscriptionItem, CachedTopicItem {
   String getName();
 
   CachedItemType getType();

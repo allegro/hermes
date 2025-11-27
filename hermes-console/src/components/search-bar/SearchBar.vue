@@ -16,7 +16,7 @@
     @click="open"
   >
     <span class="text-capitalize pr-4">Search</span>
-    <span>/</span>
+    <span>cmd + k</span>
   </v-btn>
 </template>
 

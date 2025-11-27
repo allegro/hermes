@@ -18,4 +18,9 @@ export interface SearchResultTopicItem extends SearchResultItem {
 export interface SearchResultSubscriptionItem extends SearchResultItem {
   type: 'SUBSCRIPTION';
   name: string;
+  subscription: SubscriptionItemDetails;
+}
+
+export interface SubscriptionItemDetails {
+  topicName: string;
 }
