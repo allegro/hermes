@@ -11,7 +11,7 @@ public class StorageProperties implements ZookeeperParameters {
   private String connectionString = "localhost:2181";
   private String root = "/hermes";
   private int sessionTimeout = 10000;
-  private int connectTimeout = 1000;
+  private int connectionTimeout = 1000;
   private int baseSleepTime = 1000000;
   private int maxSleepTime = 30000;
   private int maxRetries = 29;
@@ -34,14 +34,6 @@ public class StorageProperties implements ZookeeperParameters {
 
   public void setSessionTimeout(int sessionTimeout) {
     this.sessionTimeout = sessionTimeout;
-  }
-
-  public int getConnectTimeout() {
-    return connectTimeout;
-  }
-
-  public void setConnectTimeout(int connectTimeout) {
-    this.connectTimeout = connectTimeout;
   }
 
   public String getDatacenter() {
@@ -84,15 +76,11 @@ public class StorageProperties implements ZookeeperParameters {
 
   @Override
   public Duration getConnectionTimeout() {
-    return Duration.ofMillis(connectTimeout);
+    return Duration.ofMillis(connectionTimeout);
   }
 
   public void setConnectionTimeout(int connectionTimeout) {
-    this.connectTimeout = connectionTimeout;
-  }
-
-  public void setConnectionTimeout(String connectionTimeout) {
-    this.connectTimeout = Integer.parseInt(connectionTimeout);
+    this.connectionTimeout = connectionTimeout;
   }
 
   @Override
