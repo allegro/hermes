@@ -29,8 +29,10 @@
 <template>
   <v-dialog
     v-model="isOpen"
-    max-width="900"
-    min-width="900"
+    max-width="100vw"
+    min-width="50vw"
+    min-height="50vh"
+    max-height="50vh"
     class="command-palette-dialog"
   >
     <v-card class="command-palette-card">
@@ -50,8 +52,22 @@
       <v-card-text class="pa-0 command-palette-results">
         <v-progress-linear v-if="loading" indeterminate color="primary" />
 
-        <div v-if="!loading && items.length === 0 && _search.length > 0">
-          <p class="pa-4 text-medium-emphasis">No results</p>
+        <div
+          v-if="!loading && items.length === 0 && _search.length > 0"
+          class="text-center empty-state"
+        >
+          <p class="pa-4 text-medium-emphasis">
+            {{ $t('commandPalette.noResults') }}
+          </p>
+        </div>
+
+        <div
+          v-else-if="!loading && items.length === 0 && _search.length === 0"
+          class="text-center empty-state"
+        >
+          <p class="pa-4 text-medium-emphasis">
+            {{ $t('commandPalette.searchIncentive') }}
+          </p>
         </div>
 
         <template v-else>
@@ -61,7 +77,10 @@
                 {{ item.title }}
               </v-list-subheader>
 
-              <v-divider v-else-if="item.type === 'divider'" />
+              <v-divider
+                v-else-if="item.type === 'divider'"
+                class="mt-3 mb-2"
+              />
 
               <command-palette-item
                 v-else-if="item.type === 'item'"
@@ -71,6 +90,7 @@
                 :label="item.label"
                 :label-color="item.labelColor"
                 @click="item.onClick"
+                class="py-2"
               />
             </template>
           </v-list>
@@ -89,18 +109,19 @@
 </template>
 
 <style scoped lang="scss">
-  .command-palette-dialog {
-    align-items: flex-start;
-    justify-content: center;
-    padding-top: 10vh;
-  }
-
   .command-palette-card {
     width: 100%;
+    opacity: 0.96;
   }
 
   .command-palette-results {
-    max-height: 50vh;
     overflow-y: auto;
+  }
+
+  .empty-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 10rem;
   }
 </style>

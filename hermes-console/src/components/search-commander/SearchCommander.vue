@@ -1,10 +1,15 @@
 <script setup lang="ts">
   import { computed, ref, watch } from 'vue';
+  import { useI18n } from 'vue-i18n';
   import { useRouter } from 'vue-router';
   import { useSearch } from '@/composables/search-v2/useSearchV2';
   import CommandPalette from '@/components/command-palette/CommandPalette.vue';
   import type { CommandPaletteElement } from '@/components/command-palette/types';
-  import type { SearchResultItem } from '@/api/SearchResults';
+  import type {
+    SearchResultItem,
+    SearchResultSubscriptionItem,
+    SearchResultTopicItem,
+  } from '@/api/SearchResults';
 
   const { modelValue } = defineProps<{
     modelValue: boolean;
@@ -15,6 +20,7 @@
   }>();
 
   const router = useRouter();
+  const { t } = useI18n();
 
   const isOpen = computed({
     get: () => modelValue,
@@ -45,29 +51,18 @@
     return Object.entries(groups).map(([type, items]) => ({
       type,
       items,
-      label: type,
+      title: getSectionTitle(type),
     }));
   });
 
-  const getTypeColor = (type: string): string => {
+  const getSectionTitle = (type: string): string => {
     switch (type) {
       case 'TOPIC':
-        return 'red';
+        return t('searchCommander.sections.topics');
       case 'SUBSCRIPTION':
-        return 'secondary';
+        return t('searchCommander.sections.subscriptions');
       default:
-        return 'grey';
-    }
-  };
-
-  const getTypeIcon = (type: string): string => {
-    switch (type) {
-      case 'TOPIC':
-        return 'mdi-book-open-page-variant';
-      case 'SUBSCRIPTION':
-        return 'mdi-rss';
-      default:
-        return 'mdi-help-circle-outline';
+        return t('searchCommander.sections.others');
     }
   };
 
@@ -92,32 +87,60 @@
     close();
   }
 
+  const createSubscriptionItem = (
+    item: SearchResultSubscriptionItem,
+    sectionId: string,
+  ): CommandPaletteElement => ({
+    type: 'item',
+    id: `${sectionId}-item-${item.type}:${item.name}`,
+    title: item.name,
+    subtitle: `${t('searchCommander.topic')} ${item.subscription.topicName}`,
+    icon: 'mdi-rss',
+    label: 'subscription',
+    labelColor: 'cyan',
+    onClick: () => navigateToResult(item),
+  });
+
+  const createTopicItem = (
+    item: SearchResultTopicItem,
+    sectionId: string,
+  ): CommandPaletteElement => ({
+    type: 'item',
+    id: `${sectionId}-item-${item.type}:${item.name}`,
+    title: item.name,
+    subtitle: `${t('searchCommander.owner')} ${item.topic.owner.id}`,
+    icon: 'mdi-book-open-page-variant',
+    label: 'topic',
+    labelColor: 'teal',
+    onClick: () => navigateToResult(item),
+  });
+
   const items = computed<CommandPaletteElement[]>(() => {
     const flat: CommandPaletteElement[] = [];
 
-    groupedResults.value.forEach((section) => {
+    groupedResults.value.forEach((section, index) => {
       const sectionId = `section-${section.type}`;
 
       flat.push({
         type: 'title',
         id: `${sectionId}-title`,
-        title: section.label,
+        title: section.title,
       });
 
       section.items.forEach((item) => {
-        flat.push({
-          type: 'item',
-          id: `${sectionId}-item-${item.type}:${item.name}`,
-          title: item.name,
-          subtitle: item.type,
-          icon: getTypeIcon(item.type),
-          label: item.type.toLocaleLowerCase(),
-          labelColor: getTypeColor(item.type),
-          onClick: () => navigateToResult(item),
-        });
+        switch (item.type) {
+          case 'TOPIC':
+            flat.push(createTopicItem(item, sectionId));
+            break;
+          case 'SUBSCRIPTION':
+            flat.push(createSubscriptionItem(item, sectionId));
+            break;
+        }
       });
 
-      flat.push({ type: 'divider', id: `${sectionId}-divider` });
+      if (index < groupedResults.value.length - 1) {
+        flat.push({ type: 'divider', id: `${sectionId}-divider` });
+      }
     });
 
     return flat;

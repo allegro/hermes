@@ -2,5 +2,14 @@ package pl.allegro.tech.hermes.api;
 
 public record TopicSearchItem(
     String type,
-    String name
-) implements SearchItem {}
+    String name,
+    Topic topic
+) implements SearchItem {
+  public record Topic(
+      Owner owner
+  ) {}
+
+  public record Owner(
+      String id
+  ) {}
+}

@@ -5,17 +5,25 @@ export interface SearchResults {
 
 export type SearchResultType = 'TOPIC' | 'SUBSCRIPTION';
 
-export interface SearchResultItem {
-  type: SearchResultType;
-  name: string;
-}
+export type SearchResultItem =
+  | SearchResultTopicItem
+  | SearchResultSubscriptionItem;
 
-export interface SearchResultTopicItem extends SearchResultItem {
+export interface SearchResultTopicItem {
   type: 'TOPIC';
   name: string;
+  topic: TopicItemDetails;
 }
 
-export interface SearchResultSubscriptionItem extends SearchResultItem {
+export interface TopicItemDetails {
+  owner: TopicOwnerDetails;
+}
+
+export interface TopicOwnerDetails {
+  id: string;
+}
+
+export interface SearchResultSubscriptionItem {
   type: 'SUBSCRIPTION';
   name: string;
   subscription: SubscriptionItemDetails;

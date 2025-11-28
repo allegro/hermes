@@ -913,6 +913,19 @@ const en_US = {
     title: 'Tracking',
     noTrackingUrls: 'No tracking urls available',
   },
+  searchCommander: {
+    sections: {
+      topics: 'Topics',
+      subscriptions: 'Subscriptions',
+      others: 'Others',
+    },
+    owner: 'Owner: ',
+    topic: 'Topic: ',
+  },
+  commandPalette: {
+    noResults: 'No results found',
+    searchIncentive: 'Type to start searching',
+  },
 };
 
 export default en_US;
