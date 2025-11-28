@@ -3,7 +3,7 @@
   "description": "Console for Hermes Management",
   "license": "Apache-2.0",
   "engines": {
-    "node": ">=22.12.0"
+    "node": ">=22.20.0"
   },
   "scripts": {
     "dev": "vite",
@@ -29,7 +29,7 @@
     "vue-i18n": "11.1.10",
     "vue-router": "4.3.2",
     "vue3-ace-editor": "2.2.4",
-    "vuetify": "3.10.5"
+    "vuetify": "3.11.0"
   },
   "devDependencies": {
     "@mdi/font": "7.4.47",

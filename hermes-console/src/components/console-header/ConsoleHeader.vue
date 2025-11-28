@@ -63,7 +63,6 @@
 <template>
   <v-app-bar flat density="compact" color="surface">
     <div class="header">
-      <!-- TODO: navigate to home -->
       <div class="header-left">
         <router-link to="/ui" custom v-slot="{ navigate }">
           <img
@@ -91,7 +90,7 @@
         />
       </div>
 
-      <div class="d-flex align-center flex-grow-1 ga-4 px-4">
+      <div class="d-flex align-center justify-center flex-grow-1 ga-4">
         <search-bar @open="openCommandPalette" />
       </div>
 

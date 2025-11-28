@@ -11,12 +11,22 @@
 <template>
   <v-btn
     prepend-icon="mdi-magnify"
-    variant="outlined"
-    density="comfortable"
+    variant="tonal"
     @click="open"
+    class="text-medium-emphasis text-capitalize"
+    width="400"
+    max-width="100%"
+    spaced="both"
   >
-    <span class="text-capitalize pr-4">Search</span>
-    <span>cmd + k</span>
+    <span class="text-none">Search</span>
+    <template #append>
+      <v-hotkey
+        keys="cmd+k"
+        platform="auto"
+        variant="text"
+        color="grey-darken-2"
+      />
+    </template>
   </v-btn>
 </template>
 

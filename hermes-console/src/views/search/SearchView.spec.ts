@@ -128,18 +128,23 @@ describe('SearchView', () => {
 
     const { getByLabelText } = render(SearchView, {
       testPinia: createTestingPiniaWithState(),
-      global: { plugins: [router] },
     });
 
-    expect(getByLabelText('collection').value).toBe('topics');
-    expect(getByLabelText('filter').value).toBe('name');
-    expect(getByLabelText('regex pattern').value).toBe('test');
+    expect((getByLabelText('collection') as HTMLInputElement).value).toBe(
+      'search.collection.topics',
+    );
+    expect((getByLabelText('filter') as HTMLInputElement).value).toBe(
+      'search.filter.name',
+    );
+    expect((getByLabelText('regex pattern') as HTMLInputElement).value).toBe(
+      'test',
+    );
   });
 
   it('should update query parameters in URL when form inputs are modified', async () => {
     const { getByLabelText, getByRole } = render(SearchView, {
       testPinia: createTestingPiniaWithState(),
-      global: { plugins: [router] },
+      options: { router: router },
     });
 
     await fireEvent.update(getByLabelText('regex pattern'), 'newPattern');
