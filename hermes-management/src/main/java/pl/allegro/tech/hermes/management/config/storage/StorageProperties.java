@@ -91,6 +91,10 @@ public class StorageProperties implements ZookeeperParameters {
     this.connectTimeout = connectionTimeout;
   }
 
+  public void setConnectionTimeout(String connectionTimeout) {
+    this.connectTimeout = Integer.parseInt(connectionTimeout);
+  }
+
   @Override
   public Duration getMaxSleepTime() {
     return Duration.ofMillis(maxSleepTime);
