@@ -43,13 +43,13 @@ import type { Owner, OwnerSource } from '@/api/owner';
 import type { ResponsePromise } from '@/utils/axios/axios-utils';
 import type { RetransmissionDate } from '@/api/OffsetRetransmissionDate';
 import type { Role } from '@/api/role';
+import type { SearchResults } from '@/api/SearchResults';
 import type { SentMessageTrace } from '@/api/subscription-undelivered';
 import type { Stats } from '@/api/stats';
 import type { SubscriptionHealth } from '@/api/subscription-health';
 import type { SubscriptionMetrics } from '@/api/subscription-metrics';
 import type { TopicForm } from '@/composables/topic/use-form-topic/types';
 import type { TrackingUrl } from '@/api/tracking-url';
-import type { SearchResults } from '@/api/SearchResults';
 
 const acceptHeader = 'Accept';
 const contentTypeHeader = 'Content-Type';
