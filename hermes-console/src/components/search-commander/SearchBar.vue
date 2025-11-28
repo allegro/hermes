@@ -1,4 +1,8 @@
 <script setup lang="ts">
+  const { hotKey } = defineProps<{
+    hotKey: string;
+  }>();
+
   const emit = defineEmits<{
     (e: 'open'): void;
   }>();
@@ -14,14 +18,14 @@
     variant="tonal"
     @click="open"
     class="text-medium-emphasis text-capitalize"
-    width="400"
+    width="500"
     max-width="100%"
-    spaced="both"
+    spaced="end"
   >
     <span class="text-none">Search</span>
     <template #append>
       <v-hotkey
-        keys="cmd+k"
+        :keys="hotKey"
         platform="auto"
         variant="text"
         color="grey-darken-2"

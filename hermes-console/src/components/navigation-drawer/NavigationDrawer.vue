@@ -146,8 +146,8 @@
 
     <template #append>
       <v-divider />
-      <v-list-item>
-        <div class="d-flex align-center justify-center" style="width: 100%">
+      <v-list-item class="pa-1">
+        <div class="d-flex align-center justify-center">
           <v-btn
             v-if="rail"
             icon="mdi-chevron-right"
@@ -155,7 +155,7 @@
             @click.stop="rail = !rail"
           ></v-btn>
         </div>
-        <div class="d-flex justify-end" style="width: 100%">
+        <div class="d-flex justify-end">
           <v-btn
             v-if="!rail"
             icon="mdi-chevron-left"

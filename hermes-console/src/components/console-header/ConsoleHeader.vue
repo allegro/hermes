@@ -1,22 +1,23 @@
 <script setup lang="ts">
-  import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+  import { computed, ref } from 'vue';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import { useAuthStore } from '@/store/auth/useAuthStore';
+  import { useFeatureFlagsStore } from '@/store/feature-flags/useFeatureFlagsStore';
+  import { useHotkey, useTheme } from 'vuetify';
   import { useI18n } from 'vue-i18n';
   import { useRouter } from 'vue-router';
-  import { useTheme } from 'vuetify';
   import EnvironmentBadge from '@/components/environment-badge/EnviromentBadge.vue';
   import SearchBar from '@/components/search-commander/SearchBar.vue';
   import SearchCommander from '@/components/search-commander/SearchCommander.vue';
   import ThemeSwitch from '@/components/theme-switch/ThemeSwitch.vue';
 
   const { t } = useI18n();
-
   const router = useRouter();
-
   const theme = useTheme();
   const configStore = useAppConfigStore();
   const authStore = useAuthStore();
+  const { searchV2Enabled } = useFeatureFlagsStore();
+  useHotkey('cmd+k', openCommandPalette, {});
 
   const isLoggedIn = computed(() => authStore.isUserAuthorized);
   const isCommandPaletteOpen = ref(false);
@@ -31,38 +32,15 @@
   }
 
   function openCommandPalette() {
-    isCommandPaletteOpen.value = true;
-  }
-
-  function handleKeyDown(event: KeyboardEvent) {
-    const isInputElement = (() => {
-      const tag = (event.target as HTMLElement | null)?.tagName?.toLowerCase();
-      return tag === 'input' || tag === 'textarea' || tag === 'select';
-    })();
-
-    const isCmdOrCtrlK =
-      (event.key === 'k' || event.key === 'K') &&
-      (event.metaKey || event.ctrlKey) &&
-      !event.altKey;
-
-    if (!isInputElement && isCmdOrCtrlK) {
-      event.preventDefault();
-      openCommandPalette();
+    if (searchV2Enabled) {
+      isCommandPaletteOpen.value = true;
     }
   }
-
-  onMounted(() => {
-    window.addEventListener('keydown', handleKeyDown);
-  });
-
-  onBeforeUnmount(() => {
-    window.removeEventListener('keydown', handleKeyDown);
-  });
 </script>
 
 <template>
   <v-app-bar flat density="compact" color="surface">
-    <div class="header">
+    <div class="header position-relative">
       <div class="header-left">
         <router-link to="/ui" custom v-slot="{ navigate }">
           <img
@@ -90,8 +68,11 @@
         />
       </div>
 
-      <div class="d-flex align-center justify-center flex-grow-1 ga-4">
-        <search-bar @open="openCommandPalette" />
+      <div
+        v-if="searchV2Enabled"
+        class="position-absolute left-0 right-0 mx-auto d-flex align-center justify-center top-0 bottom-0"
+      >
+        <search-bar @open="openCommandPalette" hot-key="cmd+k" />
       </div>
 
       <div class="d-flex align-center ga-2 pr-2">
@@ -135,6 +116,7 @@
       flex-direction: row;
       gap: 0.75rem;
       padding: 0 0.75rem;
+      z-index: 2;
     }
 
     &__logo {
