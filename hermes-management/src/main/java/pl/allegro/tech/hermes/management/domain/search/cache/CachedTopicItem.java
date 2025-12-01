@@ -5,12 +5,12 @@ public record CachedTopicItem(
     String owner
 ) implements CachedItem {
   @Override
-  public CachedItemType getType() {
+  public CachedItemType type() {
     return CachedItemType.TOPIC;
   }
 
   @Override
-  public String getName() {
+  public String name() {
     return name;
   }
 }

@@ -4,15 +4,17 @@ public record CachedSubscriptionItem(
     String name,
     String owner,
     String endpoint,
-    String topicName
+    String topicName,
+    String topicQualifiedName,
+    String groupName
 ) implements CachedItem {
   @Override
-  public CachedItemType getType() {
+  public CachedItemType type() {
     return CachedItemType.SUBSCRIPTION;
   }
 
   @Override
-  public String getName() {
+  public String name() {
     return name;
   }
 }

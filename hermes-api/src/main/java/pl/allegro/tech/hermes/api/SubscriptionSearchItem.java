@@ -6,6 +6,12 @@ public record SubscriptionSearchItem(
     Subscription subscription
 ) implements SearchItem {
   public record Subscription(
-      String topicName
+      Topic topic
+  ) {}
+
+  public record Topic(
+      String name,
+      String qualifiedName,
+      String groupName
   ) {}
 }

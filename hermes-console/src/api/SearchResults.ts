@@ -30,5 +30,11 @@ export interface SearchResultSubscriptionItem {
 }
 
 export interface SubscriptionItemDetails {
-  topicName: string;
+  topic: SubscriptionTopicDetails;
+}
+
+export interface SubscriptionTopicDetails {
+  name: string;
+  qualifiedName: string;
+  groupName: string;
 }

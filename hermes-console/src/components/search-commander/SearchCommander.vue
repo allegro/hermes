@@ -66,53 +66,55 @@
     }
   };
 
-  function navigateToResult(item: SearchResultItem) {
-    if (item.type === 'TOPIC') {
-      const [groupId, topicId] = item.name.split('.');
-      if (groupId && topicId) {
-        router.push({
-          name: 'topic',
-          params: { groupId, topicName: item.name },
-        });
-      }
-    } else if (item.type === 'SUBSCRIPTION') {
-      const [groupId, topicId, subscriptionId] = item.name.split('.');
-      if (groupId && topicId && subscriptionId) {
-        router.push({
-          name: 'subscription',
-          params: { groupId, topicId: `${groupId}.${topicId}`, subscriptionId },
-        });
-      }
-    }
+  const navigateToSubscription = (item: SearchResultSubscriptionItem) => {
+    router.push({
+      name: 'subscription',
+      params: {
+        groupId: item.subscription.groupId,
+        topicId: item.subscription.topic.qualifiedName,
+        subscriptionId: item.name,
+      },
+    });
     close();
-  }
+  };
 
   const createSubscriptionItem = (
     item: SearchResultSubscriptionItem,
     sectionId: string,
   ): CommandPaletteElement => ({
     type: 'item',
-    id: `${sectionId}-item-${item.type}:${item.name}`,
+    id: `${sectionId}-item-${item.subscription.topicName}:${item.name}`,
     title: item.name,
     subtitle: `${t('searchCommander.topic')} ${item.subscription.topicName}`,
     icon: 'mdi-rss',
     label: 'subscription',
     labelColor: 'cyan',
-    onClick: () => navigateToResult(item),
+    onClick: () => navigateToSubscription(item),
   });
+
+  const navigateToTopic = (item: SearchResultTopicItem) => {
+    router.push({
+      name: 'topic',
+      params: {
+        groupId: item.topic.groupId,
+        topicName: item.name,
+      },
+    });
+    close();
+  };
 
   const createTopicItem = (
     item: SearchResultTopicItem,
     sectionId: string,
   ): CommandPaletteElement => ({
     type: 'item',
-    id: `${sectionId}-item-${item.type}:${item.name}`,
+    id: `${sectionId}-item-${item.name}:${item.name}`,
     title: item.name,
     subtitle: `${t('searchCommander.owner')} ${item.topic.owner.id}`,
     icon: 'mdi-book-open-page-variant',
     label: 'topic',
     labelColor: 'teal',
-    onClick: () => navigateToResult(item),
+    onClick: () => navigateToTopic(item),
   });
 
   const items = computed<CommandPaletteElement[]>(() => {
@@ -122,7 +124,7 @@
       const sectionId = `section-${section.type}`;
 
       flat.push({
-        type: 'title',
+        type: 'subheader',
         id: `${sectionId}-title`,
         title: section.title,
       });
@@ -147,7 +149,7 @@
   });
 
   watch(term, (newValue, _, onCleanup) => {
-    if (!newValue) {
+    if (newValue.length < 3) {
       results.value = [];
       totalCount.value = 0;
       return;
@@ -174,6 +176,7 @@
     v-model:search="term"
     :items="items"
     :loading="loading"
+    :number-of-results="totalCount"
   />
 </template>
 

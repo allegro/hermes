@@ -1,10 +1,10 @@
 export type CommandPaletteElement =
-  | CommandPaletteTitleElement
+  | CommandPaletteSubheaderElement
   | CommandPaletteDividerElement
   | CommandPaletteItemElement;
 
-export interface CommandPaletteTitleElement {
-  type: 'title';
+export interface CommandPaletteSubheaderElement {
+  type: 'subheader';
   id: string;
   title: string;
 }

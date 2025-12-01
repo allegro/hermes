@@ -56,14 +56,20 @@ public class SearchService {
     return switch (cachedItem) {
       case CachedTopicItem item ->
           new TopicSearchItem(
-              item.getType().name(),
+              item.type().name(),
               item.name(),
               new TopicSearchItem.Topic(new TopicSearchItem.Owner(item.owner())));
       case CachedSubscriptionItem item ->
           new SubscriptionSearchItem(
-              item.getType().name(),
+              item.type().name(),
               item.name(),
-              new SubscriptionSearchItem.Subscription(item.topicName()));
+              new SubscriptionSearchItem.Subscription(
+                  new SubscriptionSearchItem.Topic(
+                      item.topicName(),
+                      item.topicQualifiedName(),
+                      item.groupName()
+                  )
+              ));
     };
   }
 }
