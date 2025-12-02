@@ -70,7 +70,7 @@
     router.push({
       name: 'subscription',
       params: {
-        groupId: item.subscription.groupId,
+        groupId: item.subscription.topic.groupName,
         topicId: item.subscription.topic.qualifiedName,
         subscriptionId: item.name,
       },
@@ -83,9 +83,9 @@
     sectionId: string,
   ): CommandPaletteElement => ({
     type: 'item',
-    id: `${sectionId}-item-${item.subscription.topicName}:${item.name}`,
+    id: `${sectionId}-item-${item.subscription.topic.qualifiedName}:${item.name}`,
     title: item.name,
-    subtitle: `${t('searchCommander.topic')} ${item.subscription.topicName}`,
+    subtitle: `${t('searchCommander.topic')} ${item.subscription.topic.qualifiedName}`,
     icon: 'mdi-rss',
     label: 'subscription',
     labelColor: 'cyan',
@@ -96,7 +96,7 @@
     router.push({
       name: 'topic',
       params: {
-        groupId: item.topic.groupId,
+        groupId: item.topic.groupName,
         topicName: item.name,
       },
     });
@@ -177,6 +177,7 @@
     :items="items"
     :loading="loading"
     :number-of-results="totalCount"
+    :input-placeholder="$t('searchCommander.searchInputPlaceholder')"
   />
 </template>
 

@@ -120,9 +120,7 @@ public class NotificationBasedSearchCache implements SearchCache, TopicCallback,
 
   private CachedTopicItem createCachedTopic(Topic topic) {
     return new CachedTopicItem(
-        topic.getName().qualifiedName(),
-        topic.getOwner().getId()
-    );
+        topic.getName().qualifiedName(), topic.getOwner().getId(), topic.getName().getGroupName());
   }
 
   private  CachedSubscriptionItem createCachedSubscription(Subscription subscription) {

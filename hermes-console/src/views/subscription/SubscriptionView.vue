@@ -5,7 +5,7 @@
   import { useDialog } from '@/composables/dialog/use-dialog/useDialog';
   import { useI18n } from 'vue-i18n';
   import { useRoles } from '@/composables/roles/use-roles/useRoles';
-  import { useRouter } from 'vue-router';
+  import { useRoute, useRouter } from 'vue-router';
   import { useSubscription } from '@/composables/subscription/use-subscription/useSubscription';
   import { useTopic } from '@/composables/topic/use-topic/useTopic';
   import ConfirmationDialog from '@/components/confirmation-dialog/ConfirmationDialog.vue';
@@ -24,8 +24,11 @@
   import UndeliveredMessagesCard from '@/views/subscription/undelivered-messages-card/UndeliveredMessagesCard.vue';
 
   const router = useRouter();
-  const { groupId, subscriptionId, topicId } = router.currentRoute.value
-    .params as Record<string, string>;
+  const route = useRoute();
+  const { groupId, subscriptionId, topicId } = route.params as Record<
+    string,
+    string
+  >;
   const { topic } = useTopic(topicId);
   const { t } = useI18n();
 

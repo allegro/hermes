@@ -6,6 +6,7 @@ public record TopicSearchItem(
     Topic topic
 ) implements SearchItem {
   public record Topic(
+      String groupName,
       Owner owner
   ) {}
 

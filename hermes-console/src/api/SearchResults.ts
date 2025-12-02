@@ -3,8 +3,6 @@ export interface SearchResults {
   results: SearchResultItem[];
 }
 
-export type SearchResultType = 'TOPIC' | 'SUBSCRIPTION';
-
 export type SearchResultItem =
   | SearchResultTopicItem
   | SearchResultSubscriptionItem;
@@ -16,6 +14,7 @@ export interface SearchResultTopicItem {
 }
 
 export interface TopicItemDetails {
+  groupName: string;
   owner: TopicOwnerDetails;
 }
 

@@ -3,12 +3,20 @@
   import CommandPaletteItem from '@/components/command-palette/command-palette-item/CommandPaletteItem.vue';
   import type { CommandPaletteElement } from '@/components/command-palette/types';
 
-  const { items, numberOfResults, search, loading, modelValue } = defineProps<{
+  const {
+    items,
+    numberOfResults,
+    search,
+    loading,
+    modelValue,
+    inputPlaceholder,
+  } = defineProps<{
     items: CommandPaletteElement[];
     numberOfResults: number;
     search: string;
     loading: boolean;
     modelValue: boolean;
+    inputPlaceholder?: string;
   }>();
 
   const emit = defineEmits<{
@@ -42,9 +50,10 @@
           v-model="_search"
           autofocus
           variant="solo"
-          placeholder="Search topics and subscriptions"
+          :placeholder="inputPlaceholder"
           prepend-inner-icon="mdi-magnify"
           hide-details
+          data-testid="command-palette-search-input"
         />
       </v-card-title>
 
@@ -80,31 +89,32 @@
           max-height="500"
         >
           <template #default="{ item }">
-            <v-list-subheader
-              v-if="item.type === 'subheader'"
-              :key="item.id"
-              class="px-3"
-            >
-              {{ item.title }}
-            </v-list-subheader>
+            <div :key="item.id" data-testid="command-palette-element">
+              <v-list-subheader
+                v-if="item.type === 'subheader'"
+                :key="item.id"
+                class="px-3"
+              >
+                {{ item.title }}
+              </v-list-subheader>
 
-            <v-divider
-              v-else-if="item.type === 'divider'"
-              class="mt-3 mb-2"
-              :key="item.id"
-            />
+              <v-divider
+                v-else-if="item.type === 'divider'"
+                class="mt-3 mb-2"
+                data-testid="command-palette-divider-element"
+              />
 
-            <command-palette-item
-              :key="item.id"
-              v-else-if="item.type === 'item'"
-              :title="item.title"
-              :subtitle="item.subtitle"
-              :icon="item.icon"
-              :label="item.label"
-              :label-color="item.labelColor"
-              @click="item.onClick"
-              class="py-2"
-            />
+              <command-palette-item
+                v-else-if="item.type === 'item'"
+                :title="item.title"
+                :subtitle="item.subtitle"
+                :icon="item.icon"
+                :label="item.label"
+                :label-color="item.labelColor"
+                @click="item.onClick"
+                class="py-2"
+              />
+            </div>
           </template>
         </v-virtual-scroll>
       </v-card-text>
@@ -113,7 +123,7 @@
 
       <v-card-actions class="justify-end">
         <span class="text-caption text-medium-emphasis mr-4">
-          {{ numberOfResults }} results
+          {{ numberOfResults }} {{ $t('commandPalette.resultsCounts') }}
         </span>
       </v-card-actions>
     </v-card>

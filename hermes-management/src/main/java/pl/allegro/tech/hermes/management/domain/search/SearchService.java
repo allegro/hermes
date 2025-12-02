@@ -58,7 +58,11 @@ public class SearchService {
           new TopicSearchItem(
               item.type().name(),
               item.name(),
-              new TopicSearchItem.Topic(new TopicSearchItem.Owner(item.owner())));
+              new TopicSearchItem.Topic(
+                  item.groupName(),
+                  new TopicSearchItem.Owner(item.owner())
+              )
+          );
       case CachedSubscriptionItem item ->
           new SubscriptionSearchItem(
               item.type().name(),

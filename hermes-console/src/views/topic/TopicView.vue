@@ -1,12 +1,12 @@
 <script async setup lang="ts">
-  import { computed, ref } from 'vue';
+  import { computed, ref, watch } from 'vue';
   import { copyToClipboard } from '@/utils/copy-utils';
   import { isTopicOwnerOrAdmin } from '@/utils/roles-util';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import { useDialog } from '@/composables/dialog/use-dialog/useDialog';
   import { useI18n } from 'vue-i18n';
   import { useRoles } from '@/composables/roles/use-roles/useRoles';
-  import { useRouter } from 'vue-router';
+  import { useRoute, useRouter } from 'vue-router';
   import { useTopic } from '@/composables/topic/use-topic/useTopic';
   import ConfirmationDialog from '@/components/confirmation-dialog/ConfirmationDialog.vue';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
@@ -23,13 +23,11 @@
   import TrackingCard from '@/components/tracking-card/TrackingCard.vue';
 
   const router = useRouter();
+  const route = useRoute();
 
   const { t } = useI18n();
 
-  const { groupId, topicName } = router.currentRoute.value.params as Record<
-    string,
-    string
-  >;
+  const { groupId, topicName } = route.params as Record<string, string>;
 
   const {
     topic,

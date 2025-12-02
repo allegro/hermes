@@ -7,7 +7,7 @@
   import { useI18n } from 'vue-i18n';
   import { useRouter } from 'vue-router';
   import EnvironmentBadge from '@/components/environment-badge/EnviromentBadge.vue';
-  import SearchBar from '@/components/search-commander/SearchBar.vue';
+  import SearchBar from '@/components/search-commander/search-bar/SearchBar.vue';
   import SearchCommander from '@/components/search-commander/SearchCommander.vue';
   import ThemeSwitch from '@/components/theme-switch/ThemeSwitch.vue';
 

@@ -182,7 +182,7 @@ export function useTopic(topicName: string): UseTopic {
       });
       return true;
     } catch (e: any) {
-      await dispatchErrorNotification(
+      dispatchErrorNotification(
         e,
         notificationStore,
         useGlobalI18n().t('notifications.topic.delete.failure', {

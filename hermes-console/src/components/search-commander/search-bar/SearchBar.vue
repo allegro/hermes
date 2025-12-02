@@ -21,6 +21,7 @@
     width="500"
     max-width="100%"
     spaced="end"
+    data-testid="search-bar-button"
   >
     <span class="text-none">Search</span>
     <template #append>
@@ -28,7 +29,8 @@
         :keys="hotKey"
         platform="auto"
         variant="text"
-        color="grey-darken-2"
+        color="grey-darken-1"
+        class="text-grey-darken-1"
       />
     </template>
   </v-btn>

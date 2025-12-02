@@ -4,6 +4,7 @@
       "type": "TOPIC",
       "name": "pl.allegro.public.group.DummyEvent",
       "topic": {
+        "groupName": "pl.allegro.public.group",
         "owner": {
           "id": "1234"
         }

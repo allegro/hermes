@@ -26,7 +26,7 @@
     <v-list-item-subtitle v-if="subtitle">{{ subtitle }}</v-list-item-subtitle>
 
     <template #append>
-      <v-chip size="small" :color="labelColor" text-color="white">
+      <v-chip v-if="label" size="small" :color="labelColor" text-color="white">
         {{ label }}
       </v-chip>
     </template>
