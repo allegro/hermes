@@ -40,8 +40,8 @@
 
 <template>
   <v-app-bar flat density="compact" color="surface">
-    <div class="header position-relative">
-      <div class="header-left">
+    <v-row class="header">
+      <v-col class="header-left">
         <router-link to="/ui" custom v-slot="{ navigate }">
           <img
             @click="navigate"
@@ -66,16 +66,13 @@
             configStore.appConfig?.console.criticalEnvironment || false
           "
         />
-      </div>
+      </v-col>
 
-      <div
-        v-if="searchV2Enabled"
-        class="position-absolute left-0 right-0 mx-auto d-flex align-center justify-center top-0 bottom-0"
-      >
+      <v-col v-if="searchV2Enabled" class="d-flex align-center justify-center">
         <search-bar @open="openCommandPalette" hot-key="cmd+k" />
-      </div>
+      </v-col>
 
-      <div class="d-flex align-center ga-2 pr-2">
+      <v-col class="d-flex align-center ga-2 pr-2 justify-end">
         <theme-switch />
         <v-btn
           v-if="configStore.loadedConfig.auth.oauth.enabled && !isLoggedIn"
@@ -93,8 +90,8 @@
         >
           {{ t('header.logout') }}
         </v-btn>
-      </div>
-    </div>
+      </v-col>
+    </v-row>
 
     <search-commander
       v-model="isCommandPaletteOpen"
@@ -105,9 +102,6 @@
 
 <style scoped lang="scss">
   .header {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
     width: 100%;
 
     &-left {
@@ -116,7 +110,6 @@
       flex-direction: row;
       gap: 0.75rem;
       padding: 0 0.75rem;
-      z-index: 2;
     }
 
     &__logo {

@@ -19,7 +19,7 @@
     @click="open"
     class="text-medium-emphasis text-capitalize"
     width="500"
-    max-width="100%"
+    max-width="30vw"
     spaced="end"
     data-testid="search-bar-button"
   >

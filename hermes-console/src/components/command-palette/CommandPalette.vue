@@ -38,8 +38,7 @@
 <template>
   <v-dialog
     v-model="isOpen"
-    max-width="100vw"
-    min-width="50vw"
+    width="60rem"
     min-height="50vh"
     max-height="90vh"
     class="command-palette-dialog"
