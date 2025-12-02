@@ -8,6 +8,7 @@ import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscription
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.Instant;
 import org.junit.Test;
 import pl.allegro.tech.hermes.api.helpers.Patch;
 
@@ -158,6 +159,29 @@ public class SubscriptionTest {
     // when & then
     assertThat(subscription.anonymize().getEndpoint())
         .isEqualTo(new EndpointAddress("http://user:*****@service/path"));
+  }
+
+  @Test
+  public void shouldPreserveCreationAndModificationTimestampWhenAnonymizingSubscription() {
+    // given
+    Instant createdAt = Instant.now();
+    Instant modifiedAt = Instant.now();
+    Subscription subscription =
+        subscription("group.topic", "subscription")
+            // required for anonymization to fire
+            .withEndpoint("http://user:password@service/path")
+            .withCreatedAt(createdAt)
+            .withModifiedAt(modifiedAt)
+            .build();
+
+    // when
+    subscription = subscription.anonymize();
+
+    // then
+    assertThat(subscription.getEndpoint())
+        .isEqualTo(new EndpointAddress("http://user:*****@service/path"));
+    assertThat(subscription.getCreatedAt().toEpochMilli()).isEqualTo(createdAt.toEpochMilli());
+    assertThat(subscription.getModifiedAt().toEpochMilli()).isEqualTo(modifiedAt.toEpochMilli());
   }
 
   @Test

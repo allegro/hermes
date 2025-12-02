@@ -13,7 +13,7 @@
 </script>
 
 <template>
-  <v-footer app absolute>
+  <v-footer app absolute color="background">
     <v-row justify="center" no-gutters>
       <v-btn
         v-for="link in links"

@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.test.helper.builder;
 
 import java.net.URI;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -75,6 +76,9 @@ public class SubscriptionBuilder {
   private boolean autoDeleteWithTopicEnabled = false;
 
   private SubscriptionMetricsConfig metricsConfig = null;
+
+  private Instant createdAt;
+  private Instant modifiedAt;
 
   private SubscriptionBuilder(
       TopicName topicName, String subscriptionName, EndpointAddress endpoint) {
@@ -167,28 +171,31 @@ public class SubscriptionBuilder {
           profilingThresholdMs,
           attachingIdentityHeadersEnabled,
           autoDeleteWithTopicEnabled,
-          metricsConfig);
-    } else {
-      return Subscription.createBatchSubscription(
-          topicName,
-          name,
-          endpoint,
-          state,
-          description,
-          batchSubscriptionPolicy,
-          trackingEnabled,
-          trackingMode,
-          owner,
-          monitoringDetails,
-          contentType,
-          filters,
-          headers,
-          metadata,
-          oAuthPolicy,
-          http2Enabled,
-          attachingIdentityHeadersEnabled,
-          autoDeleteWithTopicEnabled);
+          metricsConfig,
+          createdAt,
+          modifiedAt);
     }
+    return Subscription.createBatchSubscription(
+        topicName,
+        name,
+        endpoint,
+        state,
+        description,
+        batchSubscriptionPolicy,
+        trackingEnabled,
+        trackingMode,
+        owner,
+        monitoringDetails,
+        contentType,
+        filters,
+        headers,
+        metadata,
+        oAuthPolicy,
+        http2Enabled,
+        attachingIdentityHeadersEnabled,
+        autoDeleteWithTopicEnabled,
+        createdAt,
+        modifiedAt);
   }
 
   public SubscriptionBuilder withEndpoint(EndpointAddress endpoint) {
@@ -320,6 +327,16 @@ public class SubscriptionBuilder {
 
   public SubscriptionBuilder withMetricsConfig(SubscriptionMetricsConfig metricsConfig) {
     this.metricsConfig = metricsConfig;
+    return this;
+  }
+
+  public SubscriptionBuilder withCreatedAt(Instant createdAt) {
+    this.createdAt = createdAt;
+    return this;
+  }
+
+  public SubscriptionBuilder withModifiedAt(Instant modifiedAt) {
+    this.modifiedAt = modifiedAt;
     return this;
   }
 }

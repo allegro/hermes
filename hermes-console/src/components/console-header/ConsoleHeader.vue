@@ -6,7 +6,6 @@
   import { useRouter } from 'vue-router';
   import { useTheme } from 'vuetify';
   import EnvironmentBadge from '@/components/environment-badge/EnviromentBadge.vue';
-  import EnvironmentSwitch from '@/components/environment-switch/EnvironmentSwitch.vue';
   import ThemeSwitch from '@/components/theme-switch/ThemeSwitch.vue';
 
   const { t } = useI18n();
@@ -18,9 +17,6 @@
   const authStore = useAuthStore();
 
   const isLoggedIn = computed(() => authStore.isUserAuthorized);
-  const knownEnvironments = computed(
-    () => configStore.appConfig?.console.knownEnvironments || [],
-  );
 
   function logIn() {
     authStore.login(window.location.pathname);
@@ -33,7 +29,7 @@
 </script>
 
 <template>
-  <v-app-bar :elevation="2" density="compact">
+  <v-app-bar flat density="compact" color="surface">
     <div class="header">
       <!-- TODO: navigate to home -->
       <div class="header-left">
@@ -61,10 +57,8 @@
             configStore.appConfig?.console.criticalEnvironment || false
           "
         />
-        <v-divider vertical v-if="knownEnvironments.length > 0"></v-divider>
-        <environment-switch :known-environments="knownEnvironments" />
       </div>
-      <div>
+      <div class="d-flex align-center ga-2 pr-2">
         <theme-switch />
         <v-btn
           v-if="configStore.loadedConfig.auth.oauth.enabled && !isLoggedIn"
