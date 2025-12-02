@@ -80,6 +80,9 @@ const useMetricsStub: UseMetrics = {
 describe('SubscriptionView', () => {
   beforeEach(async () => {
     setActivePinia(createPinia());
+    vi.mocked(useSubscription).mockReturnValue(useSubscriptionStub);
+    vi.mocked(useRoles).mockReturnValue(useRolesStub);
+    vi.mocked(useMetrics).mockReturnValue(useMetricsStub);
     await router.push(
       '/ui/groups/pl.allegro.public.group' +
         '/topics/pl.allegro.public.group.DummyEvent' +
@@ -88,11 +91,6 @@ describe('SubscriptionView', () => {
   });
 
   it('should render all tabs if subscription data was successfully fetched', () => {
-    // given
-    vi.mocked(useSubscription).mockReturnValueOnce(useSubscriptionStub);
-    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
-    vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
-
     // when
     const { getByText } = render(SubscriptionView, {
       testPinia: createTestingPiniaWithState(),
@@ -116,9 +114,6 @@ describe('SubscriptionView', () => {
   ])('should activate tab on click', async (tab: string) => {
     // given
     const user = userEvent.setup();
-    vi.mocked(useSubscription).mockReturnValueOnce(useSubscriptionStub);
-    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
-    vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
     const { getByText } = render(SubscriptionView, {
       testPinia: createTestingPiniaWithState(),
     });
@@ -134,9 +129,6 @@ describe('SubscriptionView', () => {
   it('should show appropriate sections on general tab click', async () => {
     // given
     const user = userEvent.setup();
-    vi.mocked(useSubscription).mockReturnValueOnce(useSubscriptionStub);
-    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
-    vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
     const { getByText } = render(SubscriptionView, {
       testPinia: createTestingPiniaWithState(),
     });
@@ -153,9 +145,6 @@ describe('SubscriptionView', () => {
   it('should show appropriate sections on filters tab click', async () => {
     // given
     const user = userEvent.setup();
-    vi.mocked(useSubscription).mockReturnValueOnce(useSubscriptionStub);
-    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
-    vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
     const { getByText } = render(SubscriptionView, {
       testPinia: createTestingPiniaWithState(),
     });
@@ -170,9 +159,6 @@ describe('SubscriptionView', () => {
   it('should show appropriate sections on mutations tab click', async () => {
     // given
     const user = userEvent.setup();
-    vi.mocked(useSubscription).mockReturnValueOnce(useSubscriptionStub);
-    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
-    vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
     const { getByText } = render(SubscriptionView, {
       testPinia: createTestingPiniaWithState(),
     });
@@ -187,9 +173,6 @@ describe('SubscriptionView', () => {
   it('should show appropriate sections on messages tab click', async () => {
     // given
     const user = userEvent.setup();
-    vi.mocked(useSubscription).mockReturnValueOnce(useSubscriptionStub);
-    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
-    vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
     const { getByText } = render(SubscriptionView, {
       testPinia: createTestingPiniaWithState(),
     });
@@ -231,7 +214,6 @@ describe('SubscriptionView', () => {
         ...useRolesStub,
         roles: ref([]),
       });
-      vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
 
       // when
       const { queryByText, getByText } = render(SubscriptionView, {
@@ -245,11 +227,6 @@ describe('SubscriptionView', () => {
   );
 
   it('should render subscription health alert', () => {
-    // given
-    vi.mocked(useSubscription).mockReturnValueOnce(useSubscriptionStub);
-    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
-    vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
-
     // when
     const { getByText } = render(SubscriptionView, {
       testPinia: createTestingPiniaWithState(),
@@ -270,8 +247,6 @@ describe('SubscriptionView', () => {
       ...useSubscriptionStub,
       loading: computed(() => true),
     });
-    vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
-    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
 
     // when
     const { queryByTestId } = render(SubscriptionView, {
@@ -289,8 +264,6 @@ describe('SubscriptionView', () => {
       ...useSubscriptionStub,
       loading: computed(() => false),
     });
-    vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
-    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
 
     // when
     const { queryByTestId } = render(SubscriptionView, {
@@ -317,8 +290,6 @@ describe('SubscriptionView', () => {
         getSubscriptionTrackingUrls: null,
       }),
     });
-    vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
-    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
 
     // when
     const { queryByText } = render(SubscriptionView, {
@@ -337,8 +308,6 @@ describe('SubscriptionView', () => {
       ...useSubscriptionStub,
       loading: computed(() => false),
     });
-    vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
-    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
 
     // when
     const { queryByText } = render(SubscriptionView, {
@@ -353,11 +322,6 @@ describe('SubscriptionView', () => {
   });
 
   it('should show confirmation dialog on remove button click', async () => {
-    // given
-    vi.mocked(useSubscription).mockReturnValueOnce(useSubscriptionStub);
-    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
-    vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
-
     // when
     const { getByText } = render(SubscriptionView, {
       testPinia: createTestingPiniaWithState(),
@@ -376,11 +340,6 @@ describe('SubscriptionView', () => {
   });
 
   it('should show confirmation dialog on suspend button click', async () => {
-    // given
-    vi.mocked(useSubscription).mockReturnValueOnce(useSubscriptionStub);
-    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
-    vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
-
     // when
     const { getByText } = render(SubscriptionView, {
       testPinia: createTestingPiniaWithState(),
@@ -407,8 +366,6 @@ describe('SubscriptionView', () => {
         state: ref(State.SUSPENDED),
       }),
     });
-    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
-    vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
 
     // when
     const { getByText } = render(SubscriptionView, {
@@ -428,11 +385,6 @@ describe('SubscriptionView', () => {
   });
 
   it('should not render costs card when it is disabled in app config', () => {
-    // given
-    vi.mocked(useSubscription).mockReturnValueOnce(useSubscriptionStub);
-    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
-    vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
-
     // when
     const { queryByText } = render(TopicView, {
       testPinia: createTestingPinia({
@@ -471,8 +423,6 @@ describe('SubscriptionView', () => {
       ...useSubscriptionStub,
       subscription: ref(dummySubscription2),
     });
-    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
-    vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
 
     // when
     const { getByText, queryByText } = render(SubscriptionView, {
