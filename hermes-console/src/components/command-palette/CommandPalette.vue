@@ -38,7 +38,7 @@
 <template>
   <v-dialog
     v-model="isOpen"
-    width="60rem"
+    max-width="50rem"
     min-height="50vh"
     max-height="90vh"
     class="command-palette-dialog"
@@ -130,6 +130,10 @@
 </template>
 
 <style scoped lang="scss">
+  :deep(.v-overlay__content) {
+    max-width: 50rem !important;
+  }
+
   .command-palette-card {
     opacity: 0.96;
   }
