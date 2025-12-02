@@ -271,6 +271,7 @@ describe('SubscriptionView', () => {
       loading: computed(() => true),
     });
     vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
+    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
 
     // when
     const { queryByTestId } = render(SubscriptionView, {
@@ -289,6 +290,7 @@ describe('SubscriptionView', () => {
       loading: computed(() => false),
     });
     vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
+    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
 
     // when
     const { queryByTestId } = render(SubscriptionView, {
@@ -312,9 +314,11 @@ describe('SubscriptionView', () => {
         fetchSubscriptionHealth: null,
         fetchSubscriptionUndeliveredMessages: null,
         fetchSubscriptionLastUndeliveredMessage: null,
+        getSubscriptionTrackingUrls: null,
       }),
     });
     vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
+    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
 
     // when
     const { queryByText } = render(SubscriptionView, {
@@ -334,6 +338,7 @@ describe('SubscriptionView', () => {
       loading: computed(() => false),
     });
     vi.mocked(useMetrics).mockReturnValueOnce(useMetricsStub);
+    vi.mocked(useRoles).mockReturnValueOnce(useRolesStub);
 
     // when
     const { queryByText } = render(SubscriptionView, {

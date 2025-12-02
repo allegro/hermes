@@ -12,11 +12,11 @@ import {
   suspendSubscription as suspend,
 } from '@/api/hermes-client';
 import { dispatchErrorNotification } from '@/utils/notification-utils';
-import { ref } from 'vue';
+import { type MaybeRef, ref, toValue } from 'vue';
+import { type Ref, watch } from 'vue';
 import { useGlobalI18n } from '@/i18n';
 import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
 import type { Owner } from '@/api/owner';
-import type { Ref } from 'vue';
 import type { SentMessageTrace } from '@/api/subscription-undelivered';
 import type { Subscription } from '@/api/subscription';
 import type { SubscriptionHealth } from '@/api/subscription-health';
@@ -53,8 +53,8 @@ export interface UseSubscriptionsErrors {
 }
 
 export function useSubscription(
-  topicName: string,
-  subscriptionName: string,
+  topicName: MaybeRef<string>,
+  subscriptionName: MaybeRef<string>,
 ): UseSubscription {
   const notificationStore = useNotificationsStore();
 
@@ -101,7 +101,7 @@ export function useSubscription(
   const fetchSubscriptionInfo = async () => {
     try {
       subscription.value = (
-        await getSubscription(topicName, subscriptionName)
+        await getSubscription(toValue(topicName), toValue(subscriptionName))
       ).data;
     } catch (e) {
       error.value.fetchSubscription = e as Error;
@@ -122,7 +122,10 @@ export function useSubscription(
   const fetchSubscriptionMetrics = async () => {
     try {
       subscriptionMetrics.value = (
-        await getSubscriptionMetrics(topicName, subscriptionName)
+        await getSubscriptionMetrics(
+          toValue(topicName),
+          toValue(subscriptionName),
+        )
       ).data;
     } catch (e) {
       error.value.fetchSubscriptionMetrics = e as Error;
@@ -132,7 +135,10 @@ export function useSubscription(
   const fetchSubscriptionHealth = async () => {
     try {
       subscriptionHealth.value = (
-        await getSubscriptionHealth(topicName, subscriptionName)
+        await getSubscriptionHealth(
+          toValue(topicName),
+          toValue(subscriptionName),
+        )
       ).data;
     } catch (e) {
       error.value.fetchSubscriptionHealth = e as Error;
@@ -142,7 +148,10 @@ export function useSubscription(
   const fetchSubscriptionUndeliveredMessages = async () => {
     try {
       subscriptionUndeliveredMessages.value = (
-        await getSubscriptionUndeliveredMessages(topicName, subscriptionName)
+        await getSubscriptionUndeliveredMessages(
+          toValue(topicName),
+          toValue(subscriptionName),
+        )
       ).data;
     } catch (e) {
       error.value.fetchSubscriptionUndeliveredMessages = e as Error;
@@ -152,7 +161,10 @@ export function useSubscription(
   const fetchSubscriptionLastUndeliveredMessage = async () => {
     try {
       subscriptionLastUndeliveredMessage.value = (
-        await getSubscriptionLastUndeliveredMessage(topicName, subscriptionName)
+        await getSubscriptionLastUndeliveredMessage(
+          toValue(topicName),
+          toValue(subscriptionName),
+        )
       ).data;
     } catch (e) {
       error.value.fetchSubscriptionLastUndeliveredMessage = e as Error;
@@ -162,7 +174,10 @@ export function useSubscription(
   const fetchSubscriptionTrackingUrls = async () => {
     try {
       trackingUrls.value = (
-        await getSubscriptionTrackingUrls(topicName, subscriptionName)
+        await getSubscriptionTrackingUrls(
+          toValue(topicName),
+          toValue(subscriptionName),
+        )
       ).data;
     } catch (e) {
       error.value.getSubscriptionTrackingUrls = e as Error;
@@ -171,20 +186,20 @@ export function useSubscription(
 
   const removeSubscription = async (): Promise<boolean> => {
     try {
-      await deleteSubscription(topicName, subscriptionName);
+      await deleteSubscription(toValue(topicName), toValue(subscriptionName));
       await notificationStore.dispatchNotification({
         text: useGlobalI18n().t('notifications.subscription.delete.success', {
-          subscriptionName,
+          subscriptionName: toValue(subscriptionName),
         }),
         type: 'success',
       });
       return true;
     } catch (e: any) {
-      await dispatchErrorNotification(
+      dispatchErrorNotification(
         e,
         notificationStore,
         useGlobalI18n().t('notifications.subscription.delete.failure', {
-          subscriptionName,
+          subscriptionName: toValue(subscriptionName),
         }),
       );
       return false;
@@ -193,20 +208,20 @@ export function useSubscription(
 
   const suspendSubscription = async (): Promise<boolean> => {
     try {
-      await suspend(topicName, subscriptionName);
+      await suspend(toValue(topicName), toValue(subscriptionName));
       await notificationStore.dispatchNotification({
         text: useGlobalI18n().t('notifications.subscription.suspend.success', {
-          subscriptionName,
+          subscriptionName: toValue(subscriptionName),
         }),
         type: 'success',
       });
       return true;
     } catch (e: any) {
-      await dispatchErrorNotification(
+      dispatchErrorNotification(
         e,
         notificationStore,
         useGlobalI18n().t('notifications.subscription.suspend.failure', {
-          subscriptionName,
+          subscriptionName: toValue(subscriptionName),
         }),
       );
       return false;
@@ -215,20 +230,20 @@ export function useSubscription(
 
   const activateSubscription = async (): Promise<boolean> => {
     try {
-      await activate(topicName, subscriptionName);
+      await activate(toValue(topicName), toValue(subscriptionName));
       await notificationStore.dispatchNotification({
         text: useGlobalI18n().t('notifications.subscription.activate.success', {
-          subscriptionName,
+          subscriptionName: toValue(subscriptionName),
         }),
         type: 'success',
       });
       return true;
     } catch (e: any) {
-      await dispatchErrorNotification(
+      dispatchErrorNotification(
         e,
         notificationStore,
         useGlobalI18n().t('notifications.subscription.activate.failure', {
-          subscriptionName,
+          subscriptionName: toValue(subscriptionName),
         }),
       );
       return false;
@@ -238,14 +253,18 @@ export function useSubscription(
   const retransmitMessages = async (from: string): Promise<boolean> => {
     retransmitting.value = true;
     try {
-      await retransmitSubscriptionMessages(topicName, subscriptionName, {
-        retransmissionDate: from,
-      });
+      await retransmitSubscriptionMessages(
+        toValue(topicName),
+        toValue(subscriptionName),
+        {
+          retransmissionDate: from,
+        },
+      );
       await notificationStore.dispatchNotification({
         title: useGlobalI18n().t(
           'notifications.subscription.retransmit.success',
           {
-            subscriptionName,
+            subscriptionName: toValue(subscriptionName),
           },
         ),
         text: '',
@@ -253,11 +272,11 @@ export function useSubscription(
       });
       return true;
     } catch (e: any) {
-      await dispatchErrorNotification(
+      dispatchErrorNotification(
         e,
         notificationStore,
         useGlobalI18n().t('notifications.subscription.retransmit.failure', {
-          subscriptionName,
+          subscriptionName: toValue(subscriptionName),
         }),
       );
       return false;
@@ -271,14 +290,18 @@ export function useSubscription(
     const tomorrowDate = new Date();
     tomorrowDate.setDate(tomorrowDate.getDate() + 1);
     try {
-      await retransmitSubscriptionMessages(topicName, subscriptionName, {
-        retransmissionDate: tomorrowDate.toISOString(),
-      });
+      await retransmitSubscriptionMessages(
+        toValue(topicName),
+        toValue(subscriptionName),
+        {
+          retransmissionDate: tomorrowDate.toISOString(),
+        },
+      );
       await notificationStore.dispatchNotification({
         title: useGlobalI18n().t(
           'notifications.subscription.skipAllMessages.success',
           {
-            subscriptionName,
+            subscriptionName: toValue(subscriptionName),
           },
         ),
         text: '',
@@ -286,13 +309,13 @@ export function useSubscription(
       });
       return true;
     } catch (e: any) {
-      await dispatchErrorNotification(
+      dispatchErrorNotification(
         e,
         notificationStore,
         useGlobalI18n().t(
           'notifications.subscription.skipAllMessages.failure',
           {
-            subscriptionName,
+            subscriptionName: toValue(subscriptionName),
           },
         ),
       );
@@ -302,8 +325,14 @@ export function useSubscription(
     }
   };
 
-  fetchSubscription();
-  fetchSubscriptionTrackingUrls();
+  watch(
+    () => [toValue(topicName), toValue(subscriptionName)],
+    async () => {
+      await fetchSubscription();
+      await fetchSubscriptionTrackingUrls();
+    },
+    { immediate: true },
+  );
 
   return {
     subscription,

@@ -44,7 +44,7 @@ describe('CommandPaletteItem', () => {
 
   it('should render label properly', () => {
     // given
-    const { getByText, find } = render(CommandPaletteItem, {
+    const { getByText } = render(CommandPaletteItem, {
       props: {
         title: 'Sample title',
         label: 'Sample label',
