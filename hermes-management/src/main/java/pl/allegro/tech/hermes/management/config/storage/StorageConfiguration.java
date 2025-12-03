@@ -178,7 +178,7 @@ public class StorageConfiguration {
         localClient.getCuratorFramework(), objectMapper, zookeeperPaths());
   }
 
-  @Bean(destroyMethod = "stop")
+  @Bean(initMethod = "start", destroyMethod = "stop")
   public ModelAwareZookeeperNotifyingCache modelAwareZookeeperNotifyingCache(
       MetricsFacade metricsFacade,
       StorageClustersProperties zookeeperClustersProperties,

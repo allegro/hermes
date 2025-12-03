@@ -9,7 +9,7 @@ public class StorageProperties implements ZookeeperParameters {
   private String datacenter = "dc";
   private String clusterName = "zk";
   private String connectionString = "localhost:2181";
-  private String root = "/hermes";
+  private String root = "/run/hermes";
   private int sessionTimeout = 10000;
   private int connectionTimeout = 1000;
   private int baseSleepTime = 1000000;
