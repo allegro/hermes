@@ -3,6 +3,7 @@ const activeOfflineRetransmissionTasks = require('./active-offline-retransmissio
 const subscriptions = require('./subscriptions.json');
 const routes = require('./routes.json');
 const filterDebug = require('./filter-debug.json');
+const search = require('./search.json');
 
 const jsonServer = require('json-server');
 const server = jsonServer.create();
@@ -19,6 +20,10 @@ server.post('/query/topics', (req, res) => {
 
 server.post('/query/subscriptions', (req, res) => {
   res.jsonp(subscriptions);
+});
+
+server.get('search/query', (req, res) => {
+  res.jsonp(search);
 });
 
 server.post('/topicSubscriptions', (req, res) => {

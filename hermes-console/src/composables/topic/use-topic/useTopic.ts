@@ -13,7 +13,7 @@ import {
   getTopicTrackingUrls,
 } from '@/api/hermes-client';
 import { dispatchErrorNotification } from '@/utils/notification-utils';
-import { ref } from 'vue';
+import { type MaybeRef, type Ref, ref, toValue, watch } from 'vue';
 import { useGlobalI18n } from '@/i18n';
 import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
 import type { ContentType } from '@/api/content-type';
@@ -25,7 +25,6 @@ import type {
 import type { OfflineClientsSource } from '@/api/offline-clients-source';
 import type { OfflineRetransmissionActiveTask } from '@/api/offline-retransmission';
 import type { Owner } from '@/api/owner';
-import type { Ref } from 'vue';
 import type { Subscription } from '@/api/subscription';
 import type { TrackingUrl } from '@/api/tracking-url';
 
@@ -55,7 +54,7 @@ export interface UseTopicErrors {
   getTopicTrackingUrls: Error | null;
 }
 
-export function useTopic(topicName: string): UseTopic {
+export function useTopic(topicName: MaybeRef<string>): UseTopic {
   const notificationStore = useNotificationsStore();
 
   const topic = ref<TopicWithSchema>();
@@ -97,7 +96,7 @@ export function useTopic(topicName: string): UseTopic {
 
   const fetchTopicInfo = async () => {
     try {
-      topic.value = (await getTopic(topicName)).data;
+      topic.value = (await getTopic(toValue(topicName))).data;
     } catch (e) {
       error.value.fetchTopic = e as Error;
     }
@@ -113,7 +112,7 @@ export function useTopic(topicName: string): UseTopic {
 
   const fetchTopicMessagesPreview = async () => {
     try {
-      messages.value = (await getTopicMessagesPreview(topicName)).data;
+      messages.value = (await getTopicMessagesPreview(toValue(topicName))).data;
     } catch (e) {
       error.value.fetchTopicMessagesPreview = e as Error;
     }
@@ -121,7 +120,7 @@ export function useTopic(topicName: string): UseTopic {
 
   const fetchTopicMetrics = async () => {
     try {
-      metrics.value = (await getTopicMetrics(topicName)).data;
+      metrics.value = (await getTopicMetrics(toValue(topicName))).data;
     } catch (e) {
       error.value.fetchTopicMetrics = e as Error;
     }
@@ -129,9 +128,11 @@ export function useTopic(topicName: string): UseTopic {
 
   const fetchSubscriptions = async () => {
     try {
-      const subscriptionsList = (await getTopicSubscriptions(topicName)).data;
+      const subscriptionsList = (
+        await getTopicSubscriptions(toValue(topicName))
+      ).data;
       const subscriptionsDetails = subscriptionsList.map(async (subscription) =>
-        getTopicSubscriptionDetails(topicName, subscription),
+        getTopicSubscriptionDetails(toValue(topicName), subscription),
       );
       const results = await Promise.allSettled(subscriptionsDetails);
       subscriptions.value = results
@@ -156,7 +157,7 @@ export function useTopic(topicName: string): UseTopic {
   const fetchOfflineClientsSource = async () => {
     try {
       offlineClientsSource.value = (
-        await getOfflineClientsSource(topicName)
+        await getOfflineClientsSource(toValue(topicName))
       ).data;
     } catch (e) {
       error.value.fetchOfflineClientsSource = e as Error;
@@ -165,7 +166,9 @@ export function useTopic(topicName: string): UseTopic {
 
   const fetchTopicTrackingUrls = async () => {
     try {
-      trackingUrls.value = (await getTopicTrackingUrls(topicName)).data;
+      trackingUrls.value = (
+        await getTopicTrackingUrls(toValue(topicName))
+      ).data;
     } catch (e) {
       error.value.getTopicTrackingUrls = e as Error;
     }
@@ -173,7 +176,7 @@ export function useTopic(topicName: string): UseTopic {
 
   const removeTopic = async (): Promise<boolean> => {
     try {
-      await deleteTopic(topicName);
+      await deleteTopic(toValue(topicName));
       await notificationStore.dispatchNotification({
         text: useGlobalI18n().t('notifications.topic.delete.success', {
           topicName,
@@ -182,7 +185,7 @@ export function useTopic(topicName: string): UseTopic {
       });
       return true;
     } catch (e: any) {
-      await dispatchErrorNotification(
+      dispatchErrorNotification(
         e,
         notificationStore,
         useGlobalI18n().t('notifications.topic.delete.failure', {
@@ -195,7 +198,7 @@ export function useTopic(topicName: string): UseTopic {
 
   const fetchTopicClients = async () => {
     try {
-      return (await getTopicClients(topicName)).data;
+      return (await getTopicClients(toValue(topicName))).data;
     } catch (e: any) {
       dispatchErrorNotification(
         e,
@@ -209,7 +212,7 @@ export function useTopic(topicName: string): UseTopic {
   const fetchActiveOfflineRetransmissions = async () => {
     try {
       activeRetransmissions.value = (
-        await getActiveOfflineRetransmissions(topicName)
+        await getActiveOfflineRetransmissions(toValue(topicName))
       ).data;
     } catch (e: any) {
       dispatchErrorNotification(
@@ -222,8 +225,14 @@ export function useTopic(topicName: string): UseTopic {
     }
   };
 
-  fetchTopic();
-  fetchTopicTrackingUrls();
+  watch(
+    () => toValue(topicName),
+    async () => {
+      await fetchTopic();
+      await fetchTopicTrackingUrls();
+    },
+    { immediate: true },
+  );
 
   return {
     topic,

@@ -30,5 +30,6 @@
   "/owners/sources/*?search=:searchPhrase": "/topicsOwners?name_like=:searchPhrase",
   "/dashboards/topics/:topicName": "/topicDashboardUrl",
   "/dashboards/topics/:topicName/subscriptions/:id": "/subscriptionDashboardUrl",
-  "/inactive-topics": "/inactiveTopics"
+  "/inactive-topics": "/inactiveTopics",
+  "/search/query?q=:searchPhrase": "/search"
 }
