@@ -7,8 +7,11 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import pl.allegro.tech.hermes.common.di.factories.ModelAwareZookeeperNotifyingCacheFactory;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.domain.CredentialsRepository;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
+import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
 import pl.allegro.tech.hermes.domain.oauth.OAuthProviderRepository;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
@@ -26,6 +29,8 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperSubscriptionRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperTopicRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperWorkloadConstraintsRepository;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.cache.ModelAwareZookeeperNotifyingCache;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.notifications.ZookeeperInternalNotificationBus;
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
 import pl.allegro.tech.hermes.management.domain.detection.InactiveTopicsRepository;
 import pl.allegro.tech.hermes.management.domain.mode.ModeService;
@@ -171,5 +176,24 @@ public class StorageConfiguration {
     ZookeeperClient localClient = clientManager().getLocalClient();
     return new ZookeeperInactiveTopicsRepository(
         localClient.getCuratorFramework(), objectMapper, zookeeperPaths());
+  }
+
+  @Bean(initMethod = "start", destroyMethod = "stop")
+  public ModelAwareZookeeperNotifyingCache modelAwareZookeeperNotifyingCache(
+      MetricsFacade metricsFacade,
+      StorageClustersProperties zookeeperClustersProperties,
+      DatacenterNameProvider datacenterNameProvider) {
+    ZookeeperClient localClient = clientManager().getLocalClient();
+    StorageProperties zookeeperProperties =
+        zookeeperClustersProperties.toZookeeperProperties(datacenterNameProvider);
+    return new ModelAwareZookeeperNotifyingCacheFactory(
+            localClient.getCuratorFramework(), metricsFacade, zookeeperProperties)
+        .provide();
+  }
+
+  @Bean
+  public InternalNotificationsBus zookeeperInternalNotificationBus(
+      ObjectMapper objectMapper, ModelAwareZookeeperNotifyingCache modelNotifyingCache) {
+    return new ZookeeperInternalNotificationBus(objectMapper, modelNotifyingCache);
   }
 }

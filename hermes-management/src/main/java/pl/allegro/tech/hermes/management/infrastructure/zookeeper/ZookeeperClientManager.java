@@ -57,7 +57,7 @@ public class ZookeeperClientManager {
   private StorageProperties createPropertiesForSingleCluster() {
     StorageProperties clusterProperties = new StorageProperties();
     clusterProperties.setConnectionString(properties.getConnectionString());
-    clusterProperties.setConnectTimeout(properties.getConnectTimeout());
+    clusterProperties.setConnectionTimeout(properties.getConnectTimeout());
     clusterProperties.setSessionTimeout(properties.getSessionTimeout());
     clusterProperties.setDatacenter(DefaultDatacenterNameProvider.DEFAULT_DC_NAME);
     return clusterProperties;
@@ -92,8 +92,8 @@ public class ZookeeperClientManager {
     CuratorFrameworkFactory.Builder builder =
         CuratorFrameworkFactory.builder()
             .connectString(clusterProperties.getConnectionString())
-            .sessionTimeoutMs(clusterProperties.getSessionTimeout())
-            .connectionTimeoutMs(clusterProperties.getConnectTimeout())
+            .sessionTimeoutMs((int) clusterProperties.getSessionTimeout().toMillis())
+            .connectionTimeoutMs((int) clusterProperties.getConnectionTimeout().toMillis())
             .retryPolicy(retryPolicy);
 
     Optional.ofNullable(commonProperties.getAuthorization())

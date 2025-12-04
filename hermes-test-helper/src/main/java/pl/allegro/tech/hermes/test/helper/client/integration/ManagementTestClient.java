@@ -85,6 +85,8 @@ public class ManagementTestClient {
 
   private static final String QUERY_SUBSCRIPTION_METRICS = "/query/subscriptions/metrics";
 
+  private static final String SEARCH = "/search/query";
+
   private static final String OAUTH_PROVIDERS_PATH = "/oauth/providers";
 
   private static final String SUBSCRIPTIONS_QUERY = "/topics/{topicName}/subscriptions/query";
@@ -570,6 +572,14 @@ public class ManagementTestClient {
         .uri(UriBuilder.fromUri(managementContainerUrl).path(QUERY_SUBSCRIPTIONS).build())
         .contentType(MediaType.APPLICATION_JSON)
         .body(Mono.just(query), String.class)
+        .exchange();
+  }
+
+  public WebTestClient.ResponseSpec search(String query) {
+    return webTestClient
+        .get()
+        .uri(UriBuilder.fromUri(managementContainerUrl).path(SEARCH).queryParam("q", query).build())
+        .accept(MediaType.APPLICATION_JSON)
         .exchange();
   }
 

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
+import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider;
 import pl.allegro.tech.hermes.infrastructure.dc.DcNameSource;
 
 @ConfigurationProperties(prefix = "storage")
@@ -126,5 +127,18 @@ public class StorageClustersProperties {
 
   public void setConnectTimeout(int connectTimeout) {
     this.connectTimeout = connectTimeout;
+  }
+
+  public StorageProperties toZookeeperProperties(DatacenterNameProvider datacenterNameProvider) {
+    return this.clusters.stream()
+        .filter(
+            cluster -> cluster.getDatacenter().equals(datacenterNameProvider.getDatacenterName()))
+        .findFirst()
+        .orElseThrow(
+            () ->
+                new IllegalArgumentException(
+                    "No properties for datacenter: "
+                        + datacenterNameProvider.getDatacenterName()
+                        + " defined."));
   }
 }
