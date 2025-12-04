@@ -13,20 +13,23 @@ import {
 import { dummyAppConfig } from '@/dummy/app-config';
 import { dummyMetricsDashboardUrl } from '@/dummy/metricsDashboardUrl';
 import { dummyRoles } from '@/dummy/roles';
-import { dummySubscription, secondDummySubscription, } from '@/dummy/subscription';
+import {
+  dummySubscription,
+  secondDummySubscription,
+} from '@/dummy/subscription';
 import { dummyTrackingUrls } from '@/dummy/tracking-urls';
 import { fireEvent } from '@testing-library/vue';
 import { ref } from 'vue';
 import { render } from '@/utils/test-utils';
-import type { UseMetrics } from '@/composables/metrics/use-metrics/useMetrics';
 import { useMetrics } from '@/composables/metrics/use-metrics/useMetrics';
-import type { UseRoles } from '@/composables/roles/use-roles/useRoles';
 import { useRoles } from '@/composables/roles/use-roles/useRoles';
-import type { UseTopic } from '@/composables/topic/use-topic/useTopic';
 import { useTopic } from '@/composables/topic/use-topic/useTopic';
 import router from '@/router';
 import TopicView from '@/views/topic/TopicView.vue';
 import userEvent from '@testing-library/user-event';
+import type { UseMetrics } from '@/composables/metrics/use-metrics/useMetrics';
+import type { UseRoles } from '@/composables/roles/use-roles/useRoles';
+import type { UseTopic } from '@/composables/topic/use-topic/useTopic';
 
 vi.mock('@/composables/topic/use-topic/useTopic');
 vi.mock('@/composables/roles/use-roles/useRoles');
