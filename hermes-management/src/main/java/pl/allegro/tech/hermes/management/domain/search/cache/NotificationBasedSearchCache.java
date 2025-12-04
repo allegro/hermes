@@ -1,5 +1,9 @@
 package pl.allegro.tech.hermes.management.domain.search.cache;
 
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -11,18 +15,15 @@ import pl.allegro.tech.hermes.domain.notifications.TopicCallback;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.stream.Stream;
-
 @Component
-public class NotificationBasedSearchCache implements SearchCache, TopicCallback, SubscriptionCallback {
+public class NotificationBasedSearchCache
+    implements SearchCache, TopicCallback, SubscriptionCallback {
 
   private static final Logger logger = LoggerFactory.getLogger(NotificationBasedSearchCache.class);
 
   private final ConcurrentMap<String, CachedTopicItem> topicCache = new ConcurrentHashMap<>();
-  private final ConcurrentMap<String, CachedSubscriptionItem> subscriptionCache = new ConcurrentHashMap<>();
+  private final ConcurrentMap<String, CachedSubscriptionItem> subscriptionCache =
+      new ConcurrentHashMap<>();
 
   private final TopicRepository topicRepository;
   private final SubscriptionRepository subscriptionRepository;
@@ -30,8 +31,7 @@ public class NotificationBasedSearchCache implements SearchCache, TopicCallback,
   public NotificationBasedSearchCache(
       InternalNotificationsBus notificationsBus,
       TopicRepository topicRepository,
-      SubscriptionRepository subscriptionRepository
-  ) {
+      SubscriptionRepository subscriptionRepository) {
     this.topicRepository = topicRepository;
     this.subscriptionRepository = subscriptionRepository;
     notificationsBus.registerTopicCallback(this);
@@ -41,10 +41,7 @@ public class NotificationBasedSearchCache implements SearchCache, TopicCallback,
 
   @Override
   public Stream<CachedItem> getAllItems() {
-    return Stream.concat(
-        topicCache.values().stream(),
-        subscriptionCache.values().stream()
-    );
+    return Stream.concat(topicCache.values().stream(), subscriptionCache.values().stream());
   }
 
   @Override
@@ -111,7 +108,8 @@ public class NotificationBasedSearchCache implements SearchCache, TopicCallback,
   }
 
   private void putSubscriptionInCache(Subscription subscription) {
-    subscriptionCache.put(getSubscriptionCacheKey(subscription), createCachedSubscription(subscription));
+    subscriptionCache.put(
+        getSubscriptionCacheKey(subscription), createCachedSubscription(subscription));
   }
 
   private String getSubscriptionCacheKey(Subscription subscription) {
@@ -123,14 +121,13 @@ public class NotificationBasedSearchCache implements SearchCache, TopicCallback,
         topic.getName().qualifiedName(), topic.getOwner().getId(), topic.getName().getGroupName());
   }
 
-  private  CachedSubscriptionItem createCachedSubscription(Subscription subscription) {
+  private CachedSubscriptionItem createCachedSubscription(Subscription subscription) {
     return new CachedSubscriptionItem(
         subscription.getName(),
         subscription.getOwner().getId(),
         subscription.getEndpoint().toString(),
         subscription.getTopicName().getName(),
         subscription.getTopicName().qualifiedName(),
-        subscription.getTopicName().getGroupName()
-    );
+        subscription.getTopicName().getGroupName());
   }
 }

@@ -19,15 +19,12 @@ public class SearchService {
   private final SearchPredicateFactory searchPredicateFactory;
 
   @Autowired
-  public SearchService(
-      SearchCache searchCache,
-      SearchPredicateFactory searchPredicateFactory
-  ) {
+  public SearchService(SearchCache searchCache, SearchPredicateFactory searchPredicateFactory) {
     this.searchCache = searchCache;
     this.searchPredicateFactory = searchPredicateFactory;
   }
 
-  public SearchResults<SearchItem> search(SearchQuery query) {
+  public SearchResults search(SearchQuery query) {
     if (query.isQueryNullOrBlank()) {
       return SearchResults.empty();
     }
@@ -44,12 +41,10 @@ public class SearchService {
     return items.filter(predicate);
   }
 
-  private SearchResults<SearchItem> toSearchResults(Stream<CachedItem> cachedItems) {
-    var items = cachedItems
-        .map(this::toSearchItem)
-        .toList();
+  private SearchResults toSearchResults(Stream<CachedItem> cachedItems) {
+    var items = cachedItems.map(this::toSearchItem).toList();
 
-    return new SearchResults<>(items, items.size());
+    return new SearchResults(items, items.size());
   }
 
   private SearchItem toSearchItem(CachedItem cachedItem) {
@@ -58,22 +53,14 @@ public class SearchService {
           new TopicSearchItem(
               item.type().name(),
               item.name(),
-              new TopicSearchItem.Topic(
-                  item.groupName(),
-                  new TopicSearchItem.Owner(item.owner())
-              )
-          );
+              new TopicSearchItem.Topic(item.groupName(), new TopicSearchItem.Owner(item.owner())));
       case CachedSubscriptionItem item ->
           new SubscriptionSearchItem(
               item.type().name(),
               item.name(),
               new SubscriptionSearchItem.Subscription(
                   new SubscriptionSearchItem.Topic(
-                      item.topicName(),
-                      item.topicQualifiedName(),
-                      item.groupName()
-                  )
-              ));
+                      item.topicName(), item.topicQualifiedName(), item.groupName())));
     };
   }
 }

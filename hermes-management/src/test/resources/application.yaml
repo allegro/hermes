@@ -7,6 +7,11 @@ zookeeper:
 storage:
   pathPrefix: /hermes
   connectionString: localhost:42182
+  clusters:
+    - datacenter: dc
+      clusterName: zk
+      connectionString: localhost:2181
+      root: /hermes
 
 # this is a hack to make /status/* endpoints work with Jersey
 spring:
