@@ -125,7 +125,7 @@ public class NotificationBasedSearchCache
     return new CachedSubscriptionItem(
         subscription.getName(),
         subscription.getOwner().getId(),
-        subscription.getEndpoint().toString(),
+        subscription.getEndpoint().getEndpoint(),
         subscription.getTopicName().getName(),
         subscription.getTopicName().qualifiedName(),
         subscription.getTopicName().getGroupName());
