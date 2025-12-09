@@ -1,10 +1,8 @@
 package pl.allegro.tech.hermes.management.domain.search.cache;
 
-public record CachedTopicItem(
-    String name,
-    String owner,
-    String groupName
-) implements CachedItem {
+import pl.allegro.tech.hermes.api.Topic;
+
+public record CachedTopicItem(String name, Topic topic) implements CachedItem {
   @Override
   public CachedItemType type() {
     return CachedItemType.TOPIC;

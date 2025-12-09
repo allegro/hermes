@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.management.assertions;
+package pl.allegro.tech.hermes.test.helper.assertions;
 
 import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.Assertions;

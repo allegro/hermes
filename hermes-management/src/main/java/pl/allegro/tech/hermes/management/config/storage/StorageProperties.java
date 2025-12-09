@@ -1,14 +1,12 @@
 package pl.allegro.tech.hermes.management.config.storage;
 
 import java.time.Duration;
-import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import pl.allegro.tech.hermes.common.di.factories.ZookeeperParameters;
 
 public class StorageProperties implements ZookeeperParameters {
   private String datacenter = "dc";
-  private String clusterName = "zk";
   private String connectionString = "localhost:2181";
-  private String root = "/run/hermes";
+  private String root = "/hermes";
   private int sessionTimeout = 10000;
   private int connectionTimeout = 1000;
   private int baseSleepTime = 1000000;
@@ -16,7 +14,7 @@ public class StorageProperties implements ZookeeperParameters {
   private int maxRetries = 29;
   private int processingThreadPoolSize = 5;
 
-  @NestedConfigurationProperty private StorageAuthorizationProperties authorization;
+  private StorageAuthorizationProperties authorization;
 
   public String getConnectionString() {
     return connectionString;
@@ -41,14 +39,6 @@ public class StorageProperties implements ZookeeperParameters {
 
   public void setDatacenter(String datacenter) {
     this.datacenter = datacenter;
-  }
-
-  public String getClusterName() {
-    return clusterName;
-  }
-
-  public void setClusterName(String clusterName) {
-    this.clusterName = clusterName;
   }
 
   public void setAuthorization(StorageAuthorizationProperties authorization) {

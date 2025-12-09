@@ -1,13 +1,8 @@
 package pl.allegro.tech.hermes.management.domain.search.cache;
 
-public record CachedSubscriptionItem(
-    String name,
-    String owner,
-    String endpoint,
-    String topicName,
-    String topicQualifiedName,
-    String groupName
-) implements CachedItem {
+import pl.allegro.tech.hermes.api.Subscription;
+
+public record CachedSubscriptionItem(String name, Subscription subscription) implements CachedItem {
   @Override
   public CachedItemType type() {
     return CachedItemType.SUBSCRIPTION;
