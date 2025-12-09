@@ -21,19 +21,14 @@ public class SearchEndpoint {
 
   @Autowired
   public SearchEndpoint(SearchService searchService) {
-      this.searchService = searchService;
+    this.searchService = searchService;
   }
 
   @GET
   @Produces(APPLICATION_JSON)
   @Path("/query")
-  @ApiOperation(
-          value = "Search",
-          response = List.class,
-          httpMethod = HttpMethod.GET)
-  public SearchResults query(
-      @QueryParam("q") String query
-  ) {
+  @ApiOperation(value = "Search", response = List.class, httpMethod = HttpMethod.GET)
+  public SearchResults query(@QueryParam("q") String query) {
     SearchQuery searchQuery = new SearchQuery(query);
     return searchService.search(searchQuery);
   }
