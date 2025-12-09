@@ -33,14 +33,16 @@ public class SearchPredicateFactory {
   }
 
   private Predicate<CachedTopicItem> filterTopic(SearchQuery query) {
-    return item -> containsIgnoreCase(item.name(), query.query()) ||
-        containsIgnoreCase(item.owner(), query.query());
+    return item ->
+        containsIgnoreCase(item.name(), query.query())
+            || containsIgnoreCase(item.topic().getOwner().getId(), query.query());
   }
 
   private Predicate<CachedSubscriptionItem> filterSubscription(SearchQuery query) {
-    return item -> containsIgnoreCase(item.name(), query.query()) ||
-        containsIgnoreCase(item.owner(), query.query()) ||
-        containsIgnoreCase(item.endpoint(), query.query());
+    return item ->
+        containsIgnoreCase(item.name(), query.query())
+            || containsIgnoreCase(item.subscription().getOwner().getId(), query.query())
+            || containsIgnoreCase(item.subscription().getEndpoint().getEndpoint(), query.query());
   }
 
   private boolean containsIgnoreCase(String source, String query) {

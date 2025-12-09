@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.management.assertions;
+package pl.allegro.tech.hermes.test.helper.assertions;
 
 import org.assertj.core.api.Assertions;
 import pl.allegro.tech.hermes.api.SearchItemType;

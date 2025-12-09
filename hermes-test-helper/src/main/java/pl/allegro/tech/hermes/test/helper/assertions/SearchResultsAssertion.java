@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.management.assertions;
+package pl.allegro.tech.hermes.test.helper.assertions;
 
 import java.util.List;
 import java.util.Optional;
@@ -85,6 +85,22 @@ public final class SearchResultsAssertion
     List<String> actualNames = actual.results().stream().map(SearchItem::name).toList();
     Assertions.assertThat(actualNames).containsExactlyInAnyOrder(expectedNames);
     return this;
+  }
+
+  public SearchResultsAssertion doesNotContainItemWithName(String expectedQualifiedName) {
+    Assertions.assertThat(actual.results())
+        .noneMatch(item -> item.name().equals(expectedQualifiedName));
+    return this;
+  }
+
+  public SearchResultsAssertion containsItemWithName(String expectedQualifiedName) {
+    Assertions.assertThat(actual.results())
+        .anyMatch(item -> item.name().equals(expectedQualifiedName));
+    return this;
+  }
+
+  public SearchResultsAssertion containsExactlyByNameInAnyOrder(List<String> expectedNames) {
+    return this.containsExactlyByNameInAnyOrder(expectedNames.toArray(new String[0]));
   }
 
   public SearchItem getItemByName(String name) {

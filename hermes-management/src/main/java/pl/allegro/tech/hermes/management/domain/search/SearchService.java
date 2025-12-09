@@ -52,14 +52,18 @@ public class SearchService {
       case CachedTopicItem item ->
           new TopicSearchItem(
               item.name(),
-              new TopicSearchItem.Topic(item.groupName(), new TopicSearchItem.Owner(item.owner())));
+              new TopicSearchItem.Topic(
+                  item.topic().getName().getGroupName(),
+                  new TopicSearchItem.Owner(item.topic().getOwner().getId())));
       case CachedSubscriptionItem item ->
           new SubscriptionSearchItem(
               item.name(),
               new SubscriptionSearchItem.Subscription(
-                  item.endpoint(),
+                  item.subscription().getEndpoint().getEndpoint(),
                   new SubscriptionSearchItem.Topic(
-                      item.topicName(), item.topicQualifiedName(), item.groupName())));
+                      item.subscription().getTopicName().getName(),
+                      item.subscription().getTopicName().qualifiedName(),
+                      item.subscription().getTopicName().getGroupName())));
     };
   }
 }

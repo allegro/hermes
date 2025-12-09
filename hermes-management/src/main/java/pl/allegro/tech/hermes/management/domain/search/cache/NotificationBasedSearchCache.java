@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.management.domain.search.cache;
 
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
@@ -42,11 +41,6 @@ public class NotificationBasedSearchCache
   @Override
   public Stream<CachedItem> getAllItems() {
     return Stream.concat(topicCache.values().stream(), subscriptionCache.values().stream());
-  }
-
-  @Override
-  public Optional<CachedItem> getItem(String id) {
-    return Optional.empty();
   }
 
   @Override
@@ -117,17 +111,10 @@ public class NotificationBasedSearchCache
   }
 
   private CachedTopicItem createCachedTopic(Topic topic) {
-    return new CachedTopicItem(
-        topic.getName().qualifiedName(), topic.getOwner().getId(), topic.getName().getGroupName());
+    return new CachedTopicItem(topic.getName().qualifiedName(), topic);
   }
 
   private CachedSubscriptionItem createCachedSubscription(Subscription subscription) {
-    return new CachedSubscriptionItem(
-        subscription.getName(),
-        subscription.getOwner().getId(),
-        subscription.getEndpoint().getEndpoint(),
-        subscription.getTopicName().getName(),
-        subscription.getTopicName().qualifiedName(),
-        subscription.getTopicName().getGroupName());
+    return new CachedSubscriptionItem(subscription.getName(), subscription);
   }
 }
