@@ -19,6 +19,7 @@ public class GoogleBigQueryAvroSender implements CompletableFutureAwareMessageSe
   private final GoogleBigQueryAvroMessageTransformer avroMessageTransformer;
   private final Subscription subscription;
   private final GoogleBigQueryAvroDataWriterPool avroDataWriterPool;
+  private final TableName wholeTableName;
 
   public GoogleBigQueryAvroSender(
       GoogleBigQueryAvroMessageTransformer avroMessageTransformer,
@@ -28,6 +29,8 @@ public class GoogleBigQueryAvroSender implements CompletableFutureAwareMessageSe
     this.avroMessageTransformer = avroMessageTransformer;
     this.subscription = subscription;
     this.avroDataWriterPool = new GoogleBigQueryAvroDataWriterPool(avroStreamWriterFactory);
+    this.wholeTableName =
+        TableName.parse(subscription.getEndpoint().getEndpoint().replace("googlebigquery://", ""));
   }
 
   @Override
@@ -56,17 +59,13 @@ public class GoogleBigQueryAvroSender implements CompletableFutureAwareMessageSe
   private GoogleBigQuerySenderTarget getGoogleBigQuerySenderTarget(Message message) {
     String partition = partitionFromTimestamp(message.getPublishingTimestamp());
 
-    TableName wholeTableName =
-        TableName.parse(subscription.getEndpoint().getEndpoint().replace("googlebigquery://", ""));
-    GoogleBigQuerySenderTarget target =
-        GoogleBigQuerySenderTarget.newBuilder()
-            .withTableName(
-                TableName.of(
-                    wholeTableName.getProject(),
-                    wholeTableName.getDataset(),
-                    wholeTableName.getTable() + "$" + partition))
-            .build();
-    return target;
+    return GoogleBigQuerySenderTarget.newBuilder()
+        .withTableName(
+            TableName.of(
+                wholeTableName.getProject(),
+                wholeTableName.getDataset(),
+                wholeTableName.getTable() + "$" + partition))
+        .build();
   }
 
   @Override
