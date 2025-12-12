@@ -2,7 +2,6 @@
   import { computed, ref } from 'vue';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import { useAuthStore } from '@/store/auth/useAuthStore';
-  import { useFeatureFlagsStore } from '@/store/feature-flags/useFeatureFlagsStore';
   import { useHotkey, useTheme } from 'vuetify';
   import { useI18n } from 'vue-i18n';
   import { useRouter } from 'vue-router';
@@ -16,7 +15,6 @@
   const theme = useTheme();
   const configStore = useAppConfigStore();
   const authStore = useAuthStore();
-  const { searchV2Enabled } = useFeatureFlagsStore();
   useHotkey('cmd+k', openCommandPalette, {});
 
   const isLoggedIn = computed(() => authStore.isUserAuthorized);
@@ -66,7 +64,7 @@
         />
       </v-col>
 
-      <v-col v-if="searchV2Enabled" class="d-flex align-center justify-center">
+      <v-col class="d-flex align-center justify-center">
         <search-bar @open="openCommandPalette" hot-key="cmd+k" />
       </v-col>
 

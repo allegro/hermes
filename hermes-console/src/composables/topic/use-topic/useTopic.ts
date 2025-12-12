@@ -228,8 +228,8 @@ export function useTopic(topicName: MaybeRef<string>): UseTopic {
   watch(
     () => toValue(topicName),
     async () => {
-      await fetchTopic();
-      await fetchTopicTrackingUrls();
+      fetchTopic().then();
+      fetchTopicTrackingUrls().then();
     },
     { immediate: true },
   );

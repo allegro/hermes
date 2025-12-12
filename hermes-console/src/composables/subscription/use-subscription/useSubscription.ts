@@ -328,8 +328,8 @@ export function useSubscription(
   watch(
     () => [toValue(topicName), toValue(subscriptionName)],
     async () => {
-      await fetchSubscription();
-      await fetchSubscriptionTrackingUrls();
+      fetchSubscription().then();
+      fetchSubscriptionTrackingUrls().then();
     },
     { immediate: true },
   );
