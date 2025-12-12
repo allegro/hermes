@@ -4,7 +4,7 @@ Hermes console written in Vue 3.
 
 ## Requirements
 
-* node >=22.12.0
+* node >=22.20.0
 * yarn
 
 ## Node setup

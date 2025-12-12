@@ -13,12 +13,12 @@ import ConsoleHeader from '@/components/console-header/ConsoleHeader.vue';
 describe('ConsoleHeader', () => {
   it('renders properly', () => {
     // when
-    const { getByRole } = render(ConsoleHeader, {
+    const { getAllByRole } = render(ConsoleHeader, {
       testPinia: createTestingPiniaWithState(),
     });
 
     // then
-    expect(getByRole('img')).toHaveAttribute('alt', 'Hermes');
+    expect(getAllByRole('img')[0]).toHaveAttribute('alt', 'Hermes');
   });
 
   it('should display login button', () => {

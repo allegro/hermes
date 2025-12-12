@@ -1,11 +1,11 @@
 <script setup lang="ts">
+  import { computed, ref } from 'vue';
   import { isSubscriptionOwnerOrAdmin } from '@/utils/roles-util';
-  import { ref } from 'vue';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import { useDialog } from '@/composables/dialog/use-dialog/useDialog';
   import { useI18n } from 'vue-i18n';
   import { useRoles } from '@/composables/roles/use-roles/useRoles';
-  import { useRouter } from 'vue-router';
+  import { useRoute, useRouter } from 'vue-router';
   import { useSubscription } from '@/composables/subscription/use-subscription/useSubscription';
   import { useTopic } from '@/composables/topic/use-topic/useTopic';
   import ConfirmationDialog from '@/components/confirmation-dialog/ConfirmationDialog.vue';
@@ -24,8 +24,10 @@
   import UndeliveredMessagesCard from '@/views/subscription/undelivered-messages-card/UndeliveredMessagesCard.vue';
 
   const router = useRouter();
-  const { groupId, subscriptionId, topicId } = router.currentRoute.value
-    .params as Record<string, string>;
+  const route = useRoute();
+  const groupId = computed(() => route.params.groupId as string);
+  const topicId = computed(() => route.params.topicId as string);
+  const subscriptionId = computed(() => route.params.subscriptionId as string);
   const { topic } = useTopic(topicId);
   const { t } = useI18n();
 
@@ -48,7 +50,7 @@
     skipAllMessages,
   } = useSubscription(topicId, subscriptionId);
 
-  const roles = useRoles(topicId, subscriptionId)?.roles;
+  const { roles } = useRoles(topicId, subscriptionId);
 
   const {
     isDialogOpened: isRemoveDialogOpened,
@@ -65,7 +67,9 @@
     enableRemoveActionButton();
     closeRemoveDialog();
     if (isSubscriptionRemoved) {
-      router.push({ path: `/ui/groups/${groupId}/topics/${topicId}` });
+      router.push({
+        path: `/ui/groups/${groupId.value}/topics/${topicId.value}`,
+      });
     }
   }
 
@@ -115,7 +119,7 @@
     await skipAllMessages();
   };
 
-  const breadcrumbsItems = [
+  const breadcrumbsItems = computed(() => [
     {
       title: t('subscription.subscriptionBreadcrumbs.home'),
       href: '/',
@@ -125,36 +129,36 @@
       href: '/ui/groups',
     },
     {
-      title: groupId,
-      href: `/ui/groups/${groupId}`,
+      title: groupId.value,
+      href: `/ui/groups/${groupId.value}`,
     },
     {
-      title: topicId,
-      href: `/ui/groups/${groupId}/topics/${topicId}`,
+      title: topicId.value,
+      href: `/ui/groups/${groupId.value}/topics/${topicId.value}`,
     },
     {
-      title: subscriptionId,
+      title: subscriptionId.value,
     },
-  ];
+  ]);
 
   const configStore = useAppConfigStore();
 
   function resolveCostsUrl(url?: string): string {
     return (
       url
-        ?.replace('{{topic_name}}', topicId)
-        .replace('{{subscription_name}}', subscriptionId) ?? ''
+        ?.replace('{{topic_name}}', topicId.value)
+        .replace('{{subscription_name}}', subscriptionId.value) ?? ''
     );
   }
 
-  const costs = {
+  const costs = computed(() => ({
     iframeUrl: resolveCostsUrl(
       configStore.appConfig?.costs.subscriptionIframeUrl,
     ),
     detailsUrl: resolveCostsUrl(
       configStore.appConfig?.costs.subscriptionDetailsUrl,
     ),
-  };
+  }));
 
   const Tab = {
     General: 'general',
@@ -170,7 +174,9 @@
     v-model="isRemoveDialogOpened"
     :actionButtonEnabled="removeActionButtonEnabled"
     :title="$t('subscription.confirmationDialog.remove.title')"
-    :text="t('subscription.confirmationDialog.remove.text', { subscriptionId })"
+    :text="
+      $t('subscription.confirmationDialog.remove.text', { subscriptionId })
+    "
     @action="deleteSubscription"
     @cancel="closeRemoveDialog"
   />
@@ -179,7 +185,7 @@
     :actionButtonEnabled="actionSuspendButtonEnabled"
     :title="$t('subscription.confirmationDialog.suspend.title')"
     :text="
-      t('subscription.confirmationDialog.suspend.text', { subscriptionId })
+      $t('subscription.confirmationDialog.suspend.text', { subscriptionId })
     "
     @action="suspend"
     @cancel="closeSuspendDialog"
@@ -189,7 +195,7 @@
     :actionButtonEnabled="actionActivateButtonEnabled"
     :title="$t('subscription.confirmationDialog.activate.title')"
     :text="
-      t('subscription.confirmationDialog.activate.text', { subscriptionId })
+      $t('subscription.confirmationDialog.activate.text', { subscriptionId })
     "
     @action="activate"
     @cancel="closeActivateDialog"

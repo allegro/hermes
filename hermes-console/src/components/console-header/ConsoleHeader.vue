@@ -1,22 +1,24 @@
 <script setup lang="ts">
-  import { computed } from 'vue';
+  import { computed, ref } from 'vue';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import { useAuthStore } from '@/store/auth/useAuthStore';
+  import { useHotkey, useTheme } from 'vuetify';
   import { useI18n } from 'vue-i18n';
   import { useRouter } from 'vue-router';
-  import { useTheme } from 'vuetify';
   import EnvironmentBadge from '@/components/environment-badge/EnviromentBadge.vue';
+  import SearchBar from '@/components/search-commander/search-bar/SearchBar.vue';
+  import SearchCommander from '@/components/search-commander/SearchCommander.vue';
   import ThemeSwitch from '@/components/theme-switch/ThemeSwitch.vue';
 
   const { t } = useI18n();
-
   const router = useRouter();
-
   const theme = useTheme();
   const configStore = useAppConfigStore();
   const authStore = useAuthStore();
+  useHotkey('cmd+k', openCommandPalette, {});
 
   const isLoggedIn = computed(() => authStore.isUserAuthorized);
+  const isCommandPaletteOpen = ref(false);
 
   function logIn() {
     authStore.login(window.location.pathname);
@@ -26,13 +28,16 @@
     authStore.logout();
     router.go(0);
   }
+
+  function openCommandPalette() {
+    isCommandPaletteOpen.value = true;
+  }
 </script>
 
 <template>
   <v-app-bar flat density="compact" color="surface">
-    <div class="header">
-      <!-- TODO: navigate to home -->
-      <div class="header-left">
+    <v-row class="header">
+      <v-col class="header-left">
         <router-link to="/ui" custom v-slot="{ navigate }">
           <img
             @click="navigate"
@@ -57,8 +62,13 @@
             configStore.appConfig?.console.criticalEnvironment || false
           "
         />
-      </div>
-      <div class="d-flex align-center ga-2 pr-2">
+      </v-col>
+
+      <v-col class="d-flex align-center justify-center">
+        <search-bar @open="openCommandPalette" hot-key="cmd+k" />
+      </v-col>
+
+      <v-col class="d-flex align-center ga-2 pr-2 justify-end">
         <theme-switch />
         <v-btn
           v-if="configStore.loadedConfig.auth.oauth.enabled && !isLoggedIn"
@@ -76,16 +86,18 @@
         >
           {{ t('header.logout') }}
         </v-btn>
-      </div>
-    </div>
+      </v-col>
+    </v-row>
+
+    <search-commander
+      v-model="isCommandPaletteOpen"
+      @update:modelValue="(value: boolean) => (isCommandPaletteOpen = value)"
+    />
   </v-app-bar>
 </template>
 
 <style scoped lang="scss">
   .header {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
     width: 100%;
 
     &-left {
