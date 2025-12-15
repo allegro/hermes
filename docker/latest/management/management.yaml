@@ -4,15 +4,13 @@ zookeeper:
 storage:
   pathPrefix: /run/hermes
   clusters:
-    -
-      datacenter: dc
-      clusterName: zk
+    - datacenter: dc
+      root: /run/hermes
       connectionString: zk:2181
 
 kafka:
   clusters:
-    -
-      datacenter: dc
+    - datacenter: dc
       clusterName: primary
       connectionTimeout: 3000
       bootstrapKafkaServer: kafka:29092

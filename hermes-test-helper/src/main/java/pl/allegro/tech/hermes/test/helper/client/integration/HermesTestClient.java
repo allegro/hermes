@@ -421,6 +421,10 @@ public class HermesTestClient {
     return managementTestClient.querySubscriptions(query);
   }
 
+  public WebTestClient.ResponseSpec search(String query) {
+    return managementTestClient.search(query);
+  }
+
   public WebTestClient.ResponseSpec listUnhealthy() {
     return managementTestClient.listUnhealthy();
   }

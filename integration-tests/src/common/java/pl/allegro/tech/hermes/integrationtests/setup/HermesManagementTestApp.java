@@ -156,6 +156,7 @@ public class HermesManagementTestApp implements HermesTestApp {
     for (Map.Entry<String, ZookeeperContainer> zk : hermesZookeepers.entrySet()) {
       args.add("--storage.clusters[" + idx + "].datacenter=" + zk.getKey());
       args.add("--storage.clusters[" + idx + "].clusterName=zk");
+      args.add("--storage.clusters[" + idx + "].root=/hermes");
       args.add(
           "--storage.clusters["
               + idx

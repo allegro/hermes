@@ -48,7 +48,7 @@ dependencies {
 }
 
 node {
-    version = '22.12.0'
+    version = '22.20.0'
     distBaseUrl = 'https://nodejs.org/dist'
     download = true
     workDir.set(file("${project.buildDir}/nodejs"))

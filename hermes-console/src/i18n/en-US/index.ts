@@ -1,3 +1,4 @@
+import searchCommander from '@/i18n/en-US/searchCommander';
 import subscriptionForm from '@/i18n/en-US/subscription-form';
 import topicForm from '@/i18n/en-US/topic-form';
 
@@ -894,6 +895,7 @@ const en_US = {
   },
   subscriptionForm,
   topicForm,
+  searchCommander,
   filterDebug: {
     title: 'Debug subscription filters',
     cancelButton: 'Cancel',
@@ -912,6 +914,11 @@ const en_US = {
   trackingCard: {
     title: 'Tracking',
     noTrackingUrls: 'No tracking urls available',
+  },
+  commandPalette: {
+    resultsCounts: 'results',
+    noResults: 'No results found',
+    searchIncentive: 'Type to start searching',
   },
 };
 
