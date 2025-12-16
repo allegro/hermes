@@ -43,6 +43,7 @@ import type { Owner, OwnerSource } from '@/api/owner';
 import type { ResponsePromise } from '@/utils/axios/axios-utils';
 import type { RetransmissionDate } from '@/api/OffsetRetransmissionDate';
 import type { Role } from '@/api/role';
+import type { SearchResults } from '@/api/SearchResults';
 import type { SentMessageTrace } from '@/api/subscription-undelivered';
 import type { Stats } from '@/api/stats';
 import type { SubscriptionHealth } from '@/api/subscription-health';
@@ -303,6 +304,12 @@ export function querySubscriptions(
   return axios.post<Subscription[]>(`/query/subscriptions`, queryJSON, {
     headers: { 'Content-Type': 'application/json' },
   });
+}
+
+export function search(query: string): ResponsePromise<SearchResults> {
+  return axios.get<SearchResults>(
+    `/search/query?q=${encodeURIComponent(query)}`,
+  );
 }
 
 export function fetchRoles(path: string): ResponsePromise<Role[]> {

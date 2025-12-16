@@ -1,5 +1,5 @@
 import { fetchRoles as getRoles } from '@/api/hermes-client';
-import { ref } from 'vue';
+import { type MaybeRef, ref, toValue, watch } from 'vue';
 import { useGlobalI18n } from '@/i18n';
 import { useNotificationsStore } from '@/store/app-notifications/useAppNotifications';
 import type { Ref } from 'vue';
@@ -16,8 +16,8 @@ export interface UseRolesErrors {
 }
 
 export function useRoles(
-  topicName: string | null,
-  subscriptionName: string | null,
+  topicName: MaybeRef<string | null>,
+  subscriptionName: MaybeRef<string | null>,
 ): UseRoles {
   const notificationStore = useNotificationsStore();
 
@@ -30,7 +30,7 @@ export function useRoles(
     try {
       loading.value = true;
       roles.value = (
-        await getRoles(buildPath(topicName, subscriptionName))
+        await getRoles(buildPath(toValue(topicName), toValue(subscriptionName)))
       ).data;
     } catch (e) {
       error.value.fetchRoles = e as Error;
@@ -43,7 +43,13 @@ export function useRoles(
     }
   };
 
-  fetchRoles();
+  watch(
+    () => [toValue(topicName), toValue(subscriptionName)],
+    async () => {
+      await fetchRoles();
+    },
+    { immediate: true },
+  );
 
   return {
     roles,

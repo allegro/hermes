@@ -1,12 +1,12 @@
 <script async setup lang="ts">
-  import { computed, ref } from 'vue';
+  import { computed, ref, watch } from 'vue';
   import { copyToClipboard } from '@/utils/copy-utils';
   import { isTopicOwnerOrAdmin } from '@/utils/roles-util';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
   import { useDialog } from '@/composables/dialog/use-dialog/useDialog';
   import { useI18n } from 'vue-i18n';
   import { useRoles } from '@/composables/roles/use-roles/useRoles';
-  import { useRouter } from 'vue-router';
+  import { useRoute, useRouter } from 'vue-router';
   import { useTopic } from '@/composables/topic/use-topic/useTopic';
   import ConfirmationDialog from '@/components/confirmation-dialog/ConfirmationDialog.vue';
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
@@ -23,13 +23,12 @@
   import TrackingCard from '@/components/tracking-card/TrackingCard.vue';
 
   const router = useRouter();
+  const route = useRoute();
 
   const { t } = useI18n();
 
-  const { groupId, topicName } = router.currentRoute.value.params as Record<
-    string,
-    string
-  >;
+  const groupId = computed(() => route.params.groupId as string);
+  const topicName = computed(() => route.params.topicName as string);
 
   const {
     topic,
@@ -47,7 +46,7 @@
     activeRetransmissions,
   } = useTopic(topicName);
 
-  const breadcrumbsItems = [
+  const breadcrumbsItems = computed(() => [
     {
       title: t('subscription.subscriptionBreadcrumbs.home'),
       href: '/',
@@ -57,19 +56,30 @@
       href: '/ui/groups',
     },
     {
-      title: groupId,
-      href: `/ui/groups/${groupId}`,
+      title: groupId.value,
+      href: `/ui/groups/${groupId.value}`,
     },
     {
-      title: topicName,
-      href: `/ui/groups/${groupId}/topics/${topicName}`,
+      title: topicName.value,
+      href: `/ui/groups/${groupId.value}/topics/${topicName.value}`,
     },
-  ];
+  ]);
   const configStore = useAppConfigStore();
-  if (configStore.appConfig?.topic.offlineClientsEnabled) {
-    fetchOfflineClientsSource();
-  }
-  const roles = useRoles(topicName, null)?.roles;
+  watch(
+    () => [
+      configStore.appConfig?.topic?.offlineClientsEnabled,
+      groupId,
+      topicName,
+    ],
+    () => {
+      if (configStore.appConfig?.topic.offlineClientsEnabled) {
+        fetchOfflineClientsSource();
+      }
+    },
+    { immediate: true },
+  );
+
+  const { roles } = useRoles(topicName, null);
 
   const {
     isDialogOpened: isRemoveDialogOpened,
@@ -86,7 +96,7 @@
     enableRemoveActionButton();
     closeRemoveDialog();
     if (isTopicRemoved) {
-      router.push({ path: `/ui/groups/${groupId}` });
+      router.push({ path: `/ui/groups/${groupId.value}` });
     }
   }
 
@@ -99,13 +109,13 @@
   }
 
   function resolveCostsUrl(url?: string): string {
-    return url?.replace('{{topic_name}}', topicName) ?? '';
+    return url?.replace('{{topic_name}}', topicName.value) ?? '';
   }
 
-  const costs = {
+  const costs = computed(() => ({
     iframeUrl: resolveCostsUrl(configStore.appConfig?.costs.topicIframeUrl),
     detailsUrl: resolveCostsUrl(configStore.appConfig?.costs.topicDetailsUrl),
-  };
+  }));
 
   const showOfflineClientsTab = computed(
     () =>
@@ -130,7 +140,7 @@
     v-model="isRemoveDialogOpened"
     :actionButtonEnabled="removeActionButtonEnabled"
     :title="$t('topicView.confirmationDialog.remove.title')"
-    :text="t('topicView.confirmationDialog.remove.text', { topicName })"
+    :text="$t('topicView.confirmationDialog.remove.text', { topicName })"
     @action="deleteTopic"
     @cancel="closeRemoveDialog"
   />
@@ -143,7 +153,7 @@
     <console-alert
       v-if="error.fetchTopic"
       :text="
-        t('topicView.errorMessage.topicFetchFailed', { topicName: topicName })
+        $t('topicView.errorMessage.topicFetchFailed', { topicName: topicName })
       "
       type="error"
     />

@@ -98,6 +98,11 @@ public class SubscriptionBuilder {
         topicName, "subscription" + sequence.incrementAndGet(), EndpointAddress.of(endpoint));
   }
 
+  public static SubscriptionBuilder subscriptionWithRandomNameContaining(
+      TopicName topicName, String string) {
+    return new SubscriptionBuilder(topicName, "subscription" + string + sequence.incrementAndGet());
+  }
+
   public static SubscriptionBuilder subscriptionWithRandomName(TopicName topicName) {
     return new SubscriptionBuilder(topicName, UUID.randomUUID().toString());
   }

@@ -1,0 +1,39 @@
+import type { SearchResults } from '@/api/SearchResults';
+
+export const dummySearchResults: SearchResults = {
+  results: [
+    {
+      type: 'TOPIC',
+      name: 'pl.allegro.public.group.DummyEvent',
+      topic: {
+        groupName: 'pl.allegro.public.group',
+        owner: {
+          id: '1234',
+        },
+      },
+    },
+    {
+      type: 'SUBSCRIPTION',
+      name: 'foobar-service',
+      subscription: {
+        topic: {
+          name: 'foobar-service',
+          groupName: 'pl.allegro.public.group',
+          qualifiedName: 'pl.allegro.public.group.DummyEvent',
+        },
+      },
+    },
+    {
+      type: 'SUBSCRIPTION',
+      name: 'barbaz-service',
+      subscription: {
+        topic: {
+          name: 'barbaz-service',
+          groupName: 'pl.allegro.public.group',
+          qualifiedName: 'pl.allegro.public.group.DummyEvent',
+        },
+      },
+    },
+  ],
+  totalCount: 3,
+};
