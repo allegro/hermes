@@ -1,0 +1,13 @@
+{
+  "namespace": "pl.allegro.bigdata.avro.gcpavrotools",
+  "name": "NullablePrimitives",
+  "type": "record",
+  "comment": "Look at https://github.com/apache/avro/blob/master/lang/csharp/src/apache/perf/schema.avsc",
+  "todo": "Fixed field doesn't work during parsing schema :|",
+  "fields": [
+    {
+      "name": "field",
+      "type": ["null", "string"]
+    }
+  ]
+}

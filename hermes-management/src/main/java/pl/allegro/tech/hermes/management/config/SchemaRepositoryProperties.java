@@ -5,7 +5,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "schema.repository")
 public class SchemaRepositoryProperties {
 
-  private String serverUrl = "http://localhost:8888/";
+  private String serverUrl = "http://localhost:8081/";
 
   private boolean validationEnabled = false;
 

@@ -1,0 +1,14 @@
+{
+  "namespace": "pl.allegro.bigdata.avro.gcpavrotools",
+  "name": "MapPrimitives",
+  "type": "record",
+  "fields": [
+    {
+      "name": "field",
+      "type": {
+        "type": "map",
+        "values": "bytes"
+      }
+    }
+  ]
+}

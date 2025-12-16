@@ -37,6 +37,7 @@ import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.tracker.consumers.LogRepository;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
+import pl.allegro.tech.hermes.tracker.consumers.deadletters.DeadLetters;
 
 @Configuration
 @EnableConfigurationProperties({
@@ -155,6 +156,7 @@ public class ConsumerConfiguration {
       KafkaClustersProperties kafkaClustersProperties,
       MessageSenderFactory messageSenderFactory,
       Trackers trackers,
+      DeadLetters deadLetters,
       FutureAsyncTimeout futureAsyncTimeout,
       UndeliveredMessageLog undeliveredMessageLog,
       Clock clock,
@@ -169,6 +171,7 @@ public class ConsumerConfiguration {
         kafkaProperties.getClusterName(),
         messageSenderFactory,
         trackers,
+        deadLetters,
         futureAsyncTimeout,
         undeliveredMessageLog,
         clock,

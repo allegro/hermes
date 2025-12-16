@@ -12,8 +12,9 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
+import pl.allegro.tech.hermes.consumers.consumer.sender.SenderClient;
 
-class GooglePubSubClient {
+class GooglePubSubClient implements SenderClient<PubsubMessage> {
 
   private static final Logger logger = LoggerFactory.getLogger(GooglePubSubClient.class);
 
@@ -23,14 +24,17 @@ class GooglePubSubClient {
     this.publisher = publisher;
   }
 
-  void publish(PubsubMessage pubsubMessage, CompletableFuture<MessageSendingResult> resultFuture)
+  @Override
+  public void publish(
+      PubsubMessage pubsubMessage, CompletableFuture<MessageSendingResult> resultFuture)
       throws IOException, ExecutionException, InterruptedException {
     ApiFuture<String> future = publisher.publish(pubsubMessage);
     ApiFutures.addCallback(
         future, new GooglePubSubMessageSentCallback(resultFuture), MoreExecutors.directExecutor());
   }
 
-  void shutdown() {
+  @Override
+  public void shutdown() {
     publisher.shutdown();
     try {
       publisher.awaitTermination(30, TimeUnit.SECONDS);

@@ -15,6 +15,7 @@ public class MetricsFacade {
   private final SubscriptionMetrics subscriptionMetrics;
   private final ConsumerMetrics consumerMetrics;
   private final TrackerElasticSearchMetrics trackerElasticSearchMetrics;
+  private final DeadLettersMetrics deadLettersMetrics;
   private final PersistentBufferMetrics persistentBufferMetrics;
   private final ProducerMetrics producerMetrics;
   private final ExecutorMetrics executorMetrics;
@@ -34,6 +35,7 @@ public class MetricsFacade {
     this.subscriptionMetrics = new SubscriptionMetrics(meterRegistry);
     this.consumerMetrics = new ConsumerMetrics(meterRegistry);
     this.trackerElasticSearchMetrics = new TrackerElasticSearchMetrics(meterRegistry);
+    this.deadLettersMetrics = new DeadLettersMetrics(meterRegistry);
     this.persistentBufferMetrics = new PersistentBufferMetrics(meterRegistry);
     this.producerMetrics = new ProducerMetrics(meterRegistry);
     this.executorMetrics = new ExecutorMetrics(meterRegistry);
@@ -62,6 +64,10 @@ public class MetricsFacade {
 
   public TrackerElasticSearchMetrics trackerElasticSearch() {
     return trackerElasticSearchMetrics;
+  }
+
+  public DeadLettersMetrics deadLetters() {
+    return deadLettersMetrics;
   }
 
   public PersistentBufferMetrics persistentBuffer() {

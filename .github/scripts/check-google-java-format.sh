@@ -4,11 +4,9 @@ set -u
 script_name=""
 
 case "$(uname -sr)" in
-
    Darwin*)
      script_name="google-java-format_darwin-arm64"
      ;;
-
    Linux*)
      script_name="google-java-format_linux-x86-64"
      ;;
@@ -18,7 +16,10 @@ case "$(uname -sr)" in
      ;;
 esac
 
-JAVA_FILES=$(find . -name "*.java" -type f)
+# Exclude files by their paths
+JAVA_FILES=$(find . -name "*.java" -type f \
+  -not -path "./hermes-consumers/src/test/java/pl/allegro/tech/hermes/consumers/consumer/sender/googlebigquery/avro/descriptor/*" \
+  -not -path "./hermes-consumers/build/generated/*")
 
 invalid_files=0
 
@@ -40,6 +41,5 @@ if [ "$invalid_files" -ne 0 ]; then
   echo "Found $invalid_files incorrectly formatted files (listed above), run google-java-format to fix them.";
   exit 1
 else
-   echo "All files are formatted correctly."
+  echo "All files are formatted correctly."
 fi
-
