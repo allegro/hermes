@@ -97,6 +97,32 @@ issues:
 * **output rate**: effective output rate; path: `meter`
 * **maximum output rate**: current maximum output rate as calculated by [Consumers rate limiter](../configuration/rate-limiting.md); path: `output-rate`
 * **response statuses**: rate of different response statuses sent by client (2xx, 4xx, 5xx, timeouts and other failures); path: `status`
+* **message processing time**: end-to-end processing time from publish to successful delivery, exposed as a histogram;
+  path `message_processing_time`
+
+#### Message processing time
+
+It measures time between event **publication** to a topic and **successful delivery** (HTTP 2xx) to the subscriber and
+includes Hermes retries, backoffs, configured sending delays, lag and rate limiting. Only successfully delivered events
+are counted; discarded or permanently failed messages are not part of this distribution.
+
+This metric is configured per subscription via `metricsConfig.messageProcessing` (
+see [subscribing guide](../user/subscribing.md#message-processing-time-metric)).
+Once enabled, you can use it to compute:
+
+* percentage of events processed under a chosen threshold (e.g. "99.9% of events processed within 60 seconds"),
+* high quantiles such as p99 of processing time,
+* the overall distribution of processing time per subscription.
+
+Be aware of the following limitations when interpreting this metric:
+
+* **Retransmissions** – retransmitted events are included and often have very long processing times, which can
+  dominate high quantiles if you retransmit a lot of historical traffic.
+* **Duplicates** – in rare cases, the same event can be processed and measured multiple times (e.g. after consumer
+  restart or
+  Kafka rebalance). In such cases, each successful delivery is included in the histogram.
+
+Currently, this metric is available only for **serial** (non-batch) subscriptions.
 
 ### Tracker
 
