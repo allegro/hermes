@@ -38,7 +38,7 @@ class GooglePubSubMessageSender implements CompletableFutureAwareMessageSender {
     try {
       PubsubMessage pubsubMessage = messageTransformer.fromHermesMessage(message);
       googlePubSubClient.publish(pubsubMessage, resultFuture);
-    } catch (IOException | ExecutionException | InterruptedException exception) {
+    } catch (Exception exception) {
       logger.info("Failed to send message to {} for topic {} with credentials {}", resolvedTarget.getPubSubEndpoint(), resolvedTarget.getTopicName(), clientsPool.getCredentialsProvider());
       resultFuture.complete(failedResult(exception));
     }
