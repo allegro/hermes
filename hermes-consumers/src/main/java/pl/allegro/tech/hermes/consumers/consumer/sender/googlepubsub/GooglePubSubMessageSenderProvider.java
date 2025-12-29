@@ -8,13 +8,18 @@ import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.consumers.consumer.ResilientMessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.ProtocolMessageSenderProvider;
+import pl.allegro.tech.hermes.consumers.consumer.sender.SenderClientsPool;
 import pl.allegro.tech.hermes.consumers.consumer.sender.SingleRecipientMessageSenderAdapter;
 
 public class GooglePubSubMessageSenderProvider implements ProtocolMessageSenderProvider {
+  private static final Logger logger = LoggerFactory.getLogger(GooglePubSubMessageSenderProvider.class);
 
   public static final String SUPPORTED_PROTOCOL = "googlepubsub";
 
@@ -33,6 +38,8 @@ public class GooglePubSubMessageSenderProvider implements ProtocolMessageSenderP
 
     this.resolver = resolver;
     this.messageTransformerCreator = messageTransformerCreator;
+
+    logger.info("Creating GooglePubSubMessageSenderProvider with credentialsProvider {}", credentialsProvider);
     this.clientsPool =
         new GooglePubSubClientsPool(
             credentialsProvider,

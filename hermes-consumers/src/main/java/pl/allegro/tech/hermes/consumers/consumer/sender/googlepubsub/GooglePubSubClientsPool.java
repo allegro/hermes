@@ -31,6 +31,7 @@ class GooglePubSubClientsPool
       RetrySettings retrySettings,
       BatchingSettings batchingSettings,
       TransportChannelProvider transportChannelProvider) {
+    logger.info("Creating GooglePubSubClientsPool with credentialsProvider {}", credentialsProvider);
     this.credentialsProvider = credentialsProvider;
     this.publishingExecutorProvider = publishingExecutorProvider;
     this.retrySettings = retrySettings;
