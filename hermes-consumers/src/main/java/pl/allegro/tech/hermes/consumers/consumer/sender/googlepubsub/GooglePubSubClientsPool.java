@@ -39,9 +39,13 @@ class GooglePubSubClientsPool
     this.transportChannelProvider = transportChannelProvider;
   }
 
+  public CredentialsProvider getCredentialsProvider() {
+    return credentialsProvider;
+  }
+
   protected GooglePubSubClient createClient(GooglePubSubSenderTarget resolvedTarget)
       throws IOException {
-    logger.info("Creating GooglePubSubClient for {} with credentials {}", resolvedTarget.getPubSubEndpoint(), credentialsProvider);
+    logger.info("Creating GooglePubSubClient for {} for topic {} with credentials {}", resolvedTarget.getPubSubEndpoint(), resolvedTarget.getTopicName(), credentialsProvider);
     final Publisher.Builder builder =
         Publisher.newBuilder(resolvedTarget.getTopicName())
             .setEndpoint(resolvedTarget.getPubSubEndpoint())
@@ -51,11 +55,12 @@ class GooglePubSubClientsPool
             .setExecutorProvider(publishingExecutorProvider);
 
     Publisher publisher;
-    if (transportChannelProvider == null) {
-      publisher = builder.build();
-    } else {
-      publisher = builder.setChannelProvider(transportChannelProvider).build();
-    }
+    publisher = builder.build();
+//    if (transportChannelProvider == null) {
+//      publisher = builder.build();
+//    } else {
+//      publisher = builder.setChannelProvider(transportChannelProvider).build();
+//    }
     return new GooglePubSubClient(publisher);
   }
 }
