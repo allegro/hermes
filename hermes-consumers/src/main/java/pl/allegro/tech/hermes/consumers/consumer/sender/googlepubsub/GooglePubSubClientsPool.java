@@ -41,6 +41,7 @@ class GooglePubSubClientsPool
 
   protected GooglePubSubClient createClient(GooglePubSubSenderTarget resolvedTarget)
       throws IOException {
+    logger.info("Creating GooglePubSubClient for {} with credentials {}", resolvedTarget.getPubSubEndpoint(), credentialsProvider);
     final Publisher.Builder builder =
         Publisher.newBuilder(resolvedTarget.getTopicName())
             .setEndpoint(resolvedTarget.getPubSubEndpoint())
