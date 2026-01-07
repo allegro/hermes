@@ -3,7 +3,7 @@ plugins {
 }
 
 java {
-    // We need to support Java 17 until all of our clients migrate to Java 21.
+    // We need to support Java 17 until all of our clients migrate to newer versions
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
     }
