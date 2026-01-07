@@ -9,7 +9,7 @@ buildscript {
 plugins {
     id 'java'
     id 'pl.allegro.tech.build.axion-release' version '1.13.6'
-    id 'io.github.gradle-nexus.publish-plugin' version '1.0.0'
+    id 'io.github.gradle-nexus.publish-plugin' version '2.0.0'
 }
 
 scmVersion {
@@ -22,7 +22,7 @@ scmVersion {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(25)
     }
 }
 
@@ -61,8 +61,8 @@ allprojects {
             dropwizard_metrics: '4.2.25',
             micrometer_metrics: '1.13.0',
             wiremock          : '3.9.0',
-            spock             : '2.4-M4-groovy-4.0',
-            groovy            : '4.0.21',
+            spock             : '2.4-groovy-5.0',
+            groovy            : '5.0.3',
             avro              : '1.11.3',
             json2avro         : '0.2.14',
             // TODO: newest version requires subject alternative name in a certificate during host verification, current test cert does not have a one
@@ -72,7 +72,7 @@ allprojects {
             failsafe          : '3.3.2',
             junit_jupiter     : '5.10.2',
             testcontainers    : '1.19.8',
-            spring            : '3.2.4',
+            spring            : '3.5.9',
             assertj           : '3.25.3',
             allure            : '2.24.0'
     ]
@@ -96,7 +96,7 @@ allprojects {
 
         testImplementation group: 'junit', name: 'junit', version: '4.11'
         testImplementation group: 'com.tngtech.java', name: 'junit-dataprovider', version: '1.10.0'
-        testImplementation group: 'org.mockito', name: 'mockito-core', version: '5.11.0'
+        testImplementation group: 'org.mockito', name: 'mockito-core', version: '5.15.2'
         testImplementation group: 'org.assertj', name: 'assertj-core', version: versions.assertj
         testImplementation group: 'org.awaitility', name: 'awaitility', version: '4.2.1'
 

@@ -3,7 +3,9 @@ plugins {
     id 'java-library'
 }
 
-mainClassName = 'pl.allegro.tech.hermes.frontend.HermesFrontend'
+application {
+    mainClass = 'pl.allegro.tech.hermes.frontend.HermesFrontend'
+}
 
 dependencies {
     implementation project(':hermes-common')
