@@ -234,7 +234,12 @@ public class ConsumerMessageSender {
 
   private void handleFailedSending(
       Message message, MessageSendingResult result, ConsumerProfiler profiler) {
-    errorHandlers.forEach(h -> h.handleFailed(message, subscription, result));
+    errorHandlers.forEach(
+        h -> {
+          if (h.supports(subscription)) {
+            h.handleFailed(message, subscription, result);
+          }
+        });
     retrySendingOrDiscard(message, result, profiler);
   }
 
@@ -315,7 +320,12 @@ public class ConsumerMessageSender {
             message.getPartitionOffset(),
             message.getPartitionAssignmentTerm()));
     inflightCount.decrement();
-    successHandlers.forEach(h -> h.handleSuccess(message, subscription, result));
+    successHandlers.forEach(
+        h -> {
+          if (h.supports(subscription)) {
+            h.handleSuccess(message, subscription, result);
+          }
+        });
     profiler.flushMeasurements(ConsumerRun.DELIVERED);
   }
 

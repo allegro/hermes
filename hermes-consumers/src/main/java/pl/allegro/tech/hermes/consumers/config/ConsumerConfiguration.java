@@ -1,5 +1,11 @@
 package pl.allegro.tech.hermes.consumers.config;
 
+import com.google.api.gax.batching.BatchingSettings;
+import com.google.api.gax.core.CredentialsProvider;
+import com.google.api.gax.core.ExecutorProvider;
+import com.google.api.gax.retrying.RetrySettings;
+
+import java.io.IOException;
 import java.time.Clock;
 import java.util.List;
 import org.apache.curator.framework.CuratorFramework;
@@ -26,6 +32,7 @@ import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRatePathSeriali
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateProviderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateRegistry;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateSupervisor;
+import pl.allegro.tech.hermes.consumers.consumer.result.StoreOfflineResultHandler;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
 import pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistry;
@@ -47,7 +54,8 @@ import pl.allegro.tech.hermes.tracker.consumers.deadletters.DeadLetters;
   BatchProperties.class,
   KafkaClustersProperties.class,
   WorkloadProperties.class,
-  MaxRateProperties.class
+  MaxRateProperties.class,
+  StoreOfflineResultHandlerConfiguration.class
 })
 public class ConsumerConfiguration {
 
@@ -152,6 +160,21 @@ public class ConsumerConfiguration {
   }
 
   @Bean
+  public StoreOfflineResultHandler storeOfflineResultHandler(
+      StoreOfflineResultHandlerConfiguration storeOfflineResultHandlerConfiguration,
+      CredentialsProvider credentialsProvider,
+      RetrySettings retrySettings,
+      BatchingSettings batchingSettings,
+      ExecutorProvider executorProvider) throws IOException {
+    return new StoreOfflineResultHandler(
+        storeOfflineResultHandlerConfiguration,
+        credentialsProvider,
+        retrySettings,
+        batchingSettings,
+        executorProvider);
+  }
+
+  @Bean
   public ConsumerMessageSenderFactory consumerMessageSenderFactory(
       KafkaClustersProperties kafkaClustersProperties,
       MessageSenderFactory messageSenderFactory,
@@ -162,6 +185,7 @@ public class ConsumerConfiguration {
       Clock clock,
       InstrumentedExecutorServiceFactory instrumentedExecutorServiceFactory,
       ConsumerAuthorizationHandler consumerAuthorizationHandler,
+      StoreOfflineResultHandler storeOfflineResultHandler,
       SenderAsyncTimeoutProperties senderAsyncTimeoutProperties,
       RateProperties rateProperties,
       DatacenterNameProvider datacenterNameProvider) {
@@ -177,6 +201,7 @@ public class ConsumerConfiguration {
         clock,
         instrumentedExecutorServiceFactory,
         consumerAuthorizationHandler,
+        storeOfflineResultHandler,
         senderAsyncTimeoutProperties.getMilliseconds(),
         rateProperties.getLimiterReportingThreadPoolSize(),
         rateProperties.isLimiterReportingThreadMonitoringEnabled());

@@ -96,6 +96,8 @@ public class ConsumerMessageSenderTest {
   }
 
   private void setUpMetrics(Subscription subscription) {
+    when(successHandler.supports(subscription)).thenReturn(true);
+    when(errorHandler.supports(subscription)).thenReturn(true);
     when(metricsFacade.subscriptions().latency(subscription.getQualifiedName()))
         .thenReturn(consumerLatencyTimer);
     when(metricsFacade.subscriptions().rateLimiterAcquire(subscription.getQualifiedName()))
