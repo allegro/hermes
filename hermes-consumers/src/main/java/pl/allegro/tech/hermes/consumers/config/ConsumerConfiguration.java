@@ -54,8 +54,7 @@ import pl.allegro.tech.hermes.tracker.consumers.deadletters.DeadLetters;
   BatchProperties.class,
   KafkaClustersProperties.class,
   WorkloadProperties.class,
-  MaxRateProperties.class,
-  StoreOfflineResultHandlerConfiguration.class
+  MaxRateProperties.class
 })
 public class ConsumerConfiguration {
 
@@ -158,21 +157,6 @@ public class ConsumerConfiguration {
     return new DefaultMessageConverterResolver(
         avroToJsonMessageConverter, noOperationMessageConverter);
   }
-
-//  @Bean
-//  public ResultHandler storeOfflineResultHandler(
-//      StoreOfflineResultHandlerConfiguration storeOfflineResultHandlerConfiguration,
-//      CredentialsProvider credentialsProvider,
-//      RetrySettings retrySettings,
-//      BatchingSettings batchingSettings,
-//      ExecutorProvider executorProvider) throws IOException {
-//    return new StoreOfflineResultHandler(
-//        storeOfflineResultHandlerConfiguration,
-//        credentialsProvider,
-//        retrySettings,
-//        batchingSettings,
-//        executorProvider);
-//  }
 
   @Bean
   public ConsumerMessageSenderFactory consumerMessageSenderFactory(
