@@ -14,7 +14,7 @@ import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.result.DefaultErrorHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.DefaultSuccessHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.ErrorHandler;
-import pl.allegro.tech.hermes.consumers.consumer.result.StoreOfflineResultHandler;
+import pl.allegro.tech.hermes.consumers.consumer.result.ResultHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.SuccessHandler;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
@@ -31,7 +31,7 @@ public class ConsumerMessageSenderFactory {
   private final UndeliveredMessageLog undeliveredMessageLog;
   private final Clock clock;
   private final ConsumerAuthorizationHandler consumerAuthorizationHandler;
-  private final StoreOfflineResultHandler storeOfflineResultHandler;
+  private final List<ResultHandler> resultHandlers;
   private final ExecutorService rateLimiterReportingExecutor;
   private final int senderAsyncTimeoutMs;
 
@@ -45,7 +45,7 @@ public class ConsumerMessageSenderFactory {
       Clock clock,
       InstrumentedExecutorServiceFactory instrumentedExecutorServiceFactory,
       ConsumerAuthorizationHandler consumerAuthorizationHandler,
-      StoreOfflineResultHandler storeOfflineResultHandler,
+      List<ResultHandler> resultHandlers,
       int senderAsyncTimeoutMs,
       int rateLimiterReportingThreadPoolSize,
       boolean rateLimiterReportingThreadMonitoringEnabled) {
@@ -58,7 +58,7 @@ public class ConsumerMessageSenderFactory {
     this.undeliveredMessageLog = undeliveredMessageLog;
     this.clock = clock;
     this.consumerAuthorizationHandler = consumerAuthorizationHandler;
-    this.storeOfflineResultHandler = storeOfflineResultHandler;
+    this.resultHandlers = resultHandlers;
     this.rateLimiterReportingExecutor =
         instrumentedExecutorServiceFactory.getExecutorService(
             "rate-limiter-reporter",
@@ -77,7 +77,6 @@ public class ConsumerMessageSenderFactory {
     List<SuccessHandler> successHandlers =
         Arrays.asList(
             consumerAuthorizationHandler,
-            storeOfflineResultHandler,
             new DefaultSuccessHandler(
                 metrics,
                 trackers,
@@ -87,7 +86,6 @@ public class ConsumerMessageSenderFactory {
     List<ErrorHandler> errorHandlers =
         Arrays.asList(
             consumerAuthorizationHandler,
-            storeOfflineResultHandler,
             new DefaultErrorHandler(
                 metrics,
                 undeliveredMessageLog,
@@ -96,6 +94,8 @@ public class ConsumerMessageSenderFactory {
                 deadLetters,
                 kafkaClusterName,
                 subscription.getQualifiedName()));
+    successHandlers.addAll(resultHandlers);
+    errorHandlers.addAll(resultHandlers);
 
     return new ConsumerMessageSender(
         subscription,

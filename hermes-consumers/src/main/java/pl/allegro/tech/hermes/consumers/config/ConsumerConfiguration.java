@@ -32,7 +32,7 @@ import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRatePathSeriali
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateProviderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateRegistry;
 import pl.allegro.tech.hermes.consumers.consumer.rate.maxrate.MaxRateSupervisor;
-import pl.allegro.tech.hermes.consumers.consumer.result.StoreOfflineResultHandler;
+import pl.allegro.tech.hermes.consumers.consumer.result.ResultHandler;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
 import pl.allegro.tech.hermes.consumers.registry.ConsumerNodesRegistry;
@@ -159,20 +159,20 @@ public class ConsumerConfiguration {
         avroToJsonMessageConverter, noOperationMessageConverter);
   }
 
-  @Bean
-  public StoreOfflineResultHandler storeOfflineResultHandler(
-      StoreOfflineResultHandlerConfiguration storeOfflineResultHandlerConfiguration,
-      CredentialsProvider credentialsProvider,
-      RetrySettings retrySettings,
-      BatchingSettings batchingSettings,
-      ExecutorProvider executorProvider) throws IOException {
-    return new StoreOfflineResultHandler(
-        storeOfflineResultHandlerConfiguration,
-        credentialsProvider,
-        retrySettings,
-        batchingSettings,
-        executorProvider);
-  }
+//  @Bean
+//  public ResultHandler storeOfflineResultHandler(
+//      StoreOfflineResultHandlerConfiguration storeOfflineResultHandlerConfiguration,
+//      CredentialsProvider credentialsProvider,
+//      RetrySettings retrySettings,
+//      BatchingSettings batchingSettings,
+//      ExecutorProvider executorProvider) throws IOException {
+//    return new StoreOfflineResultHandler(
+//        storeOfflineResultHandlerConfiguration,
+//        credentialsProvider,
+//        retrySettings,
+//        batchingSettings,
+//        executorProvider);
+//  }
 
   @Bean
   public ConsumerMessageSenderFactory consumerMessageSenderFactory(
@@ -185,7 +185,7 @@ public class ConsumerConfiguration {
       Clock clock,
       InstrumentedExecutorServiceFactory instrumentedExecutorServiceFactory,
       ConsumerAuthorizationHandler consumerAuthorizationHandler,
-      StoreOfflineResultHandler storeOfflineResultHandler,
+      List<ResultHandler> resultHandlers,
       SenderAsyncTimeoutProperties senderAsyncTimeoutProperties,
       RateProperties rateProperties,
       DatacenterNameProvider datacenterNameProvider) {
@@ -201,7 +201,7 @@ public class ConsumerConfiguration {
         clock,
         instrumentedExecutorServiceFactory,
         consumerAuthorizationHandler,
-        storeOfflineResultHandler,
+        resultHandlers,
         senderAsyncTimeoutProperties.getMilliseconds(),
         rateProperties.getLimiterReportingThreadPoolSize(),
         rateProperties.isLimiterReportingThreadMonitoringEnabled());

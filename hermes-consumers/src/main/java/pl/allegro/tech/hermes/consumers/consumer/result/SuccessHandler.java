@@ -4,6 +4,6 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 
-public interface SuccessHandler extends Support {
+public interface SuccessHandler extends Supporter {
   void handleSuccess(Message message, Subscription subscription, MessageSendingResult result);
 }
