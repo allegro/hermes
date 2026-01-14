@@ -140,7 +140,7 @@ export interface SerialSubscriptionPolicyJson {
 
 export interface BatchSubscriptionPolicyJson {
   messageTtl: number;
-  retryClientsErrors: boolean;
+  retryClientErrors: boolean;
   messageBackoff: number;
   requestTimeout: number;
   batchSize: number;

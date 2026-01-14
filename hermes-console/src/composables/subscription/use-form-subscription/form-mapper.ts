@@ -93,7 +93,7 @@ function mapBatchSerialSubscriptionPolicy(
 ): BatchSubscriptionPolicyJson {
   return {
     messageTtl: parseFloat(String(form.subscriptionPolicy.inflightMessageTTL)),
-    retryClientsErrors: form.retryOn4xx,
+    retryClientErrors: form.retryOn4xx,
     messageBackoff: parseFloat(String(form.subscriptionPolicy.retryBackoff)),
     requestTimeout: parseFloat(String(form.subscriptionPolicy.requestTimeout)),
     batchSize: parseFloat(String(form.subscriptionPolicy.batchSize!!)),
