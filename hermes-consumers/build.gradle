@@ -3,7 +3,9 @@ plugins {
     id 'java-library'
 }
 
-mainClassName = 'pl.allegro.tech.hermes.consumers.HermesConsumers'
+application {
+    mainClass = 'pl.allegro.tech.hermes.consumers.HermesConsumers'
+}
 
 configurations {
     sbeClasspath
@@ -54,10 +56,10 @@ dependencies {
 
 def generatedPath = "${buildDir}/generated/java/"
 
-task generateMaxRateSbeStubs(type: JavaExec) {
+tasks.register('generateMaxRateSbeStubs', JavaExec) {
     description = "Generate SBE stubs for max-rate"
     classpath configurations.sbeClasspath
-    main = 'uk.co.real_logic.sbe.SbeTool'
+    mainClass = 'uk.co.real_logic.sbe.SbeTool'
     systemProperties(
             'sbe.output.dir': generatedPath,
             'sbe.xinclude.aware': 'true'
@@ -65,10 +67,10 @@ task generateMaxRateSbeStubs(type: JavaExec) {
     args = ['src/main/resources/sbe/max-rate.xml']
 }
 
-task generateWorkloadSbeStubs(type: JavaExec) {
+tasks.register('generateWorkloadSbeStubs', JavaExec) {
     description = "Generate SBE stubs for workload"
     classpath configurations.sbeClasspath
-    main = 'uk.co.real_logic.sbe.SbeTool'
+    mainClass = 'uk.co.real_logic.sbe.SbeTool'
     systemProperties(
             'sbe.output.dir': generatedPath,
             'sbe.xinclude.aware': 'true'
@@ -76,7 +78,7 @@ task generateWorkloadSbeStubs(type: JavaExec) {
     args = ['src/main/resources/sbe/workload.xml']
 }
 
-task generateSbeStubs(type: DefaultTask) {
+tasks.register('generateSbeStubs', DefaultTask) {
     description = "Generate all SBE stubs from provided schemas"
     dependsOn 'generateMaxRateSbeStubs', 'generateWorkloadSbeStubs'
 }
