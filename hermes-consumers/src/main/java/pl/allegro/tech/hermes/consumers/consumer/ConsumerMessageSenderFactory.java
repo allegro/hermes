@@ -31,7 +31,7 @@ public class ConsumerMessageSenderFactory {
   private final UndeliveredMessageLog undeliveredMessageLog;
   private final Clock clock;
   private final ConsumerAuthorizationHandler consumerAuthorizationHandler;
-  private final ResultHandler resultHandler;
+  private final List<ResultHandler> resultHandlers;
   private final ExecutorService rateLimiterReportingExecutor;
   private final int senderAsyncTimeoutMs;
 
@@ -45,7 +45,7 @@ public class ConsumerMessageSenderFactory {
       Clock clock,
       InstrumentedExecutorServiceFactory instrumentedExecutorServiceFactory,
       ConsumerAuthorizationHandler consumerAuthorizationHandler,
-      ResultHandler resultHandlers,
+      List<ResultHandler> resultHandlers,
       int senderAsyncTimeoutMs,
       int rateLimiterReportingThreadPoolSize,
       boolean rateLimiterReportingThreadMonitoringEnabled) {
@@ -58,7 +58,7 @@ public class ConsumerMessageSenderFactory {
     this.undeliveredMessageLog = undeliveredMessageLog;
     this.clock = clock;
     this.consumerAuthorizationHandler = consumerAuthorizationHandler;
-    this.resultHandler = resultHandlers;
+    this.resultHandlers = resultHandlers;
     this.rateLimiterReportingExecutor =
         instrumentedExecutorServiceFactory.getExecutorService(
             "rate-limiter-reporter",
@@ -94,8 +94,8 @@ public class ConsumerMessageSenderFactory {
                 deadLetters,
                 kafkaClusterName,
                 subscription.getQualifiedName()));
-    successHandlers.add(resultHandler);
-    errorHandlers.add(resultHandler);
+    successHandlers.addAll(resultHandlers);
+    errorHandlers.addAll(resultHandlers);
 
     return new ConsumerMessageSender(
         subscription,
