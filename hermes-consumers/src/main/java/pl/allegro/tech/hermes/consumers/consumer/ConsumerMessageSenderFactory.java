@@ -4,6 +4,8 @@ import java.time.Clock;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+
+import org.springframework.boot.util.Instantiator;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
@@ -31,7 +33,8 @@ public class ConsumerMessageSenderFactory {
   private final UndeliveredMessageLog undeliveredMessageLog;
   private final Clock clock;
   private final ConsumerAuthorizationHandler consumerAuthorizationHandler;
-  private final List<ResultHandler> resultHandlers;
+  private final List<SuccessHandler> extraSuccessHandlers;
+  private final List<ErrorHandler> extraErrorHandlers;
   private final ExecutorService rateLimiterReportingExecutor;
   private final int senderAsyncTimeoutMs;
 
@@ -45,7 +48,8 @@ public class ConsumerMessageSenderFactory {
       Clock clock,
       InstrumentedExecutorServiceFactory instrumentedExecutorServiceFactory,
       ConsumerAuthorizationHandler consumerAuthorizationHandler,
-      List<ResultHandler> resultHandlers,
+      List<SuccessHandler> successHandlers,
+      List<ErrorHandler> errorHandlers,
       int senderAsyncTimeoutMs,
       int rateLimiterReportingThreadPoolSize,
       boolean rateLimiterReportingThreadMonitoringEnabled) {
@@ -58,7 +62,8 @@ public class ConsumerMessageSenderFactory {
     this.undeliveredMessageLog = undeliveredMessageLog;
     this.clock = clock;
     this.consumerAuthorizationHandler = consumerAuthorizationHandler;
-    this.resultHandlers = resultHandlers;
+    this.extraSuccessHandlers= successHandlers;
+    this.extraErrorHandlers = errorHandlers;
     this.rateLimiterReportingExecutor =
         instrumentedExecutorServiceFactory.getExecutorService(
             "rate-limiter-reporter",
@@ -94,8 +99,8 @@ public class ConsumerMessageSenderFactory {
                 deadLetters,
                 kafkaClusterName,
                 subscription.getQualifiedName()));
-    successHandlers.addAll(resultHandlers);
-    errorHandlers.addAll(resultHandlers);
+    successHandlers.addAll(extraSuccessHandlers);
+    errorHandlers.addAll(extraErrorHandlers);
 
     return new ConsumerMessageSender(
         subscription,
