@@ -1,11 +1,9 @@
 package pl.allegro.tech.hermes.consumers.consumer;
 
 import java.time.Clock;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
-
-import org.springframework.boot.util.Instantiator;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
@@ -16,7 +14,6 @@ import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.result.DefaultErrorHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.DefaultSuccessHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.ErrorHandler;
-import pl.allegro.tech.hermes.consumers.consumer.result.ResultHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.SuccessHandler;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
@@ -62,7 +59,7 @@ public class ConsumerMessageSenderFactory {
     this.undeliveredMessageLog = undeliveredMessageLog;
     this.clock = clock;
     this.consumerAuthorizationHandler = consumerAuthorizationHandler;
-    this.extraSuccessHandlers= successHandlers;
+    this.extraSuccessHandlers = successHandlers;
     this.extraErrorHandlers = errorHandlers;
     this.rateLimiterReportingExecutor =
         instrumentedExecutorServiceFactory.getExecutorService(
@@ -79,27 +76,24 @@ public class ConsumerMessageSenderFactory {
       SubscriptionLoadRecorder subscriptionLoadRecorder,
       MetricsFacade metrics) {
 
-    List<SuccessHandler> successHandlers =
-        Arrays.asList(
-            consumerAuthorizationHandler,
-            new DefaultSuccessHandler(
-                metrics,
-                trackers,
-                subscription.getQualifiedName(),
-                subscription.getMetricsConfig()));
-
-    List<ErrorHandler> errorHandlers =
-        Arrays.asList(
-            consumerAuthorizationHandler,
-            new DefaultErrorHandler(
-                metrics,
-                undeliveredMessageLog,
-                clock,
-                trackers,
-                deadLetters,
-                kafkaClusterName,
-                subscription.getQualifiedName()));
+    List<SuccessHandler> successHandlers = new ArrayList();
+    successHandlers.add(consumerAuthorizationHandler);
+    successHandlers.add(
+        new DefaultSuccessHandler(
+            metrics, trackers, subscription.getQualifiedName(), subscription.getMetricsConfig()));
     successHandlers.addAll(extraSuccessHandlers);
+
+    List<ErrorHandler> errorHandlers = new ArrayList<>();
+    errorHandlers.add(consumerAuthorizationHandler);
+    errorHandlers.add(
+        new DefaultErrorHandler(
+            metrics,
+            undeliveredMessageLog,
+            clock,
+            trackers,
+            deadLetters,
+            kafkaClusterName,
+            subscription.getQualifiedName()));
     errorHandlers.addAll(extraErrorHandlers);
 
     return new ConsumerMessageSender(
