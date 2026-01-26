@@ -171,8 +171,7 @@ public class ConsumerConfiguration {
       Clock clock,
       InstrumentedExecutorServiceFactory instrumentedExecutorServiceFactory,
       ConsumerAuthorizationHandler consumerAuthorizationHandler,
-      List<SuccessHandler> extraSuccessHandlers,
-      List<ErrorHandler> extraErrorHandlers,
+      List<ResultHandler> resultHandlers,
       SenderAsyncTimeoutProperties senderAsyncTimeoutProperties,
       RateProperties rateProperties,
       DatacenterNameProvider datacenterNameProvider) {
@@ -188,8 +187,7 @@ public class ConsumerConfiguration {
         clock,
         instrumentedExecutorServiceFactory,
         consumerAuthorizationHandler,
-        extraSuccessHandlers,
-        extraErrorHandlers,
+        resultHandlers,
         senderAsyncTimeoutProperties.getMilliseconds(),
         rateProperties.getLimiterReportingThreadPoolSize(),
         rateProperties.isLimiterReportingThreadMonitoringEnabled());
