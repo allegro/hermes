@@ -278,6 +278,21 @@ public class ConsoleProperties {
     }
   }
 
+  /**
+   * Topic view configuration for frontend console.
+   *
+   * <p><strong>Note:</strong> The {@code contentTypes} list is set at runtime from {@link
+   * pl.allegro.tech.hermes.management.config.TopicProperties#getAllowedContentTypes()}. Any
+   * attempt to configure {@code console.topic.contentTypes} in application.yaml will have no
+   * effect.
+   *
+   * <p>The source of truth for content types is: {@code topic.allowedContentTypes} in your
+   * application configuration.
+   *
+   * @see pl.allegro.tech.hermes.management.config.TopicProperties
+   * @see
+   *     pl.allegro.tech.hermes.management.config.console.ConsoleConfiguration#consoleConfigurationRepository
+   */
   public static final class TopicView {
     private boolean messagePreviewEnabled = true;
     private boolean offlineClientsEnabled = false;
@@ -318,7 +333,8 @@ public class ConsoleProperties {
       return contentTypes;
     }
 
-    public void setContentTypes(List<TopicContentType> contentTypes) {
+    // No public setter - value is set directly in ConsoleConfiguration from TopicProperties
+    void setContentTypes(List<TopicContentType> contentTypes) {
       this.contentTypes = contentTypes;
     }
 
@@ -569,6 +585,20 @@ public class ConsoleProperties {
     }
   }
 
+  /**
+   * Group view configuration for frontend console.
+   *
+   * <p><strong>WARNING:</strong> The {@code nonAdminCreationEnabled} property configured here is
+   * <strong>IGNORED</strong> and overridden at runtime by the value from {@link
+   * pl.allegro.tech.hermes.management.config.GroupProperties}.
+   *
+   * <p>The source of truth for this setting is: {@code group.nonAdminCreationEnabled} in your
+   * application configuration.
+   *
+   * @see pl.allegro.tech.hermes.management.config.GroupProperties
+   * @see
+   *     pl.allegro.tech.hermes.management.config.console.ConsoleConfiguration#consoleConfigurationRepository
+   */
   public static final class GroupView {
     private boolean nonAdminCreationEnabled = false;
 
@@ -576,7 +606,8 @@ public class ConsoleProperties {
       return nonAdminCreationEnabled;
     }
 
-    public void setNonAdminCreationEnabled(boolean nonAdminCreationEnabled) {
+    // No public setter - value is set directly in ConsoleConfiguration from GroupProperties
+    void setNonAdminCreationEnabled(boolean nonAdminCreationEnabled) {
       this.nonAdminCreationEnabled = nonAdminCreationEnabled;
     }
   }
