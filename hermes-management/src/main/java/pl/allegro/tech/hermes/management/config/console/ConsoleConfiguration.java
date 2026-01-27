@@ -44,8 +44,7 @@ public class ConsoleConfiguration {
         topicProperties.getAllowedContentTypes().stream()
             .map(
                 contentType ->
-                    new ConsoleProperties.TopicContentType(
-                        contentType.name(), contentType.name()))
+                    new ConsoleProperties.TopicContentType(contentType.name(), contentType.name()))
             .collect(Collectors.toList());
     consoleProperties.getTopic().setContentTypes(contentTypes);
 

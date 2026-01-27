@@ -282,9 +282,8 @@ public class ConsoleProperties {
    * Topic view configuration for frontend console.
    *
    * <p><strong>Note:</strong> The {@code contentTypes} list is set at runtime from {@link
-   * pl.allegro.tech.hermes.management.config.TopicProperties#getAllowedContentTypes()}. Any
-   * attempt to configure {@code console.topic.contentTypes} in application.yaml will have no
-   * effect.
+   * pl.allegro.tech.hermes.management.config.TopicProperties#getAllowedContentTypes()}. Any attempt
+   * to configure {@code console.topic.contentTypes} in application.yaml will have no effect.
    *
    * <p>The source of truth for content types is: {@code topic.allowedContentTypes} in your
    * application configuration.
