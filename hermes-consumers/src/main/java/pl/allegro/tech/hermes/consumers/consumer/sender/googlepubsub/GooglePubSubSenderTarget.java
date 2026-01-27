@@ -17,15 +17,15 @@ public class GooglePubSubSenderTarget implements SenderTarget {
     this.compressionCodec = compressionCodec;
   }
 
-  TopicName getTopicName() {
+  public TopicName getTopicName() {
     return topicName;
   }
 
-  String getPubSubEndpoint() {
+  public String getPubSubEndpoint() {
     return pubSubEndpoint;
   }
 
-  CompressionCodec getCompressionCodec() {
+  public CompressionCodec getCompressionCodec() {
     return compressionCodec;
   }
 

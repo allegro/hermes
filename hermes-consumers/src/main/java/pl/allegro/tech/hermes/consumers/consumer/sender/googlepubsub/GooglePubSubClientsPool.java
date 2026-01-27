@@ -13,7 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.SenderClientsPool;
 
-class GooglePubSubClientsPool
+public class GooglePubSubClientsPool
     extends SenderClientsPool<GooglePubSubSenderTarget, GooglePubSubClient> {
   private static final Logger logger = LoggerFactory.getLogger(GooglePubSubClientsPool.class);
 
