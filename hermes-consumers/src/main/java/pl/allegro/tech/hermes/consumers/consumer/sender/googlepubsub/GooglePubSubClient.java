@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.SenderClient;
 
-class GooglePubSubClient implements SenderClient<PubsubMessage> {
+public class GooglePubSubClient implements SenderClient<PubsubMessage> {
 
   private static final Logger logger = LoggerFactory.getLogger(GooglePubSubClient.class);
 
