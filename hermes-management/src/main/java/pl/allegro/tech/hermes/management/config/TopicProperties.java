@@ -4,10 +4,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.api.ContentType;
-import pl.allegro.tech.hermes.api.TopicLabel;
 
 @ConfigurationProperties(prefix = "topic")
 public class TopicProperties {
@@ -24,8 +22,6 @@ public class TopicProperties {
 
   private List<ContentType> allowedContentTypes = Arrays.asList(ContentType.AVRO, ContentType.JSON);
 
-  private Set<TopicLabel> allowedTopicLabels = Collections.emptySet();
-
   private boolean uncleanLeaderElectionEnabled = false;
 
   private int touchDelayInSeconds = 120;
@@ -33,8 +29,6 @@ public class TopicProperties {
   private boolean touchSchedulerEnabled = true;
 
   private int subscriptionsAssignmentsCompletedTimeoutSeconds = 30;
-
-  private boolean defaultSchemaIdAwareSerializationEnabled = false;
 
   private boolean defaultFallbackToRemoteDatacenterEnabled = false;
 
@@ -107,14 +101,6 @@ public class TopicProperties {
     this.allowedContentTypes = allowedContentTypes;
   }
 
-  public Set<TopicLabel> getAllowedTopicLabels() {
-    return allowedTopicLabels;
-  }
-
-  public void setAllowedTopicLabels(Set<TopicLabel> allowedTopicLabels) {
-    this.allowedTopicLabels = allowedTopicLabels;
-  }
-
   public boolean isUncleanLeaderElectionEnabled() {
     return uncleanLeaderElectionEnabled;
   }
@@ -155,15 +141,6 @@ public class TopicProperties {
 
   public void setMaxMessageSize(int maxMessageSize) {
     this.maxMessageSize = maxMessageSize;
-  }
-
-  public boolean isDefaultSchemaIdAwareSerializationEnabled() {
-    return defaultSchemaIdAwareSerializationEnabled;
-  }
-
-  public void setDefaultSchemaIdAwareSerializationEnabled(
-      boolean defaultSchemaIdAwareSerializationEnabled) {
-    this.defaultSchemaIdAwareSerializationEnabled = defaultSchemaIdAwareSerializationEnabled;
   }
 
   public boolean isDefaultFallbackToRemoteDatacenterEnabled() {

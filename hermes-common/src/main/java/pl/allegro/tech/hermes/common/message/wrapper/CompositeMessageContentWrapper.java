@@ -23,7 +23,6 @@ public class CompositeMessageContentWrapper implements MessageContentWrapper {
   public CompositeMessageContentWrapper(
       JsonMessageContentWrapper jsonMessageContentWrapper,
       AvroMessageContentWrapper avroMessageContentWrapper,
-      AvroMessageSchemaIdAwareContentWrapper schemaIdAwareContentWrapper,
       AvroMessageHeaderSchemaVersionContentWrapper headerSchemaVersionContentWrapper,
       AvroMessageHeaderSchemaIdContentWrapper headerSchemaIdContentWrapper,
       AvroMessageSchemaVersionTruncationContentWrapper schemaVersionTruncationContentWrapper) {
@@ -32,7 +31,6 @@ public class CompositeMessageContentWrapper implements MessageContentWrapper {
     this.avroMessageContentWrapper = avroMessageContentWrapper;
     this.avroMessageContentUnwrappers =
         asList(
-            schemaIdAwareContentWrapper,
             schemaVersionTruncationContentWrapper,
             headerSchemaVersionContentWrapper,
             headerSchemaIdContentWrapper);
@@ -68,12 +66,8 @@ public class CompositeMessageContentWrapper implements MessageContentWrapper {
       Topic topic,
       CompiledSchema<Schema> schema,
       Map<String, String> externalMetadata) {
-    byte[] wrapped =
-        avroMessageContentWrapper.wrapContent(
-            data, id, timestamp, schema.getSchema(), externalMetadata);
-    return topic.isSchemaIdAwareSerializationEnabled()
-        ? SchemaAwareSerDe.serialize(schema.getId(), wrapped)
-        : wrapped;
+    return avroMessageContentWrapper.wrapContent(
+        data, id, timestamp, schema.getSchema(), externalMetadata);
   }
 
   public byte[] wrapJson(

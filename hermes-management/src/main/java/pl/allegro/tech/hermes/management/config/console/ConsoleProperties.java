@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -17,7 +16,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class ConsoleProperties {
   private Console console = new Console();
   private Dashboard dashboard = new Dashboard();
-  private Hermes hermes = new Hermes();
   private Metrics metrics = new Metrics();
   private Auth auth = new Auth();
   private Owner owner = new Owner();
@@ -33,14 +31,6 @@ public class ConsoleProperties {
 
   public void setDashboard(Dashboard dashboard) {
     this.dashboard = dashboard;
-  }
-
-  public Hermes getHermes() {
-    return hermes;
-  }
-
-  public void setHermes(Hermes hermes) {
-    this.hermes = hermes;
   }
 
   public Metrics getMetrics() {
@@ -207,51 +197,6 @@ public class ConsoleProperties {
     }
   }
 
-  public static final class Hermes {
-    private Discovery discovery = new Discovery();
-
-    public Discovery getDiscovery() {
-      return discovery;
-    }
-
-    public void setDiscovery(Discovery discovery) {
-      this.discovery = discovery;
-    }
-  }
-
-  public static final class Discovery {
-    private String type = "simple";
-    private SimpleDiscovery simple = new SimpleDiscovery();
-
-    public String getType() {
-      return type;
-    }
-
-    public void setType(String type) {
-      this.type = type;
-    }
-
-    public SimpleDiscovery getSimple() {
-      return simple;
-    }
-
-    public void setSimple(SimpleDiscovery simple) {
-      this.simple = simple;
-    }
-  }
-
-  public static final class SimpleDiscovery {
-    private String url = "";
-
-    public String getUrl() {
-      return url;
-    }
-
-    public void setUrl(String url) {
-      this.url = url;
-    }
-  }
-
   public static final class Metrics {
     private boolean fetchingDashboardUrlEnabled = false;
 
@@ -266,7 +211,6 @@ public class ConsoleProperties {
 
   public static final class Auth {
     private OAuth oauth = new OAuth();
-    private AuthHeaders headers = new AuthHeaders();
 
     public OAuth getOauth() {
       return oauth;
@@ -274,14 +218,6 @@ public class ConsoleProperties {
 
     public void setOauth(OAuth oauth) {
       this.oauth = oauth;
-    }
-
-    public AuthHeaders getHeaders() {
-      return headers;
-    }
-
-    public void setHeaders(AuthHeaders headers) {
-      this.headers = headers;
     }
   }
 
@@ -342,41 +278,14 @@ public class ConsoleProperties {
     }
   }
 
-  public static final class AuthHeaders {
-    private boolean enabled = false;
-    private String adminHeader = "Hermes-Admin-Password";
-
-    public boolean isEnabled() {
-      return enabled;
-    }
-
-    public void setEnabled(boolean enabled) {
-      this.enabled = enabled;
-    }
-
-    public String getAdminHeader() {
-      return adminHeader;
-    }
-
-    public void setAdminHeader(String adminHeader) {
-      this.adminHeader = adminHeader;
-    }
-  }
-
   public static final class TopicView {
     private boolean messagePreviewEnabled = true;
     private boolean offlineClientsEnabled = false;
-    private boolean authEnabled = true;
     private DefaultTopicView defaults = new DefaultTopicView();
-    private String buttonsExtension = "";
-    private boolean removeSchema = false;
-    private boolean schemaIdAwareSerializationEnabled = false;
-    private boolean avroContentTypeMetadataRequired = true;
     private List<TopicContentType> contentTypes =
         Lists.newArrayList(
             new TopicContentType("AVRO", "AVRO"), new TopicContentType("JSON", "JSON"));
     private boolean readOnlyModeEnabled = false;
-    private Set<String> allowedTopicLabels = Collections.emptySet();
     private List<RetentionUnit> retentionUnits =
         Lists.newArrayList(new RetentionUnit("DAYS", "DAYS"));
     private OfflineRetransmission offlineRetransmission = new OfflineRetransmission();
@@ -397,14 +306,6 @@ public class ConsoleProperties {
       this.offlineClientsEnabled = offlineClientsEnabled;
     }
 
-    public boolean isAuthEnabled() {
-      return authEnabled;
-    }
-
-    public void setAuthEnabled(boolean authEnabled) {
-      this.authEnabled = authEnabled;
-    }
-
     public DefaultTopicView getDefaults() {
       return defaults;
     }
@@ -419,46 +320,6 @@ public class ConsoleProperties {
 
     public void setContentTypes(List<TopicContentType> contentTypes) {
       this.contentTypes = contentTypes;
-    }
-
-    public Set<String> getAllowedTopicLabels() {
-      return allowedTopicLabels;
-    }
-
-    public void setAllowedTopicLabels(Set<String> allowedTopicLabels) {
-      this.allowedTopicLabels = allowedTopicLabels;
-    }
-
-    public String getButtonsExtension() {
-      return buttonsExtension;
-    }
-
-    public void setButtonsExtension(String buttonsExtension) {
-      this.buttonsExtension = buttonsExtension;
-    }
-
-    public boolean isRemoveSchema() {
-      return removeSchema;
-    }
-
-    public void setRemoveSchema(boolean removeSchema) {
-      this.removeSchema = removeSchema;
-    }
-
-    public boolean isSchemaIdAwareSerializationEnabled() {
-      return schemaIdAwareSerializationEnabled;
-    }
-
-    public void setSchemaIdAwareSerializationEnabled(boolean schemaIdAwareSerializationEnabled) {
-      this.schemaIdAwareSerializationEnabled = schemaIdAwareSerializationEnabled;
-    }
-
-    public boolean isAvroContentTypeMetadataRequired() {
-      return avroContentTypeMetadataRequired;
-    }
-
-    public void setAvroContentTypeMetadataRequired(boolean avroContentTypeMetadataRequired) {
-      this.avroContentTypeMetadataRequired = avroContentTypeMetadataRequired;
     }
 
     public boolean isReadOnlyModeEnabled() {
@@ -667,8 +528,6 @@ public class ConsoleProperties {
   public static final class SubscriptionView {
     private Map<String, EndpointAddressResolverMetadata> endpointAddressResolverMetadata =
         new HashMap<>();
-    private boolean showHeadersFilter = false;
-    private boolean showFixedHeaders = false;
     private int requestTimeoutWarningThreshold = 1001;
     private DefaultSubscriptionView defaults = new DefaultSubscriptionView();
     private List<SubscriptionDeliveryType> deliveryTypes =
@@ -685,14 +544,6 @@ public class ConsoleProperties {
       this.endpointAddressResolverMetadata = endpointAddressResolverMetadata;
     }
 
-    public boolean isShowHeadersFilter() {
-      return showHeadersFilter;
-    }
-
-    public void setShowHeadersFilter(boolean showHeadersFilter) {
-      this.showHeadersFilter = showHeadersFilter;
-    }
-
     public DefaultSubscriptionView getDefaults() {
       return defaults;
     }
@@ -707,14 +558,6 @@ public class ConsoleProperties {
 
     public void setDeliveryTypes(List<SubscriptionDeliveryType> deliveryTypes) {
       this.deliveryTypes = deliveryTypes;
-    }
-
-    public boolean isShowFixedHeaders() {
-      return showFixedHeaders;
-    }
-
-    public void setShowFixedHeaders(boolean showFixedHeaders) {
-      this.showFixedHeaders = showFixedHeaders;
     }
 
     public int getRequestTimeoutWarningThreshold() {

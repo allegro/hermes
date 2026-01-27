@@ -30,9 +30,7 @@ public class MessagePreviewLog {
     long counter = limiter.getAndIncrement(topic.getName());
     if (counter < previewSizePerTopic) {
       messages.add(
-          new MessagePreviewSnapshot(
-              topic.getName(),
-              messagePreviewFactory.create(message, topic.isSchemaIdAwareSerializationEnabled())));
+          new MessagePreviewSnapshot(topic.getName(), messagePreviewFactory.create(message)));
     }
   }
 

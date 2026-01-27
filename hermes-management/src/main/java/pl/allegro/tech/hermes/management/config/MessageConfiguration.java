@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageHeaderSchemaIdContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageHeaderSchemaVersionContentWrapper;
-import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageSchemaIdAwareContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageSchemaVersionTruncationContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
@@ -41,9 +40,6 @@ public class MessageConfiguration {
             metricsFacade,
             messageProperties.isSchemaIdHeaderEnabled());
 
-    AvroMessageSchemaIdAwareContentWrapper schemaAwareWrapper =
-        new AvroMessageSchemaIdAwareContentWrapper(schemaRepository, avroWrapper, metricsFacade);
-
     AvroMessageSchemaVersionTruncationContentWrapper schemaVersionTruncationContentWrapper =
         new AvroMessageSchemaVersionTruncationContentWrapper(
             schemaRepository,
@@ -54,7 +50,6 @@ public class MessageConfiguration {
     return new CompositeMessageContentWrapper(
         jsonWrapper,
         avroWrapper,
-        schemaAwareWrapper,
         headerSchemaVersionWrapper,
         headerSchemaIdWrapper,
         schemaVersionTruncationContentWrapper);

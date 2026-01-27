@@ -17,7 +17,6 @@
     "trackingEnabled": false,
     "migratedFromJsonType": false,
     "fallbackToRemoteDatacenterEnabled": true,
-    "schemaIdAwareSerializationEnabled": false,
     "contentType": "AVRO",
     "maxMessageSize": 10240,
     "auth": {
@@ -33,11 +32,6 @@
         "infinite": false
       }
     },
-    "labels": [
-      {
-        "value": "internal"
-      }
-    ],
     "createdAt": 1634916242.877000000,
     "modifiedAt": 1636451113.517000000
   }

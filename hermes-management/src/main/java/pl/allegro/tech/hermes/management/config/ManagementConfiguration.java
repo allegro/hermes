@@ -50,16 +50,13 @@ public class ManagementConfiguration {
         new Jdk8Module()); // Jdk8Module is required for Jackson to serialize & deserialize Optional
     // type
 
-    final InjectableValues defaultSchemaIdAwareSerializationEnabled =
+    final InjectableValues defaultFallbackToRemoteDatacenterEnabled =
         new InjectableValues.Std()
-            .addValue(
-                Topic.DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY,
-                topicProperties.isDefaultSchemaIdAwareSerializationEnabled())
             .addValue(
                 Topic.DEFAULT_FALLBACK_TO_REMOTE_DATACENTER_KEY,
                 topicProperties.isDefaultFallbackToRemoteDatacenterEnabled());
 
-    mapper.setInjectableValues(defaultSchemaIdAwareSerializationEnabled);
+    mapper.setInjectableValues(defaultFallbackToRemoteDatacenterEnabled);
 
     return mapper;
   }

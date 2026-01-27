@@ -28,8 +28,7 @@ public class MessagePreviewIntegrationTest {
     AvroUser avroUser = new AvroUser("Bob", 50, "blue");
     TopicWithSchema topicWithSchema =
         topicWithSchema(
-            topicWithRandomName().withContentType(AVRO).withSchemaIdAwareSerialization().build(),
-            avroUser.getSchemaAsString());
+            topicWithRandomName().withContentType(AVRO).build(), avroUser.getSchemaAsString());
 
     Topic topic = hermes.initHelper().createTopicWithSchema(topicWithSchema);
 
@@ -52,7 +51,7 @@ public class MessagePreviewIntegrationTest {
 
               // then
               assertThat(previews).hasSize(1);
-              assertThatJson(previews.get(0).getContent())
+              assertThatJson(previews.getFirst().getContent())
                   .when(Option.IGNORING_EXTRA_FIELDS)
                   .isEqualTo(avroUser.asJson());
             });

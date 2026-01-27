@@ -53,8 +53,6 @@ public class MessageContentWrapperTest {
   private final AvroMessageHeaderSchemaVersionContentWrapper headerSchemaVersionWrapper =
       new AvroMessageHeaderSchemaVersionContentWrapper(
           schemaRepository, avroWrapper, metricsFacade);
-  private final AvroMessageSchemaIdAwareContentWrapper schemaAwareWrapper =
-      new AvroMessageSchemaIdAwareContentWrapper(schemaRepository, avroWrapper, metricsFacade);
 
   private static final CompiledSchema<Schema> schema1 =
       CompiledSchema.of(load("/schema/user.avsc"), ID_ONE, VERSION_ONE);
@@ -77,7 +75,6 @@ public class MessageContentWrapperTest {
     return new CompositeMessageContentWrapper(
         jsonWrapper,
         avroWrapper,
-        schemaAwareWrapper,
         headerSchemaVersionWrapper,
         headerSchemaIdWrapper,
         schemaIdAndHeaderContentWrapper);
@@ -103,68 +100,31 @@ public class MessageContentWrapperTest {
       };
 
   static CompiledSchemaRepository<Schema> compiledSchemaRepository =
-      new CompiledSchemaRepository<Schema>() {
+      new CompiledSchemaRepository<>() {
         @Override
         public CompiledSchema<Schema> getSchema(
             Topic topic, SchemaVersion version, boolean online) {
-          switch (version.value()) {
-            case VERSION_ONE:
-              return schema1;
-            case VERSION_TWO:
-              return schema2;
-            case VERSION_THREE:
-              return schema3;
-            default:
-              throw new RuntimeException("sry");
-          }
+          return switch (version.value()) {
+            case VERSION_ONE -> schema1;
+            case VERSION_TWO -> schema2;
+            case VERSION_THREE -> schema3;
+            default -> throw new RuntimeException("sry");
+          };
         }
 
         @Override
         public CompiledSchema<Schema> getSchema(Topic topic, SchemaId id) {
-          switch (id.value()) {
-            case ID_ONE:
-              return schema1;
-            case ID_THREE:
-              return schema2;
-            case ID_FIVE:
-              return schema3;
-            default:
-              throw new RuntimeException("sry");
-          }
+          return switch (id.value()) {
+            case ID_ONE -> schema1;
+            case ID_THREE -> schema2;
+            case ID_FIVE -> schema3;
+            default -> throw new RuntimeException("sry");
+          };
         }
       };
 
   static SchemaRepository schemaRepository =
       new SchemaRepository(schemaVersionsRepository, compiledSchemaRepository);
-
-  @Test
-  public void shouldUnwrapMessageUsingSchemaIdFromPayload() {
-    // given
-    String messageId = MESSAGE_ID;
-    int messageTimestamp = MESSAGE_TIMESTAMP;
-
-    SchemaId schemaId = createSchemaId(ID_FIVE);
-    Topic topic = createTopicWithSchemaIdAwarePayload();
-    AvroUser user = createAvroUser(schemaId, topic);
-
-    byte[] wrapped =
-        compositeMessageContentWrapper.wrapAvro(
-            user.asBytes(),
-            messageId,
-            messageTimestamp,
-            topic,
-            user.getCompiledSchema(),
-            NO_EXTERNAL_METADATA);
-
-    // when
-    UnwrappedMessageContent unwrappedMessageContent =
-        compositeMessageContentWrapper.unwrapAvro(
-            wrapped, topic, NO_ID_IN_HEADER, NO_VERSION_IN_HEADER);
-
-    // then
-    assertResult(unwrappedMessageContent, schemaId, user.asBytes(), messageId, messageTimestamp);
-    assertMetrics(0, 0, 0, 0, 0, 1, 0, 0, 0);
-  }
 
   @Test
   public void shouldUnwrapUsingHeaderSchemaVersionIfHeaderPresent() {
@@ -193,7 +153,7 @@ public class MessageContentWrapperTest {
     // then
     assertResult(
         unwrappedMessageContent, schemaVersion, user.asBytes(), messageId, messageTimestamp);
-    assertMetrics(0, 0, 0, 0, 0, 0, 1, 0, 0);
+    assertMetrics(0, 0, 0, 0, 1, 0, 0);
   }
 
   @Test
@@ -224,68 +184,7 @@ public class MessageContentWrapperTest {
 
     // then
     assertResult(unwrappedMessageContent, schemaId, user.asBytes(), messageId, messageTimestamp);
-    assertMetrics(0, 0, 0, 0, 0, 0, 0, 1, 0);
-  }
-
-  @Test
-  public void
-      shouldUnwrapUsingSchemaIdAwareIfVersionAndIdInSchemaPresentDespiteServiceHeaderPresent() {
-    // given
-    String messageId = MESSAGE_ID;
-    int messageTimestamp = MESSAGE_TIMESTAMP;
-
-    SchemaId schemaId = createSchemaId(ID_THREE);
-    Topic topic = createTopicWithSchemaIdAwarePayload();
-    AvroUser user = createAvroUser(schemaId, topic);
-    CompiledSchema<Schema> schema = user.getCompiledSchema();
-
-    byte[] wrapped =
-        compositeMessageContentWrapper.wrapAvro(
-            user.asBytes(), messageId, messageTimestamp, topic, schema, NO_EXTERNAL_METADATA);
-
-    // when
-    UnwrappedMessageContent unwrappedMessageContent =
-        compositeMessageContentWrapper.unwrapAvro(
-            wrapped, topic, schema.getId().value(), schema.getVersion().value());
-
-    // then
-    assertResult(
-        unwrappedMessageContent, schema.getVersion(), user.asBytes(), messageId, messageTimestamp);
-    assertMetrics(0, 0, 0, 0, 0, 1, 0, 0, 0);
-  }
-
-  @Test
-  public void shouldUnwrapUsingHeaderSchemaVersionIfHeaderPresentAndNoMagicByte() {
-    // given
-    String messageId = MESSAGE_ID;
-    int messageTimestamp = MESSAGE_TIMESTAMP;
-
-    SchemaVersion schemaVersion = createSchemaVersion(VERSION_TWO); // no magic byte
-    Topic topicToWrap = createTopic();
-    AvroUser user = createAvroUser(schemaVersion, topicToWrap);
-
-    byte[] wrapped =
-        compositeMessageContentWrapper.wrapAvro(
-            user.asBytes(),
-            messageId,
-            messageTimestamp,
-            topicToWrap,
-            user.getCompiledSchema(),
-            NO_EXTERNAL_METADATA);
-
-    Topic topicToUnwrap = createTopicWithSchemaIdAwarePayload();
-
-    // when
-    UnwrappedMessageContent unwrappedMessageContent =
-        compositeMessageContentWrapper.unwrapAvro(
-            wrapped, topicToUnwrap, NO_ID_IN_HEADER, schemaVersion.value());
-
-    // then
-    assertResult(
-        unwrappedMessageContent, schemaVersion, user.asBytes(), messageId, messageTimestamp);
-
-    // missedSchemaVersionInPayload == no magic byte
-    assertMetrics(1, 0, 0, 0, 0, 0, 1, 0, 0);
+    assertMetrics(0, 0, 0, 0, 0, 1, 0);
   }
 
   @Test
@@ -315,7 +214,7 @@ public class MessageContentWrapperTest {
     // then
     assertResult(
         unwrappedMessageContent, schemaVersion, user.asBytes(), messageId, messageTimestamp);
-    assertMetrics(0, 0, 0, 0, 0, 0, 0, 0, 1);
+    assertMetrics(0, 0, 0, 0, 0, 0, 1);
   }
 
   private void assertResult(
@@ -347,22 +246,15 @@ public class MessageContentWrapperTest {
 
   private void assertMetrics(
       int missedSchemaIdInPayload,
-      int errorsForPayloadWithSchemaId,
       int errorsForHeaderSchemaVersion,
       int errorsForHeaderSchemaId,
       int errorsWithSchemaVersionTruncation,
-      int usingSchemaIdAware,
       int usingHeaderSchemaVersion,
       int usingHeaderSchemaId,
       int usingSchemaVersionTruncation) {
     final String basePath = "content.avro.deserialization";
     assertThat(meterRegistryCounterValue(basePath + ".missing_schemaIdInPayload", Tags.empty()))
         .isEqualTo(missedSchemaIdInPayload);
-
-    assertThat(
-            meterRegistryCounterValue(
-                basePath + ".errors", Tags.of("deserialization_type", "payloadWithSchemaId")))
-        .isEqualTo(errorsForPayloadWithSchemaId);
 
     assertThat(
             meterRegistryCounterValue(
@@ -378,11 +270,6 @@ public class MessageContentWrapperTest {
             meterRegistryCounterValue(
                 basePath + ".errors", Tags.of("deserialization_type", "schemaVersionTruncation")))
         .isEqualTo(errorsWithSchemaVersionTruncation);
-
-    assertThat(
-            meterRegistryCounterValue(
-                basePath, Tags.of("deserialization_type", "payloadWithSchemaId")))
-        .isEqualTo(usingSchemaIdAware);
 
     assertThat(
             meterRegistryCounterValue(
@@ -408,10 +295,6 @@ public class MessageContentWrapperTest {
 
   private Topic createTopic() {
     return topic("group", "topic").build();
-  }
-
-  private Topic createTopicWithSchemaIdAwarePayload() {
-    return topic("group", "topic-idAware").withSchemaIdAwareSerialization().build();
   }
 
   private AvroUser createAvroUser(SchemaVersion schemaVersion, Topic topic) {

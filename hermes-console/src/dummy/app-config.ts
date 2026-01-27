@@ -11,14 +11,6 @@ export const dummyAppConfig: AppConfiguration = {
     metrics: '',
     docs: 'http://hermes-pubsub.rtfd.org',
   },
-  hermes: {
-    discovery: {
-      type: 'simple',
-      simple: {
-        url: '',
-      },
-    },
-  },
   metrics: {
     fetchingDashboardUrlEnabled: true,
   },
@@ -30,10 +22,6 @@ export const dummyAppConfig: AppConfiguration = {
       tokenEndpoint: '/token',
       clientId: 'hermes',
       scope: '',
-    },
-    headers: {
-      enabled: false,
-      adminHeader: '',
     },
   },
   owner: {
@@ -47,7 +35,6 @@ export const dummyAppConfig: AppConfiguration = {
   topic: {
     messagePreviewEnabled: true,
     offlineClientsEnabled: true,
-    authEnabled: false,
     defaults: {
       ack: 'LEADER',
       contentType: 'AVRO',
@@ -63,10 +50,6 @@ export const dummyAppConfig: AppConfiguration = {
         },
       },
     },
-    buttonsExtension: '',
-    removeSchema: true,
-    schemaIdAwareSerializationEnabled: false,
-    avroContentTypeMetadataRequired: true,
     contentTypes: [
       {
         value: 'AVRO',
@@ -74,7 +57,6 @@ export const dummyAppConfig: AppConfiguration = {
       },
     ],
     readOnlyModeEnabled: false,
-    allowedTopicLabels: ['internal', 'deprecated'],
     retentionUnits: [
       {
         value: 'DAYS',
@@ -102,8 +84,6 @@ export const dummyAppConfig: AppConfiguration = {
         hint: 'Some hint',
       },
     },
-    showHeadersFilter: true,
-    showFixedHeaders: false,
     requestTimeoutWarningThreshold: 1001,
     defaults: {
       subscriptionPolicy: {

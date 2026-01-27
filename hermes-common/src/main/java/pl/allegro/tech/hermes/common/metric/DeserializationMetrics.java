@@ -24,10 +24,6 @@ public class DeserializationMetrics {
     return HermesCounters.from(deserializationErrorCounter("headerSchemaId"));
   }
 
-  public HermesCounter errorsForSchemaIdAwarePayload() {
-    return HermesCounters.from(deserializationErrorCounter("payloadWithSchemaId"));
-  }
-
   public HermesCounter errorsForSchemaVersionTruncation() {
     return HermesCounters.from(deserializationErrorCounter("schemaVersionTruncation"));
   }
@@ -36,20 +32,12 @@ public class DeserializationMetrics {
     return meterRegistry.counter(ERRORS_PATH, Tags.of("deserialization_type", schemaSource));
   }
 
-  public HermesCounter missingSchemaIdInPayload() {
-    return HermesCounters.from(meterRegistry.counter(BASE_PATH + ".missing_schemaIdInPayload"));
-  }
-
   public HermesCounter usingHeaderSchemaVersion() {
     return HermesCounters.from(deserializationAttemptCounter("headerSchemaVersion"));
   }
 
   public HermesCounter usingHeaderSchemaId() {
     return HermesCounters.from(deserializationAttemptCounter("headerSchemaId"));
-  }
-
-  public HermesCounter usingSchemaIdAware() {
-    return HermesCounters.from(deserializationAttemptCounter("payloadWithSchemaId"));
   }
 
   public HermesCounter usingSchemaVersionTruncation() {

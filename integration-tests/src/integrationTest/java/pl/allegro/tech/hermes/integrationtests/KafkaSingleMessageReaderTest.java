@@ -85,32 +85,6 @@ public class KafkaSingleMessageReaderTest {
   }
 
   @Test
-  public void shouldFetchSingleAvroMessageWithSchemaAwareSerialization() {
-    // given
-    TestSubscriber subscriber = subscribers.createSubscriber();
-    TopicWithSchema topic =
-        topicWithSchema(
-            topicWithRandomName().withContentType(AVRO).withSchemaIdAwareSerialization().build(),
-            avroUser.getSchemaAsString());
-    hermes.initHelper().createTopicWithSchema(topic);
-    hermes
-        .initHelper()
-        .createSubscription(
-            subscriptionWithRandomName(topic.getName(), subscriber.getEndpoint()).build());
-
-    hermes.api().publishAvro(topic.getQualifiedName(), avroUser.asBytes());
-    subscriber.waitUntilAnyMessageReceived();
-
-    // when
-    List<String> previews = fetchPreviewsFromAllPartitions(topic.getQualifiedName(), 10, false);
-
-    // then
-    boolean isMessagePresent =
-        previews.stream().anyMatch(preview -> preview.contains(avroUser.getName()));
-    assertThat(isMessagePresent).isTrue();
-  }
-
-  @Test
   public void shouldReturnNotFoundErrorForNonExistingOffset() {
     // given
     final long nonExistingOffset = 10L;
