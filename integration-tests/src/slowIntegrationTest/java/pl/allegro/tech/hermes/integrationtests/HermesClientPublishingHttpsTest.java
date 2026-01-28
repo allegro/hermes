@@ -2,12 +2,12 @@ package pl.allegro.tech.hermes.integrationtests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static pl.allegro.tech.hermes.client.HermesClientBuilder.hermesClient;
-import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_HTTP2_ENABLED;
-import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_SSL_ENABLED;
-import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_SSL_KEYSTORE_SOURCE;
-import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_SSL_PORT;
-import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_SSL_TRUSTSTORE_SOURCE;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
+import static pl.allegro.tech.hermes.test.helper.frontend.FrontendConfigurationProperties.FRONTEND_HTTP2_ENABLED;
+import static pl.allegro.tech.hermes.test.helper.frontend.FrontendConfigurationProperties.FRONTEND_SSL_ENABLED;
+import static pl.allegro.tech.hermes.test.helper.frontend.FrontendConfigurationProperties.FRONTEND_SSL_KEYSTORE_SOURCE;
+import static pl.allegro.tech.hermes.test.helper.frontend.FrontendConfigurationProperties.FRONTEND_SSL_PORT;
+import static pl.allegro.tech.hermes.test.helper.frontend.FrontendConfigurationProperties.FRONTEND_SSL_TRUSTSTORE_SOURCE;
 
 import java.net.URI;
 import java.time.Duration;
@@ -27,9 +27,9 @@ import pl.allegro.tech.hermes.common.ssl.KeystoreProperties;
 import pl.allegro.tech.hermes.common.ssl.SSLContextHolder;
 import pl.allegro.tech.hermes.common.ssl.provided.ProvidedKeyManagersProvider;
 import pl.allegro.tech.hermes.common.ssl.provided.ProvidedTrustManagersProvider;
-import pl.allegro.tech.hermes.integrationtests.setup.HermesFrontendTestApp;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesManagementExtension;
 import pl.allegro.tech.hermes.integrationtests.setup.InfrastructureExtension;
+import pl.allegro.tech.hermes.test.helper.frontend.HermesFrontendTestApp;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 public class HermesClientPublishingHttpsTest {

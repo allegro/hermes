@@ -58,7 +58,8 @@ public class QueryEndpointTest {
 
   @Order(1)
   @RegisterExtension
-  public static final HermesExtension hermes = new HermesExtension().withPrometheus(prometheus);
+  public static final HermesExtension hermes =
+      new HermesExtension().withPrometheus(prometheus::getEndpoint);
 
   @Test
   public void shouldReturnAllGroupsWhenQueryIsEmpty() {

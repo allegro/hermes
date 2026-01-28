@@ -5,10 +5,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
-import pl.allegro.tech.hermes.env.IntegrationTestKafkaNamesMapperFactory;
 import pl.allegro.tech.hermes.management.config.kafka.KafkaClustersProperties;
 import pl.allegro.tech.hermes.management.config.kafka.KafkaNamesMappers;
 import pl.allegro.tech.hermes.management.config.kafka.MultipleDcKafkaNamesMappersFactory;
+import pl.allegro.tech.hermes.test.helper.kafka.IntegrationTestKafkaNamesMapperFactory;
 
 @Configuration
 @EnableConfigurationProperties(KafkaClustersProperties.class)

@@ -1,10 +1,14 @@
-package pl.allegro.tech.hermes.integrationtests.setup;
+package pl.allegro.tech.hermes.consumers;
+
+import static pl.allegro.tech.hermes.consumers.ConsumersConfigurationProperties.*;
 
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Supplier;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import pl.allegro.tech.hermes.consumers.HermesConsumers;
 import pl.allegro.tech.hermes.consumers.server.ConsumerHttpServer;
 import pl.allegro.tech.hermes.test.helper.containers.ConfluentSchemaRegistryContainer;
 import pl.allegro.tech.hermes.test.helper.containers.KafkaContainerCluster;
@@ -20,7 +24,8 @@ public class HermesConsumersTestApp implements HermesTestApp {
   private int port = -1;
   private SpringApplicationBuilder app = null;
   private List<String> currentArgs = List.of();
-  private GooglePubSubExtension googlePubSub = null;
+  private final Map<String, Object> extraArgs = new HashMap<>();
+  private Supplier<String> googlePubSubEndpoint = getDefaultPubSubEndpoint();
 
   public HermesConsumersTestApp(
       ZookeeperContainer hermesZookeeper,
@@ -63,37 +68,42 @@ public class HermesConsumersTestApp implements HermesTestApp {
   }
 
   private List<String> createArgs() {
-    return List.of(
-        "--spring.profiles.active=integration",
-        "--consumer.healthCheckPort=0",
-        "--consumer.kafka.namespace=itTest",
-        "--consumer.kafka.clusters.[0].brokerList=" + kafka.getBootstrapServersForExternalClients(),
-        "--consumer.kafka.clusters.[0].clusterName=" + "primary-dc",
-        "--consumer.zookeeper.clusters.[0].connectionString="
-            + hermesZookeeper.getConnectionString(),
-        "--consumer.schema.repository.serverUrl=" + schemaRegistry.getUrl(),
-        "--consumer.backgroundSupervisor.interval=" + Duration.ofMillis(100),
-        "--consumer.workload.rebalanceInterval=" + Duration.ofSeconds(1),
-        "--consumer.commit.offset.period=" + Duration.ofSeconds(1),
-        "--consumer.metrics.micrometer.reportPeriod=" + Duration.ofSeconds(5),
-        "--consumer.schema.cache.enabled=true",
-        "--consumer.google.pubsub.sender.transportChannelProviderAddress="
-            + getGooglePubSubEndpoint());
+    Map<String, Object> args = new HashMap<>();
+    args.put(SPRING_PROFILES_ACTIVE, "integration");
+    args.put(CONSUMER_HEALTH_CHECK_PORT, 0);
+    args.put(CONSUMER_KAFKA_NAMESPACE, "itTest");
+    args.put(CONSUMER_KAFKA_CLUSTER_BROKER_LIST, kafka.getBootstrapServersForExternalClients());
+    args.put(CONSUMER_KAFKA_CLUSTER_NAME, "primary-dc");
+    args.put(CONSUMER_ZOOKEEPER_CONNECTION_STRING, hermesZookeeper.getConnectionString());
+    args.put(CONSUMER_SCHEMA_REPOSITORY_SERVER_URL, schemaRegistry.getUrl());
+    args.put(CONSUMER_BACKGROUND_SUPERVISOR_INTERVAL, Duration.ofMillis(100));
+    args.put(CONSUMER_WORKLOAD_REBALANCE_INTERVAL, Duration.ofSeconds(1));
+    args.put(CONSUMER_COMMIT_OFFSET_PERIOD, Duration.ofSeconds(1));
+    args.put(CONSUMER_METRICS_MICROMETER_REPORT_PERIOD, Duration.ofSeconds(5));
+    args.put(CONSUMER_SCHEMA_CACHE_ENABLED, true);
+    args.put(CONSUMER_GOOGLE_PUBSUB_TRANSPORT_CHANNEL_PROVIDER_ADDRESS, googlePubSubEndpoint.get());
+    args.putAll(extraArgs);
+    return args.entrySet().stream()
+        .map(entry -> "--" + entry.getKey() + "=" + entry.getValue())
+        .toList();
   }
 
-  private String getGooglePubSubEndpoint() {
-    if (googlePubSub == null) {
-      return "integration";
-    }
-    return googlePubSub.getEmulatorEndpoint();
+  public void withGooglePubSubEndpoint(Supplier<String> googlePubSub) {
+    this.googlePubSubEndpoint = googlePubSub;
   }
 
-  void withGooglePubSubEndpoint(GooglePubSubExtension googlePubSub) {
-    this.googlePubSub = googlePubSub;
+  private static Supplier<String> getDefaultPubSubEndpoint() {
+    return () -> "integration";
   }
 
   @Override
   public void restoreDefaultSettings() {
-    googlePubSub = null;
+    extraArgs.clear();
+    googlePubSubEndpoint = getDefaultPubSubEndpoint();
+  }
+
+  public HermesConsumersTestApp withProperty(String name, Object value) {
+    this.extraArgs.put(name, value);
+    return this;
   }
 }

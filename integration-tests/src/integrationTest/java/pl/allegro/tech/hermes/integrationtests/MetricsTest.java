@@ -47,7 +47,8 @@ public class MetricsTest {
 
   @Order(1)
   @RegisterExtension
-  public static final HermesExtension hermes = new HermesExtension().withPrometheus(prometheus);
+  public static final HermesExtension hermes =
+      new HermesExtension().withPrometheus(prometheus::getEndpoint);
 
   @RegisterExtension
   public static final TestSubscribersExtension subscribers = new TestSubscribersExtension();

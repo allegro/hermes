@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.integrationtests.setup;
+package pl.allegro.tech.hermes.management;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.waitAtMost;
@@ -11,14 +11,14 @@ import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.core.env.Environment;
-import pl.allegro.tech.hermes.integrationtests.prometheus.PrometheusExtension;
-import pl.allegro.tech.hermes.management.HermesManagement;
 import pl.allegro.tech.hermes.management.domain.group.GroupService;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
@@ -40,7 +40,7 @@ public class HermesManagementTestApp implements HermesTestApp {
   private final ConfluentSchemaRegistryContainer schemaRegistry;
   private SpringApplicationBuilder app = null;
   private List<String> currentArgs = List.of();
-  private PrometheusExtension prometheus = null;
+  private Supplier<String> prometheusUrl = () -> null;
   private final List<String> extraArgs = new ArrayList<>();
 
   public HermesManagementTestApp(
@@ -119,13 +119,13 @@ public class HermesManagementTestApp implements HermesTestApp {
     auditEventPort = port;
   }
 
-  void withPrometheus(PrometheusExtension prometheus) {
-    this.prometheus = prometheus;
+  public void withPrometheusUrl(Supplier<String> prometheus) {
+    this.prometheusUrl = prometheus;
   }
 
   @Override
   public void restoreDefaultSettings() {
-    prometheus = null;
+    prometheusUrl = () -> null;
   }
 
   @Override
@@ -137,11 +137,12 @@ public class HermesManagementTestApp implements HermesTestApp {
   private List<String> createArgs() {
     List<String> args = new ArrayList<>();
     args.add("--spring.profiles.active=integration");
+    args.add("--spring.config.location=" + getResourcesDirectory());
     args.add("--server.port=0");
     args.add("--prometheus.client.enabled=true");
     args.add("--prometheus.client.socketTimeoutMillis=500");
-    if (prometheus != null) {
-      args.add("--prometheus.client.externalMonitoringUrl=" + prometheus.getEndpoint());
+    if (prometheusUrl.get() != null) {
+      args.add("--prometheus.client.externalMonitoringUrl=" + prometheusUrl.get());
       args.add("--prometheus.client.cacheTtlSeconds=0");
     }
     args.add("--topic.partitions=2");
@@ -201,6 +202,32 @@ public class HermesManagementTestApp implements HermesTestApp {
     args.addAll(extraArgs);
 
     return args;
+  }
+
+  private static String getResourcesDirectory() {
+    Path path = getManagementAppClassSourcePath();
+    Path prefixEndingAt = getPrefixEndingAt(path, "hermes-management");
+    return "file:/" + prefixEndingAt + "/src/main/resources/";
+  }
+
+  private static Path getManagementAppClassSourcePath() {
+    URI hermesManagementClassUrl;
+    try {
+      hermesManagementClassUrl =
+          HermesManagement.class.getProtectionDomain().getCodeSource().getLocation().toURI();
+    } catch (URISyntaxException e) {
+      throw new RuntimeException(e);
+    }
+    return Path.of(hermesManagementClassUrl.getPath());
+  }
+
+  public static Path getPrefixEndingAt(Path path, String target) {
+    for (int i = 0; i < path.getNameCount(); i++) {
+      if (path.getName(i).toString().equals(target)) {
+        return path.subpath(0, i + 1);
+      }
+    }
+    throw new IllegalArgumentException("Path " + path + " does not contain " + target);
   }
 
   public SubscriptionService subscriptionService() {

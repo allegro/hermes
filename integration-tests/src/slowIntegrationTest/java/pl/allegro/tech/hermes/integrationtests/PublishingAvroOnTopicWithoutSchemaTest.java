@@ -3,8 +3,8 @@ package pl.allegro.tech.hermes.integrationtests;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.api.ErrorCode.SCHEMA_COULD_NOT_BE_LOADED;
 import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
-import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.SCHEMA_REPOSITORY_SERVER_URL;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
+import static pl.allegro.tech.hermes.test.helper.frontend.FrontendConfigurationProperties.SCHEMA_REPOSITORY_SERVER_URL;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.core.Options;
@@ -18,12 +18,12 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import pl.allegro.tech.hermes.api.ErrorDescription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicWithSchema;
-import pl.allegro.tech.hermes.integrationtests.setup.HermesFrontendTestApp;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesManagementExtension;
 import pl.allegro.tech.hermes.integrationtests.setup.InfrastructureExtension;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUserSchemaLoader;
 import pl.allegro.tech.hermes.test.helper.client.integration.FrontendTestClient;
+import pl.allegro.tech.hermes.test.helper.frontend.HermesFrontendTestApp;
 
 public class PublishingAvroOnTopicWithoutSchemaTest {
 

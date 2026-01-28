@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.integrationtests.setup;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
+import pl.allegro.tech.hermes.management.HermesManagementTestApp;
 import pl.allegro.tech.hermes.test.helper.client.integration.HermesInitHelper;
 
 public class HermesManagementExtension implements BeforeAllCallback, AfterAllCallback {

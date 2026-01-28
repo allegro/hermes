@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.env;
+package pl.allegro.tech.hermes.test.helper.kafka;
 
 import pl.allegro.tech.hermes.common.kafka.JsonToAvroMigrationKafkaNamesMapper;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;

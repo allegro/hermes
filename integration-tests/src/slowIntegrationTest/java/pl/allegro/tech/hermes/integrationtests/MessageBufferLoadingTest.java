@@ -7,10 +7,10 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static pl.allegro.tech.hermes.api.ContentType.JSON;
-import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.MESSAGES_LOCAL_STORAGE_DIRECTORY;
-import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.MESSAGES_LOCAL_STORAGE_ENABLED;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
+import static pl.allegro.tech.hermes.test.helper.frontend.FrontendConfigurationProperties.MESSAGES_LOCAL_STORAGE_DIRECTORY;
+import static pl.allegro.tech.hermes.test.helper.frontend.FrontendConfigurationProperties.MESSAGES_LOCAL_STORAGE_ENABLED;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Files;
@@ -25,18 +25,18 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
+import pl.allegro.tech.hermes.consumers.HermesConsumersTestApp;
 import pl.allegro.tech.hermes.frontend.buffer.BackupFilesManager;
 import pl.allegro.tech.hermes.frontend.buffer.MessageRepository;
 import pl.allegro.tech.hermes.frontend.buffer.chronicle.ChronicleMapMessageRepository;
 import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageIdGenerator;
-import pl.allegro.tech.hermes.integrationtests.setup.HermesConsumersTestApp;
-import pl.allegro.tech.hermes.integrationtests.setup.HermesFrontendTestApp;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesManagementExtension;
 import pl.allegro.tech.hermes.integrationtests.setup.InfrastructureExtension;
 import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscriber;
 import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscribersExtension;
 import pl.allegro.tech.hermes.test.helper.client.integration.FrontendTestClient;
+import pl.allegro.tech.hermes.test.helper.frontend.HermesFrontendTestApp;
 
 public class MessageBufferLoadingTest {
 
