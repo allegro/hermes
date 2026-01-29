@@ -6,7 +6,6 @@ import static pl.allegro.tech.hermes.common.logging.LoggingFields.SUBSCRIPTION_N
 import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.PersistentSubscriptionMetrics;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
 import pl.allegro.tech.hermes.api.SubscriptionName;
@@ -16,7 +15,6 @@ import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionLagSour
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionMetricsRepository;
 import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringSubscriptionMetricsProvider.MonitoringSubscriptionMetrics;
 
-@Component
 public class HybridSubscriptionMetricsRepository implements SubscriptionMetricsRepository {
 
   private static final Logger logger =
