@@ -26,7 +26,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.InconsistentGroup;
 import pl.allegro.tech.hermes.api.InconsistentMetadata;
@@ -47,7 +46,6 @@ import pl.allegro.tech.hermes.management.config.ConsistencyCheckerProperties;
 import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryManager;
 
-@Component
 public class DcConsistencyService {
   private static final Logger logger = LoggerFactory.getLogger(DcConsistencyService.class);
 

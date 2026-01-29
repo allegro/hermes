@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.management.domain.group;
 
-import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.domain.group.GroupAlreadyExistsException;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
@@ -8,7 +7,6 @@ import pl.allegro.tech.hermes.management.api.auth.CreatorRights;
 import pl.allegro.tech.hermes.management.config.GroupProperties;
 import pl.allegro.tech.hermes.management.domain.PermissionDeniedException;
 
-@Component
 public class GroupValidator {
 
   private final GroupRepository repository;

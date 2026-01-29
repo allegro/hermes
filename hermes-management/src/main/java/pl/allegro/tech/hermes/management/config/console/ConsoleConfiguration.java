@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.management.config.GroupProperties;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.domain.console.ConsoleConfigurationRepository;
+import pl.allegro.tech.hermes.management.domain.console.ConsoleService;
 import pl.allegro.tech.hermes.management.infrastructure.console.FrontendRoutesFilter;
 import pl.allegro.tech.hermes.management.infrastructure.console.SpringConfigConsoleConfigurationRepository;
 
@@ -49,5 +50,10 @@ public class ConsoleConfiguration {
     consoleProperties.getTopic().setContentTypes(contentTypes);
 
     return new SpringConfigConsoleConfigurationRepository(objectMapper, consoleProperties);
+  }
+
+  @Bean
+  public ConsoleService consoleService(ConsoleConfigurationRepository repository) {
+    return new ConsoleService(repository);
   }
 }

@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.management.api.auth;
 
 import jakarta.ws.rs.container.ContainerRequestContext;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.Topic;
@@ -16,7 +15,7 @@ public class ManagementRights {
 
   private final GroupProperties groupProperties;
 
-  @Autowired
+  
   public ManagementRights(GroupProperties groupProperties) {
     this.groupProperties = groupProperties;
   }

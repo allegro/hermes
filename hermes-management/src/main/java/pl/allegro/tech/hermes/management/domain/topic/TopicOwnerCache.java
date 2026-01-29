@@ -11,15 +11,12 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.management.domain.group.GroupService;
 
-@Component
 public class TopicOwnerCache {
 
   private static final Logger logger = LoggerFactory.getLogger(TopicOwnerCache.class);
@@ -34,7 +31,7 @@ public class TopicOwnerCache {
   public TopicOwnerCache(
       TopicRepository topicRepository,
       GroupService groupService,
-      @Value("${topicOwnerCache.refreshRateInSeconds}") int refreshRateInSeconds) {
+      int refreshRateInSeconds) {
     this.topicRepository = topicRepository;
     this.groupService = groupService;
     scheduledExecutorService =

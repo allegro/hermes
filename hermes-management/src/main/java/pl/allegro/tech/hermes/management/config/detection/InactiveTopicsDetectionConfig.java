@@ -1,18 +1,55 @@
 package pl.allegro.tech.hermes.management.config.detection;
 
+import java.time.Clock;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.management.domain.detection.InactiveTopicsDetectionJob;
+import pl.allegro.tech.hermes.management.domain.detection.InactiveTopicsDetectionService;
+import pl.allegro.tech.hermes.management.domain.detection.InactiveTopicsRepository;
+import pl.allegro.tech.hermes.management.domain.detection.InactiveTopicsStorageService;
+import pl.allegro.tech.hermes.management.domain.detection.LastPublishedMessageMetricsRepository;
+import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 import pl.allegro.tech.hermes.management.infrastructure.detection.InactiveTopicsDetectionScheduler;
+import pl.allegro.tech.hermes.management.infrastructure.detection.ZookeeperLastPublishedMessageMetricsRepository;
 import pl.allegro.tech.hermes.management.infrastructure.leader.ManagementLeadership;
+import pl.allegro.tech.hermes.management.infrastructure.metrics.SummedSharedCounter;
 
 @Configuration
 @EnableConfigurationProperties(InactiveTopicsDetectionProperties.class)
 @EnableScheduling
 public class InactiveTopicsDetectionConfig {
+
+  @Bean
+  public LastPublishedMessageMetricsRepository lastPublishedMessageMetricsRepository(
+      SummedSharedCounter summedSharedCounter, ZookeeperPaths zookeeperPaths) {
+    return new ZookeeperLastPublishedMessageMetricsRepository(summedSharedCounter, zookeeperPaths);
+  }
+
+  @Bean
+  public InactiveTopicsDetectionService inactiveTopicsDetectionService(
+      LastPublishedMessageMetricsRepository metricsRepository,
+      InactiveTopicsDetectionProperties properties,
+      Clock clock) {
+    return new InactiveTopicsDetectionService(metricsRepository, properties, clock);
+  }
+
+  // TODO: These services temporarily use @Component due to complex dependencies
+  /*
+  @Bean
+  public InactiveTopicsStorageService inactiveTopicsStorageService(...) {
+    return new InactiveTopicsStorageService(...);
+  }
+
+  @Bean
+  public InactiveTopicsDetectionJob inactiveTopicsDetectionJob(...) {
+    return new InactiveTopicsDetectionJob(...);
+  }
+  */
+
   @ConditionalOnProperty(
       prefix = "detection.inactive-topics",
       value = "enabled",
