@@ -2,8 +2,6 @@ package pl.allegro.tech.hermes.management.domain.topic.validator;
 
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.PublishingChaosPolicy;
 import pl.allegro.tech.hermes.api.PublishingChaosPolicy.ChaosMode;
@@ -19,7 +17,6 @@ import pl.allegro.tech.hermes.schema.CouldNotLoadSchemaException;
 import pl.allegro.tech.hermes.schema.SchemaNotFoundException;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
 
-@Component
 public class TopicValidator {
 
   private final OwnerIdValidator ownerIdValidator;
@@ -28,7 +25,6 @@ public class TopicValidator {
   private final ApiPreconditions apiPreconditions;
   private final TopicProperties topicProperties;
 
-  @Autowired
   public TopicValidator(
       OwnerIdValidator ownerIdValidator,
       ContentTypeValidator contentTypeValidator,

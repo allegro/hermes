@@ -8,7 +8,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
+import pl.allegro.tech.hermes.management.config.CacheProperties;
 import pl.allegro.tech.hermes.management.domain.owner.validator.OwnerIdValidator;
+import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionOwnerCache;
 import pl.allegro.tech.hermes.management.domain.subscription.validator.EndpointAddressFormatValidator;
 import pl.allegro.tech.hermes.management.domain.subscription.validator.EndpointAddressValidator;
 import pl.allegro.tech.hermes.management.domain.subscription.validator.EndpointOwnershipValidator;
@@ -18,8 +20,15 @@ import pl.allegro.tech.hermes.management.domain.subscription.validator.Subscript
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 
 @Configuration
-@EnableConfigurationProperties(SubscriptionProperties.class)
+@EnableConfigurationProperties({SubscriptionProperties.class, CacheProperties.class})
 public class SubscriptionConfiguration {
+
+  @Bean
+  public SubscriptionOwnerCache subscriptionOwnerCache(
+      SubscriptionRepository subscriptionRepository, CacheProperties cacheProperties) {
+    return new SubscriptionOwnerCache(
+        subscriptionRepository, cacheProperties.getSubscriptionOwnerRefreshRateInSeconds());
+  }
 
   @Bean
   public SubscriptionValidator subscriptionValidator(

@@ -5,11 +5,9 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Optional;
-import org.springframework.stereotype.Service;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.management.config.detection.InactiveTopicsDetectionProperties;
 
-@Service
 public class InactiveTopicsDetectionService {
   private final LastPublishedMessageMetricsRepository metricsRepository;
   private final InactiveTopicsDetectionProperties properties;

@@ -9,8 +9,6 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.micrometer.core.instrument.MeterRegistry;
 import java.time.Clock;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -34,10 +32,15 @@ import pl.allegro.tech.hermes.metrics.PathsCompiler;
   ConsistencyCheckerProperties.class,
   PrometheusProperties.class,
   MicrometerRegistryProperties.class,
+  ManagementLeadershipProperties.class,
 })
 public class ManagementConfiguration {
 
-  @Autowired TopicProperties topicProperties;
+  private final TopicProperties topicProperties;
+
+  public ManagementConfiguration(TopicProperties topicProperties) {
+    this.topicProperties = topicProperties;
+  }
 
   @Bean
   public ObjectMapper objectMapper() {
@@ -90,8 +93,9 @@ public class ManagementConfiguration {
   @Bean
   ManagementLeadership managementLeadership(
       ZookeeperClientManager zookeeperClientManager,
-      @Value("${management.leadership.zookeeper-dc}") String leaderElectionDc,
+      ManagementLeadershipProperties leadershipProperties,
       ZookeeperPaths zookeeperPaths) {
-    return new ManagementLeadership(zookeeperClientManager, leaderElectionDc, zookeeperPaths);
+    return new ManagementLeadership(
+        zookeeperClientManager, leadershipProperties.getZookeeperDc(), zookeeperPaths);
   }
 }

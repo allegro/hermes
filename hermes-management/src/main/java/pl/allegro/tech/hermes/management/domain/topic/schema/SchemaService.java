@@ -6,8 +6,6 @@ import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.RawSchema;
 import pl.allegro.tech.hermes.api.RawSchemaWithMetadata;
 import pl.allegro.tech.hermes.api.Topic;
@@ -18,7 +16,6 @@ import pl.allegro.tech.hermes.schema.RawSchemaClient;
 import pl.allegro.tech.hermes.schema.SchemaId;
 import pl.allegro.tech.hermes.schema.SchemaVersion;
 
-@Component
 public class SchemaService {
 
   private final RawSchemaClient rawSchemaClient;
@@ -27,7 +24,6 @@ public class SchemaService {
 
   private static final Logger logger = LoggerFactory.getLogger(SchemaService.class);
 
-  @Autowired
   public SchemaService(
       RawSchemaClient rawSchemaClient,
       SchemaValidatorProvider validatorProvider,

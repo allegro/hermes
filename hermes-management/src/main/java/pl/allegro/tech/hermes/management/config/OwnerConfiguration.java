@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.management.domain.owner.OwnerSource;
 import pl.allegro.tech.hermes.management.domain.owner.OwnerSources;
+import pl.allegro.tech.hermes.management.domain.owner.validator.OwnerIdValidator;
 
 @Configuration
 public class OwnerConfiguration {
@@ -14,5 +15,10 @@ public class OwnerConfiguration {
   @ConditionalOnMissingBean
   public OwnerSources ownerSources(List<OwnerSource> ownerSources) {
     return new OwnerSources(ownerSources);
+  }
+
+  @Bean
+  public OwnerIdValidator ownerIdValidator(OwnerSources ownerSources) {
+    return new OwnerIdValidator(ownerSources);
   }
 }

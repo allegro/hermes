@@ -7,11 +7,8 @@ import java.io.IOException;
 import org.apache.avro.Schema;
 import org.apache.avro.SchemaParseException;
 import org.apache.commons.io.IOUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
 
-@Component
 public class AvroSchemaValidator implements SchemaValidator {
 
   private static final Schema HERMES_METADATA_SCHEMA =
@@ -22,7 +19,6 @@ public class AvroSchemaValidator implements SchemaValidator {
     this.metadataFieldIsRequired = metadataFieldIsRequired;
   }
 
-  @Autowired
   public AvroSchemaValidator(TopicProperties topicProperties) {
     this(topicProperties.isAvroContentTypeMetadataRequired());
   }

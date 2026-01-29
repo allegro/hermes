@@ -18,8 +18,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.MessageTextPreview;
 import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.PatchData;
@@ -52,7 +50,6 @@ import pl.allegro.tech.hermes.management.domain.topic.schema.SchemaService;
 import pl.allegro.tech.hermes.management.domain.topic.validator.TopicValidator;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 
-@Component
 public class TopicService {
 
   private static final Logger logger = LoggerFactory.getLogger(TopicService.class);
@@ -76,7 +73,6 @@ public class TopicService {
       Executors.newSingleThreadScheduledExecutor(
           new ThreadFactoryBuilder().setNameFormat("scheduled-topic-executor-%d").build());
 
-  @Autowired
   public TopicService(
       MultiDCAwareService multiDCAwareService,
       TopicRepository topicRepository,

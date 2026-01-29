@@ -7,13 +7,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.management.config.kafka.KafkaClustersProperties;
 import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 
-@Component
 public class KafkaHermesConsistencyService {
 
   private static final Logger logger = LoggerFactory.getLogger(KafkaHermesConsistencyService.class);
