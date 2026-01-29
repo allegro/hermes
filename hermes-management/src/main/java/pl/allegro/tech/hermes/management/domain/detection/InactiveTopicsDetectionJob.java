@@ -20,11 +20,11 @@ import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.management.config.detection.InactiveTopicsDetectionProperties;
-import pl.allegro.tech.hermes.management.domain.topic.TopicService;
+import pl.allegro.tech.hermes.management.domain.topic.TopicManagement;
 
 @Component
 public class InactiveTopicsDetectionJob {
-  private final TopicService topicService;
+  private final TopicManagement topicManagement;
   private final InactiveTopicsStorageService inactiveTopicsStorageService;
   private final InactiveTopicsDetectionService inactiveTopicsDetectionService;
   private final Optional<InactiveTopicsNotifier> notifier;
@@ -35,14 +35,14 @@ public class InactiveTopicsDetectionJob {
   private static final Logger logger = LoggerFactory.getLogger(InactiveTopicsDetectionJob.class);
 
   public InactiveTopicsDetectionJob(
-      TopicService topicService,
+      TopicManagement topicManagement,
       InactiveTopicsStorageService inactiveTopicsStorageService,
       InactiveTopicsDetectionService inactiveTopicsDetectionService,
       Optional<InactiveTopicsNotifier> notifier,
       InactiveTopicsDetectionProperties properties,
       Clock clock,
       MeterRegistry meterRegistry) {
-    this.topicService = topicService;
+    this.topicManagement = topicManagement;
     this.inactiveTopicsStorageService = inactiveTopicsStorageService;
     this.inactiveTopicsDetectionService = inactiveTopicsDetectionService;
     this.properties = properties;
@@ -55,7 +55,7 @@ public class InactiveTopicsDetectionJob {
   }
 
   public void detectAndNotify() {
-    List<Topic> topics = topicService.getAllTopics();
+    List<Topic> topics = topicManagement.getAllTopics();
     List<String> qualifiedTopicNames = topics.stream().map(Topic::getQualifiedName).toList();
     List<InactiveTopic> historicalInactiveTopics = inactiveTopicsStorageService.getInactiveTopics();
     List<InactiveTopic> foundInactiveTopics =

@@ -17,18 +17,19 @@ import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.UnhealthySubscription;
 import pl.allegro.tech.hermes.management.domain.owner.OwnerSource;
 import pl.allegro.tech.hermes.management.domain.owner.OwnerSources;
-import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
+import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionManagement;
 
 @Path("unhealthy")
 public class UnhealthyEndpoint {
 
   private final OwnerSources ownerSources;
-  private final SubscriptionService subscriptionService;
+  private final SubscriptionManagement subscriptionManagement;
 
   @Autowired
-  public UnhealthyEndpoint(OwnerSources ownerSources, SubscriptionService subscriptionService) {
+  public UnhealthyEndpoint(
+      OwnerSources ownerSources, SubscriptionManagement subscriptionManagement) {
     this.ownerSources = ownerSources;
-    this.subscriptionService = subscriptionService;
+    this.subscriptionManagement = subscriptionManagement;
   }
 
   @GET
@@ -44,12 +45,12 @@ public class UnhealthyEndpoint {
 
     List<UnhealthySubscription> unhealthySubscriptions =
         areEmpty(ownerSourceName, id)
-            ? subscriptionService.getAllUnhealthy(
+            ? subscriptionManagement.getAllUnhealthy(
                 respectMonitoringSeverity, subscriptionNames, qualifiedTopicNames)
             : resolveOwnerId(ownerSourceName, id)
                 .map(
                     ownerId ->
-                        subscriptionService.getUnhealthyForOwner(
+                        subscriptionManagement.getUnhealthyForOwner(
                             ownerId,
                             respectMonitoringSeverity,
                             subscriptionNames,

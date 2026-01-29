@@ -54,3 +54,17 @@ Sample `logback.xml` file that will log to file using [async appender](http://lo
 ```
 
 This configuration is tuned for Frontend, but Consumers and Management config is more or less the same.
+
+## Structured logging
+
+We use structured logging in Hermes modules for easier log searchability, filtering, and analysis in production
+environments.
+
+**Location:** `pl.allegro.tech.hermes.common.logging.LoggingFields`
+
+Always use constants from `LoggingFields` to ensure consistency across all services.
+
+| Constant            | Field Name          | Description                 | Example Value                       |
+|---------------------|---------------------|-----------------------------|-------------------------------------|
+| `TOPIC_NAME`        | `topic-name`        | Qualified topic name        | `"my.events.topic"`                 |
+| `SUBSCRIPTION_NAME` | `subscription-name` | Qualified subscription name | `"my.events.topic$my-subscription"` |

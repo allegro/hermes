@@ -8,7 +8,7 @@ import pl.allegro.tech.hermes.management.config.storage.DefaultZookeeperGroupRep
 import pl.allegro.tech.hermes.management.config.subscription.consumergroup.ConsumerGroupCleanUpProperties
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor
 import pl.allegro.tech.hermes.management.domain.mode.ModeService
-import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService
+import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionManagement
 import pl.allegro.tech.hermes.management.domain.subscription.consumergroup.command.ScheduleConsumerGroupToDeleteCommand
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService
 import pl.allegro.tech.hermes.management.infrastructure.leader.ManagementLeadership
@@ -28,7 +28,7 @@ class ConsumerGroupCleanUpTaskTest extends MultiZookeeperIntegrationTest {
     Map<String, ConsumerGroupToDeleteRepository> consumerGroupToDeleteRepositoryMap
 
     MultiDCAwareService multiDCAwareService = Mock(MultiDCAwareService)
-    SubscriptionService subscriptionService = Mock(SubscriptionService)
+    SubscriptionManagement subscriptionManagement = Mock(SubscriptionManagement)
     ManagementLeadership managementLeadership = Mock(ManagementLeadership)
     ConsumerGroupCleanUpProperties consumerGroupCleanUpProperties = new ConsumerGroupCleanUpProperties()
     MutableClock clock = new MutableClock(Instant.parse('2015-12-03T10:15:30.00Z'), ZoneId.of("UTC"))
@@ -52,7 +52,7 @@ class ConsumerGroupCleanUpTaskTest extends MultiZookeeperIntegrationTest {
 
         consumerGroupCleanUpTask = new ConsumerGroupCleanUpTask(multiDCAwareService,
                 consumerGroupToDeleteRepositoryMap,
-                subscriptionService,
+                subscriptionManagement,
                 consumerGroupCleanUpProperties,
                 managementLeadership,
                 clock)
@@ -82,9 +82,9 @@ class ConsumerGroupCleanUpTaskTest extends MultiZookeeperIntegrationTest {
         }
 
         and:
-        2 * subscriptionService.subscriptionExists(SubscriptionName.fromString("group.topic1\$subscription1")) >> false
-        2 * subscriptionService.subscriptionExists(SubscriptionName.fromString("group.topic1\$subscription2")) >> false
-        2 * subscriptionService.subscriptionExists(SubscriptionName.fromString("group.topic2\$subscription1")) >> false
+        2 * subscriptionManagement.subscriptionExists(SubscriptionName.fromString("group.topic1\$subscription1")) >> false
+        2 * subscriptionManagement.subscriptionExists(SubscriptionName.fromString("group.topic1\$subscription2")) >> false
+        2 * subscriptionManagement.subscriptionExists(SubscriptionName.fromString("group.topic2\$subscription1")) >> false
 
         and:
         managementLeadership.isLeader() >> true
@@ -109,7 +109,7 @@ class ConsumerGroupCleanUpTaskTest extends MultiZookeeperIntegrationTest {
         }
 
         and:
-        2 * subscriptionService.subscriptionExists(SubscriptionName.fromString("group.topic1\$subscription1")) >> true
+        2 * subscriptionManagement.subscriptionExists(SubscriptionName.fromString("group.topic1\$subscription1")) >> true
 
         and:
         managementLeadership.isLeader() >> true
@@ -131,7 +131,7 @@ class ConsumerGroupCleanUpTaskTest extends MultiZookeeperIntegrationTest {
         }
 
         and:
-        0 * subscriptionService.subscriptionExists(SubscriptionName.fromString("group.topic1\$subscription1"))
+        0 * subscriptionManagement.subscriptionExists(SubscriptionName.fromString("group.topic1\$subscription1"))
 
         and:
         managementLeadership.isLeader() >> true
@@ -156,7 +156,7 @@ class ConsumerGroupCleanUpTaskTest extends MultiZookeeperIntegrationTest {
         }
 
         and:
-        2 * subscriptionService.subscriptionExists(SubscriptionName.fromString("group.topic1\$subscription1")) >> false
+        2 * subscriptionManagement.subscriptionExists(SubscriptionName.fromString("group.topic1\$subscription1")) >> false
 
         and:
         managementLeadership.isLeader() >> true
@@ -174,7 +174,7 @@ class ConsumerGroupCleanUpTaskTest extends MultiZookeeperIntegrationTest {
         cleanUpProperties.removeTasksAfterTimeout = false;
         ConsumerGroupCleanUpTask consumerGroupCleanUpTaskWithoutExpiredTaskRemoval = new ConsumerGroupCleanUpTask(multiDCAwareService,
                 consumerGroupToDeleteRepositoryMap,
-                subscriptionService,
+                subscriptionManagement,
                 cleanUpProperties,
                 managementLeadership,
                 clock)
@@ -191,7 +191,7 @@ class ConsumerGroupCleanUpTaskTest extends MultiZookeeperIntegrationTest {
         }
 
         and:
-        2 * subscriptionService.subscriptionExists(SubscriptionName.fromString("group.topic1\$subscription1")) >> false
+        2 * subscriptionManagement.subscriptionExists(SubscriptionName.fromString("group.topic1\$subscription1")) >> false
 
         and:
         managementLeadership.isLeader() >> true
@@ -216,7 +216,7 @@ class ConsumerGroupCleanUpTaskTest extends MultiZookeeperIntegrationTest {
         }
 
         and:
-        0 * subscriptionService.subscriptionExists(SubscriptionName.fromString("group.topic1\$subscription1"))
+        0 * subscriptionManagement.subscriptionExists(SubscriptionName.fromString("group.topic1\$subscription1"))
 
         and:
         managementLeadership.isLeader() >> false
@@ -243,8 +243,8 @@ class ConsumerGroupCleanUpTaskTest extends MultiZookeeperIntegrationTest {
         }
 
         and:
-        2 * subscriptionService.subscriptionExists(SubscriptionName.fromString("group.topic1\$subscription1")) >> false
-        2 * subscriptionService.subscriptionExists(SubscriptionName.fromString("group.topic1\$subscription2")) >> false
+        2 * subscriptionManagement.subscriptionExists(SubscriptionName.fromString("group.topic1\$subscription1")) >> false
+        2 * subscriptionManagement.subscriptionExists(SubscriptionName.fromString("group.topic1\$subscription2")) >> false
 
         and:
         managementLeadership.isLeader() >> true
@@ -269,7 +269,7 @@ class ConsumerGroupCleanUpTaskTest extends MultiZookeeperIntegrationTest {
         }
 
         and:
-        2 * subscriptionService.subscriptionExists(SubscriptionName.fromString("group.topic1\$subscription1")) >> false
+        2 * subscriptionManagement.subscriptionExists(SubscriptionName.fromString("group.topic1\$subscription1")) >> false
 
         and:
         managementLeadership.isLeader() >> true
