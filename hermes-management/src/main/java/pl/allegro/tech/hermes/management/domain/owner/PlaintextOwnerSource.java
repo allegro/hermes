@@ -1,11 +1,7 @@
 package pl.allegro.tech.hermes.management.domain.owner;
 
-import org.springframework.core.annotation.Order;
-import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.Owner;
 
-@Component
-@Order(PlaintextOwnerSource.ORDER)
 public class PlaintextOwnerSource implements OwnerSource {
 
   public static final int ORDER = 0;

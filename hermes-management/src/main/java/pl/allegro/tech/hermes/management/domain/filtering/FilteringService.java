@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.avro.Schema;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.MessageFiltersVerificationInput;
 import pl.allegro.tech.hermes.api.MessageFiltersVerificationResult;
 import pl.allegro.tech.hermes.api.Topic;
@@ -24,7 +23,6 @@ import pl.allegro.tech.hermes.schema.SchemaRepository;
 import tech.allegro.schema.json2avro.converter.AvroConversionException;
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 
-@Component
 public class FilteringService {
   private final FilterChainFactory filterChainFactory;
   private final SchemaRepository schemaRepository;

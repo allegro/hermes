@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.management.config.storage;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -48,9 +47,14 @@ import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperRepos
 @EnableConfigurationProperties(StorageClustersProperties.class)
 public class StorageConfiguration {
 
-  @Autowired StorageClustersProperties storageClustersProperties;
+  private final StorageClustersProperties storageClustersProperties;
+  private final ObjectMapper objectMapper;
 
-  @Autowired ObjectMapper objectMapper;
+  public StorageConfiguration(
+      StorageClustersProperties storageClustersProperties, ObjectMapper objectMapper) {
+    this.storageClustersProperties = storageClustersProperties;
+    this.objectMapper = objectMapper;
+  }
 
   @Bean
   DatacenterNameProvider dcNameProvider() {

@@ -1,14 +1,19 @@
 package pl.allegro.tech.hermes.management.config.detection;
 
 import java.time.Clock;
+import java.util.Optional;
+
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
+import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
 import pl.allegro.tech.hermes.management.domain.detection.InactiveTopicsDetectionJob;
 import pl.allegro.tech.hermes.management.domain.detection.InactiveTopicsDetectionService;
+import pl.allegro.tech.hermes.management.domain.detection.InactiveTopicsNotifier;
 import pl.allegro.tech.hermes.management.domain.detection.InactiveTopicsRepository;
 import pl.allegro.tech.hermes.management.domain.detection.InactiveTopicsStorageService;
 import pl.allegro.tech.hermes.management.domain.detection.LastPublishedMessageMetricsRepository;
@@ -37,18 +42,31 @@ public class InactiveTopicsDetectionConfig {
     return new InactiveTopicsDetectionService(metricsRepository, properties, clock);
   }
 
-  // TODO: These services temporarily use @Component due to complex dependencies
-  /*
   @Bean
-  public InactiveTopicsStorageService inactiveTopicsStorageService(...) {
-    return new InactiveTopicsStorageService(...);
+  public InactiveTopicsStorageService inactiveTopicsStorageService(
+      InactiveTopicsRepository inactiveTopicsRepository,
+      MultiDatacenterRepositoryCommandExecutor multiDcExecutor) {
+    return new InactiveTopicsStorageService(inactiveTopicsRepository, multiDcExecutor);
   }
 
   @Bean
-  public InactiveTopicsDetectionJob inactiveTopicsDetectionJob(...) {
-    return new InactiveTopicsDetectionJob(...);
+  public InactiveTopicsDetectionJob inactiveTopicsDetectionJob(
+      TopicService topicService,
+      InactiveTopicsStorageService inactiveTopicsStorageService,
+      InactiveTopicsDetectionService inactiveTopicsDetectionService,
+      Optional<InactiveTopicsNotifier> notifier,
+      InactiveTopicsDetectionProperties properties,
+      Clock clock,
+      MeterRegistry meterRegistry) {
+    return new InactiveTopicsDetectionJob(
+        topicService,
+        inactiveTopicsStorageService,
+        inactiveTopicsDetectionService,
+        notifier,
+        properties,
+        clock,
+        meterRegistry);
   }
-  */
 
   @ConditionalOnProperty(
       prefix = "detection.inactive-topics",

@@ -45,7 +45,7 @@ class SubscriptionHealthCheckerTest extends Specification {
             new TimingOutIndicator(0.1, MIN_SUBSCRIPTION_RATE_FOR_RELIABLE_METRICS),
             new MalfunctioningIndicator(0.1, MIN_SUBSCRIPTION_RATE_FOR_RELIABLE_METRICS),
             new ReceivingMalformedMessagesIndicator(0.1, MIN_SUBSCRIPTION_RATE_FOR_RELIABLE_METRICS)
-    ] as Set)
+    ])
 
     def "should return healthy status for a reasonably healthy subscription"() {
         given:

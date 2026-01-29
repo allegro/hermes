@@ -104,7 +104,7 @@ public class DomainServicesConfiguration {
 
   @Bean
   public pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthChecker subscriptionHealthChecker(
-      java.util.Set<pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthProblemIndicator> problemIndicators) {
+      java.util.List<pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthProblemIndicator> problemIndicators) {
     return new pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthChecker(problemIndicators);
   }
 
@@ -116,20 +116,7 @@ public class DomainServicesConfiguration {
   }
   */
 
-  @Bean
-  public pl.allegro.tech.hermes.management.domain.search.SearchPredicateFactory searchPredicateFactory() {
-    return new pl.allegro.tech.hermes.management.domain.search.SearchPredicateFactory();
-  }
-
-  // TODO: SearchService temporarily still uses @Component (depends on SearchCache which is @Component)
-  /*
-  @Bean
-  public SearchService searchService(
-      pl.allegro.tech.hermes.management.domain.search.cache.SearchCache searchCache,
-      pl.allegro.tech.hermes.management.domain.search.SearchPredicateFactory searchPredicateFactory) {
-    return new SearchService(searchCache, searchPredicateFactory);
-  }
-  */
+  // Note: SearchService, SearchPredicateFactory, and SearchCache are now in SearchConfiguration
 
   // TODO: The following beans have been commented out temporarily as they need correct constructor parameters
   // They still use @Component and can be migrated in a future phase

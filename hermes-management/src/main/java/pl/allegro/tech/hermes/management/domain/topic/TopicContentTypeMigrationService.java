@@ -8,15 +8,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 
-@Component
 public class TopicContentTypeMigrationService {
 
   private static final Logger logger =
@@ -31,7 +28,6 @@ public class TopicContentTypeMigrationService {
   private final MultiDCAwareService multiDCAwareService;
   private final Clock clock;
 
-  @Autowired
   public TopicContentTypeMigrationService(
       SubscriptionRepository subscriptionRepository,
       MultiDCAwareService multiDCAwareService,

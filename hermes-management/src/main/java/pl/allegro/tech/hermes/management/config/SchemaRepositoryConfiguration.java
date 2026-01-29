@@ -10,7 +10,6 @@ import java.net.URI;
 import org.apache.avro.Schema;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -35,9 +34,14 @@ import pl.allegro.tech.hermes.schema.resolver.SchemaRepositoryInstanceResolver;
 @EnableConfigurationProperties({SchemaRepositoryProperties.class})
 public class SchemaRepositoryConfiguration {
 
-  @Autowired @Lazy TopicService topicService;
+  private final TopicService topicService;
+  private final SchemaRepositoryProperties schemaRepositoryProperties;
 
-  @Autowired private SchemaRepositoryProperties schemaRepositoryProperties;
+  public SchemaRepositoryConfiguration(
+      @Lazy TopicService topicService, SchemaRepositoryProperties schemaRepositoryProperties) {
+    this.topicService = topicService;
+    this.schemaRepositoryProperties = schemaRepositoryProperties;
+  }
 
   @Bean(name = "schemaRepositoryClient")
   public Client schemaRepositoryClient(ObjectMapper mapper) {
