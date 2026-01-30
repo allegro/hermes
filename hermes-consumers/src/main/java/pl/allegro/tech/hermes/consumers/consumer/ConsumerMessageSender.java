@@ -309,7 +309,12 @@ public class ConsumerMessageSender {
             message.getPartitionOffset(),
             message.getPartitionAssignmentTerm()));
     inflightCount.decrement();
-    errorHandlers.forEach(h -> h.handleDiscarded(message, subscription, result));
+    errorHandlers.forEach(
+        h -> {
+          if (h.supports(subscription)) {
+            h.handleDiscarded(message, subscription, result);
+          }
+        });
     profiler.flushMeasurements(ConsumerRun.DISCARDED);
   }
 
