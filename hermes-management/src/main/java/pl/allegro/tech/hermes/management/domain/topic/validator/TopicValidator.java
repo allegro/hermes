@@ -9,7 +9,6 @@ import pl.allegro.tech.hermes.api.PublishingChaosPolicy.ChaosPolicy;
 import pl.allegro.tech.hermes.api.RetentionTime;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
-import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 import pl.allegro.tech.hermes.management.domain.owner.validator.OwnerIdValidator;
 import pl.allegro.tech.hermes.management.domain.topic.CreatorRights;
@@ -23,19 +22,19 @@ public class TopicValidator {
   private final ContentTypeValidator contentTypeValidator;
   private final SchemaRepository schemaRepository;
   private final ApiPreconditions apiPreconditions;
-  private final TopicProperties topicProperties;
+  private final boolean defaultFallbackToRemoteDatacenterEnabled;
 
   public TopicValidator(
       OwnerIdValidator ownerIdValidator,
       ContentTypeValidator contentTypeValidator,
       SchemaRepository schemaRepository,
       ApiPreconditions apiPreconditions,
-      TopicProperties topicProperties) {
+      boolean defaultFallbackToRemoteDatacenterEnabled) {
     this.ownerIdValidator = ownerIdValidator;
     this.contentTypeValidator = contentTypeValidator;
     this.schemaRepository = schemaRepository;
     this.apiPreconditions = apiPreconditions;
-    this.topicProperties = topicProperties;
+    this.defaultFallbackToRemoteDatacenterEnabled = defaultFallbackToRemoteDatacenterEnabled;
   }
 
   public void ensureCreatedTopicIsValid(
@@ -45,7 +44,7 @@ public class TopicValidator {
     checkContentType(created);
 
     if ((created.isFallbackToRemoteDatacenterEnabled()
-            != topicProperties.isDefaultFallbackToRemoteDatacenterEnabled())
+            != defaultFallbackToRemoteDatacenterEnabled)
         && !createdBy.isAdmin()) {
       throw new TopicValidationException(
           "User is not allowed to set non-default fallback to remote datacenter for this topic");

@@ -7,7 +7,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.management.config.kafka.KafkaClustersProperties;
 import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
@@ -20,15 +19,18 @@ public class KafkaHermesConsistencyService {
   private static final List<String> IGNORED_TOPIC = asList("__consumer_offsets");
   private final TopicService topicService;
   private final MultiDCAwareService multiDCAwareService;
-  private final KafkaClustersProperties kafkaClustersProperties;
+  private final String defaultNamespace;
+  private final String namespaceSeparator;
 
   public KafkaHermesConsistencyService(
       TopicService topicService,
       MultiDCAwareService multiDCAwareService,
-      KafkaClustersProperties kafkaClustersProperties) {
+      String defaultNamespace,
+      String namespaceSeparator) {
     this.topicService = topicService;
-    this.kafkaClustersProperties = kafkaClustersProperties;
     this.multiDCAwareService = multiDCAwareService;
+    this.defaultNamespace = defaultNamespace;
+    this.namespaceSeparator = namespaceSeparator;
   }
 
   public Set<String> listInconsistentTopics() {
@@ -53,9 +55,7 @@ public class KafkaHermesConsistencyService {
   }
 
   private String mapToHermesFormat(String topic) {
-    String prefix =
-        kafkaClustersProperties.getDefaultNamespace()
-            + kafkaClustersProperties.getNamespaceSeparator();
+    String prefix = defaultNamespace + namespaceSeparator;
 
     int beginIndex = topic.startsWith(prefix) ? prefix.length() : 0;
     int endIndex =

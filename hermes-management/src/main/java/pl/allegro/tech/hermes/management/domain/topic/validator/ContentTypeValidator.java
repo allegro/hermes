@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.management.domain.topic.validator;
 import java.util.EnumSet;
 import java.util.Set;
 import pl.allegro.tech.hermes.api.ContentType;
-import pl.allegro.tech.hermes.management.config.TopicProperties;
 
 public class ContentTypeValidator {
 
@@ -12,8 +11,8 @@ public class ContentTypeValidator {
 
   private final Set<ContentType> allowedContentTypes;
 
-  public ContentTypeValidator(TopicProperties topicProperties) {
-    this.allowedContentTypes = EnumSet.copyOf(topicProperties.getAllowedContentTypes());
+  public ContentTypeValidator(Set<ContentType> allowedContentTypes) {
+    this.allowedContentTypes = EnumSet.copyOf(allowedContentTypes);
   }
 
   public void check(ContentType contentType) {

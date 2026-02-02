@@ -34,7 +34,6 @@ import pl.allegro.tech.hermes.domain.topic.TopicAlreadyExistsException;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreview;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreviewRepository;
-import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.domain.Auditor;
 import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
@@ -56,7 +55,7 @@ public class TopicService {
 
   private final TopicRepository topicRepository;
   private final GroupService groupService;
-  private final TopicProperties topicProperties;
+  private final TopicParameters topicParameters;
   private final SchemaService schemaService;
 
   private final TopicMetricsRepository metricRepository;
@@ -77,7 +76,7 @@ public class TopicService {
       MultiDCAwareService multiDCAwareService,
       TopicRepository topicRepository,
       GroupService groupService,
-      TopicProperties topicProperties,
+      TopicParameters topicParameters,
       SchemaService schemaService,
       TopicMetricsRepository metricRepository,
       TopicValidator topicValidator,
@@ -91,7 +90,7 @@ public class TopicService {
     this.multiDCAwareService = multiDCAwareService;
     this.topicRepository = topicRepository;
     this.groupService = groupService;
-    this.topicProperties = topicProperties;
+    this.topicParameters = topicParameters;
     this.schemaService = schemaService;
     this.metricRepository = metricRepository;
     this.topicValidator = topicValidator;
@@ -126,7 +125,7 @@ public class TopicService {
         removedBy.getUsername(), Topic.class.getSimpleName(), topic.getQualifiedName());
     subscriptionRemover.removeSubscriptionRelatedToTopic(topic, removedBy);
     removeSchema(topic);
-    if (!topicProperties.isAllowRemoval()) {
+    if (!topicParameters.isAllowRemoval()) {
       throw new TopicRemovalDisabledException(topic);
     }
     removeTopic(topic, removedBy);
@@ -169,7 +168,7 @@ public class TopicService {
         topicContentTypeMigrationService.waitUntilAllSubscriptionsHasConsumersAssigned(
             modified,
             Duration.ofSeconds(
-                topicProperties.getSubscriptionsAssignmentsCompletedTimeoutSeconds()));
+                topicParameters.getSubscriptionsAssignmentsCompletedTimeoutSeconds()));
         logger.info(
             "Notifying subscriptions' consumers about changes in topic {} content type...",
             topicName.qualifiedName());
@@ -193,11 +192,11 @@ public class TopicService {
    * topic here, to wait until schema is distributed on schema-registry nodes.
    */
   public void scheduleTouchTopic(TopicName topicName, RequestUser touchedBy) {
-    if (topicProperties.isTouchSchedulerEnabled()) {
+    if (topicParameters.isTouchSchedulerEnabled()) {
       logger.info("Scheduling touch of topic {}", topicName.qualifiedName());
       scheduledTopicExecutor.schedule(
           () -> touchTopic(topicName, touchedBy),
-          topicProperties.getTouchDelayInSeconds(),
+          topicParameters.getTouchDelayInSeconds(),
           TimeUnit.SECONDS);
     } else {
       touchTopic(topicName, touchedBy);
@@ -379,7 +378,7 @@ public class TopicService {
   }
 
   private void removeSchema(Topic topic) {
-    if (AVRO.equals(topic.getContentType()) && topicProperties.isRemoveSchema()) {
+    if (AVRO.equals(topic.getContentType()) && topicParameters.isRemoveSchema()) {
       schemaService
           .getSchema(topic.getQualifiedName())
           .ifPresent(s -> schemaService.deleteAllSchemaVersions(topic.getQualifiedName()));

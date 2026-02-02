@@ -4,7 +4,6 @@ import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.domain.group.GroupAlreadyExistsException;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
 import pl.allegro.tech.hermes.management.api.auth.CreatorRights;
-import pl.allegro.tech.hermes.management.config.GroupProperties;
 import pl.allegro.tech.hermes.management.domain.PermissionDeniedException;
 
 public class GroupValidator {
@@ -13,9 +12,9 @@ public class GroupValidator {
 
   private final GroupNameValidator groupNameValidator;
 
-  public GroupValidator(GroupRepository repository, GroupProperties groupProperties) {
+  public GroupValidator(GroupRepository repository, String allowedGroupNameRegex) {
     this.repository = repository;
-    this.groupNameValidator = new GroupNameValidator(groupProperties.getAllowedGroupNameRegex());
+    this.groupNameValidator = new GroupNameValidator(allowedGroupNameRegex);
   }
 
   public void checkCreation(Group toCheck, CreatorRights<Group> creatorRights) {

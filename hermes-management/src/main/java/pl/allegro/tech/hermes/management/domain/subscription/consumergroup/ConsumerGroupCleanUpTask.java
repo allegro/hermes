@@ -6,7 +6,6 @@ import java.time.Instant;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.management.config.subscription.consumergroup.ConsumerGroupCleanUpProperties;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 import pl.allegro.tech.hermes.management.infrastructure.leader.ManagementLeadership;
@@ -29,7 +28,7 @@ public class ConsumerGroupCleanUpTask implements Runnable {
       MultiDCAwareService multiDCAwareService,
       Map<String, ConsumerGroupToDeleteRepository> repositoriesByDatacenter,
       SubscriptionService subscriptionService,
-      ConsumerGroupCleanUpProperties cleanUpProperties,
+      ConsumerGroupCleanUpParameters cleanUpParameters,
       ManagementLeadership managementLeadership,
       Clock clock) {
 
@@ -39,9 +38,9 @@ public class ConsumerGroupCleanUpTask implements Runnable {
     this.managementLeadership = managementLeadership;
     this.clock = clock;
 
-    this.initialDelay = cleanUpProperties.getInitialDelay();
-    this.timeout = cleanUpProperties.getTimeout();
-    this.removeTasksAfterTimeout = cleanUpProperties.isRemoveTasksAfterTimeout();
+    this.initialDelay = cleanUpParameters.getInitialDelay();
+    this.timeout = cleanUpParameters.getTimeout();
+    this.removeTasksAfterTimeout = cleanUpParameters.isRemoveTasksAfterTimeout();
   }
 
   @Override

@@ -78,7 +78,7 @@ public class DomainServicesConfiguration {
       pl.allegro.tech.hermes.schema.RawSchemaClient rawSchemaClient,
       pl.allegro.tech.hermes.management.infrastructure.schema.validator.SchemaValidatorProvider validatorProvider,
       TopicProperties topicProperties) {
-    return new SchemaService(rawSchemaClient, validatorProvider, topicProperties);
+    return new SchemaService(rawSchemaClient, validatorProvider, topicProperties.isRemoveSchema());
   }
 
   @Bean
