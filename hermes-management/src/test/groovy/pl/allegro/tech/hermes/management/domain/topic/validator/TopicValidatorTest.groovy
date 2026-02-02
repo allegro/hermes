@@ -4,7 +4,6 @@ import jakarta.validation.ConstraintViolationException
 import pl.allegro.tech.hermes.api.ContentType
 import pl.allegro.tech.hermes.api.Topic
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions
-import pl.allegro.tech.hermes.management.config.TopicProperties
 import pl.allegro.tech.hermes.management.domain.auth.TestRequestUser
 import pl.allegro.tech.hermes.management.domain.owner.validator.OwnerIdValidationException
 import pl.allegro.tech.hermes.management.domain.owner.validator.OwnerIdValidator
@@ -32,9 +31,7 @@ class TopicValidatorTest extends Specification {
     TopicValidator topicValidator
 
     def setup() {
-        TopicProperties topicProperties = new TopicProperties()
-
-        topicValidator = new TopicValidator(ownerDescriptorValidator, contentTypeWhitelistValidator, schemaRepository, apiPreconditions, topicProperties)
+        topicValidator = new TopicValidator(ownerDescriptorValidator, contentTypeWhitelistValidator, schemaRepository, apiPreconditions, false)
     }
 
     def "topic with basic properties when creating should be valid"() {
