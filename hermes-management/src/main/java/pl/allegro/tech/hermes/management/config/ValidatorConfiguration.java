@@ -4,6 +4,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
+import pl.allegro.tech.hermes.management.api.auth.ManagementRights;
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
 import pl.allegro.tech.hermes.management.domain.group.GroupValidator;
 import pl.allegro.tech.hermes.management.domain.owner.validator.OwnerIdValidator;
@@ -14,6 +15,16 @@ import pl.allegro.tech.hermes.schema.SchemaRepository;
 @Configuration
 @EnableConfigurationProperties({GroupProperties.class, TopicProperties.class})
 public class ValidatorConfiguration {
+
+  @Bean
+  public ApiPreconditions apiPreconditions() {
+    return new ApiPreconditions();
+  }
+
+  @Bean
+  public ManagementRights managementRights(GroupProperties groupProperties) {
+    return new ManagementRights(groupProperties);
+  }
 
   @Bean
   public GroupValidator groupValidator(GroupRepository groupRepository, GroupProperties groupProperties) {

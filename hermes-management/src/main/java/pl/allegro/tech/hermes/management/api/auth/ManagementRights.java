@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.management.api.auth;
 
 import jakarta.ws.rs.container.ContainerRequestContext;
-import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.management.config.GroupProperties;
@@ -10,7 +9,6 @@ import pl.allegro.tech.hermes.management.config.GroupProperties;
  * Make sure these implementations conform to what is configured via RolesAllowed annotations in
  * endpoints.
  */
-@Component
 public class ManagementRights {
 
   private final GroupProperties groupProperties;

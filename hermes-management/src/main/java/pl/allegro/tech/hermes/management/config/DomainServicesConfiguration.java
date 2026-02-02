@@ -103,44 +103,4 @@ public class DomainServicesConfiguration {
       java.util.List<pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthProblemIndicator> problemIndicators) {
     return new pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthChecker(problemIndicators);
   }
-
-  // TODO: TopicContentTypeMigrationService temporarily uses @Component due to complex dependencies
-  /*
-  @Bean
-  public pl.allegro.tech.hermes.management.domain.topic.TopicContentTypeMigrationService topicContentTypeMigrationService(...) {
-    return new pl.allegro.tech.hermes.management.domain.topic.TopicContentTypeMigrationService(...);
-  }
-  */
-
-  // Note: SearchService, SearchPredicateFactory, and SearchCache are now in SearchConfiguration
-
-  // TODO: The following beans have been commented out temporarily as they need correct constructor parameters
-  // They still use @Component and can be migrated in a future phase
-
-  /*
-  @Bean
-  public TopicContentTypeMigrationService topicContentTypeMigrationService(...) {
-    return new TopicContentTypeMigrationService(...);
-  }
-
-  @Bean
-  public CredentialsService credentialsService(...) {
-    return new CredentialsService(...);
-  }
-
-  @Bean
-  public OAuthProviderService oAuthProviderService(...) {
-    return new OAuthProviderService(...);
-  }
-
-  @Bean
-  public SubscriptionHealthChecker subscriptionHealthChecker(...) {
-    return new SubscriptionHealthChecker(...);
-  }
-
-  @Bean
-  public OwnerIdValidator ownerIdValidator(...) {
-    return new OwnerIdValidator(...);
-  }
-  */
 }
