@@ -30,7 +30,6 @@ import pl.allegro.tech.hermes.consumers.consumer.profiling.Measurement;
 import pl.allegro.tech.hermes.consumers.consumer.profiling.NoOpConsumerProfiler;
 import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.result.ErrorHandler;
-import pl.allegro.tech.hermes.consumers.consumer.result.ResultHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.SubscriptionChangeAwareSuccessHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.SuccessHandler;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;

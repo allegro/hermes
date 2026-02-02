@@ -13,7 +13,7 @@ import pl.allegro.tech.hermes.api.EndpointAddress;
 
 public class GooglePubSubSenderTargetResolver {
 
-   public GooglePubSubSenderTarget resolve(EndpointAddress address) {
+  public GooglePubSubSenderTarget resolve(EndpointAddress address) {
     try {
       final URI uri = URI.create(address.getRawEndpoint());
       Preconditions.checkArgument(uri.getScheme().equals("googlepubsub"));
