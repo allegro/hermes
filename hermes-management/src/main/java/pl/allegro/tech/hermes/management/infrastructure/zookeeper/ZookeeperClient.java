@@ -29,14 +29,19 @@ public class ZookeeperClient {
   public void ensureEphemeralNodeExists(String path) {
     try {
       if (curatorFramework.checkExists().forPath(path) == null) {
-        curatorFramework
-            .create()
-            .creatingParentsIfNeeded()
-            .withMode(CreateMode.EPHEMERAL)
-            .forPath(path);
+        try {
+          curatorFramework
+              .create()
+              .creatingParentsIfNeeded()
+              .withMode(CreateMode.EPHEMERAL)
+              .forPath(path);
+        } catch (org.apache.zookeeper.KeeperException.NodeExistsException e) {
+          // Node was created by another thread/process between check and create - this is fine
+          logger.debug("Ephemeral node {} already exists", path);
+        }
       }
     } catch (Exception e) {
-      throw new InternalProcessingException("Could not ensure existence of path: " + path);
+      throw new InternalProcessingException("Could not ensure existence of path: " + path, e);
     }
   }
 }

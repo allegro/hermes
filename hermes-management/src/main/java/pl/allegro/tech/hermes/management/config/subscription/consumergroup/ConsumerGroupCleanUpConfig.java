@@ -15,18 +15,13 @@ import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperRepos
 @EnableConfigurationProperties(ConsumerGroupCleanUpProperties.class)
 public class ConsumerGroupCleanUpConfig {
 
-  private final ZookeeperRepositoryManager zookeeperRepositoryManager;
-
-  public ConsumerGroupCleanUpConfig(ZookeeperRepositoryManager zookeeperRepositoryManager) {
-    this.zookeeperRepositoryManager = zookeeperRepositoryManager;
-  }
-
   @Bean
   ConsumerGroupCleanUpScheduler consumerGroupCleanUpScheduler(
       MultiDCAwareService multiDCAwareService,
       SubscriptionService subscriptionService,
       ConsumerGroupCleanUpProperties properties,
       ManagementLeadership managementLeadership,
+      ZookeeperRepositoryManager zookeeperRepositoryManager,
       Clock clock) {
     return new ConsumerGroupCleanUpScheduler(
         multiDCAwareService,
