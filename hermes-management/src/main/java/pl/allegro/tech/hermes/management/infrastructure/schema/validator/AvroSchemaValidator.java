@@ -5,7 +5,6 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-
 import org.apache.avro.Schema;
 import org.apache.avro.SchemaParseException;
 import org.apache.commons.io.IOUtils;
@@ -37,7 +36,8 @@ public class AvroSchemaValidator implements SchemaValidator {
     try {
       String schema =
           IOUtils.toString(
-              AvroSchemaValidator.class.getResourceAsStream(resourceFilePath), StandardCharsets.UTF_8);
+              AvroSchemaValidator.class.getResourceAsStream(resourceFilePath),
+              StandardCharsets.UTF_8);
       return parseSchema(schema);
     } catch (IOException e) {
       throw new RuntimeException("Could not load schema with metadata");

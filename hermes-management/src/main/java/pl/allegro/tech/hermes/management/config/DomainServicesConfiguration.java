@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.management.config;
 
 import java.time.Clock;
 import java.util.List;
-
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,8 +31,8 @@ import pl.allegro.tech.hermes.management.infrastructure.schema.validator.SchemaV
 import pl.allegro.tech.hermes.schema.RawSchemaClient;
 
 /**
- * Configuration for core domain services.
- * These services contain business logic and should not have Spring annotations.
+ * Configuration for core domain services. These services contain business logic and should not have
+ * Spring annotations.
  */
 @Configuration
 @EnableConfigurationProperties(TopicProperties.class)

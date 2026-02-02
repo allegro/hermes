@@ -17,9 +17,7 @@ public class TopicConfiguration {
 
   @Bean
   public TopicOwnerCache topicOwnerCache(
-      TopicRepository topicRepository,
-      GroupService groupService,
-      CacheProperties cacheProperties) {
+      TopicRepository topicRepository, GroupService groupService, CacheProperties cacheProperties) {
     return new TopicOwnerCache(
         topicRepository, groupService, cacheProperties.getTopicOwnerRefreshRateInSeconds());
   }
@@ -29,7 +27,6 @@ public class TopicConfiguration {
       SubscriptionRepository subscriptionRepository,
       MultiDCAwareService multiDCAwareService,
       Clock clock) {
-    return new TopicContentTypeMigrationService(
-        subscriptionRepository, multiDCAwareService, clock);
+    return new TopicContentTypeMigrationService(subscriptionRepository, multiDCAwareService, clock);
   }
 }

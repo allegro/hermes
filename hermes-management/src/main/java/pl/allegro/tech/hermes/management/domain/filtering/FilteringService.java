@@ -67,10 +67,10 @@ public class FilteringService {
   }
 
   private byte[] getBytes(byte[] message, Topic topic, CompiledSchema<Schema> avroSchema) {
-      return switch (topic.getContentType()) {
-          case JSON -> message;
-          case AVRO -> jsonAvroConverter.convertToAvro(message, avroSchema.getSchema());
-      };
+    return switch (topic.getContentType()) {
+      case JSON -> message;
+      case AVRO -> jsonAvroConverter.convertToAvro(message, avroSchema.getSchema());
+    };
   }
 
   private MessageFiltersVerificationResult toMessageFiltersVerificationResult(FilterResult result) {

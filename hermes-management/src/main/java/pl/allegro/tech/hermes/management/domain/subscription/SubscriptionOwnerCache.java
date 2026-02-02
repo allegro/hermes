@@ -28,8 +28,7 @@ public class SubscriptionOwnerCache {
       Multimaps.synchronizedMultimap(ArrayListMultimap.create());
 
   public SubscriptionOwnerCache(
-      SubscriptionRepository subscriptionRepository,
-      int refreshRateInSeconds) {
+      SubscriptionRepository subscriptionRepository, int refreshRateInSeconds) {
     this.subscriptionRepository = subscriptionRepository;
     scheduledExecutorService =
         Executors.newSingleThreadScheduledExecutor(

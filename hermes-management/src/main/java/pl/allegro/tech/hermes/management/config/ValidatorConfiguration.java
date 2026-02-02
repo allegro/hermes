@@ -27,7 +27,8 @@ public class ValidatorConfiguration {
   }
 
   @Bean
-  public GroupValidator groupValidator(GroupRepository groupRepository, GroupProperties groupProperties) {
+  public GroupValidator groupValidator(
+      GroupRepository groupRepository, GroupProperties groupProperties) {
     return new GroupValidator(groupRepository, groupProperties.getAllowedGroupNameRegex());
   }
 

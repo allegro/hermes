@@ -43,8 +43,7 @@ public class TopicValidator {
     checkOwner(created);
     checkContentType(created);
 
-    if ((created.isFallbackToRemoteDatacenterEnabled()
-            != defaultFallbackToRemoteDatacenterEnabled)
+    if ((created.isFallbackToRemoteDatacenterEnabled() != defaultFallbackToRemoteDatacenterEnabled)
         && !createdBy.isAdmin()) {
       throw new TopicValidationException(
           "User is not allowed to set non-default fallback to remote datacenter for this topic");
