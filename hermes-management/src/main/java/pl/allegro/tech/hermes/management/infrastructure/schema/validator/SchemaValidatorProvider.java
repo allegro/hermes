@@ -17,13 +17,13 @@ public class SchemaValidatorProvider {
   public SchemaValidator provide(ContentType contentType) {
     if (!validators.containsKey(contentType)) {
       throw new SchemaValidatorNotAvailable(
-          "No schema validator for content-type: " + contentType.name());
+              "No schema validator for content-type: " + contentType.name());
     }
 
     return validators.get(contentType);
   }
 
-  class SchemaValidatorNotAvailable extends ManagementException {
+  static class SchemaValidatorNotAvailable extends ManagementException {
     public SchemaValidatorNotAvailable(String message) {
       super(message);
     }

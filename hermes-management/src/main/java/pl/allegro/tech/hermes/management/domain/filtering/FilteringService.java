@@ -67,14 +67,10 @@ public class FilteringService {
   }
 
   private byte[] getBytes(byte[] message, Topic topic, CompiledSchema<Schema> avroSchema) {
-    switch (topic.getContentType()) {
-      case JSON:
-        return message;
-      case AVRO:
-        return jsonAvroConverter.convertToAvro(message, avroSchema.getSchema());
-      default:
-        throw new IllegalArgumentException();
-    }
+      return switch (topic.getContentType()) {
+          case JSON -> message;
+          case AVRO -> jsonAvroConverter.convertToAvro(message, avroSchema.getSchema());
+      };
   }
 
   private MessageFiltersVerificationResult toMessageFiltersVerificationResult(FilterResult result) {

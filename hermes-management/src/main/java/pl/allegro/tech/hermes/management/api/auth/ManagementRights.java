@@ -48,7 +48,7 @@ public class ManagementRights {
   }
 
   class GroupCreatorRights implements CreatorRights<Group> {
-    private ContainerRequestContext requestContext;
+    private final ContainerRequestContext requestContext;
 
     GroupCreatorRights(ContainerRequestContext requestContext) {
       this.requestContext = requestContext;
