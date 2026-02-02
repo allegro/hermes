@@ -28,7 +28,7 @@ public class ValidatorConfiguration {
 
   @Bean
   public GroupValidator groupValidator(GroupRepository groupRepository, GroupProperties groupProperties) {
-    return new GroupValidator(groupRepository, groupProperties);
+    return new GroupValidator(groupRepository, groupProperties.getAllowedGroupNameRegex());
   }
 
   @Bean
@@ -39,11 +39,16 @@ public class ValidatorConfiguration {
       ApiPreconditions apiPreconditions,
       TopicProperties topicProperties) {
     return new TopicValidator(
-        ownerIdValidator, contentTypeValidator, schemaRepository, apiPreconditions, topicProperties);
+        ownerIdValidator,
+        contentTypeValidator,
+        schemaRepository,
+        apiPreconditions,
+        topicProperties.isDefaultFallbackToRemoteDatacenterEnabled());
   }
 
   @Bean
   public ContentTypeValidator contentTypeValidator(TopicProperties topicProperties) {
-    return new ContentTypeValidator(topicProperties);
+    return new ContentTypeValidator(
+        new java.util.HashSet<>(topicProperties.getAllowedContentTypes()));
   }
 }

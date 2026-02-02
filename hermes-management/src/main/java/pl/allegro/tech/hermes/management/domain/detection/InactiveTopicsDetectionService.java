@@ -6,19 +6,18 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.Optional;
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.management.config.detection.InactiveTopicsDetectionProperties;
 
 public class InactiveTopicsDetectionService {
   private final LastPublishedMessageMetricsRepository metricsRepository;
-  private final InactiveTopicsDetectionProperties properties;
+  private final InactiveTopicsDetectionParameters parameters;
   private final Clock clock;
 
   public InactiveTopicsDetectionService(
       LastPublishedMessageMetricsRepository metricsRepository,
-      InactiveTopicsDetectionProperties properties,
+      InactiveTopicsDetectionParameters parameters,
       Clock clock) {
     this.metricsRepository = metricsRepository;
-    this.properties = properties;
+    this.parameters = parameters;
     this.clock = clock;
   }
 
@@ -40,7 +39,7 @@ public class InactiveTopicsDetectionService {
               historicalInactiveTopic
                   .map(InactiveTopic::notificationTimestampsMs)
                   .orElse(Collections.emptyList()),
-              properties.whitelistedQualifiedTopicNames().contains(topicName.qualifiedName())));
+              parameters.whitelistedQualifiedTopicNames().contains(topicName.qualifiedName())));
     } else {
       return Optional.empty();
     }
@@ -61,11 +60,11 @@ public class InactiveTopicsDetectionService {
   }
 
   private boolean isInactive(Instant lastUsed, Instant now) {
-    return Duration.between(lastUsed, now).compareTo(properties.inactivityThreshold()) >= 0;
+    return Duration.between(lastUsed, now).compareTo(parameters.inactivityThreshold()) >= 0;
   }
 
   private boolean readyForNextNotification(Instant lastNotified, Instant now) {
-    return Duration.between(lastNotified, now).compareTo(properties.nextNotificationThreshold())
+    return Duration.between(lastNotified, now).compareTo(parameters.nextNotificationThreshold())
         >= 0;
   }
 }

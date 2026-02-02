@@ -22,7 +22,10 @@ public class ConsistencyConfiguration {
       MultiDCAwareService multiDCAwareService,
       KafkaClustersProperties kafkaClustersProperties) {
     return new KafkaHermesConsistencyService(
-        topicService, multiDCAwareService, kafkaClustersProperties);
+        topicService,
+        multiDCAwareService,
+        kafkaClustersProperties.getDefaultNamespace(),
+        kafkaClustersProperties.getNamespaceSeparator());
   }
 
   @Bean

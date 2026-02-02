@@ -2,15 +2,17 @@ package pl.allegro.tech.hermes.management.config;
 
 import java.time.Duration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import pl.allegro.tech.hermes.management.domain.consistency.ConsistencyCheckerParameters;
 
 @ConfigurationProperties(prefix = "consistency-checker")
-public class ConsistencyCheckerProperties {
+public class ConsistencyCheckerProperties implements ConsistencyCheckerParameters {
 
   private int threadPoolSize = 2;
   private boolean periodicCheckEnabled = false;
   private Duration refreshInterval = Duration.ofMinutes(15);
   private Duration initialRefreshDelay = Duration.ofMinutes(2);
 
+  @Override
   public int getThreadPoolSize() {
     return threadPoolSize;
   }
@@ -19,6 +21,7 @@ public class ConsistencyCheckerProperties {
     this.threadPoolSize = threadPoolSize;
   }
 
+  @Override
   public boolean isPeriodicCheckEnabled() {
     return periodicCheckEnabled;
   }
@@ -27,6 +30,7 @@ public class ConsistencyCheckerProperties {
     this.periodicCheckEnabled = periodicCheckEnabled;
   }
 
+  @Override
   public Duration getRefreshInterval() {
     return refreshInterval;
   }
@@ -35,6 +39,7 @@ public class ConsistencyCheckerProperties {
     this.refreshInterval = refreshInterval;
   }
 
+  @Override
   public Duration getInitialRefreshDelay() {
     return initialRefreshDelay;
   }
