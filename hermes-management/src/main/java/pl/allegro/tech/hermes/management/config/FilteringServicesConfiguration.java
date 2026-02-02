@@ -12,7 +12,12 @@ import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 public class FilteringServicesConfiguration {
 
   @Bean
-  public FilteringService filteringService(FilterChainFactory filterChainFactory, SchemaRepository schemaRepository, TopicService topicService, JsonAvroConverter jsonAvroConverter) {
-    return new FilteringService(filterChainFactory, schemaRepository, topicService, jsonAvroConverter);
+  public FilteringService filteringService(
+      FilterChainFactory filterChainFactory,
+      SchemaRepository schemaRepository,
+      TopicService topicService,
+      JsonAvroConverter jsonAvroConverter) {
+    return new FilteringService(
+        filterChainFactory, schemaRepository, topicService, jsonAvroConverter);
   }
 }

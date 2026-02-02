@@ -36,9 +36,6 @@ public class MetricsConfiguration {
       ZookeeperPaths zookeeperPaths,
       SubscriptionLagSource lagSource) {
     return new HybridSubscriptionMetricsRepository(
-        monitoringSubscriptionMetricsProvider,
-        summedSharedCounter,
-        zookeeperPaths,
-        lagSource);
+        monitoringSubscriptionMetricsProvider, summedSharedCounter, zookeeperPaths, lagSource);
   }
 }

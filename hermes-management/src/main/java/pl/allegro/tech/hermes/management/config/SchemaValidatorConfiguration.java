@@ -16,8 +16,7 @@ public class SchemaValidatorConfiguration {
   }
 
   @Bean
-  public SchemaValidatorProvider schemaValidatorProvider(
-      AvroSchemaValidator avroSchemaValidator) {
+  public SchemaValidatorProvider schemaValidatorProvider(AvroSchemaValidator avroSchemaValidator) {
     return new SchemaValidatorProvider(avroSchemaValidator);
   }
 }

@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.integrationtests.management;
 import static org.awaitility.Awaitility.waitAtMost;
 import static pl.allegro.tech.hermes.test.helper.assertions.SearchResultsAssertion.assertThat;
 
+import java.time.Duration;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -16,8 +17,6 @@ import pl.allegro.tech.hermes.integrationtests.prometheus.PrometheusExtension;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesExtension;
 import pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder;
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder;
-
-import java.time.Duration;
 
 public class SearchEndpointTest {
   @Order(0)
@@ -40,11 +39,11 @@ public class SearchEndpointTest {
 
     // when & then
     waitAtMost(Duration.ofSeconds(10))
-            .untilAsserted(
-                    () -> {
-                      SearchResults results = search(topic.getQualifiedName());
-                      assertThat(results).containsOnlySingleItemForTopic(topic);
-                    });
+        .untilAsserted(
+            () -> {
+              SearchResults results = search(topic.getQualifiedName());
+              assertThat(results).containsOnlySingleItemForTopic(topic);
+            });
   }
 
   @Test
@@ -56,11 +55,11 @@ public class SearchEndpointTest {
 
     // when & then
     waitAtMost(Duration.ofSeconds(10))
-            .untilAsserted(
-                    () -> {
-                      SearchResults results = search(subscription.getName());
-                      assertThat(results).containsOnlySingleItemForSubscription(subscription);
-                    });
+        .untilAsserted(
+            () -> {
+              SearchResults results = search(subscription.getName());
+              assertThat(results).containsOnlySingleItemForSubscription(subscription);
+            });
   }
 
   @Test
@@ -74,14 +73,14 @@ public class SearchEndpointTest {
 
     // when & then
     waitAtMost(Duration.ofSeconds(10))
-            .untilAsserted(
-                    () -> {
-                      SearchResults results = search(commonPart);
-                      assertThat(results)
-                              .hasExactNumberOfResults(2)
-                              .containsItemForTopic(topic)
-                              .containsItemForSubscription(subscription);
-                    });
+        .untilAsserted(
+            () -> {
+              SearchResults results = search(commonPart);
+              assertThat(results)
+                  .hasExactNumberOfResults(2)
+                  .containsItemForTopic(topic)
+                  .containsItemForSubscription(subscription);
+            });
   }
 
   @Test
@@ -92,11 +91,11 @@ public class SearchEndpointTest {
 
     // when & then
     waitAtMost(Duration.ofSeconds(10))
-            .untilAsserted(
-                    () -> {
-                      SearchResults results = search("non-existing-topic-or-subscription");
-                      assertThat(results).hasNoResults();
-                    });
+        .untilAsserted(
+            () -> {
+              SearchResults results = search("non-existing-topic-or-subscription");
+              assertThat(results).hasNoResults();
+            });
   }
 
   @Test
@@ -107,26 +106,26 @@ public class SearchEndpointTest {
 
     // then: verify topic is found
     waitAtMost(Duration.ofSeconds(10))
-            .untilAsserted(
-                    () -> {
-                      SearchResults resultsBeforeDeletion = search("Topic");
-                      assertThat(resultsBeforeDeletion)
-                              .containsItemWithName(topic1.getQualifiedName())
-                              .containsItemWithName(topic2.getQualifiedName());
-                    });
+        .untilAsserted(
+            () -> {
+              SearchResults resultsBeforeDeletion = search("Topic");
+              assertThat(resultsBeforeDeletion)
+                  .containsItemWithName(topic1.getQualifiedName())
+                  .containsItemWithName(topic2.getQualifiedName());
+            });
 
     // when
     hermes.api().deleteTopic(topic2.getQualifiedName()).expectStatus().isOk();
 
     // then: verify only the first topic is found
     waitAtMost(Duration.ofSeconds(10))
-            .untilAsserted(
-                    () -> {
-                      SearchResults resultsAfterDeletion = search("Topic");
-                      assertThat(resultsAfterDeletion)
-                              .doesNotContainItemWithName(topic2.getQualifiedName())
-                              .containsItemWithName(topic1.getQualifiedName());
-                    });
+        .untilAsserted(
+            () -> {
+              SearchResults resultsAfterDeletion = search("Topic");
+              assertThat(resultsAfterDeletion)
+                  .doesNotContainItemWithName(topic2.getQualifiedName())
+                  .containsItemWithName(topic1.getQualifiedName());
+            });
   }
 
   @Test
@@ -140,13 +139,13 @@ public class SearchEndpointTest {
 
     // then: verify subscription is found
     waitAtMost(Duration.ofSeconds(10))
-            .untilAsserted(
-                    () -> {
-                      SearchResults resultsBeforeDeletion = search("subscription");
-                      assertThat(resultsBeforeDeletion)
-                              .containsItemWithName(subscription1.getName())
-                              .containsItemWithName(subscription2.getName());
-                    });
+        .untilAsserted(
+            () -> {
+              SearchResults resultsBeforeDeletion = search("subscription");
+              assertThat(resultsBeforeDeletion)
+                  .containsItemWithName(subscription1.getName())
+                  .containsItemWithName(subscription2.getName());
+            });
 
     // when
     hermes
@@ -157,13 +156,13 @@ public class SearchEndpointTest {
 
     // then: verify only the first subscription is found
     waitAtMost(Duration.ofSeconds(10))
-            .untilAsserted(
-                    () -> {
-                      SearchResults resultsAfterDeletion = search("subscription");
-                      assertThat(resultsAfterDeletion)
-                              .containsItemWithName(subscription1.getName())
-                              .doesNotContainItemWithName(subscription2.getName());
-                    });
+        .untilAsserted(
+            () -> {
+              SearchResults resultsAfterDeletion = search("subscription");
+              assertThat(resultsAfterDeletion)
+                  .containsItemWithName(subscription1.getName())
+                  .doesNotContainItemWithName(subscription2.getName());
+            });
   }
 
   @Test
@@ -176,13 +175,13 @@ public class SearchEndpointTest {
 
     // then
     waitAtMost(Duration.ofSeconds(10))
-            .untilAsserted(
-                    () -> {
-                      SearchResults resultsBeforeUpdate = search(oldOwnerId.getId());
-                      assertThat(resultsBeforeUpdate)
-                              .containsTopicItemWithName(topic.getQualifiedName())
-                              .hasOwnerId(oldOwnerId.getId());
-                    });
+        .untilAsserted(
+            () -> {
+              SearchResults resultsBeforeUpdate = search(oldOwnerId.getId());
+              assertThat(resultsBeforeUpdate)
+                  .containsTopicItemWithName(topic.getQualifiedName())
+                  .hasOwnerId(oldOwnerId.getId());
+            });
 
     // when
     OwnerId newOwnerId = new OwnerId("Plaintext", "5678");
@@ -195,13 +194,13 @@ public class SearchEndpointTest {
 
     // then
     waitAtMost(Duration.ofSeconds(10))
-            .untilAsserted(
-                    () -> {
-                      SearchResults resultsAfterUpdate = search(newOwnerId.getId());
-                      assertThat(resultsAfterUpdate)
-                              .containsTopicItemWithName(topic.getQualifiedName())
-                              .hasOwnerId(newOwnerId.getId());
-                    });
+        .untilAsserted(
+            () -> {
+              SearchResults resultsAfterUpdate = search(newOwnerId.getId());
+              assertThat(resultsAfterUpdate)
+                  .containsTopicItemWithName(topic.getQualifiedName())
+                  .hasOwnerId(newOwnerId.getId());
+            });
   }
 
   @Test
@@ -218,13 +217,13 @@ public class SearchEndpointTest {
 
     // then
     waitAtMost(Duration.ofSeconds(10))
-            .untilAsserted(
-                    () -> {
-                      SearchResults resultsBeforeUpdate = search(oldEndpoint);
-                      assertThat(resultsBeforeUpdate)
-                              .containsSubscriptionItemWithName(subscription.getName())
-                              .hasEndpoint(oldEndpoint);
-                    });
+        .untilAsserted(
+            () -> {
+              SearchResults resultsBeforeUpdate = search(oldEndpoint);
+              assertThat(resultsBeforeUpdate)
+                  .containsSubscriptionItemWithName(subscription.getName())
+                  .hasEndpoint(oldEndpoint);
+            });
 
     // when
     String updatedEndpoint = "https://sample-service/events/sample-event-updated";
@@ -239,13 +238,13 @@ public class SearchEndpointTest {
 
     // then
     waitAtMost(Duration.ofSeconds(10))
-            .untilAsserted(
-                    () -> {
-                      SearchResults resultsAfterUpdate = search(updatedEndpoint);
-                      assertThat(resultsAfterUpdate)
-                              .containsSubscriptionItemWithName(subscription.getName())
-                              .hasEndpoint(updatedEndpoint);
-                    });
+        .untilAsserted(
+            () -> {
+              SearchResults resultsAfterUpdate = search(updatedEndpoint);
+              assertThat(resultsAfterUpdate)
+                  .containsSubscriptionItemWithName(subscription.getName())
+                  .hasEndpoint(updatedEndpoint);
+            });
   }
 
   private Topic createTopicWithNameContaining(String qualifiedName) {

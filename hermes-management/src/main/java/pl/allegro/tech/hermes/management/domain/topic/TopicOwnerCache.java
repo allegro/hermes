@@ -29,9 +29,7 @@ public class TopicOwnerCache {
       Multimaps.synchronizedMultimap(ArrayListMultimap.create());
 
   public TopicOwnerCache(
-      TopicRepository topicRepository,
-      GroupService groupService,
-      int refreshRateInSeconds) {
+      TopicRepository topicRepository, GroupService groupService, int refreshRateInSeconds) {
     this.topicRepository = topicRepository;
     this.groupService = groupService;
     scheduledExecutorService =

@@ -13,7 +13,6 @@ public class ManagementRights {
 
   private final GroupProperties groupProperties;
 
-  
   public ManagementRights(GroupProperties groupProperties) {
     this.groupProperties = groupProperties;
   }

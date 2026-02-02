@@ -2,9 +2,11 @@ package pl.allegro.tech.hermes.management.domain.health;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+
 public class NodeDataProvider {
 
   private final String serverPort;
+
   public NodeDataProvider(String serverPort) {
     this.serverPort = serverPort;
   }
