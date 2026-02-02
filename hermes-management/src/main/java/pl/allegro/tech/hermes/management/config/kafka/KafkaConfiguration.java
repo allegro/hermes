@@ -148,7 +148,7 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
       List<DatacenterBoundRepositoryHolder<SubscriptionOffsetChangeIndicator>> repositories,
       KafkaProperties kafkaProperties) {
     if (repositories.size() == 1) {
-      return repositories.get(0).getRepository();
+      return repositories.getFirst().getRepository();
     }
     return repositories.stream()
         .filter(

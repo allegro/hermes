@@ -5,7 +5,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
-import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.management.domain.Auditor;
@@ -15,10 +14,7 @@ import pl.allegro.tech.hermes.management.domain.dc.RepositoryManager;
 import pl.allegro.tech.hermes.management.domain.group.GroupService;
 import pl.allegro.tech.hermes.management.domain.group.GroupValidator;
 import pl.allegro.tech.hermes.management.domain.oauth.OAuthProviderService;
-import pl.allegro.tech.hermes.management.domain.search.SearchService;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionRemover;
-import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthChecker;
-import pl.allegro.tech.hermes.management.domain.topic.BrokerTopicManagement;
 import pl.allegro.tech.hermes.management.domain.topic.TopicContentTypeMigrationService;
 import pl.allegro.tech.hermes.management.domain.topic.TopicMetricsRepository;
 import pl.allegro.tech.hermes.management.domain.topic.TopicOwnerCache;
