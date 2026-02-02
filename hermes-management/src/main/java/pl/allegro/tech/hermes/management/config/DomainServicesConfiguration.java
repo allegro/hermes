@@ -1,12 +1,16 @@
 package pl.allegro.tech.hermes.management.config;
 
 import java.time.Clock;
+import java.util.List;
+
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import pl.allegro.tech.hermes.domain.CredentialsRepository;
 import pl.allegro.tech.hermes.domain.group.GroupRepository;
+import pl.allegro.tech.hermes.domain.oauth.OAuthProviderRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
-import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
+import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
 import pl.allegro.tech.hermes.management.domain.Auditor;
 import pl.allegro.tech.hermes.management.domain.credentials.CredentialsService;
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
@@ -15,6 +19,8 @@ import pl.allegro.tech.hermes.management.domain.group.GroupService;
 import pl.allegro.tech.hermes.management.domain.group.GroupValidator;
 import pl.allegro.tech.hermes.management.domain.oauth.OAuthProviderService;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionRemover;
+import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthChecker;
+import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthProblemIndicator;
 import pl.allegro.tech.hermes.management.domain.topic.TopicContentTypeMigrationService;
 import pl.allegro.tech.hermes.management.domain.topic.TopicMetricsRepository;
 import pl.allegro.tech.hermes.management.domain.topic.TopicOwnerCache;
@@ -22,6 +28,8 @@ import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 import pl.allegro.tech.hermes.management.domain.topic.schema.SchemaService;
 import pl.allegro.tech.hermes.management.domain.topic.validator.TopicValidator;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
+import pl.allegro.tech.hermes.management.infrastructure.schema.validator.SchemaValidatorProvider;
+import pl.allegro.tech.hermes.schema.RawSchemaClient;
 
 /**
  * Configuration for core domain services.
@@ -75,32 +83,31 @@ public class DomainServicesConfiguration {
 
   @Bean
   public SchemaService schemaService(
-      pl.allegro.tech.hermes.schema.RawSchemaClient rawSchemaClient,
-      pl.allegro.tech.hermes.management.infrastructure.schema.validator.SchemaValidatorProvider validatorProvider,
+      RawSchemaClient rawSchemaClient,
+      SchemaValidatorProvider validatorProvider,
       TopicProperties topicProperties) {
     return new SchemaService(rawSchemaClient, validatorProvider, topicProperties.isRemoveSchema());
   }
 
   @Bean
   public CredentialsService credentialsService(
-      ZookeeperPaths paths,
       MultiDatacenterRepositoryCommandExecutor multiDcExecutor,
-      pl.allegro.tech.hermes.domain.CredentialsRepository credentialsRepository) {
-    return new CredentialsService(paths, multiDcExecutor, credentialsRepository);
+      CredentialsRepository credentialsRepository) {
+    return new CredentialsService(multiDcExecutor, credentialsRepository);
   }
 
   @Bean
   public OAuthProviderService oAuthProviderService(
-      pl.allegro.tech.hermes.domain.oauth.OAuthProviderRepository repository,
-      pl.allegro.tech.hermes.management.api.validator.ApiPreconditions preconditions,
+      OAuthProviderRepository repository,
+      ApiPreconditions preconditions,
       Auditor auditor,
       MultiDatacenterRepositoryCommandExecutor multiDcExecutor) {
     return new OAuthProviderService(repository, preconditions, auditor, multiDcExecutor);
   }
 
   @Bean
-  public pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthChecker subscriptionHealthChecker(
-      java.util.List<pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthProblemIndicator> problemIndicators) {
-    return new pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthChecker(problemIndicators);
+  public SubscriptionHealthChecker subscriptionHealthChecker(
+      List<SubscriptionHealthProblemIndicator> problemIndicators) {
+    return new SubscriptionHealthChecker(problemIndicators);
   }
 }

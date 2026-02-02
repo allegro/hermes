@@ -36,14 +36,8 @@ import pl.allegro.tech.hermes.metrics.PathsCompiler;
 })
 public class ManagementConfiguration {
 
-  private final TopicProperties topicProperties;
-
-  public ManagementConfiguration(TopicProperties topicProperties) {
-    this.topicProperties = topicProperties;
-  }
-
   @Bean
-  public ObjectMapper objectMapper() {
+  public ObjectMapper objectMapper(TopicProperties topicProperties) {
     ObjectMapper mapper = new ObjectMapper();
     mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
     mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
