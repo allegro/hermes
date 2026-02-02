@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.googlepubsub;
 
-public enum CompressionCodec {
+enum CompressionCodec {
   DEFLATE("df"),
   BZIP2("bz2"),
   ZSTANDARD("zstd"),
