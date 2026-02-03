@@ -68,7 +68,7 @@ when specifying connection option is done per cluster. Simple configuration for 
 
 ```yaml
 kafka:
-  defaultNamespace: // namespace shared by all clusters, default: <empty>
+  namespace: // namespace shared by all clusters, default: <empty>
   clusters:
     -
       clusterName: // name of cluster, can be any arbitrary string, default: primary
@@ -128,7 +128,7 @@ storage:
 
 It’s also possible to run multiple Hermes clusters on a single Kafka cluster, e.g. to separate different test environments.
 To do this, on each Hermes cluster you have to provide different value for:
-* `kafka.namespace` property in **Frontend** and **Consumers**. In **Management** it’s named `kafka.defaultNamespace` and also need to be changed.
+* `kafka.namespace` property in **Frontend**, **Consumers** and **Management**.
 * `zookeeper.root` property in **Frontend** and **Consumers** if you use the same Zookeeper cluster for all Hermes clusters.
   In **Management** it’s named `storage.pathPrefix` and also need to be changed.
 

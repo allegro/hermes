@@ -20,8 +20,8 @@ In case of lack of both files the `FileNotFoundException` is thrown.
 It is possible to use custom trust store by setting the property `consumer.ssl.truststoreSource` to `provided`, which by default is set to `jre`.
 In case of provided trust store it is required to specify additional properties:
 
-Option                           | Description                | Default value
--------------------------------- | -------------------------- | -----------------------
-consumer.ssl.truststoreLocation  | path to custom trust store (it could be the classpath or a path in a file system) | `classpath:server.truststore`
-consumer.ssl.truststoreFormat    | trust store format | `JKS`
-consumer.ssl.truststorePassword  | password to trust store | `password`
+| Option                          | Description                                                                       | Default value                 |
+|---------------------------------|-----------------------------------------------------------------------------------|-------------------------------|
+| consumer.ssl.truststoreLocation | path to custom trust store (it could be the classpath or a path in a file system) | `classpath:server.truststore` |
+| consumer.ssl.truststoreFormat   | trust store format                                                                | `JKS`                         |
+| consumer.ssl.truststorePassword | password to trust store                                                           | `password`                    |
