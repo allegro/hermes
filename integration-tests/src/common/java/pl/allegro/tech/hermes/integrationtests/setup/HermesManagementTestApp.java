@@ -167,7 +167,7 @@ public class HermesManagementTestApp implements HermesTestApp {
     idx = 0;
     for (Map.Entry<String, KafkaContainerCluster> kafka : kafkaClusters.entrySet()) {
       args.add("--kafka.clusters[" + idx + "].datacenter=" + kafka.getKey());
-      args.add("--kafka.clusters[" + idx + "].clusterName=primary");
+      args.add("--kafka.clusters[" + idx + "].clusterName=primary-dc");
       args.add(
           "--kafka.clusters["
               + idx

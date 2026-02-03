@@ -9,7 +9,7 @@ public class KafkaProperties implements KafkaParameters {
 
   private String datacenter = "dc";
 
-  private String clusterName = "primary";
+  private String clusterName = "primary-dc";
 
   private String brokerList = "localhost:9092";
 

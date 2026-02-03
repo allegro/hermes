@@ -11,7 +11,7 @@ storage:
 kafka:
   clusters:
     - datacenter: dc
-      clusterName: primary
+      clusterName: primary-dc
       connectionTimeout: 3000
       bootstrapKafkaServer: kafka:29092
 
