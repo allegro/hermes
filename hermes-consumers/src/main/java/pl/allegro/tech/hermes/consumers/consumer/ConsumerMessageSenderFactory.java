@@ -74,31 +74,34 @@ public class ConsumerMessageSenderFactory {
       SubscriptionLoadRecorder subscriptionLoadRecorder,
       MetricsFacade metrics) {
 
-    List<SuccessHandler> successHandlers = new ArrayList();
+    List<SuccessHandler> successHandlers = new ArrayList<SuccessHandler>();
     successHandlers.add(consumerAuthorizationHandler);
     successHandlers.add(
         new DefaultSuccessHandler(
             metrics, trackers, subscription.getQualifiedName(), subscription.getMetricsConfig()));
     successHandlers.addAll(resultHandlers);
 
-    List<ErrorHandler> errorHandlers = new ArrayList<>();
-    errorHandlers.add(consumerAuthorizationHandler);
-    errorHandlers.add(
-        new DefaultErrorHandler(
-            metrics,
-            undeliveredMessageLog,
-            clock,
-            trackers,
-            deadLetters,
-            kafkaClusterName,
-            subscription.getQualifiedName()));
-    errorHandlers.addAll(resultHandlers);
+    List<ErrorHandler> errorHandlers =
+        List.of(
+            consumerAuthorizationHandler,
+            new DefaultErrorHandler(
+                metrics,
+                undeliveredMessageLog,
+                clock,
+                trackers,
+                deadLetters,
+                kafkaClusterName,
+                subscription.getQualifiedName()));
+    List<ErrorHandler> discardedErrorHandlers = new ArrayList<>();
+    discardedErrorHandlers.addAll(errorHandlers);
+    discardedErrorHandlers.addAll(resultHandlers);
 
     return new ConsumerMessageSender(
         subscription,
         messageSenderFactory,
         successHandlers,
         errorHandlers,
+        discardedErrorHandlers,
         consumerRateLimiter,
         rateLimiterReportingExecutor,
         pendingOffsets,

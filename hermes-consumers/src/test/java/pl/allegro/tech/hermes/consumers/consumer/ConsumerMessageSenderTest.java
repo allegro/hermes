@@ -466,6 +466,7 @@ public class ConsumerMessageSenderTest {
             messageSenderFactory,
             List.of(successHandler),
             List.of(errorHandler),
+            List.of(errorHandler),
             rateLimiter,
             Executors.newSingleThreadExecutor(),
             pendingOffsets,

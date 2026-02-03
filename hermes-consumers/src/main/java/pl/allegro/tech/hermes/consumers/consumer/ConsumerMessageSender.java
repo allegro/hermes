@@ -47,6 +47,7 @@ public class ConsumerMessageSender {
   private final ExecutorService deliveryReportingExecutor;
   private final List<SuccessHandler> successHandlers;
   private final List<ErrorHandler> errorHandlers;
+  private final List<ErrorHandler> discardedHandlers;
   private final MessageSenderFactory messageSenderFactory;
   private final Clock clock;
   private final PendingOffsets pendingOffsets;
@@ -70,6 +71,7 @@ public class ConsumerMessageSender {
       MessageSenderFactory messageSenderFactory,
       List<SuccessHandler> successHandlers,
       List<ErrorHandler> errorHandlers,
+      List<ErrorHandler> discardedHandlers,
       SerialConsumerRateLimiter rateLimiter,
       ExecutorService deliveryReportingExecutor,
       PendingOffsets pendingOffsets,
@@ -81,6 +83,7 @@ public class ConsumerMessageSender {
     this.deliveryReportingExecutor = deliveryReportingExecutor;
     this.successHandlers = successHandlers;
     this.errorHandlers = errorHandlers;
+    this.discardedHandlers = discardedHandlers;
     this.messageSenderFactory = messageSenderFactory;
     this.clock = clock;
     this.loadRecorder = loadRecorder;
@@ -308,7 +311,7 @@ public class ConsumerMessageSender {
             message.getPartitionOffset(),
             message.getPartitionAssignmentTerm()));
     inflightCount.decrement();
-    errorHandlers.forEach(
+    discardedHandlers.forEach(
         h -> {
           if (h.supports(subscription)) {
             h.handleDiscarded(message, subscription, result);
