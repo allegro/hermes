@@ -5,7 +5,9 @@ import pl.allegro.tech.hermes.common.kafka.KafkaParameters;
 
 public class KafkaProperties implements KafkaParameters {
 
-  private String datacenter = "datacenter";
+  private KafkaAuthenticationProperties authentication = new KafkaAuthenticationProperties();
+
+  private String datacenter = "dc";
 
   private String clusterName = "primary-dc";
 
@@ -27,11 +29,7 @@ public class KafkaProperties implements KafkaParameters {
 
   private boolean dualCommitEnabled = false;
 
-  private String namespace = "";
-
   private KafkaConsumer kafkaConsumer = new KafkaConsumer();
-
-  private KafkaAuthenticationProperties authentication = new KafkaAuthenticationProperties();
 
   @Override
   public boolean isAuthenticationEnabled() {
@@ -55,8 +53,7 @@ public class KafkaProperties implements KafkaParameters {
 
   @Override
   public String getJaasConfig() {
-    authentication.getJaasConfig();
-    return null;
+    return authentication.getJaasConfig();
   }
 
   public static final class KafkaConsumer {
@@ -65,15 +62,13 @@ public class KafkaProperties implements KafkaParameters {
 
     private int bufferSizeBytes = 64 * 1024;
 
-    private int timeoutMillis = 5000;
-
     private String namePrefix = "offsetChecker";
 
     private int pollTimeoutMillis = 50;
 
-    private final int fetchMaxWaitMillis = 30;
+    private int fetchMaxWaitMillis = 30;
 
-    private final int fetchMinBytes = 1;
+    private int fetchMinBytes = 1;
 
     private String consumerGroupName = "RETRANSMISSION_GROUP";
 
@@ -91,14 +86,6 @@ public class KafkaProperties implements KafkaParameters {
 
     public void setBufferSizeBytes(int bufferSizeBytes) {
       this.bufferSizeBytes = bufferSizeBytes;
-    }
-
-    public int getTimeoutMillis() {
-      return timeoutMillis;
-    }
-
-    public void setTimeoutMillis(int timeoutMillis) {
-      this.timeoutMillis = timeoutMillis;
     }
 
     public String getNamePrefix() {
@@ -131,6 +118,14 @@ public class KafkaProperties implements KafkaParameters {
 
     public int getFetchMinBytes() {
       return fetchMinBytes;
+    }
+
+    public void setFetchMaxWaitMillis(int fetchMaxWaitMillis) {
+      this.fetchMaxWaitMillis = fetchMaxWaitMillis;
+    }
+
+    public void setFetchMinBytes(int fetchMinBytes) {
+      this.fetchMinBytes = fetchMinBytes;
     }
   }
 
@@ -178,11 +173,6 @@ public class KafkaProperties implements KafkaParameters {
     return authentication;
   }
 
-  @Deprecated
-  public void setSasl(KafkaAuthenticationProperties sasl) {
-    this.authentication = sasl;
-  }
-
   public void setAuthentication(KafkaAuthenticationProperties authentication) {
     this.authentication = authentication;
   }
@@ -219,25 +209,12 @@ public class KafkaProperties implements KafkaParameters {
     this.dualCommitEnabled = dualCommitEnabled;
   }
 
-  public String getNamespace() {
-    return namespace;
-  }
-
-  public void setNamespace(String namespace) {
-    this.namespace = namespace;
-  }
-
   public int getMaxInflight() {
     return maxInflight;
   }
 
   public void setMaxInflight(int maxInflight) {
     this.maxInflight = maxInflight;
-  }
-
-  @Deprecated
-  public void setBootstrapKafkaServer(String bootstrapKafkaServer) {
-    this.brokerList = bootstrapKafkaServer;
   }
 
   public void setBrokerList(String brokerList) {
