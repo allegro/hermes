@@ -64,7 +64,7 @@ public class SchemaRepositoryConfiguration {
         .withNamespacePrefixIf(
             schemaRepositoryProperties.isSubjectNamespaceEnabled(),
             new SubjectNamingStrategy.Namespace(
-                kafkaClustersProperties.getDefaultNamespace(),
+                kafkaClustersProperties.getNamespace(),
                 kafkaClustersProperties.getNamespaceSeparator()))
         .withValueSuffixIf(schemaRepositoryProperties.isSubjectSuffixEnabled());
   }

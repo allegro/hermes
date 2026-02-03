@@ -19,17 +19,17 @@ public class KafkaHermesConsistencyService {
   private static final List<String> IGNORED_TOPIC = asList("__consumer_offsets");
   private final TopicService topicService;
   private final MultiDCAwareService multiDCAwareService;
-  private final String defaultNamespace;
+  private final String namespace;
   private final String namespaceSeparator;
 
   public KafkaHermesConsistencyService(
       TopicService topicService,
       MultiDCAwareService multiDCAwareService,
-      String defaultNamespace,
+      String namespace,
       String namespaceSeparator) {
     this.topicService = topicService;
     this.multiDCAwareService = multiDCAwareService;
-    this.defaultNamespace = defaultNamespace;
+    this.namespace = namespace;
     this.namespaceSeparator = namespaceSeparator;
   }
 
@@ -55,7 +55,7 @@ public class KafkaHermesConsistencyService {
   }
 
   private String mapToHermesFormat(String topic) {
-    String prefix = defaultNamespace + namespaceSeparator;
+    String prefix = namespace + namespaceSeparator;
 
     int beginIndex = topic.startsWith(prefix) ? prefix.length() : 0;
     int endIndex =

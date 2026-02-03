@@ -17,11 +17,6 @@ public class KafkaProperties implements KafkaParameters {
     return authentication;
   }
 
-  @Deprecated
-  public void setAuthorization(KafkaAuthenticationProperties authorization) {
-    this.authentication = authorization;
-  }
-
   public void setAuthentication(KafkaAuthenticationProperties authentication) {
     this.authentication = authentication;
   }

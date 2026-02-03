@@ -165,15 +165,15 @@ public class HermesManagementTestApp implements HermesTestApp {
       idx++;
     }
     idx = 0;
+    args.add("--kafka.namespace=itTest");
     for (Map.Entry<String, KafkaContainerCluster> kafka : kafkaClusters.entrySet()) {
       args.add("--kafka.clusters[" + idx + "].datacenter=" + kafka.getKey());
       args.add("--kafka.clusters[" + idx + "].clusterName=primary-dc");
       args.add(
           "--kafka.clusters["
               + idx
-              + "].bootstrapKafkaServer="
+              + "].brokerList="
               + kafka.getValue().getBootstrapServersForExternalClients());
-      args.add("--kafka.clusters[" + idx + "].namespace=itTest");
       idx++;
     }
 

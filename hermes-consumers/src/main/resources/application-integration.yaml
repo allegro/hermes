@@ -89,9 +89,7 @@ consumer:
   kafka:
     namespace: "itTest"
     clusters:
-      - authorization:
+      - authentication:
           enabled: false
-          mechanism: PLAIN
-          protocol: SASL_PLAINTEXT
           username: hermes
           password: alice-secret

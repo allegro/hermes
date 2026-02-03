@@ -33,7 +33,7 @@ frontend:
     namespace: "itTest"
     clusters:
       -
-        authorization:
+        authentication:
           enabled: false
           username: hermes
           password: alice-secret

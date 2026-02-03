@@ -14,7 +14,7 @@ kafka:
     - datacenter: dc
       clusterName: primary-dc
       connectionTimeout: 3000
-      bootstrapKafkaServer: localhost:9092
+      brokerList: localhost:9092
 
 spring:
   jersey:
@@ -45,11 +45,9 @@ audit:
   isEventAuditEnabled: false
   eventUrl: null
 
-topicOwnerCache:
-  refreshRateInSeconds: 300 # 5 minutes
-
-subscriptionOwnerCache:
-  refreshRateInSeconds: 300
+cache:
+  topicOwnerRefreshRateInSeconds: 300 # 5 minutes
+  subscriptionOwnerRefreshRateInSeconds: 300
 
 console:
   topic:

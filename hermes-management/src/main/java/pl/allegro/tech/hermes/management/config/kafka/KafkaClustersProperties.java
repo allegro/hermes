@@ -6,8 +6,11 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "kafka")
 public class KafkaClustersProperties {
+
   private List<KafkaProperties> clusters = new ArrayList<>();
-  private String defaultNamespace = "";
+
+  private String namespace = "";
+
   private String namespaceSeparator = "_";
 
   public List<KafkaProperties> getClusters() {
@@ -18,12 +21,12 @@ public class KafkaClustersProperties {
     this.clusters = clusters;
   }
 
-  public String getDefaultNamespace() {
-    return defaultNamespace;
+  public String getNamespace() {
+    return namespace;
   }
 
-  public void setDefaultNamespace(String defaultNamespace) {
-    this.defaultNamespace = defaultNamespace;
+  public void setNamespace(String namespace) {
+    this.namespace = namespace;
   }
 
   public String getNamespaceSeparator() {

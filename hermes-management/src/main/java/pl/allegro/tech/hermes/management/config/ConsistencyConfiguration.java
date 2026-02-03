@@ -24,7 +24,7 @@ public class ConsistencyConfiguration {
     return new KafkaHermesConsistencyService(
         topicService,
         multiDCAwareService,
-        kafkaClustersProperties.getDefaultNamespace(),
+        kafkaClustersProperties.getNamespace(),
         kafkaClustersProperties.getNamespaceSeparator());
   }
 
