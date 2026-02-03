@@ -21,11 +21,11 @@ There is additional protection against flooding subscribers with outdated events
 storage, Hermes filters out messages older than N hours, where N is a system parameter and is set to 3 days by default.
 This might be useful when reviving Frontend nodes that have been down for a longer period of time.
 
-Option                                          | Description                                            | Default value
------------------------------------------------ | ------------------------------------------------------ | --------------
-frontend.messages.local.storage.enabled         | enable persistent buffer                               | false
-frontend.messages.local.storage.maxAge          | ignore messages in buffer that are older than N hours  | 72h
-frontend.messages.local.storage.directory       | location of memory mapped files                        | /tmp/<tmp dir>
+| Option                                    | Description                                           | Default value  |
+|-------------------------------------------|-------------------------------------------------------|----------------|
+| frontend.messages.local.storage.enabled   | enable persistent buffer                              | false          |
+| frontend.messages.local.storage.maxAge    | ignore messages in buffer that are older than N hours | 72h            |
+| frontend.messages.local.storage.directory | location of memory mapped files                       | /tmp/<tmp dir> |
 
 ### Buffer files
 
