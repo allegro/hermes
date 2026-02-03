@@ -606,7 +606,7 @@ It will return **404 Not Found** if there is no message to display. Otherwise it
     "message": "body of a message",
     "partition": 5,
     "offset": 368741824,
-    "cluster": "primary"
+    "cluster": "primary-dc"
 }
 ```
 
@@ -731,7 +731,7 @@ It returns array of message tracking information in following format:
         "topicName": "topic-name",
         "status": "DISCARDED",
         "reason": "Message sending failed with status code:400",
-        "cluster": "primary",
+        "cluster": "primary-dc",
         "offset": 171165098,
         "partition": 5
     }

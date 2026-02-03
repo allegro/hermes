@@ -25,7 +25,7 @@ public interface MultipleDcKafkaNamesMappersFactory {
             .filter(c -> c.getNamespace().isEmpty())
             .collect(
                 toMap(
-                    KafkaProperties::getQualifiedClusterName,
+                    KafkaProperties::getClusterName,
                     kafkaProperties ->
                         factoryFunction.apply(clustersProperties.getDefaultNamespace())));
 
@@ -34,7 +34,7 @@ public interface MultipleDcKafkaNamesMappersFactory {
             .filter(c -> !c.getNamespace().isEmpty())
             .collect(
                 toMap(
-                    KafkaProperties::getQualifiedClusterName,
+                    KafkaProperties::getClusterName,
                     kafkaProperties -> factoryFunction.apply(kafkaProperties.getNamespace()))));
 
     return new KafkaNamesMappers(mappers);

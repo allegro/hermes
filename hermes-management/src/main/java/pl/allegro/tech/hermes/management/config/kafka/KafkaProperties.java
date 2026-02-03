@@ -7,7 +7,7 @@ public class KafkaProperties implements KafkaParameters {
 
   private String datacenter = "datacenter";
 
-  private String clusterName = "primary";
+  private String clusterName = "primary-dc";
 
   private String brokerList = "localhost:9092";
 
@@ -199,8 +199,8 @@ public class KafkaProperties implements KafkaParameters {
     this.clusterName = clusterName;
   }
 
-  public String getQualifiedClusterName() {
-    return clusterName + "-" + datacenter;
+  public String getClusterName() {
+    return clusterName;
   }
 
   public String getOffsetsStorage() {

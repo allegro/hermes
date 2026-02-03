@@ -82,7 +82,7 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
             .map(
                 kafkaProperties -> {
                   KafkaNamesMapper kafkaNamesMapper =
-                      kafkaNamesMappers.getMapper(kafkaProperties.getQualifiedClusterName());
+                      kafkaNamesMappers.getMapper(kafkaProperties.getClusterName());
                   AdminClient brokerAdminClient = brokerAdminClient(kafkaProperties);
                   BrokerStorage storage = brokersStorage(brokerAdminClient);
                   BrokerTopicManagement brokerTopicManagement =
@@ -109,7 +109,7 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
                           kafkaRawMessageReader, schemaRepository, jsonAvroConverter);
                   return new BrokersClusterService(
                       kafkaProperties.getDatacenter(),
-                      kafkaProperties.getQualifiedClusterName(),
+                      kafkaProperties.getClusterName(),
                       messageReader,
                       retransmissionService,
                       brokerTopicManagement,
@@ -137,7 +137,7 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
     return subscriptionProperties.isCreateConsumerGroupManuallyEnabled()
         ? new KafkaConsumerGroupManager(
             kafkaNamesMapper,
-            kafkaProperties.getQualifiedClusterName(),
+            kafkaProperties.getClusterName(),
             kafkaProperties.getBrokerList(),
             kafkaProperties,
             kafkaAdminClient)
