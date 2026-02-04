@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -33,6 +34,7 @@ import pl.allegro.tech.hermes.consumers.consumer.profiling.ConsumerProfiler;
 import pl.allegro.tech.hermes.consumers.consumer.profiling.NoOpConsumerProfiler;
 import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.result.ErrorHandler;
+import pl.allegro.tech.hermes.consumers.consumer.result.ResultHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.SuccessHandler;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
@@ -60,6 +62,8 @@ public class ConsumerMessageSenderTest {
   @Mock private SuccessHandler successHandler;
 
   @Mock private ErrorHandler errorHandler;
+
+  @Mock private ResultHandler discardHandler;
 
   @Mock private SerialConsumerRateLimiter rateLimiter;
 
@@ -98,6 +102,7 @@ public class ConsumerMessageSenderTest {
   private void setUpMetrics(Subscription subscription) {
     when(successHandler.supports(subscription)).thenReturn(true);
     when(errorHandler.supports(subscription)).thenReturn(true);
+    when(discardHandler.supports(subscription)).thenReturn(true);
     when(metricsFacade.subscriptions().latency(subscription.getQualifiedName()))
         .thenReturn(consumerLatencyTimer);
     when(metricsFacade.subscriptions().rateLimiterAcquire(subscription.getQualifiedName()))
@@ -123,11 +128,13 @@ public class ConsumerMessageSenderTest {
     verify(successHandler, timeout(1000))
         .handleSuccess(eq(message), eq(subscription), any(MessageSendingResult.class));
 
+
     // then
     verify(pendingOffsets).markAsProcessed(any(SubscriptionPartitionOffset.class));
     verifyLatencyTimersCountedTimes(subscription, 1, 1);
     verifyRateLimiterAcquireTimersCountedTimes(subscription, 1, 1);
     verifyNoInteractions(errorHandler);
+    verifyNoInteractions(discardHandler);
     verifyNoInteractions(failedMeter);
     verifyRateLimiterAcquired();
     verifyNoInteractions(retries);
@@ -164,6 +171,8 @@ public class ConsumerMessageSenderTest {
 
     // then
     verify(errorHandler, timeout(1000))
+            .handleFailed(eq(message), eq(subscription), any(MessageSendingResult.class));
+    verify(discardHandler, timeout(1000))
         .handleDiscarded(eq(message), eq(subscription), any(MessageSendingResult.class));
     verify(pendingOffsets).markAsProcessed(any(SubscriptionPartitionOffset.class));
     verifyNoInteractions(successHandler);
@@ -183,8 +192,10 @@ public class ConsumerMessageSenderTest {
     sender.sendAsync(message, profiler);
 
     // then
-    verify(errorHandler, timeout(1000))
+    verify(discardHandler, timeout(1000))
         .handleDiscarded(eq(message), eq(subscription), any(MessageSendingResult.class));
+    verify(errorHandler, timeout(1000))
+        .handleFailed(eq(message), eq(subscription), any(MessageSendingResult.class));
     verify(pendingOffsets).markAsProcessed(any(SubscriptionPartitionOffset.class));
     verifyNoInteractions(successHandler);
     verifyLatencyTimersCountedTimes(subscription, 1, 1);
@@ -279,6 +290,8 @@ public class ConsumerMessageSenderTest {
 
     // then
     verify(errorHandler, timeout(1000))
+            .handleFailed(eq(message), eq(subscription), any(MessageSendingResult.class));
+    verify(discardHandler, timeout(1000))
         .handleDiscarded(eq(message), eq(subscription), any(MessageSendingResult.class));
     verify(pendingOffsets).markAsProcessed(any(SubscriptionPartitionOffset.class));
     verifyNoInteractions(successHandler);
@@ -457,6 +470,74 @@ public class ConsumerMessageSenderTest {
     verifyRetryCounted();
   }
 
+  @Test
+  public void shouldIgnoreDiscardHandlerIfNotSupported() {
+    // given
+    when(discardHandler.supports(subscription)).thenReturn(false);
+    Message message = message();
+    doReturn(failure(403)).doReturn(success()).when(messageSender).send(message);
+
+    // when
+    sender.sendAsync(message, profiler);
+
+    // then
+    verify(errorHandler, timeout(1000))
+        .handleFailed(eq(message), eq(subscription), any(MessageSendingResult.class));
+    verify(discardHandler, timeout(100)).supports(subscription);
+    verify(discardHandler, never()).handleDiscarded(eq(message), eq(subscription), any());
+    verify(pendingOffsets).markAsProcessed(any(SubscriptionPartitionOffset.class));
+    verifyNoInteractions(successHandler);
+    verifyLatencyTimersCountedTimes(subscription, 1, 1);
+    verifyRateLimiterAcquireTimersCountedTimes(subscription, 1, 1);
+    verifyRateLimiterAcquired();
+    verifyNoInteractions(retries);
+  }
+
+  @Test
+  public void shouldIgnoreErrorHandlerIfNotSupported() {
+    // given
+    when(errorHandler.supports(subscription)).thenReturn(false);
+    Message message = message();
+    doReturn(failure(403)).doReturn(success()).when(messageSender).send(message);
+
+    // when
+    sender.sendAsync(message, profiler);
+
+    // then
+    verify(discardHandler, timeout(1000))
+            .handleDiscarded(eq(message), eq(subscription), any(MessageSendingResult.class));
+    verify(errorHandler, timeout(100)).supports(subscription);
+    verify(errorHandler, never()).handleFailed(eq(message), eq(subscription), any());
+    verify(pendingOffsets).markAsProcessed(any(SubscriptionPartitionOffset.class));
+    verifyNoInteractions(successHandler);
+    verifyLatencyTimersCountedTimes(subscription, 1, 1);
+    verifyRateLimiterAcquireTimersCountedTimes(subscription, 1, 1);
+    verifyRateLimiterAcquired();
+    verifyNoInteractions(retries);
+  }
+
+  @Test
+  public void shouldIgnoreSuccessHandlerIfNotSupported() {
+    // given
+    when(successHandler.supports(subscription)).thenReturn(false);
+    Message message = message();
+    when(messageSender.send(message)).thenReturn(success());
+
+    // when
+    sender.sendAsync(message, profiler);
+
+    // then
+    verify(successHandler, timeout(100)).supports(subscription);
+    verify(successHandler, never()).handleSuccess(eq(message), eq(subscription), any());
+    verify(pendingOffsets).markAsProcessed(any(SubscriptionPartitionOffset.class));
+
+    verifyNoInteractions(errorHandler);
+    verifyNoInteractions(discardHandler);
+    verifyLatencyTimersCountedTimes(subscription, 1, 1);
+    verifyRateLimiterAcquireTimersCountedTimes(subscription, 1, 1);
+    verifyRateLimiterAcquired();
+    verifyNoInteractions(retries);
+  }
   private ConsumerMessageSender consumerMessageSender(Subscription subscription) {
     when(messageSenderFactory.create(eq(subscription), any(ResilientMessageSender.class)))
         .thenReturn(messageSender);
@@ -466,7 +547,7 @@ public class ConsumerMessageSenderTest {
             messageSenderFactory,
             List.of(successHandler),
             List.of(errorHandler),
-            List.of(errorHandler),
+            List.of(discardHandler),
             rateLimiter,
             Executors.newSingleThreadExecutor(),
             pendingOffsets,
