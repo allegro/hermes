@@ -32,7 +32,8 @@ public class ListUnhealthySubscriptionsForOwnerTest {
 
   @Order(1)
   @RegisterExtension
-  public static final HermesExtension hermes = new HermesExtension().withPrometheus(prometheus);
+  public static final HermesExtension hermes =
+      new HermesExtension().withPrometheus(prometheus::getEndpoint);
 
   @BeforeAll
   static void setup() {

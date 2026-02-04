@@ -23,7 +23,8 @@ public class SearchEndpointTest {
 
   @Order(1)
   @RegisterExtension
-  public static final HermesExtension hermes = new HermesExtension().withPrometheus(prometheus);
+  public static final HermesExtension hermes =
+      new HermesExtension().withPrometheus(prometheus::getEndpoint);
 
   private static final String FIRST_TOPIC_NAME = "SearchFirstTopic";
   private static final String SECOND_TOPIC_NAME = "SearchSecondTopic";

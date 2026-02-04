@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.testcontainers.lifecycle.Startable;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.env.BrokerOperations;
-import pl.allegro.tech.hermes.integrationtests.setup.HermesManagementTestApp;
+import pl.allegro.tech.hermes.management.HermesManagementTestApp;
 import pl.allegro.tech.hermes.test.helper.client.integration.HermesTestClient;
 import pl.allegro.tech.hermes.test.helper.containers.ConfluentSchemaRegistryContainer;
 import pl.allegro.tech.hermes.test.helper.containers.KafkaContainerCluster;
@@ -36,7 +36,7 @@ public class TopicCreationRollbackTest {
       new ConfluentSchemaRegistryContainer().withKafkaCluster(kafka1);
   private static HermesTestClient hermesApi;
 
-  private static BrokerOperations brokerOperations1;
+  private static BrokerOperations brokerOperations;
 
   @BeforeAll
   public static void setup() {
@@ -50,7 +50,7 @@ public class TopicCreationRollbackTest {
     management.start();
     hermesApi =
         new HermesTestClient(management.getPort(), management.getPort(), management.getPort());
-    brokerOperations1 =
+    brokerOperations =
         new BrokerOperations(kafka1.getBootstrapServersForExternalClients(), "itTest");
   }
 
@@ -69,15 +69,14 @@ public class TopicCreationRollbackTest {
     String qualifiedTopicName = groupName + "." + topicName;
     hermesApi.createGroup(Group.from(groupName));
 
-    brokerOperations1.createTopic(qualifiedTopicName);
+    brokerOperations.createTopic(qualifiedTopicName);
     waitAtMost(Duration.ofMinutes(1))
-        .untilAsserted(
-            () -> assertThat(brokerOperations1.topicExists(qualifiedTopicName)).isTrue());
+        .untilAsserted(() -> assertThat(brokerOperations.topicExists(qualifiedTopicName)).isTrue());
 
     // when
     hermesApi.createTopic((topicWithSchema(topic(groupName, topicName).build())));
 
     // then
-    assertThat(brokerOperations1.topicExists(qualifiedTopicName)).isTrue();
+    assertThat(brokerOperations.topicExists(qualifiedTopicName)).isTrue();
   }
 }

@@ -19,7 +19,6 @@ jmh {
     warmup = stringProperty('jmh.timeOnWarmupIteration', '80s')
     jvmArgs = listProperty('jmh.jvmArgs', ['-Xmx1g', '-Xms1g', '-XX:+UseG1GC'] + chronicleMapJvmArgs)
     failOnError = booleanProperty('jmh.failOnError', true)
-    threads = intProperty('jmh.threads', 4)
     synchronizeIterations = false
     forceGC =  false
     duplicateClassesStrategy = DuplicatesStrategy.EXCLUDE
@@ -29,6 +28,7 @@ dependencies {
     jmh group: 'org.openjdk.jmh', name: 'jmh-core', version: '1.37'
     jmh group: 'org.openjdk.jmh', name: 'jmh-generator-annprocess', version: '1.37'
     jmh group: 'org.apache.httpcomponents', name: 'httpasyncclient', version: '4.1.5'
+    jmh group: 'org.testcontainers', name: 'testcontainers', version: versions.testcontainers
     jmh project(':hermes-frontend')
     jmh project(':hermes-test-helper')
     jmh project(':hermes-common')

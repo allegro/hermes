@@ -69,12 +69,22 @@ public class HermesInitHelper {
   }
 
   public Subscription createSubscription(Subscription subscription) {
+    return createSubscription(subscription, Subscription.State.ACTIVE);
+  }
+
+  public Subscription createSuspendedSubscription(Subscription subscription) {
+    return createSubscription(subscription, Subscription.State.SUSPENDED);
+  }
+
+  private Subscription createSubscription(
+      Subscription subscription, Subscription.State initialState) {
     managementTestClient.createSubscription(subscription).expectStatus().is2xxSuccessful();
-    waitUntilSubscriptionIsActive(subscription);
+    waitUntilSubscriptionHasState(subscription, initialState);
     return subscription;
   }
 
-  public void waitUntilSubscriptionIsActive(Subscription subscription) {
+  private void waitUntilSubscriptionHasState(
+      Subscription subscription, Subscription.State expectedState) {
     waitAtMost(Duration.ofSeconds(10))
         .untilAsserted(
             () -> {
@@ -86,12 +96,19 @@ public class HermesInitHelper {
                       .expectBody(Subscription.class)
                       .returnResult()
                       .getResponseBody();
-              assertThat(sub.getState()).isEqualTo(Subscription.State.ACTIVE);
+              assertThat(sub.getState()).isEqualTo(expectedState);
             });
   }
 
   public OAuthProvider createOAuthProvider(OAuthProvider provider) {
     managementTestClient.createOAuthProvider(provider).expectStatus().is2xxSuccessful();
     return provider;
+  }
+
+  public void resumeSubscription(Subscription subscription, Topic topic) {
+    managementTestClient
+        .updateSubscriptionState(topic, subscription.getName(), Subscription.State.ACTIVE)
+        .expectStatus()
+        .is2xxSuccessful();
   }
 }

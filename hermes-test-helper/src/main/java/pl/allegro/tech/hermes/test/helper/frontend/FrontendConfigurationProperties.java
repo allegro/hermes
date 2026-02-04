@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.frontend;
+package pl.allegro.tech.hermes.test.helper.frontend;
 
 public class FrontendConfigurationProperties {
   public static String SPRING_PROFILES_ACTIVE = "spring.profiles.active";

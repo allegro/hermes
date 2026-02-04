@@ -25,7 +25,6 @@ public class BasicAuthSubscribingTest {
   public void shouldAuthorizeUsingBasicAuthWhenSubscriptionHasCredentials() {
     // given
     TestSubscriber subscriber = subscribers.createSubscriber();
-
     Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
     hermes
         .initHelper()

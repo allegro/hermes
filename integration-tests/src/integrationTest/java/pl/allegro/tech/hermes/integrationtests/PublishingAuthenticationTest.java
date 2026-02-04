@@ -1,12 +1,12 @@
 package pl.allegro.tech.hermes.integrationtests;
 
 import static org.awaitility.Awaitility.waitAtMost;
-import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.AUTH_PASSWORD;
-import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.AUTH_USERNAME;
-import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_AUTHENTICATION_ENABLED;
-import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_AUTHENTICATION_MODE;
-import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_SSL_ENABLED;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
+import static pl.allegro.tech.hermes.test.helper.frontend.FrontendConfigurationProperties.AUTH_PASSWORD;
+import static pl.allegro.tech.hermes.test.helper.frontend.FrontendConfigurationProperties.AUTH_USERNAME;
+import static pl.allegro.tech.hermes.test.helper.frontend.FrontendConfigurationProperties.FRONTEND_AUTHENTICATION_ENABLED;
+import static pl.allegro.tech.hermes.test.helper.frontend.FrontendConfigurationProperties.FRONTEND_AUTHENTICATION_MODE;
+import static pl.allegro.tech.hermes.test.helper.frontend.FrontendConfigurationProperties.FRONTEND_SSL_ENABLED;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;

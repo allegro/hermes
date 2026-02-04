@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.consumers;
+package pl.allegro.tech.hermes.frontend;
 
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -6,8 +6,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
-import pl.allegro.tech.hermes.consumers.config.KafkaClustersProperties;
-import pl.allegro.tech.hermes.env.IntegrationTestKafkaNamesMapperFactory;
+import pl.allegro.tech.hermes.frontend.config.KafkaClustersProperties;
+import pl.allegro.tech.hermes.test.helper.kafka.IntegrationTestKafkaNamesMapperFactory;
 
 @Configuration
 @EnableConfigurationProperties(KafkaClustersProperties.class)

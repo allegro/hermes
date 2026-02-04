@@ -11,11 +11,11 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties;
-import pl.allegro.tech.hermes.integrationtests.setup.HermesFrontendTestApp;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesManagementExtension;
 import pl.allegro.tech.hermes.integrationtests.setup.InfrastructureExtension;
 import pl.allegro.tech.hermes.test.helper.client.integration.FrontendTestClient;
+import pl.allegro.tech.hermes.test.helper.frontend.FrontendConfigurationProperties;
+import pl.allegro.tech.hermes.test.helper.frontend.HermesFrontendTestApp;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 public class BrokerLatencyReportingTest {
