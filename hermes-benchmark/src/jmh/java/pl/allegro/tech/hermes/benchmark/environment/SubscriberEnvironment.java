@@ -61,7 +61,8 @@ public class SubscriberEnvironment {
       int responseCode = publisher.publish();
 
       if (responseCode != 201) {
-        throw new RuntimeException("Failed to publish message, response status code: " + responseCode);
+        throw new RuntimeException(
+            "Failed to publish message, response status code: " + responseCode);
       }
     }
   }
