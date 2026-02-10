@@ -6,6 +6,8 @@ public interface ZookeeperParameters {
 
   String getConnectionString();
 
+  String getDatacenter();
+
   Duration getBaseSleepTime();
 
   Duration getMaxSleepTime();
@@ -20,7 +22,7 @@ public interface ZookeeperParameters {
 
   int getProcessingThreadPoolSize();
 
-  boolean isAuthorizationEnabled();
+  boolean isAuthenticationEnabled();
 
   String getScheme();
 

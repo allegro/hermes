@@ -33,17 +33,17 @@ Hermes also supports retrieving information about the name of the datacenter bas
 
 Hermes uses Zookeeper as metadata store. It does not have to be the same Zookeeper as the one used by Kafka.
 
-Option in Frontend/Consumers                                 | Option in Management           | Description                                                                | Default value
------------------------------------------------------------- | ------------------------------ | -------------------------------------------------------------------------- | --------------
-{modulePrefix}.zookeeper.clusters.[n].connectionString       | storage.connectionString       | Zookeeper connection string                                                | localhost:2181
-{modulePrefix}.zookeeper.clusters.[n].connectionTimeout      | storage.connectTimeout         | connection timeout in seconds                                              | 10s
-{modulePrefix}.zookeeper.clusters.[n].maxRetries             | storage.retryTimes             | retry count when connection fails                                          | 2
-{modulePrefix}.zookeeper.clusters.[n].baseSleepTime          | storage.retrySleep             | time to wait between subsequent retries in seconds                         | 1s
-{modulePrefix}.zookeeper.clusters.[n].root                   | storage.pathPrefix             | prefix for Hermes data (if not specified in connection string)             | /hermes
-{modulePrefix}.zookeeper.clusters.[n].authorization.enabled  | n/a                            | enable Zookeeper authorization                                             | false
-{modulePrefix}.zookeeper.clusters.[n].authorization.scheme   | storage.authorization.scheme   | authorization scheme                                                       | digest
-{modulePrefix}.zookeeper.clusters.[n].authorization.user     | storage.authorization.user     | username                                                                   | user
-{modulePrefix}.zookeeper.clusters.[n].authorization.password | storage.authorization.password | password                                                                   | password
+| Option in Frontend/Consumers/Management                       | Description                                                    | Default value  |
+|---------------------------------------------------------------|----------------------------------------------------------------|----------------|
+| {modulePrefix}.zookeeper.clusters.[n].connectionString        | Zookeeper connection string                                    | localhost:2181 |
+| {modulePrefix}.zookeeper.clusters.[n].connectionTimeout       | connection timeout in seconds                                  | 10s            |
+| {modulePrefix}.zookeeper.clusters.[n].maxRetries              | retry count when connection fails                              | 2              |
+| {modulePrefix}.zookeeper.clusters.[n].baseSleepTime           | time to wait between subsequent retries in seconds             | 1s             |
+| {modulePrefix}.zookeeper.clusters.[n].root                    | prefix for Hermes data (if not specified in connection string) | /hermes        |
+| {modulePrefix}.zookeeper.clusters.[n].authentication.enabled  | enable Zookeeper authentication                                | false          |
+| {modulePrefix}.zookeeper.clusters.[n].authentication.scheme   | authentication scheme                                          | digest         |
+| {modulePrefix}.zookeeper.clusters.[n].authentication.user     | username                                                       | user           |
+| {modulePrefix}.zookeeper.clusters.[n].authentication.password | password                                                       | password       |
 
 ## Kafka
 
@@ -52,14 +52,12 @@ Option in Frontend/Consumers                                 | Option in Managem
 In simple case, Hermes is connected to just one Kafka cluster. Frontend and Consumers connect to Kafka to publish
 and pull messages. Management connects to Kafka to manage existing topics and initiate retransmissions.
 
-Frontend and Consumers options:
+Frontend, Consumers and Management options:
 
-Option                         | Description                                                                              | Default value
------------------------------- | ---------------------------------------------------------------------------------------- | --------------
-kafka.broker.list              | list of all brokers in the cluster (or at least some contact points); separated with ',' | localhost:9092
-kafka.namespace                | namespace is a prefix prepended to all Kafka topics and consumer groups used by Hermes   | <empty>
-kafka.zookeeper.connect.string | [Consumers only] connection string to Kafka Zookeeper                                    | localhost:2181
-kafka.cluster.name             | name of Kafka cluster (relevant only when connecting to multiple clusters)               | primary
+| Option                           | Description                                                                              | Default value  |
+|----------------------------------|------------------------------------------------------------------------------------------|----------------|
+| {modulePrefix}.kafka.brokerList  | list of all brokers in the cluster (or at least some contact points); separated with ',' | localhost:9092 |
+| {modulePrefix}.kafka.clusterName | name of Kafka cluster (relevant only when connecting to multiple clusters)               | primary-dc     |
 
 Zookeeper connection specific options (retries etc) are read from Metadata Zookeeper options.
 

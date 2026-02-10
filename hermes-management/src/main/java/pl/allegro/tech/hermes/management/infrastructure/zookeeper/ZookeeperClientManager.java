@@ -1,8 +1,7 @@
 package pl.allegro.tech.hermes.management.infrastructure.zookeeper;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -12,24 +11,22 @@ import org.apache.zookeeper.ZooDefs;
 import org.apache.zookeeper.data.ACL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.common.di.factories.ZookeeperParameters;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider;
-import pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProvider;
-import pl.allegro.tech.hermes.management.config.storage.StorageClustersProperties;
-import pl.allegro.tech.hermes.management.config.storage.StorageProperties;
 
 public class ZookeeperClientManager {
 
   private static final Logger logger = LoggerFactory.getLogger(ZookeeperClientManager.class);
 
-  private final StorageClustersProperties properties;
+  private final List<ZookeeperParameters> zookeeperParameters;
   private final DatacenterNameProvider datacenterNameProvider;
   private List<ZookeeperClient> clients;
   private ZookeeperClient localClient;
 
   public ZookeeperClientManager(
-      StorageClustersProperties properties, DatacenterNameProvider datacenterNameProvider) {
-    this.properties = properties;
+          List<? extends ZookeeperParameters> zookeeperParameters, DatacenterNameProvider datacenterNameProvider) {
+    this.zookeeperParameters = new ArrayList<>(zookeeperParameters);
     this.datacenterNameProvider = datacenterNameProvider;
   }
 
@@ -41,26 +38,9 @@ public class ZookeeperClientManager {
 
   private void createClients() {
     clients =
-        getClusterProperties().stream()
-            .map(clusterProperties -> buildZookeeperClient(clusterProperties, properties))
+        zookeeperParameters.stream()
+            .map(this::buildZookeeperClient)
             .collect(Collectors.toList());
-  }
-
-  private List<StorageProperties> getClusterProperties() {
-    if (properties.getClusters().isEmpty()) {
-      return Collections.singletonList(createPropertiesForSingleCluster());
-    } else {
-      return properties.getClusters();
-    }
-  }
-
-  private StorageProperties createPropertiesForSingleCluster() {
-    StorageProperties clusterProperties = new StorageProperties();
-    clusterProperties.setConnectionString(properties.getConnectionString());
-    clusterProperties.setConnectionTimeout(properties.getConnectTimeout());
-    clusterProperties.setSessionTimeout(properties.getSessionTimeout());
-    clusterProperties.setDatacenter(DefaultDatacenterNameProvider.DEFAULT_DC_NAME);
-    return clusterProperties;
   }
 
   private void selectLocalClient() {
@@ -76,44 +56,40 @@ public class ZookeeperClientManager {
     }
   }
 
-  private ZookeeperClient buildZookeeperClient(
-      StorageProperties clusterProperties, StorageClustersProperties commonProperties) {
+  private ZookeeperClient buildZookeeperClient(ZookeeperParameters parameters) {
     return new ZookeeperClient(
-        buildCuratorFramework(clusterProperties, commonProperties),
-        clusterProperties.getDatacenter());
+        buildCuratorFramework(parameters),
+        parameters.getDatacenter());
   }
 
-  private CuratorFramework buildCuratorFramework(
-      StorageProperties clusterProperties, StorageClustersProperties commonProperties) {
+  private CuratorFramework buildCuratorFramework(ZookeeperParameters parameters) {
     ExponentialBackoffRetry retryPolicy =
         new ExponentialBackoffRetry(
-            commonProperties.getRetrySleep(), commonProperties.getRetryTimes());
+                (int) parameters.getBaseSleepTime().toMillis(), parameters.getMaxRetries());
 
     CuratorFrameworkFactory.Builder builder =
         CuratorFrameworkFactory.builder()
-            .connectString(clusterProperties.getConnectionString())
-            .sessionTimeoutMs((int) clusterProperties.getSessionTimeout().toMillis())
-            .connectionTimeoutMs((int) clusterProperties.getConnectionTimeout().toMillis())
+            .connectString(parameters.getConnectionString())
+            .sessionTimeoutMs((int) parameters.getSessionTimeout().toMillis())
+            .connectionTimeoutMs((int) parameters.getConnectionTimeout().toMillis())
             .retryPolicy(retryPolicy);
 
-    Optional.ofNullable(commonProperties.getAuthorization())
-        .ifPresent(
-            it -> {
-              builder.authorization(
-                  it.getScheme(), (it.getUser() + ":" + it.getPassword()).getBytes());
-              builder.aclProvider(
-                  new ACLProvider() {
-                    @Override
-                    public List<ACL> getDefaultAcl() {
-                      return ZooDefs.Ids.CREATOR_ALL_ACL;
-                    }
+    if (parameters.isAuthenticationEnabled()) {
+      builder.authorization(
+          parameters.getScheme(), (parameters.getUser() + ":" + parameters.getPassword()).getBytes());
+      builder.aclProvider(
+          new ACLProvider() {
+            @Override
+            public List<ACL> getDefaultAcl() {
+              return ZooDefs.Ids.CREATOR_ALL_ACL;
+            }
 
-                    @Override
-                    public List<ACL> getAclForPath(String path) {
-                      return ZooDefs.Ids.CREATOR_ALL_ACL;
-                    }
-                  });
-            });
+            @Override
+            public List<ACL> getAclForPath(String path) {
+              return ZooDefs.Ids.CREATOR_ALL_ACL;
+            }
+          });
+    }
 
     CuratorFramework curator = builder.build();
     curator.start();
@@ -151,3 +127,4 @@ public class ZookeeperClientManager {
     return clients;
   }
 }
+

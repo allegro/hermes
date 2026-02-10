@@ -17,8 +17,8 @@ public class KafkaProperties implements KafkaParameters {
 
   private Duration adminRequestTimeout = Duration.ofMinutes(5);
 
-  public void setAuthentication(KafkaAuthenticationProperties authorization) {
-    this.authentication = authorization;
+  public void setAuthentication(KafkaAuthenticationProperties authentication) {
+    this.authentication = authentication;
   }
 
   public String getDatacenter() {

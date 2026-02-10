@@ -1,8 +1,8 @@
 package pl.allegro.tech.hermes.management.infrastructure.zookeeper
 
 import pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProvider
-import pl.allegro.tech.hermes.management.config.storage.StorageClustersProperties
-import pl.allegro.tech.hermes.management.config.storage.StorageProperties
+import pl.allegro.tech.hermes.management.config.zookeeper.ZookeeperClustersProperties
+import pl.allegro.tech.hermes.management.config.zookeeper.ZookeeperProperties
 import pl.allegro.tech.hermes.management.utils.MultiZookeeperIntegrationTest
 
 class ZookeeperClientManagerTest extends MultiZookeeperIntegrationTest {
@@ -69,7 +69,7 @@ class ZookeeperClientManagerTest extends MultiZookeeperIntegrationTest {
         def topLevelConnectionString = "localhost:$DC_1_ZOOKEEPER_PORT"
 
         and:
-        def properties = new StorageClustersProperties()
+        def properties = new ZookeeperClustersProperties()
         properties.setConnectionString(topLevelConnectionString)
 
         and:
@@ -88,7 +88,7 @@ class ZookeeperClientManagerTest extends MultiZookeeperIntegrationTest {
     }
 
     static buildZookeeperClientManager(String dc = "dc1") {
-        def properties = new StorageClustersProperties()
+        def properties = new ZookeeperClustersProperties()
         properties.setClusters([
             buildStorageProperties("localhost:$DC_1_ZOOKEEPER_PORT", DC_1_NAME),
             buildStorageProperties("localhost:$DC_2_ZOOKEEPER_PORT", DC_2_NAME)
@@ -96,12 +96,12 @@ class ZookeeperClientManagerTest extends MultiZookeeperIntegrationTest {
         return new ZookeeperClientManager(properties, new TestDatacenterNameProvider(dc))
     }
 
-    static buildZookeeperClientManager(StorageClustersProperties properties) {
+    static buildZookeeperClientManager(ZookeeperClustersProperties properties) {
         return new ZookeeperClientManager(properties, new DefaultDatacenterNameProvider())
     }
 
     static buildStorageProperties(String connectionString, String dcName) {
-        def clusterProperties = new StorageProperties()
+        def clusterProperties = new ZookeeperProperties()
         clusterProperties.setConnectionString(connectionString)
         clusterProperties.setDatacenter(dcName)
         return clusterProperties

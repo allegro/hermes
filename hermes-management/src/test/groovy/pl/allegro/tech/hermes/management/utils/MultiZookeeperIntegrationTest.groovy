@@ -2,8 +2,8 @@ package pl.allegro.tech.hermes.management.utils
 
 import org.apache.curator.test.TestingServer
 import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider
-import pl.allegro.tech.hermes.management.config.storage.StorageClustersProperties
-import pl.allegro.tech.hermes.management.config.storage.StorageProperties
+import pl.allegro.tech.hermes.management.config.zookeeper.ZookeeperClustersProperties
+import pl.allegro.tech.hermes.management.config.zookeeper.ZookeeperProperties
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClient
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClientManager
 import pl.allegro.tech.hermes.test.helper.util.Ports
@@ -55,9 +55,9 @@ abstract class MultiZookeeperIntegrationTest extends Specification {
     }
 
     static buildZookeeperClientManager(String dc = "dc1") {
-        def properties = new StorageClustersProperties(clusters: [
-                new StorageProperties(connectionString: "localhost:$DC_1_ZOOKEEPER_PORT", datacenter: DC_1_NAME),
-                new StorageProperties(connectionString: "localhost:$DC_2_ZOOKEEPER_PORT", datacenter: DC_2_NAME)
+        def properties = new ZookeeperClustersProperties(clusters: [
+                new ZookeeperProperties(connectionString: "localhost:$DC_1_ZOOKEEPER_PORT", datacenter: DC_1_NAME),
+                new ZookeeperProperties(connectionString: "localhost:$DC_2_ZOOKEEPER_PORT", datacenter: DC_2_NAME)
         ])
         new ZookeeperClientManager(properties, new TestDatacenterNameProvider(dc))
     }

@@ -13,7 +13,7 @@ import pl.allegro.tech.hermes.domain.topic.TopicNotExistsException
 import pl.allegro.tech.hermes.domain.topic.TopicRepository
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths
 import pl.allegro.tech.hermes.management.config.ConsistencyCheckerProperties
-import pl.allegro.tech.hermes.management.config.storage.DefaultZookeeperGroupRepositoryFactory
+import pl.allegro.tech.hermes.management.config.zookeeper.DefaultZookeeperGroupRepositoryFactory
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor
 import pl.allegro.tech.hermes.management.domain.group.commands.CreateGroupRepositoryCommand
 import pl.allegro.tech.hermes.management.domain.mode.ModeService
