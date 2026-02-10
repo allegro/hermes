@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.management.config.storage;
+package pl.allegro.tech.hermes.management.config.zookeeper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.curator.framework.CuratorFramework;

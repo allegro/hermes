@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import pl.allegro.tech.hermes.api.SubscriptionName
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths
-import pl.allegro.tech.hermes.management.config.storage.DefaultZookeeperGroupRepositoryFactory
+import pl.allegro.tech.hermes.management.config.zookeeper.DefaultZookeeperGroupRepositoryFactory
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor
 import pl.allegro.tech.hermes.management.domain.mode.ModeService
 import pl.allegro.tech.hermes.management.domain.subscription.consumergroup.ConsumerGroupToDelete

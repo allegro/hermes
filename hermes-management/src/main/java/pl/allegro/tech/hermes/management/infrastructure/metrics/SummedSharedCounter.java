@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.management.infrastructure.metrics;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
@@ -22,8 +23,8 @@ public class SummedSharedCounter {
 
   public SummedSharedCounter(
       List<ZookeeperClient> zookeeperClients,
-      int expireAfter,
-      int distributedLoaderBackoff,
+      Duration expireAfter,
+      Duration distributedLoaderBackoff,
       int distributedLoaderRetries) {
     this.counterAggregators =
         buildLoadingCache(
@@ -52,17 +53,17 @@ public class SummedSharedCounter {
 
   private LoadingCache<String, CounterAggregator> buildLoadingCache(
       List<ZookeeperClient> zookeeperClients,
-      int expireAfter,
-      int distributedLoaderBackoff,
+      Duration expireAfter,
+      Duration distributedLoaderBackoff,
       int distributedLoaderRetries) {
     return CacheBuilder.newBuilder()
-        .expireAfterAccess(expireAfter, TimeUnit.HOURS)
+        .expireAfterAccess(expireAfter.toHours(), TimeUnit.HOURS)
         .build(
             new CacheLoader<>() {
               @Override
               public CounterAggregator load(String key) {
                 return new CounterAggregator(
-                    key, zookeeperClients, distributedLoaderBackoff, distributedLoaderRetries);
+                    key, zookeeperClients, (int) distributedLoaderBackoff.toMillis(), distributedLoaderRetries);
               }
             });
   }

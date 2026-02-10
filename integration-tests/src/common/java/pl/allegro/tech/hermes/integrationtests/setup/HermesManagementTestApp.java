@@ -168,7 +168,7 @@ public class HermesManagementTestApp implements HermesTestApp {
     args.add("--kafka.namespace=itTest");
     for (Map.Entry<String, KafkaContainerCluster> kafka : kafkaClusters.entrySet()) {
       args.add("--kafka.clusters[" + idx + "].datacenter=" + kafka.getKey());
-      args.add("--kafka.clusters[" + idx + "].clusterName=primary-dc");
+      args.add("--kafka.clusters[" + idx + "].clusterName=primary-" + kafka.getKey());
       args.add(
           "--kafka.clusters["
               + idx
@@ -186,7 +186,6 @@ public class HermesManagementTestApp implements HermesTestApp {
     }
 
     args.add("--topic.removeSchema=" + true);
-    args.add("--storage.pathPrefix=" + "/hermes");
     args.add("--subscription.subscribersWithAccessToAnyTopic[0].ownerSource=" + "Plaintext");
     args.add(
         "--subscription.subscribersWithAccessToAnyTopic[0].ownerId="

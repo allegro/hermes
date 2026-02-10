@@ -3,7 +3,6 @@ zookeeper:
 
 
 storage:
-  pathPrefix: /run/hermes
   clusters:
     - datacenter: dc
       root: /run/hermes

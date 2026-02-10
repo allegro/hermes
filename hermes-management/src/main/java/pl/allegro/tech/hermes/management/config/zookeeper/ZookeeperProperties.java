@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.consumers.config;
+package pl.allegro.tech.hermes.management.config.zookeeper;
 
 import java.time.Duration;
 import pl.allegro.tech.hermes.common.di.factories.ZookeeperParameters;
@@ -25,13 +25,21 @@ public class ZookeeperProperties implements ZookeeperParameters {
 
   private ZookeeperAuthenticationProperties authentication = new ZookeeperAuthenticationProperties();
 
-  @Override
   public String getConnectionString() {
     return connectionString;
   }
 
   public void setConnectionString(String connectionString) {
     this.connectionString = connectionString;
+  }
+
+  @Override
+  public Duration getSessionTimeout() {
+    return sessionTimeout;
+  }
+
+  public void setSessionTimeout(Duration sessionTimeout) {
+    this.sessionTimeout = sessionTimeout;
   }
 
   public String getDatacenter() {
@@ -43,12 +51,26 @@ public class ZookeeperProperties implements ZookeeperParameters {
   }
 
   @Override
+  public boolean isAuthenticationEnabled() {
+    return authentication.enabled;
+  }
+
+  @Override
   public Duration getBaseSleepTime() {
     return baseSleepTime;
   }
 
   public void setBaseSleepTime(Duration baseSleepTime) {
     this.baseSleepTime = baseSleepTime;
+  }
+
+  @Override
+  public Duration getConnectionTimeout() {
+    return connectionTimeout;
+  }
+
+  public void setConnectionTimeout(Duration connectionTimeout) {
+    this.connectionTimeout = connectionTimeout;
   }
 
   @Override
@@ -70,21 +92,12 @@ public class ZookeeperProperties implements ZookeeperParameters {
   }
 
   @Override
-  public Duration getConnectionTimeout() {
-    return connectionTimeout;
+  public int getProcessingThreadPoolSize() {
+    return processingThreadPoolSize;
   }
 
-  public void setConnectionTimeout(Duration connectionTimeout) {
-    this.connectionTimeout = connectionTimeout;
-  }
-
-  @Override
-  public Duration getSessionTimeout() {
-    return sessionTimeout;
-  }
-
-  public void setSessionTimeout(Duration sessionTimeout) {
-    this.sessionTimeout = sessionTimeout;
+  public void setProcessingThreadPoolSize(int processingThreadPoolSize) {
+    this.processingThreadPoolSize = processingThreadPoolSize;
   }
 
   @Override
@@ -94,16 +107,6 @@ public class ZookeeperProperties implements ZookeeperParameters {
 
   public void setRoot(String root) {
     this.root = root;
-  }
-
-  @Override
-  public int getProcessingThreadPoolSize() {
-    return processingThreadPoolSize;
-  }
-
-  @Override
-  public boolean isAuthenticationEnabled() {
-    return authentication.enabled;
   }
 
   @Override
@@ -121,19 +124,16 @@ public class ZookeeperProperties implements ZookeeperParameters {
     return authentication.password;
   }
 
-  public void setProcessingThreadPoolSize(int processingThreadPoolSize) {
-    this.processingThreadPoolSize = processingThreadPoolSize;
-  }
 
   public ZookeeperAuthenticationProperties getAuthentication() {
-    return authentication;
-  }
+        return authentication;
+    }
 
-  public void setAuthentication(ZookeeperAuthenticationProperties authentication) {
-    this.authentication = authentication;
-  }
+    public void setAuthentication(ZookeeperAuthenticationProperties authentication) {
+        this.authentication = authentication;
+    }
 
-  public static class ZookeeperAuthenticationProperties {
+    public static class ZookeeperAuthenticationProperties {
 
     private boolean enabled = false;
 
