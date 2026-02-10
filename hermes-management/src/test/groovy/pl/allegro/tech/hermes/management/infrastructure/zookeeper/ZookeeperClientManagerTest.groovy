@@ -69,11 +69,12 @@ class ZookeeperClientManagerTest extends MultiZookeeperIntegrationTest {
         def topLevelConnectionString = "localhost:$DC_1_ZOOKEEPER_PORT"
 
         and:
-        def properties = new ZookeeperClustersProperties()
-        properties.setConnectionString(topLevelConnectionString)
+        def clusterProperties = new ZookeeperProperties()
+        clusterProperties.setConnectionString(topLevelConnectionString)
+        clusterProperties.setDatacenter("dc")
 
         and:
-        def manager = buildZookeeperClientManager(properties)
+        def manager = new ZookeeperClientManager([clusterProperties], new DefaultDatacenterNameProvider())
 
         when:
         manager.start()
@@ -93,11 +94,7 @@ class ZookeeperClientManagerTest extends MultiZookeeperIntegrationTest {
             buildStorageProperties("localhost:$DC_1_ZOOKEEPER_PORT", DC_1_NAME),
             buildStorageProperties("localhost:$DC_2_ZOOKEEPER_PORT", DC_2_NAME)
         ])
-        return new ZookeeperClientManager(properties, new TestDatacenterNameProvider(dc))
-    }
-
-    static buildZookeeperClientManager(ZookeeperClustersProperties properties) {
-        return new ZookeeperClientManager(properties, new DefaultDatacenterNameProvider())
+        return new ZookeeperClientManager(properties.getClusters(), new TestDatacenterNameProvider(dc))
     }
 
     static buildStorageProperties(String connectionString, String dcName) {
