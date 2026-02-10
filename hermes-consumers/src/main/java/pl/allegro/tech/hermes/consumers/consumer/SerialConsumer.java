@@ -134,14 +134,11 @@ public class SerialConsumer implements Consumer {
         if (message.isFiltered()) {
           profiler.flushMeasurements(ConsumerRun.FILTERED);
         } else {
-          if (logger.isDebugEnabled()) {
-            logger.debug(
-                "Read message {} partition {} offset {}",
-                message.getContentType(),
-                message.getPartition(),
-                message.getOffset());
-          }
-
+          logger.debug(
+              "Read message {} partition {} offset {}",
+              message.getContentType(),
+              message.getPartition(),
+              message.getOffset());
           Message convertedMessage =
               messageConverterResolver.converterFor(message, subscription).convert(message, topic);
           sendMessage(convertedMessage, profiler);

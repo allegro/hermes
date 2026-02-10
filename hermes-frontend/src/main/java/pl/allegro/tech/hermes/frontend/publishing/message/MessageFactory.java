@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.frontend.publishing.message;
 
 import static java.util.Optional.of;
+import static pl.allegro.tech.hermes.common.logging.LoggingFields.TOPIC_NAME;
 
 import io.undertow.util.HeaderMap;
 import io.undertow.util.Headers;
@@ -73,15 +74,21 @@ public class MessageFactory {
             try {
               createAvroMessage(headerMap, topic, messageId, messageContent, timestamp);
             } catch (AvroConversionException exception) {
-              logger.warn(
-                  "Unsuccessful message conversion from JSON to AVRO on topic {} in dry run mode",
-                  topic.getQualifiedName(),
-                  exception);
+              logger
+                  .atWarn()
+                  .addKeyValue(TOPIC_NAME, topic.getQualifiedName())
+                  .setCause(exception)
+                  .log(
+                      "Unsuccessful message conversion from JSON to AVRO on topic {} in dry run mode",
+                      topic.getQualifiedName());
             } catch (WrappingException | AvroInvalidMetadataException exception) {
-              logger.warn(
-                  "Unsuccessful wrapping of AVRO message on topic {} in dry run mode",
-                  topic.getQualifiedName(),
-                  exception);
+              logger
+                  .atWarn()
+                  .addKeyValue(TOPIC_NAME, topic.getQualifiedName())
+                  .setCause(exception)
+                  .log(
+                      "Unsuccessful wrapping of AVRO message on topic {} in dry run mode",
+                      topic.getQualifiedName());
             }
           }
           return createJsonMessage(headerMap, messageId, messageContent, timestamp);
