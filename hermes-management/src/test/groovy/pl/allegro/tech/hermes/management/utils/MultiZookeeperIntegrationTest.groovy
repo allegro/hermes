@@ -1,8 +1,8 @@
 package pl.allegro.tech.hermes.management.utils
 
+import java.time.Duration
 import org.apache.curator.test.TestingServer
 import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider
-import pl.allegro.tech.hermes.management.config.zookeeper.ZookeeperClustersProperties
 import pl.allegro.tech.hermes.management.config.zookeeper.ZookeeperProperties
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClient
 import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperClientManager
@@ -55,11 +55,22 @@ abstract class MultiZookeeperIntegrationTest extends Specification {
     }
 
     static buildZookeeperClientManager(String dc = "dc1") {
-        def properties = new ZookeeperClustersProperties(clusters: [
-                new ZookeeperProperties(connectionString: "localhost:$DC_1_ZOOKEEPER_PORT", datacenter: DC_1_NAME),
-                new ZookeeperProperties(connectionString: "localhost:$DC_2_ZOOKEEPER_PORT", datacenter: DC_2_NAME)
-        ])
-        new ZookeeperClientManager(properties, new TestDatacenterNameProvider(dc))
+        def clusters = [
+                buildZookeeperProperties("localhost:$DC_1_ZOOKEEPER_PORT", DC_1_NAME),
+                buildZookeeperProperties("localhost:$DC_2_ZOOKEEPER_PORT", DC_2_NAME)
+        ]
+        new ZookeeperClientManager(clusters, new TestDatacenterNameProvider(dc))
+    }
+
+    static buildZookeeperProperties(String connectionString, String datacenter) {
+        def properties = new ZookeeperProperties()
+        properties.setConnectionString(connectionString)
+        properties.setDatacenter(datacenter)
+        properties.setBaseSleepTime(Duration.ofMillis(100))
+        properties.setMaxRetries(3)
+        properties.setConnectionTimeout(Duration.ofSeconds(2))
+        properties.setSessionTimeout(Duration.ofSeconds(5))
+        return properties
     }
 
     static findClientByDc(List<ZookeeperClient> clients, String dcName) {
