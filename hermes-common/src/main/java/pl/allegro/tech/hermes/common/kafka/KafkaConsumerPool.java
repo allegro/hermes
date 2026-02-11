@@ -90,8 +90,7 @@ public class KafkaConsumerPool {
 
       Properties props = new Properties();
       props.put(BOOTSTRAP_SERVERS_CONFIG, configuredBootstrapServers);
-      props.put(
-          GROUP_ID_CONFIG, poolConfig.idPrefix() + "_" + poolConfig.consumerGroupName());
+      props.put(GROUP_ID_CONFIG, poolConfig.idPrefix() + "_" + poolConfig.consumerGroupName());
       props.put(RECEIVE_BUFFER_CONFIG, poolConfig.bufferSizeBytes());
       props.put(ENABLE_AUTO_COMMIT_CONFIG, false);
       props.put(FETCH_MAX_WAIT_MS_CONFIG, poolConfig.fetchMaxWaitMillis());
