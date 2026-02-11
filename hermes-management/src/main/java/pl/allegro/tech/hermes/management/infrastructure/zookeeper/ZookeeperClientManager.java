@@ -25,7 +25,8 @@ public class ZookeeperClientManager {
   private ZookeeperClient localClient;
 
   public ZookeeperClientManager(
-          List<? extends ZookeeperParameters> zookeeperParameters, DatacenterNameProvider datacenterNameProvider) {
+      List<? extends ZookeeperParameters> zookeeperParameters,
+      DatacenterNameProvider datacenterNameProvider) {
     this.zookeeperParameters = new ArrayList<>(zookeeperParameters);
     this.datacenterNameProvider = datacenterNameProvider;
   }
@@ -38,9 +39,7 @@ public class ZookeeperClientManager {
 
   private void createClients() {
     clients =
-        zookeeperParameters.stream()
-            .map(this::buildZookeeperClient)
-            .collect(Collectors.toList());
+        zookeeperParameters.stream().map(this::buildZookeeperClient).collect(Collectors.toList());
   }
 
   private void selectLocalClient() {
@@ -57,15 +56,13 @@ public class ZookeeperClientManager {
   }
 
   private ZookeeperClient buildZookeeperClient(ZookeeperParameters parameters) {
-    return new ZookeeperClient(
-        buildCuratorFramework(parameters),
-        parameters.getDatacenter());
+    return new ZookeeperClient(buildCuratorFramework(parameters), parameters.getDatacenter());
   }
 
   private CuratorFramework buildCuratorFramework(ZookeeperParameters parameters) {
     ExponentialBackoffRetry retryPolicy =
         new ExponentialBackoffRetry(
-                (int) parameters.getBaseSleepTime().toMillis(), parameters.getMaxRetries());
+            (int) parameters.getBaseSleepTime().toMillis(), parameters.getMaxRetries());
 
     CuratorFrameworkFactory.Builder builder =
         CuratorFrameworkFactory.builder()
@@ -76,7 +73,8 @@ public class ZookeeperClientManager {
 
     if (parameters.isAuthenticationEnabled()) {
       builder.authorization(
-          parameters.getScheme(), (parameters.getUser() + ":" + parameters.getPassword()).getBytes());
+          parameters.getScheme(),
+          (parameters.getUser() + ":" + parameters.getPassword()).getBytes());
       builder.aclProvider(
           new ACLProvider() {
             @Override
@@ -127,4 +125,3 @@ public class ZookeeperClientManager {
     return clients;
   }
 }
-

@@ -23,7 +23,8 @@ public class ZookeeperProperties implements ZookeeperParameters {
 
   private int processingThreadPoolSize = 5;
 
-  private ZookeeperAuthenticationProperties authentication = new ZookeeperAuthenticationProperties();
+  private ZookeeperAuthenticationProperties authentication =
+      new ZookeeperAuthenticationProperties();
 
   @Override
   public String getConnectionString() {

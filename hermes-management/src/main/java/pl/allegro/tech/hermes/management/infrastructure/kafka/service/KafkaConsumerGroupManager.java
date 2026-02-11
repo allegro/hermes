@@ -51,7 +51,7 @@ public class KafkaConsumerGroupManager implements ConsumerGroupManager {
     logger.info(
         "Creating consumer group for subscription {}, cluster: {}",
         subscription.getQualifiedName(),
-            clusterName);
+        clusterName);
 
     KafkaConsumer<byte[], byte[]> kafkaConsumer =
         consumerManager.createConsumer(subscription.getQualifiedName());
@@ -81,12 +81,12 @@ public class KafkaConsumerGroupManager implements ConsumerGroupManager {
       logger.info(
           "Successfully created consumer group for subscription {}, cluster: {}",
           subscription.getQualifiedName(),
-              clusterName);
+          clusterName);
     } catch (Exception e) {
       logger.error(
           "Failed to create consumer group for subscription {}, cluster: {}",
           subscription.getQualifiedName(),
-              clusterName,
+          clusterName,
           e);
     }
   }
@@ -95,9 +95,7 @@ public class KafkaConsumerGroupManager implements ConsumerGroupManager {
   public void deleteConsumerGroup(SubscriptionName subscriptionName)
       throws ConsumerGroupDeletionException {
     logger.info(
-        "Deleting consumer group for subscription {}, cluster: {}",
-        subscriptionName,
-            clusterName);
+        "Deleting consumer group for subscription {}, cluster: {}", subscriptionName, clusterName);
 
     try {
       ConsumerGroupId groupId = kafkaNamesMapper.toConsumerGroupId(subscriptionName);
@@ -109,21 +107,21 @@ public class KafkaConsumerGroupManager implements ConsumerGroupManager {
       logger.info(
           "Successfully deleted consumer group for subscription {}, cluster: {}",
           subscriptionName,
-              clusterName);
+          clusterName);
 
     } catch (ExecutionException | InterruptedException e) {
       if (e.getCause() instanceof GroupIdNotFoundException) {
         logger.info(
             "Consumer group for subscription {} not found, cluster: {}",
             subscriptionName,
-                clusterName);
+            clusterName);
         return;
       }
 
       logger.error(
           "Failed to delete consumer group for subscription {}, cluster: {}",
           subscriptionName,
-              clusterName,
+          clusterName,
           e);
       throw new ConsumerGroupDeletionException(subscriptionName, e);
     }

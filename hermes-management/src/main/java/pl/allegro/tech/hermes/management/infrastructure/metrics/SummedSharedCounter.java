@@ -63,7 +63,10 @@ public class SummedSharedCounter {
               @Override
               public CounterAggregator load(String key) {
                 return new CounterAggregator(
-                    key, zookeeperClients, (int) distributedLoaderBackoff.toMillis(), distributedLoaderRetries);
+                    key,
+                    zookeeperClients,
+                    (int) distributedLoaderBackoff.toMillis(),
+                    distributedLoaderRetries);
               }
             });
   }

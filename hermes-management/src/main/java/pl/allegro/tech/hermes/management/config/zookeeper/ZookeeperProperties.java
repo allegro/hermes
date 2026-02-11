@@ -23,7 +23,8 @@ public class ZookeeperProperties implements ZookeeperParameters {
 
   private int processingThreadPoolSize = 5;
 
-  private ZookeeperAuthenticationProperties authentication = new ZookeeperAuthenticationProperties();
+  private ZookeeperAuthenticationProperties authentication =
+      new ZookeeperAuthenticationProperties();
 
   public String getConnectionString() {
     return connectionString;
@@ -124,16 +125,15 @@ public class ZookeeperProperties implements ZookeeperParameters {
     return authentication.password;
   }
 
-
   public ZookeeperAuthenticationProperties getAuthentication() {
-        return authentication;
-    }
+    return authentication;
+  }
 
-    public void setAuthentication(ZookeeperAuthenticationProperties authentication) {
-        this.authentication = authentication;
-    }
+  public void setAuthentication(ZookeeperAuthenticationProperties authentication) {
+    this.authentication = authentication;
+  }
 
-    public static class ZookeeperAuthenticationProperties {
+  public static class ZookeeperAuthenticationProperties {
 
     private boolean enabled = false;
 

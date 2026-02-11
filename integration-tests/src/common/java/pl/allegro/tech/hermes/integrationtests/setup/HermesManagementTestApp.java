@@ -182,15 +182,18 @@ public class HermesManagementTestApp implements HermesTestApp {
     args.add("--management.topic.allowRemoval=" + true);
     if (auditEventPort != -1) {
       args.add("--management.audit.isEventAuditEnabled=" + true);
-      args.add("--management.audit.eventUrl=" + "http://localhost:" + auditEventPort + AUDIT_EVENT_PATH);
+      args.add(
+          "--management.audit.eventUrl=" + "http://localhost:" + auditEventPort + AUDIT_EVENT_PATH);
     }
 
     args.add("--management.topic.removeSchema=" + true);
-    args.add("--management.subscription.subscribersWithAccessToAnyTopic[0].ownerSource=" + "Plaintext");
+    args.add(
+        "--management.subscription.subscribersWithAccessToAnyTopic[0].ownerSource=" + "Plaintext");
     args.add(
         "--management.subscription.subscribersWithAccessToAnyTopic[0].ownerId="
             + "subscriberAllowedToAccessAnyTopic");
-    args.add("--management.subscription.subscribersWithAccessToAnyTopic[0].protocols=" + "http, https");
+    args.add(
+        "--management.subscription.subscribersWithAccessToAnyTopic[0].protocols=" + "http, https");
     args.add("--management.group.allowedGroupNameRegex=" + "[a-zA-Z0-9_.-]+");
     args.add("--management.group.nonAdminCreationEnabled=" + true);
     args.add("--management.schema.repository.type=schema_registry");
