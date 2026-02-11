@@ -24,7 +24,6 @@ management:
       exposure:
         include: health, prometheus
   health:
-    periodSeconds: 30
     enabled: true
   leadership:
     zookeeper-dc: dc
