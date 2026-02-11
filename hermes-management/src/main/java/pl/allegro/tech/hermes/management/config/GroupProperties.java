@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.management.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "group")
+@ConfigurationProperties(prefix = "management.group")
 public class GroupProperties {
 
   private boolean nonAdminCreationEnabled = false;

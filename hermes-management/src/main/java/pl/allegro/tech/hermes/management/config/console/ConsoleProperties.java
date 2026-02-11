@@ -12,7 +12,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * This class could have a much better structure, however it has this one due to compatibility with
  * old JSON config file format.
  */
-@ConfigurationProperties(prefix = "console")
+@ConfigurationProperties(prefix = "management.console")
 public class ConsoleProperties {
   private Console console = new Console();
   private Dashboard dashboard = new Dashboard();

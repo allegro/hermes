@@ -1,48 +1,3 @@
-console:
-  console:
-    title: hermes console
-    knownEnvironments:
-      - name: localhost
-        url: http://localhost:8090
-      - name: also-localhost
-        url: http://127.0.0.1:8090
-  dashboard:
-    metrics: http://localhost:8082
-    docs: http://hermes-pubsub.rtfd.org
-  metrics:
-    fetchingDashboardUrlEnabled: false
-  auth:
-    oauth:
-      enabled: false
-      url: localhost:8092/auth
-      clientId: hermes
-      scope: hermes
-  topic:
-    messagePreviewEnabled: true
-    offline-retransmission:
-      enabled: true
-    offlineClientsEnabled: false
-    readOnlyModeEnabled: false
-    retentionUnits:
-      - value: HOURS
-        label: HOURS
-      - value: DAYS
-        label: DAYS
-  subscription:
-    deliveryTypes:
-      - value: SERIAL
-        label: SERIAL
-      - value: BATCH
-        label: BATCH
-prometheus:
-  client:
-    enabled: true
-
-management:
-  server:
-    servlet:
-      context-path: /
-
 spring:
   main:
     allow-bean-definition-overriding: true
@@ -53,3 +8,47 @@ spring:
   mvc:
     servlet:
       path: /
+
+management:
+  server:
+    servlet:
+      context-path: /
+  console:
+    console:
+      title: hermes console
+      knownEnvironments:
+        - name: localhost
+          url: http://localhost:8090
+        - name: also-localhost
+          url: http://127.0.0.1:8090
+    dashboard:
+      metrics: http://localhost:8082
+      docs: http://hermes-pubsub.rtfd.org
+    metrics:
+      fetchingDashboardUrlEnabled: false
+    auth:
+      oauth:
+        enabled: false
+        url: localhost:8092/auth
+        clientId: hermes
+        scope: hermes
+    topic:
+      messagePreviewEnabled: true
+      offline-retransmission:
+        enabled: true
+      offlineClientsEnabled: false
+      readOnlyModeEnabled: false
+      retentionUnits:
+        - value: HOURS
+          label: HOURS
+        - value: DAYS
+          label: DAYS
+    subscription:
+      deliveryTypes:
+        - value: SERIAL
+          label: SERIAL
+        - value: BATCH
+          label: BATCH
+  prometheus:
+    client:
+      enabled: true

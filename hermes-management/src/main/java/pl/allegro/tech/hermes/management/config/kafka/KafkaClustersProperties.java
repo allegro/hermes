@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "kafka")
+@ConfigurationProperties(prefix = "management.kafka")
 public class KafkaClustersProperties {
 
   private List<KafkaProperties> clusters = new ArrayList<>();

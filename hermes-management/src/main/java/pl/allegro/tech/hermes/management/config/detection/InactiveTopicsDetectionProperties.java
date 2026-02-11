@@ -5,7 +5,7 @@ import java.util.Set;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.management.domain.detection.InactiveTopicsDetectionParameters;
 
-@ConfigurationProperties(prefix = "detection.inactive-topics")
+@ConfigurationProperties(prefix = "management.detection.inactive-topics")
 public record InactiveTopicsDetectionProperties(
     Duration inactivityThreshold,
     Duration nextNotificationThreshold,

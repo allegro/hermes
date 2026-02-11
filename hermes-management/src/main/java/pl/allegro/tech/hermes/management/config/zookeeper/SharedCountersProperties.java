@@ -3,7 +3,7 @@ package pl.allegro.tech.hermes.management.config.zookeeper;
 import java.time.Duration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "storage.shared-counters")
+@ConfigurationProperties(prefix = "management.storage.shared-counters")
 public class SharedCountersProperties {
 
   private int retryTimes = 3;
