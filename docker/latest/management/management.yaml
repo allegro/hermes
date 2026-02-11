@@ -22,7 +22,7 @@ management:
   rest-template:
     connect-timeout: 2000
     read-timeout: 2000
-  server:
+  backend:
     port: 8090
     servlet:
       context-path: /

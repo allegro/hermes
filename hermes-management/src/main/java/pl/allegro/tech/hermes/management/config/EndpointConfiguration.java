@@ -11,14 +11,8 @@ import pl.allegro.tech.hermes.management.api.auth.SecurityProvider;
 @EnableConfigurationProperties(JerseyProperties.class)
 public class EndpointConfiguration {
 
-  private final JerseyProperties jerseyProperties;
-
-  public EndpointConfiguration(JerseyProperties jerseyProperties) {
-    this.jerseyProperties = jerseyProperties;
-  }
-
   @Bean
-  JerseyResourceConfig resourceConfig() {
+  JerseyResourceConfig resourceConfig(JerseyProperties jerseyProperties) {
     return new JerseyResourceConfig(jerseyProperties);
   }
 

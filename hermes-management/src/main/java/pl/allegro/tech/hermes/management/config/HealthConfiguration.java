@@ -36,7 +36,7 @@ public class HealthConfiguration {
         objectMapper,
         modeService,
         meterRegistry,
-        healthProperties.getPeriodSeconds(),
+        healthProperties.getPeriod(),
         healthProperties.isEnabled());
   }
 }
