@@ -59,18 +59,17 @@ Frontend, Consumers and Management options:
 | {modulePrefix}.kafka.brokerList  | list of all brokers in the cluster (or at least some contact points); separated with ',' | localhost:9092 |
 | {modulePrefix}.kafka.clusterName | name of Kafka cluster (relevant only when connecting to multiple clusters)               | primary-dc     |
 
-Zookeeper connection specific options (retries etc) are read from Metadata Zookeeper options.
-
 Management module can connect to multiple Kafka clusters at once (see [section below](#multiple-kafka-and-zookeeper-clusters)), thus
 when specifying connection option is done per cluster. Simple configuration for single cluster looks following:
 
 ```yaml
-kafka:
-  namespace: // namespace shared by all clusters, default: <empty>
-  clusters:
-    -
-      clusterName: // name of cluster, can be any arbitrary string, default: primary
-      connectionString: // connection string to cluster Zookeeper, default: localhost:2181
+management:
+  kafka:
+    namespace: // namespace shared by all clusters, default: <empty>
+    clusters:
+      -
+        clusterName: // name of cluster, can be any arbitrary string, default: primary-dc
+        brokerList: // connection string to cluster, default: localhost:9092
 ```
 
 ### Multiple Kafka and Zookeeper clusters
@@ -92,43 +91,42 @@ This is the schematics of two data center architecture:
   * connects to all Zookeeper clusters and keeps metadata in-sync
 
 Configuring Frontend and Consumers is easy: use configuration options from [previous chapter](#single-kafka-cluster) to
-connect to given clusters. Remember about specifying proper `kafka.cluster.name`.
+connect to given clusters. Remember about specifying proper `{modulePrefix}.kafka.clusterName`.
 
 Since Management instances need to know all clusters, their configuration is bit more complex. Example configuration for
 the schematics provided above:
 
 ```yaml
-kafka:
-  clusters:
-    -
-      datacenter: dc1
-      clusterName: kafka_primary
-      connectionString: kafka-zookeeper:2181/clusters/dc1
-    -
-      datacenter: dc2
-      clusterName: kafka_secondary
-      connectionString: kafka-zookeeper:2181/clusters/dc2
-
-storage:
-  pathPrefix: /run/hermes
-  clusters:
-    -
-      datacenter: dc1
-      clusterName: zk1
-      connectionString: metadata-zookeeper.dc1:2181
-    -
-      datacenter: dc2
-      clusterName: zk2
-      connectionString: metadata-zookeeper.dc2:2181
+management:
+  kafka:
+    clusters:
+      -
+        datacenter: dc1
+        clusterName: kafka_primary
+        brokerList: kafka-zookeeper-dc1:2181
+      -
+        datacenter: dc2
+        clusterName: kafka_secondary
+        brokerList: kafka-zookeeper-dc2:2181
+  
+  zookeeper:
+    clusters:
+      -
+        root: /hermes
+        datacenter: dc1
+        connectionString: zookeeper-dc1:2181
+      -
+        root: /hermes
+        datacenter: dc2
+        connectionString: zookeeper-dc2:2181
 ```
 
 ### Multiple Hermes on single Kafka cluster
 
 It’s also possible to run multiple Hermes clusters on a single Kafka cluster, e.g. to separate different test environments.
 To do this, on each Hermes cluster you have to provide different value for:
-* `kafka.namespace` property in **Frontend**, **Consumers** and **Management**.
-* `zookeeper.root` property in **Frontend** and **Consumers** if you use the same Zookeeper cluster for all Hermes clusters.
-  In **Management** it’s named `storage.pathPrefix` and also need to be changed.
+* `{modulePrefix}.kafka.namespace` property in **Frontend**, **Consumers** and **Management**.
+* `{modulePrefix}.zookeeper.root` property in **Frontend** and **Consumers** and **Management** if you use the same Zookeeper cluster for all Hermes clusters.
 
-`kafka.namespace` property also can used to distinguish Hermes-managed topics on multi-purpose Kafka cluster.
+`{modulePrefix}.kafka.namespace` property also can be used to distinguish Hermes-managed topics on multi-purpose Kafka cluster.
 
