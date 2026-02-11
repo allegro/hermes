@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.annotation.PostConstruct;
+import java.time.Duration;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -26,7 +27,7 @@ public class HealthCheckScheduler {
   private final ObjectMapper objectMapper;
   private final ModeService modeService;
   private final MeterRegistry meterRegistry;
-  private final long periodSeconds;
+  private final Duration period;
   private final boolean enabled;
 
   public HealthCheckScheduler(
@@ -36,7 +37,7 @@ public class HealthCheckScheduler {
       ObjectMapper objectMapper,
       ModeService modeService,
       MeterRegistry meterRegistry,
-      long periodSeconds,
+      Duration period,
       boolean enabled) {
     this.zookeeperClientManager = zookeeperClientManager;
     this.zookeeperPaths = zookeeperPaths;
@@ -44,7 +45,7 @@ public class HealthCheckScheduler {
     this.objectMapper = objectMapper;
     this.modeService = modeService;
     this.meterRegistry = meterRegistry;
-    this.periodSeconds = periodSeconds;
+    this.period = period;
     this.enabled = enabled;
   }
 
@@ -62,7 +63,8 @@ public class HealthCheckScheduler {
               objectMapper,
               modeService,
               meterRegistry);
-      executorService.scheduleAtFixedRate(healthCheckTask, 0, periodSeconds, TimeUnit.SECONDS);
+      executorService.scheduleAtFixedRate(
+          healthCheckTask, 0, period.toMillis(), TimeUnit.MILLISECONDS);
     } else {
       logger.info("Storage health check is disabled");
       modeService.setMode(ModeService.ManagementMode.READ_WRITE);
