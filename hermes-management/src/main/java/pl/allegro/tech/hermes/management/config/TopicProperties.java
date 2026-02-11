@@ -8,7 +8,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.management.domain.topic.TopicParameters;
 
-@ConfigurationProperties(prefix = "topic")
+@ConfigurationProperties(prefix = "management.topic")
 public class TopicProperties implements TopicParameters {
 
   private int replicationFactor = 1;

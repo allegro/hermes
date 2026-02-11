@@ -1,22 +1,3 @@
-zookeeper:
-  enabled: false
-
-storage:
-  clusters:
-    - datacenter: dc
-      root: /run/hermes
-      connectionString: zk:2181
-
-kafka:
-  clusters:
-    - datacenter: dc
-      clusterName: primary-dc
-      connectionTimeout: 3000
-      brokerList: kafka:29092
-
-server:
-  port: 8090
-
 spring:
   jersey:
     type: filter
@@ -24,6 +5,17 @@ spring:
       order: 2147483647
 
 management:
+  zookeeper:
+    clusters:
+      - datacenter: dc
+        root: /run/hermes
+        connectionString: zk:2181
+  kafka:
+    clusters:
+      - datacenter: dc
+        clusterName: primary-dc
+        connectionTimeout: 3000
+        brokerList: kafka:29092
   endpoints:
     web:
       base-path: /
@@ -31,6 +23,7 @@ management:
     connect-timeout: 2000
     read-timeout: 2000
   server:
+    port: 8090
     servlet:
       context-path: /
   health:
@@ -40,20 +33,15 @@ management:
     create-manually: true
   leadership:
     zookeeper-dc: dc
-
-
-audit.enabled: false
-
-cache:
-  topicOwnerRefreshRateInSeconds: 300 # 5 minutes
-  subscriptionOwnerRefreshRateInSeconds: 300
-
-schema.repository:
-  type: schema_registry
-  serverUrl: http://schema-registry:8081
-  validationEnabled: true
-
-prometheus:
-  client:
-    enabled: true
-    externalMonitoringUrl: http://prometheus:8428
+  audit.enabled: false
+  cache:
+    topicOwnerRefreshRateInSeconds: 300 # 5 minutes
+    subscriptionOwnerRefreshRateInSeconds: 300
+  schema.repository:
+    type: schema_registry
+    serverUrl: http://schema-registry:8081
+    validationEnabled: true
+  prometheus:
+    client:
+      enabled: true
+      externalMonitoringUrl: http://prometheus:8428

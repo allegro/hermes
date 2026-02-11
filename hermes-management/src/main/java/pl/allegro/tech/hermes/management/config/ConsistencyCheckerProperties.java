@@ -4,7 +4,7 @@ import java.time.Duration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.management.domain.consistency.ConsistencyCheckerParameters;
 
-@ConfigurationProperties(prefix = "consistency-checker")
+@ConfigurationProperties(prefix = "management.consistency-checker")
 public class ConsistencyCheckerProperties implements ConsistencyCheckerParameters {
 
   private int threadPoolSize = 2;

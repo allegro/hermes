@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.management.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "schema.repository")
+@ConfigurationProperties(prefix = "management.schema.repository")
 public class SchemaRepositoryProperties {
 
   private String serverUrl = "http://localhost:8081/";

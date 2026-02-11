@@ -4,7 +4,7 @@ import java.time.Duration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.management.domain.subscription.consumergroup.ConsumerGroupCleanUpParameters;
 
-@ConfigurationProperties(prefix = "consumer-group.clean-up")
+@ConfigurationProperties(prefix = "management.consumer-group.clean-up")
 public class ConsumerGroupCleanUpProperties implements ConsumerGroupCleanUpParameters {
   private boolean enabled = true;
   private Duration interval = Duration.ofMinutes(5);

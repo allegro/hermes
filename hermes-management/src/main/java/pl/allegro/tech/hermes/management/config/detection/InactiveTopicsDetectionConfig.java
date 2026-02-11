@@ -68,7 +68,7 @@ public class InactiveTopicsDetectionConfig {
   }
 
   @ConditionalOnProperty(
-      prefix = "detection.inactive-topics",
+      prefix = "management.detection.inactive-topics",
       value = "enabled",
       havingValue = "true")
   @Bean

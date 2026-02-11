@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.management.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "server")
+@ConfigurationProperties(prefix = "management.backend")
 public class ServerPortProperties {
 
   private String port = "8080";

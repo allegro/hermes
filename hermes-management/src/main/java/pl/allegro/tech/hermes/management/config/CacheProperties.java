@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.management.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "cache")
+@ConfigurationProperties(prefix = "management.cache")
 public class CacheProperties {
 
   private int topicOwnerRefreshRateInSeconds = 60;

@@ -3,7 +3,7 @@ package pl.allegro.tech.hermes.management.config;
 import java.time.Duration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "metrics.prometheus")
+@ConfigurationProperties(prefix = "management.metrics.prometheus")
 public class PrometheusProperties {
 
   private Duration step = Duration.ofMinutes(1);

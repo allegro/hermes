@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider;
 
-@ConfigurationProperties(prefix = "storage")
+@ConfigurationProperties(prefix = "management.zookeeper")
 public class ZookeeperClustersProperties {
 
   private boolean transactional = true;

@@ -28,7 +28,6 @@ import pl.allegro.tech.hermes.metrics.PathsCompiler;
 @Configuration
 @EnableConfigurationProperties({
   TopicProperties.class,
-  HttpClientProperties.class,
   ConsistencyCheckerProperties.class,
   PrometheusProperties.class,
   MicrometerRegistryProperties.class,
