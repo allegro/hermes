@@ -27,7 +27,6 @@ management:
     servlet:
       context-path: /
   health:
-    periodSeconds: 30
     enabled: true
   consumer-groups:
     create-manually: true
