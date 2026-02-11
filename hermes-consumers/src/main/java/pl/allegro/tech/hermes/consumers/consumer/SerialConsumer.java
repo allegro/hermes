@@ -25,7 +25,7 @@ import pl.allegro.tech.hermes.consumers.consumer.profiling.ConsumerRun;
 import pl.allegro.tech.hermes.consumers.consumer.profiling.DefaultConsumerProfiler;
 import pl.allegro.tech.hermes.consumers.consumer.profiling.Measurement;
 import pl.allegro.tech.hermes.consumers.consumer.profiling.NoOpConsumerProfiler;
-import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
+import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.UninitializedMessageReceiver;
@@ -37,7 +37,7 @@ public class SerialConsumer implements Consumer {
 
   private final ReceiverFactory messageReceiverFactory;
   private final MetricsFacade metrics;
-  private final SerialConsumerRateLimiter rateLimiter;
+  private final ConsumerRateLimiter rateLimiter;
   private final Trackers trackers;
   private final MessageConverterResolver messageConverterResolver;
   private final ConsumerMessageSender sender;
@@ -62,7 +62,7 @@ public class SerialConsumer implements Consumer {
       ReceiverFactory messageReceiverFactory,
       MetricsFacade metrics,
       Subscription subscription,
-      SerialConsumerRateLimiter rateLimiter,
+      ConsumerRateLimiter rateLimiter,
       ConsumerMessageSenderFactory consumerMessageSenderFactory,
       Trackers trackers,
       MessageConverterResolver messageConverterResolver,

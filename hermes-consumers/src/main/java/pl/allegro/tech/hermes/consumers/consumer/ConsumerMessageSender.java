@@ -28,7 +28,7 @@ import pl.allegro.tech.hermes.consumers.consumer.profiling.ConsumerRun;
 import pl.allegro.tech.hermes.consumers.consumer.profiling.DefaultConsumerProfiler;
 import pl.allegro.tech.hermes.consumers.consumer.profiling.Measurement;
 import pl.allegro.tech.hermes.consumers.consumer.profiling.NoOpConsumerProfiler;
-import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
+import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.result.ErrorHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.SubscriptionChangeAwareSuccessHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.SuccessHandler;
@@ -53,7 +53,7 @@ public class ConsumerMessageSender {
   private final SubscriptionLoadRecorder loadRecorder;
   private final HermesTimer consumerLatencyTimer;
   private final HermesCounter retries;
-  private final SerialConsumerRateLimiter rateLimiter;
+  private final ConsumerRateLimiter rateLimiter;
   private final HermesTimer rateLimiterAcquireTimer;
   private final FutureAsyncTimeout async;
   private final int asyncTimeoutMs;
@@ -70,7 +70,7 @@ public class ConsumerMessageSender {
       MessageSenderFactory messageSenderFactory,
       List<SuccessHandler> successHandlers,
       List<ErrorHandler> errorHandlers,
-      SerialConsumerRateLimiter rateLimiter,
+      ConsumerRateLimiter rateLimiter,
       ExecutorService deliveryReportingExecutor,
       PendingOffsets pendingOffsets,
       MetricsFacade metrics,

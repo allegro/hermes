@@ -7,7 +7,7 @@ configurations {
 }
 
 jmh {
-    includes = ['pl\\.allegro\\.tech\\.hermes\\.benchmark\\..*']
+    includes = [stringProperty('jmh.includes', 'pl\\.allegro\\.tech\\.hermes\\.benchmark\\..*')]
     humanOutputFile = null
     jmhVersion = '1.36'
     zip64 = true
@@ -19,7 +19,6 @@ jmh {
     warmup = stringProperty('jmh.timeOnWarmupIteration', '80s')
     jvmArgs = listProperty('jmh.jvmArgs', ['-Xmx1g', '-Xms1g', '-XX:+UseG1GC'] + chronicleMapJvmArgs)
     failOnError = booleanProperty('jmh.failOnError', true)
-    threads = intProperty('jmh.threads', 4)
     synchronizeIterations = false
     forceGC =  false
     duplicateClassesStrategy = DuplicatesStrategy.EXCLUDE
@@ -33,6 +32,7 @@ dependencies {
     jmh project(':hermes-test-helper')
     jmh project(':hermes-common')
     jmh project(':hermes-tracker')
+    jmh project(':hermes-consumers')
 }
 
 // Workaround for duplicated `BenchmarkList` and `CompilerHints` files from META-INF directory in jmh jar.
