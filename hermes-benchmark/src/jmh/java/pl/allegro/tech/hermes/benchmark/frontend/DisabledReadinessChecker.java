@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.benchmark.environment;
+package pl.allegro.tech.hermes.benchmark.frontend;
 
 import pl.allegro.tech.hermes.frontend.readiness.ReadinessChecker;
 

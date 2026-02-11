@@ -1,7 +1,7 @@
-package pl.allegro.tech.hermes.benchmark.environment;
+package pl.allegro.tech.hermes.benchmark.frontend;
 
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
-import static pl.allegro.tech.hermes.benchmark.environment.HermesServerEnvironment.loadMessageResource;
+import static pl.allegro.tech.hermes.benchmark.frontend.HermesServerEnvironment.loadMessageResource;
 import static pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter.QuotaInsight.quotaConfirmed;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 

@@ -22,6 +22,7 @@ jmh {
     synchronizeIterations = false
     forceGC =  false
     duplicateClassesStrategy = DuplicatesStrategy.EXCLUDE
+    profilers = ['gc']
 }
 
 dependencies {
