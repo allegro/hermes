@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer;
 
 import java.time.Clock;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -14,6 +14,7 @@ import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.result.DefaultErrorHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.DefaultSuccessHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.ErrorHandler;
+import pl.allegro.tech.hermes.consumers.consumer.result.ResultHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.SuccessHandler;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
@@ -30,6 +31,7 @@ public class ConsumerMessageSenderFactory {
   private final UndeliveredMessageLog undeliveredMessageLog;
   private final Clock clock;
   private final ConsumerAuthorizationHandler consumerAuthorizationHandler;
+  private final List<ResultHandler> resultHandlers;
   private final ExecutorService rateLimiterReportingExecutor;
   private final int senderAsyncTimeoutMs;
 
@@ -43,6 +45,7 @@ public class ConsumerMessageSenderFactory {
       Clock clock,
       InstrumentedExecutorServiceFactory instrumentedExecutorServiceFactory,
       ConsumerAuthorizationHandler consumerAuthorizationHandler,
+      List<ResultHandler> resultHandlers,
       int senderAsyncTimeoutMs,
       int rateLimiterReportingThreadPoolSize,
       boolean rateLimiterReportingThreadMonitoringEnabled) {
@@ -55,6 +58,7 @@ public class ConsumerMessageSenderFactory {
     this.undeliveredMessageLog = undeliveredMessageLog;
     this.clock = clock;
     this.consumerAuthorizationHandler = consumerAuthorizationHandler;
+    this.resultHandlers = resultHandlers;
     this.rateLimiterReportingExecutor =
         instrumentedExecutorServiceFactory.getExecutorService(
             "rate-limiter-reporter",
@@ -70,17 +74,15 @@ public class ConsumerMessageSenderFactory {
       SubscriptionLoadRecorder subscriptionLoadRecorder,
       MetricsFacade metrics) {
 
-    List<SuccessHandler> successHandlers =
-        Arrays.asList(
-            consumerAuthorizationHandler,
-            new DefaultSuccessHandler(
-                metrics,
-                trackers,
-                subscription.getQualifiedName(),
-                subscription.getMetricsConfig()));
+    List<SuccessHandler> successHandlers = new ArrayList<>();
+    successHandlers.add(consumerAuthorizationHandler);
+    successHandlers.add(
+        new DefaultSuccessHandler(
+            metrics, trackers, subscription.getQualifiedName(), subscription.getMetricsConfig()));
+    successHandlers.addAll(resultHandlers);
 
     List<ErrorHandler> errorHandlers =
-        Arrays.asList(
+        List.of(
             consumerAuthorizationHandler,
             new DefaultErrorHandler(
                 metrics,
@@ -90,12 +92,16 @@ public class ConsumerMessageSenderFactory {
                 deadLetters,
                 kafkaClusterName,
                 subscription.getQualifiedName()));
+    List<ErrorHandler> discardedErrorHandlers = new ArrayList<>();
+    discardedErrorHandlers.addAll(errorHandlers);
+    discardedErrorHandlers.addAll(resultHandlers);
 
     return new ConsumerMessageSender(
         subscription,
         messageSenderFactory,
-        successHandlers,
-        errorHandlers,
+        successHandlers.stream().filter(it -> it.appliesTo(subscription)).toList(),
+        errorHandlers.stream().filter(it -> it.appliesTo(subscription)).toList(),
+        discardedErrorHandlers.stream().filter(it -> it.appliesTo(subscription)).toList(),
         consumerRateLimiter,
         rateLimiterReportingExecutor,
         pendingOffsets,

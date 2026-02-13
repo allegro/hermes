@@ -71,7 +71,7 @@ allprojects {
             spring_web        : '6.1.6',
             failsafe          : '3.3.2',
             junit_jupiter     : '5.10.2',
-            testcontainers    : '1.19.8',
+            testcontainers    : '1.21.4',
             spring            : '3.2.4',
             assertj           : '3.25.3',
             allure            : '2.24.0'
