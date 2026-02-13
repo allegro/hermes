@@ -125,7 +125,7 @@ public class LoggingConsumer implements Consumer {
 }
 ```
 
-##### Wrapper method usage (preserving git blame)
+#### Wrapper method usage (preserving git blame)
 
 ```java
 // New wrapper method
