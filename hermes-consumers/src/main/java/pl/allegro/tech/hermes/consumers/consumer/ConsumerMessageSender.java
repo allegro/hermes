@@ -237,12 +237,7 @@ public class ConsumerMessageSender {
 
   private void handleFailedSending(
       Message message, MessageSendingResult result, ConsumerProfiler profiler) {
-    errorHandlers.forEach(
-        h -> {
-          if (h.supports(subscription)) {
-            h.handleFailed(message, subscription, result);
-          }
-        });
+    errorHandlers.forEach(h -> h.handleFailed(message, subscription, result));
     retrySendingOrDiscard(message, result, profiler);
   }
 
@@ -311,12 +306,7 @@ public class ConsumerMessageSender {
             message.getPartitionOffset(),
             message.getPartitionAssignmentTerm()));
     inflightCount.decrement();
-    discardedHandlers.forEach(
-        h -> {
-          if (h.supports(subscription)) {
-            h.handleDiscarded(message, subscription, result);
-          }
-        });
+    discardedHandlers.forEach(h -> h.handleDiscarded(message, subscription, result));
     profiler.flushMeasurements(ConsumerRun.DISCARDED);
   }
 
@@ -328,12 +318,7 @@ public class ConsumerMessageSender {
             message.getPartitionOffset(),
             message.getPartitionAssignmentTerm()));
     inflightCount.decrement();
-    successHandlers.forEach(
-        h -> {
-          if (h.supports(subscription)) {
-            h.handleSuccess(message, subscription, result);
-          }
-        });
+    successHandlers.forEach(h -> h.handleSuccess(message, subscription, result));
     profiler.flushMeasurements(ConsumerRun.DELIVERED);
   }
 

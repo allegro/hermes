@@ -4,7 +4,7 @@ import com.google.pubsub.v1.TopicName;
 import java.util.Objects;
 import pl.allegro.tech.hermes.consumers.consumer.sender.SenderTarget;
 
-public class GooglePubSubSenderTarget implements SenderTarget {
+class GooglePubSubSenderTarget implements SenderTarget {
 
   private final TopicName topicName;
   private final String pubSubEndpoint;

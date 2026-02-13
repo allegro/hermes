@@ -74,7 +74,7 @@ public class ConsumerMessageSenderFactory {
       SubscriptionLoadRecorder subscriptionLoadRecorder,
       MetricsFacade metrics) {
 
-    List<SuccessHandler> successHandlers = new ArrayList<SuccessHandler>();
+    List<SuccessHandler> successHandlers = new ArrayList<>();
     successHandlers.add(consumerAuthorizationHandler);
     successHandlers.add(
         new DefaultSuccessHandler(
@@ -99,9 +99,9 @@ public class ConsumerMessageSenderFactory {
     return new ConsumerMessageSender(
         subscription,
         messageSenderFactory,
-        successHandlers,
-        errorHandlers,
-        discardedErrorHandlers,
+        successHandlers.stream().filter(it -> it.appliesTo(subscription)).toList(),
+        errorHandlers.stream().filter(it -> it.appliesTo(subscription)).toList(),
+        discardedErrorHandlers.stream().filter(it -> it.appliesTo(subscription)).toList(),
         consumerRateLimiter,
         rateLimiterReportingExecutor,
         pendingOffsets,
