@@ -4,6 +4,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.CreateMode;
+import org.apache.zookeeper.KeeperException;
 import org.slf4j.Logger;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 
@@ -29,17 +30,15 @@ public class ZookeeperClient {
   public void ensureEphemeralNodeExists(String path) {
     try {
       if (curatorFramework.checkExists().forPath(path) == null) {
-        try {
-          curatorFramework
-              .create()
-              .creatingParentsIfNeeded()
-              .withMode(CreateMode.EPHEMERAL)
-              .forPath(path);
-        } catch (org.apache.zookeeper.KeeperException.NodeExistsException e) {
-          // Node was created by another thread/process between check and create - this is fine
-          logger.debug("Ephemeral node {} already exists", path);
-        }
+        curatorFramework
+            .create()
+            .creatingParentsIfNeeded()
+            .withMode(CreateMode.EPHEMERAL)
+            .forPath(path);
       }
+    } catch (KeeperException.NodeExistsException e) {
+      // Node was created by another thread/process between check and create - this is fine
+      logger.debug("Ephemeral node {} already exists", path);
     } catch (Exception e) {
       throw new InternalProcessingException("Could not ensure existence of path: " + path, e);
     }

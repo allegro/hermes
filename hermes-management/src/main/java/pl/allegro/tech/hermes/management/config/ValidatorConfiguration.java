@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.management.config;
 
+import java.util.HashSet;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -49,7 +50,6 @@ public class ValidatorConfiguration {
 
   @Bean
   public ContentTypeValidator contentTypeValidator(TopicProperties topicProperties) {
-    return new ContentTypeValidator(
-        new java.util.HashSet<>(topicProperties.getAllowedContentTypes()));
+    return new ContentTypeValidator(new HashSet<>(topicProperties.getAllowedContentTypes()));
   }
 }
