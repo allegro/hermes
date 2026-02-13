@@ -5,7 +5,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -124,7 +123,6 @@ public class ConsumerMessageSenderTest {
     sender.sendAsync(message, profiler);
     verify(successHandler, timeout(1000))
         .handleSuccess(eq(message), eq(subscription), any(MessageSendingResult.class));
-
 
     // then
     verify(pendingOffsets).markAsProcessed(any(SubscriptionPartitionOffset.class));
@@ -466,8 +464,6 @@ public class ConsumerMessageSenderTest {
     verifyRateLimiterAcquired(2);
     verifyRetryCounted();
   }
-
-
 
   private ConsumerMessageSender consumerMessageSender(Subscription subscription) {
     when(messageSenderFactory.create(eq(subscription), any(ResilientMessageSender.class)))

@@ -67,14 +67,15 @@ public class ConsumerMessageSenderFactoryTest {
 
   @Before
   public void setUp() {
-    when(instrumentedExecutorServiceFactory.getExecutorService(
-            anyString(), anyInt(), anyBoolean()))
+    when(instrumentedExecutorServiceFactory.getExecutorService(anyString(), anyInt(), anyBoolean()))
         .thenReturn(mock(ExecutorService.class));
 
-    SubscriptionName subscriptionName = new SubscriptionName("subscription", new TopicName("group", "topic"));
+    SubscriptionName subscriptionName =
+        new SubscriptionName("subscription", new TopicName("group", "topic"));
     when(subscription.getQualifiedName()).thenReturn(subscriptionName);
     when(subscription.getMetricsConfig()).thenReturn(subscriptionMetricsConfig);
-    when(subscriptionMetricsConfig.messageProcessing()).thenReturn(MessageProcessingDurationMetricOptions.DISABLED);
+    when(subscriptionMetricsConfig.messageProcessing())
+        .thenReturn(MessageProcessingDurationMetricOptions.DISABLED);
 
     when(metrics.subscriptions()).thenReturn(subscriptionMetrics);
 
@@ -90,10 +91,14 @@ public class ConsumerMessageSenderFactoryTest {
   }
 
   private void mockMetrics() {
-    when(subscriptionMetrics.throughputInBytes(any())).thenReturn(mock(SubscriptionHermesCounter.class));
+    when(subscriptionMetrics.throughputInBytes(any()))
+        .thenReturn(mock(SubscriptionHermesCounter.class));
     when(subscriptionMetrics.successes(any())).thenReturn(mock(HermesCounter.class));
-    when(subscriptionMetrics.inflightTimeInMillisHistogram(any())).thenReturn(mock(HermesHistogram.class));
-    when(subscriptionMetrics.messageProcessingTimeInMillisHistogram(any(), any(MessageProcessingDurationMetricOptions.class))).thenReturn(mock(HermesTimer.class));
+    when(subscriptionMetrics.inflightTimeInMillisHistogram(any()))
+        .thenReturn(mock(HermesHistogram.class));
+    when(subscriptionMetrics.messageProcessingTimeInMillisHistogram(
+            any(), any(MessageProcessingDurationMetricOptions.class)))
+        .thenReturn(mock(HermesTimer.class));
     when(subscriptionMetrics.latency(any())).thenReturn(mock(HermesTimer.class));
     when(subscriptionMetrics.retries(any())).thenReturn(mock(HermesCounter.class));
   }
@@ -101,30 +106,26 @@ public class ConsumerMessageSenderFactoryTest {
   @Test
   public void shouldCreateConsumerMessageSenderWithFilteredHandlers() throws Exception {
     // given
-    ConsumerMessageSenderFactory factory = new ConsumerMessageSenderFactory(
-        "kafka-cluster",
-        messageSenderFactory,
-        trackers,
-        deadLetters,
-        futureAsyncTimeout,
-        undeliveredMessageLog,
-        clock,
-        instrumentedExecutorServiceFactory,
-        consumerAuthorizationHandler,
-        List.of(supportedHandler, unsupportedHandler),
-        1000,
-        1,
-        false
-    );
+    ConsumerMessageSenderFactory factory =
+        new ConsumerMessageSenderFactory(
+            "kafka-cluster",
+            messageSenderFactory,
+            trackers,
+            deadLetters,
+            futureAsyncTimeout,
+            undeliveredMessageLog,
+            clock,
+            instrumentedExecutorServiceFactory,
+            consumerAuthorizationHandler,
+            List.of(supportedHandler, unsupportedHandler),
+            1000,
+            1,
+            false);
 
     // when
-    ConsumerMessageSender sender = factory.create(
-        subscription,
-        consumerRateLimiter,
-        pendingOffsets,
-        subscriptionLoadRecorder,
-        metrics
-    );
+    ConsumerMessageSender sender =
+        factory.create(
+            subscription, consumerRateLimiter, pendingOffsets, subscriptionLoadRecorder, metrics);
 
     // then
     List<SuccessHandler> successHandlers = getField(sender, "successHandlers");
