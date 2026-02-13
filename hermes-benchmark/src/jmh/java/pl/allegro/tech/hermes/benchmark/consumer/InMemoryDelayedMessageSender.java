@@ -36,4 +36,8 @@ public class InMemoryDelayedMessageSender implements MessageSender {
   public void shutdown() {
     executorService.shutdown();
   }
+
+  public void reset() {
+    longAdder.reset();
+  }
 }

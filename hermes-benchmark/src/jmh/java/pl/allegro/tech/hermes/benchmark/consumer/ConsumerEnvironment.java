@@ -50,16 +50,20 @@ public class ConsumerEnvironment {
   private FutureAsyncTimeout futureAsyncTimeout;
   private InstrumentedExecutorServiceFactoryWrapper instrumentedExecutorServiceFactory;
 
-  @Setup(Level.Iteration)
-  public void setupEnvironment() {
-    topic = createTopic();
-    subscription = createSubscription(topic);
+  @Setup
+  public void setupBeforeAll() {
     messageSender = new InMemoryDelayedMessageSender();
     futureAsyncTimeout = new FutureAsyncTimeout(Executors.newSingleThreadScheduledExecutor());
     instrumentedExecutorServiceFactory =
         new InstrumentedExecutorServiceFactoryWrapper(new MetricsFacade(new SimpleMeterRegistry()));
-    executorService = createExecutor();
+  }
+
+  @Setup(Level.Iteration)
+  public void setup() {
+    topic = createTopic();
+    subscription = createSubscription(topic);
     consumerProcess = createConsumerProcess();
+    executorService = createExecutor();
   }
 
   private ThreadPoolExecutor createExecutor() {
@@ -139,7 +143,7 @@ public class ConsumerEnvironment {
 
   public void waitUntilAllMessagesAreConsumed() {
     await()
-        .atMost(adjust(Duration.ofSeconds(10)))
+        .atMost(adjust(Duration.ofSeconds(2)))
         .untilAsserted(
             () -> assertThat(messageSender.getSentMessagesCount()).isEqualTo(MESSAGES_COUNT));
   }
@@ -151,9 +155,14 @@ public class ConsumerEnvironment {
   @TearDown(Level.Iteration)
   public void shutdown() {
     consumerProcess.accept(Signal.of(Signal.SignalType.STOP, subscription.getQualifiedName()));
+    messageSender.reset();
     executorService.shutdown();
-    futureAsyncTimeout.shutdown();
+  }
+
+  @TearDown
+  public void shutDownAfterAll() {
     messageSender.shutdown();
+    futureAsyncTimeout.shutdown();
     instrumentedExecutorServiceFactory.shutdownAll();
   }
 }

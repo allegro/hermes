@@ -14,11 +14,11 @@ import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 
-public class InMemoryMessageReader implements MessageReceiver {
+public class InMemoryMessageReceiver implements MessageReceiver {
   private static final int PARTITION_ID = 1;
   private final ArrayBlockingQueue<Message> messages;
 
-  public InMemoryMessageReader(int messagesCount) {
+  public InMemoryMessageReceiver(int messagesCount) {
     CompiledSchema<Schema> compiledSchema = new AvroUser("Bob", 50, "blue").getCompiledSchema();
     messages = new ArrayBlockingQueue<>(messagesCount);
     for (int i = 0; i < messagesCount; i++) {

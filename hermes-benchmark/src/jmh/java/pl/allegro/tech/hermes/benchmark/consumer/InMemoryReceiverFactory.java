@@ -10,10 +10,10 @@ import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
 
 public class InMemoryReceiverFactory implements ReceiverFactory {
-  private final InMemoryMessageReader inMemoryMessageReader;
+  private final InMemoryMessageReceiver inMemoryMessageReceiver;
 
   public InMemoryReceiverFactory(int maxMessagesCount) {
-    inMemoryMessageReader = new InMemoryMessageReader(maxMessagesCount);
+    inMemoryMessageReceiver = new InMemoryMessageReceiver(maxMessagesCount);
   }
 
   @Override
@@ -24,6 +24,6 @@ public class InMemoryReceiverFactory implements ReceiverFactory {
       SubscriptionLoadRecorder subscriptionLoadRecorder,
       MetricsFacade metrics,
       PendingOffsetsAppender pendingOffsetsAppender) {
-    return inMemoryMessageReader;
+    return inMemoryMessageReceiver;
   }
 }
