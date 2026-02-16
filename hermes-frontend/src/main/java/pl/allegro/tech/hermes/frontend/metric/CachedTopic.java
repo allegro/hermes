@@ -27,9 +27,6 @@ public class CachedTopic {
   private final HermesCounter globalRequestMeter;
   private final HermesCounter topicRequestMeter;
 
-  private final HermesCounter globalDelayedProcessingMeter;
-  private final HermesCounter topicDelayedProcessingMeter;
-
   private final HermesHistogram topicMessageContentSize;
   private final HermesHistogram globalMessageContentSize;
 
@@ -52,10 +49,6 @@ public class CachedTopic {
 
     globalRequestMeter = metricsFacade.topics().topicGlobalRequestCounter();
     topicRequestMeter = metricsFacade.topics().topicRequestCounter(topic.getName());
-
-    globalDelayedProcessingMeter = metricsFacade.topics().topicGlobalDelayedProcessingCounter();
-    topicDelayedProcessingMeter =
-        metricsFacade.topics().topicDelayedProcessingCounter(topic.getName());
 
     globalMessageContentSize = metricsFacade.topics().topicGlobalMessageContentSizeHistogram();
     topicMessageContentSize =
@@ -129,15 +122,6 @@ public class CachedTopic {
     topicMessageContentSize.record(size);
     globalMessageContentSize.record(size);
     throughputMeter.increment(size);
-  }
-
-  /**
-   * @deprecated This feature is deprecated and will be removed in a future version.
-   */
-  @Deprecated
-  public void markDelayedProcessing() {
-    topicDelayedProcessingMeter.increment(1L);
-    globalDelayedProcessingMeter.increment(1L);
   }
 
   public HermesRateMeter getThroughput() {

@@ -116,10 +116,9 @@ used to track how event flew through the system.
 
 ### Response codes
 
-There are two possible response status codes that represent success:
+Success status:
 
 * **201 Created** - event received and acknowledged by Kafka
-* **202 Accepted** - event has not been acknowledged by Kafka, Hermes is buffering it and will try to deliver ASAP (deprecated, see Buffering section below)
 
 Failure statuses:
 
@@ -145,38 +144,6 @@ it will also have higher variance due to tail latency. However, messages will be
 
 Publishers are advised to select topic ACK level based on their latency and durability requirements. 
 
-Hermes also provides a feature called Buffering (described in paragraphs below) which provides consistent write latency 
-despite long Kafka response times. Note that, however, this mode may decrease message durability for `ACK all` setting.
-
-## Buffering [deprecated]
-
-Hermes administrator can set maximum time, for which Hermes will wait for Kafka acknowledgment. By default, it is set to
-65ms. After that time, **202** response is sent to client. Event is kept in Kafka producer buffer and it's delivery will
-be retried until successful.
-
-This makes Hermes resilient to any Kafka malfunctions or hiccups, and we are able to guarantee maximum response
-time to clients. Also in case of Kafka cluster failure, Hermes is able to receive incoming events and send them when
-Kafka is back online.
-
-### Buffer persistence
-
-By default, events are buffered in memory only. This raises the question about what happens in case of Hermes node failure
-(or force kill of process). Hermes Frontend API exposes callbacks that can be used to implement persistence model of
-buffered events.
-
-Default implementation uses [OpenHFT ChronicleMap](https://github.com/OpenHFT/Chronicle-Map) to persist unsent messages
-to disk. Map structure is continuously persisted to disk, as it is stored in offheap memory as
-[memory mapped file](https://en.wikipedia.org/wiki/Memory-mapped_file).
-
-Using buffering with ACK all setting means that durability of events may be lowered when **202** status code is received. If Hermes instance
-is killed before message is spilled to disk or the data on disk becomes corrupted, the message is gone. Thus `ACK all` with **202** status code
-is similar to `ACK leader` because a single node failure could cause the message be lost.
-
-### Deprecation notice
-
-The buffering mechanism in Hermes is considered deprecated and is set to be removed in the future.
-See Remote DC fallback section below for an alternative solution.
-
 ## Remote DC fallback
 
 Hermes supports a remote datacenter fallback mechanism for [multi datacenter deployments](https://hermes-pubsub.readthedocs.io/en/latest/configuration/kafka-and-zookeeper/#multiple-kafka-and-zookeeper-clusters).
@@ -190,8 +157,6 @@ PUT /topics/my.group.my-topic
   "fallbackToRemoteDatacenterEnabled": true
 }
 ```
-
-Using this setting automatically disables buffering mechanism for a topic.
 
 When using this setting for a topic, Hermes will try to send a message to a local datacenter Kafka first and will fall back to remote datacenter Kafka 
 if the local send fails. 

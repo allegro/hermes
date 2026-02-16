@@ -4,11 +4,6 @@ public class Gauges {
 
   public static final String INFLIGHT_REQUESTS = "inflight-requests";
 
-  /**
-   * @deprecated Will be removed in a future version.
-   */
-  @Deprecated public static final String BACKUP_STORAGE_SIZE = "backup-storage.size";
-
   public static final String CONSUMER_SENDER_HTTP_1_SERIAL_CLIENT_ACTIVE_CONNECTIONS =
       "http-clients.serial.http1.active-connections";
   public static final String CONSUMER_SENDER_HTTP_1_SERIAL_CLIENT_IDLE_CONNECTIONS =
