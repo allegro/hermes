@@ -23,5 +23,5 @@ When you run a benchmark, you'll see a summary table at the end with the followi
 * Mode - the benchmark mode (e.g., thrpt, avgt, sample)
 * Cnt - Number of iterations
 * Score - The mean value of your metric
-* Error - The statistical uncertainty. Please keep in mind that benchmarks with an error margin higher than 10% is considered unreliable.
+* Error - The statistical uncertainty. Please keep in mind that benchmarks with an error margin higher than 10% are considered unreliable.
 * Units - Units of measurement (e.g., ops/s or ns/op)
