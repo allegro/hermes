@@ -1,4 +1,7 @@
-# Publishing buffer persistence [deprecated]
+# Publishing buffer persistence [DEPRECATED]
+
+> **⚠️ DEPRECATION NOTICE**  
+> This feature is deprecated and will be removed in a future version. See `fallbackToRemoteDatacenterEnabled` for an alternative approach.
 
 Hermes Frontend API has option to register callbacks triggered during different phases of message lifetime:
 

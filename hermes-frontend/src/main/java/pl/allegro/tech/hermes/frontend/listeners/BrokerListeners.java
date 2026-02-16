@@ -5,6 +5,10 @@ import java.util.List;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 
+/**
+ * @deprecated This feature is deprecated and will be removed in a future version.
+ */
+@Deprecated
 public class BrokerListeners {
 
   private final List<BrokerTimeoutListener> timeoutListeners = new ArrayList<>();

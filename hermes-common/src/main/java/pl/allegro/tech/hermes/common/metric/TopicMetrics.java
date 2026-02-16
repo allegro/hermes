@@ -66,11 +66,19 @@ public class TopicMetrics {
     return HermesCounters.from(micrometerCounter(TopicMetricsNames.TOPIC_REQUESTS, topicName));
   }
 
+  /**
+   * @deprecated This feature is deprecated and will be removed in a future version.
+   */
+  @Deprecated
   public HermesCounter topicGlobalDelayedProcessingCounter() {
     return HermesCounters.from(
         meterRegistry.counter(TopicMetricsNames.TOPIC_GLOBAL_DELAYED_PROCESSING));
   }
 
+  /**
+   * @deprecated This feature is deprecated and will be removed in a future version.
+   */
+  @Deprecated
   public HermesCounter topicDelayedProcessingCounter(TopicName topicName) {
     return HermesCounters.from(
         micrometerCounter(TopicMetricsNames.TOPIC_DELAYED_PROCESSING, topicName));
@@ -132,8 +140,18 @@ public class TopicMetrics {
     public static final String TOPIC_PUBLISHED = "topic.published";
     public static final String TOPIC_GLOBAL_REQUESTS = "topic.global-requests";
     public static final String TOPIC_REQUESTS = "topic.requests";
+
+    /**
+     * @deprecated This feature is deprecated and will be removed in a future version.
+     */
+    @Deprecated
     public static final String TOPIC_GLOBAL_DELAYED_PROCESSING = "topic-global-delayed-processing";
-    public static final String TOPIC_DELAYED_PROCESSING = "topic-delayed-processing";
+
+    /**
+     * @deprecated This feature is deprecated and will be removed in a future version.
+     */
+    @Deprecated public static final String TOPIC_DELAYED_PROCESSING = "topic-delayed-processing";
+
     public static final String TOPIC_GLOBAL_HTTP_STATUS_CODES = "topic-global-http-status-codes";
     public static final String TOPIC_HTTP_STATUS_CODES = "topic-http-status-codes";
     public static final String TOPIC_GLOBAL_MESSAGE_SIZE_BYTES = "topic-global-message-size-bytes";

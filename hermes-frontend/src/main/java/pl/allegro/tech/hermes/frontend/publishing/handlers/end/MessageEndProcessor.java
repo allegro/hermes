@@ -50,16 +50,28 @@ public class MessageEndProcessor {
     sendResponse(exchange, attachment, StatusCodes.CREATED);
   }
 
+  /**
+   * @deprecated This feature is deprecated and will be removed in a future version.
+   */
+  @Deprecated
   public void delayedSent(CachedTopic cachedTopic, Message message) {
     brokerListeners.onAcknowledge(message, cachedTopic.getTopic());
   }
 
+  /**
+   * @deprecated This feature is deprecated and will be removed in a future version.
+   */
+  @Deprecated
   public void bufferedButDelayedProcessing(
       HttpServerExchange exchange, AttachmentContent attachment) {
     bufferedButDelayed(exchange, attachment);
     attachment.getCachedTopic().markDelayedProcessing();
   }
 
+  /**
+   * @deprecated This feature is deprecated and will be removed in a future version.
+   */
+  @Deprecated
   public void bufferedButDelayed(HttpServerExchange exchange, AttachmentContent attachment) {
     Topic topic = attachment.getTopic();
     brokerListeners.onTimeout(attachment.getMessage(), topic);
