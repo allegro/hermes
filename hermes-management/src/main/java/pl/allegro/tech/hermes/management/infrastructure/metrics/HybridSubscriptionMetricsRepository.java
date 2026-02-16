@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.management.infrastructure.metrics;
 
 import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCauseMessage;
+import static pl.allegro.tech.hermes.common.logging.LoggingFields.SUBSCRIPTION_NAME;
 
 import java.util.function.Supplier;
 import org.slf4j.Logger;
@@ -94,10 +95,13 @@ public class HybridSubscriptionMetricsRepository implements SubscriptionMetricsR
     try {
       return supplier.get();
     } catch (Exception exception) {
-      logger.warn(
-          "Failed to read Zookeeper metrics for subscription: {}; root cause: {}",
-          name.getQualifiedName(),
-          getRootCauseMessage(exception));
+      logger
+          .atWarn()
+          .addKeyValue(SUBSCRIPTION_NAME, name.getQualifiedName())
+          .log(
+              "Failed to read Zookeeper metrics for subscription: {}; root cause: {}",
+              name.getQualifiedName(),
+              getRootCauseMessage(exception));
       return -1;
     }
   }

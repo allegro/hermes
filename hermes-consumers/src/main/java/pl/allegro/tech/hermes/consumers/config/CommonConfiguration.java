@@ -61,6 +61,9 @@ import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider;
 import pl.allegro.tech.hermes.infrastructure.dc.DcNameSource;
 import pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProvider;
 import pl.allegro.tech.hermes.infrastructure.dc.EnvironmentVariableDatacenterNameProvider;
+import pl.allegro.tech.hermes.infrastructure.logback.LoggingSubscriptionRepository;
+import pl.allegro.tech.hermes.infrastructure.logback.LoggingTopicRepository;
+import pl.allegro.tech.hermes.infrastructure.logback.LoggingWorkloadConstraintsRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperGroupRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperOAuthProviderRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
@@ -101,7 +104,9 @@ public class CommonConfiguration {
       ZookeeperPaths paths,
       ObjectMapper mapper,
       TopicRepository topicRepository) {
-    return new ZookeeperSubscriptionRepository(zookeeper, mapper, paths, topicRepository);
+    ZookeeperSubscriptionRepository zkRepository =
+        new ZookeeperSubscriptionRepository(zookeeper, mapper, paths, topicRepository);
+    return new LoggingSubscriptionRepository(zkRepository);
   }
 
   @Bean
@@ -116,7 +121,9 @@ public class CommonConfiguration {
       ZookeeperPaths paths,
       ObjectMapper mapper,
       GroupRepository groupRepository) {
-    return new ZookeeperTopicRepository(zookeeper, mapper, paths, groupRepository);
+    ZookeeperTopicRepository zkRepository =
+        new ZookeeperTopicRepository(zookeeper, mapper, paths, groupRepository);
+    return new LoggingTopicRepository(zkRepository);
   }
 
   @Bean
@@ -248,7 +255,8 @@ public class CommonConfiguration {
   @Bean
   public WorkloadConstraintsRepository workloadConstraintsRepository(
       CuratorFramework curator, ObjectMapper mapper, ZookeeperPaths paths) {
-    return new ZookeeperWorkloadConstraintsRepository(curator, mapper, paths);
+    return new LoggingWorkloadConstraintsRepository(
+        new ZookeeperWorkloadConstraintsRepository(curator, mapper, paths));
   }
 
   @Bean

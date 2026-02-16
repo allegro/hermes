@@ -54,4 +54,5 @@ dependencies {
     testImplementation group: 'org.spockframework', name: 'spock-junit4', version: versions.spock
     testImplementation group: 'org.awaitility', name: 'awaitility-groovy', version: '4.2.1'
     testRuntimeOnly group: 'org.junit.vintage', name: 'junit-vintage-engine', version: versions.junit_jupiter
+    testImplementation group: 'net.logstash.logback', name: 'logstash-logback-encoder', version: '8.1'
 }

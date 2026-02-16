@@ -7,7 +7,7 @@ import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions
 import pl.allegro.tech.hermes.management.domain.auth.TestRequestUser
 import pl.allegro.tech.hermes.management.domain.owner.validator.OwnerIdValidator
-import pl.allegro.tech.hermes.management.domain.topic.TopicService
+import pl.allegro.tech.hermes.management.domain.topic.TopicManagement
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Subject
@@ -19,7 +19,7 @@ class InflightSizeValidatorTest extends Specification {
     @Shared
     def ownerIdValidator = Stub(OwnerIdValidator)
     @Shared
-    def topicService = Stub(TopicService)
+    def topicManagement = Stub(TopicManagement)
     @Shared
     def subscriptionRepository = Stub(SubscriptionRepository)
     @Shared
@@ -35,7 +35,7 @@ class InflightSizeValidatorTest extends Specification {
     SubscriptionValidator subscriptionValidator = new SubscriptionValidator(
             ownerIdValidator,
             new ApiPreconditions(),
-            topicService,
+            topicManagement,
             subscriptionRepository,
             [],
             endpointOwnershipValidator,

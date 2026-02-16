@@ -16,7 +16,6 @@ import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
-import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 
 @Component
@@ -54,11 +53,8 @@ public class SubscriptionOwnerCache {
     return cache.values();
   }
 
-  void onRemovedSubscription(String subscriptionName, TopicName topicName) {
-    cache
-        .entries()
-        .removeIf(
-            entry -> entry.getValue().equals(new SubscriptionName(subscriptionName, topicName)));
+  void onRemovedSubscription(SubscriptionName subscriptionName) {
+    cache.entries().removeIf(entry -> entry.getValue().equals(subscriptionName));
   }
 
   void onCreatedSubscription(Subscription subscription) {

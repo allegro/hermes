@@ -11,6 +11,7 @@ import pl.allegro.tech.hermes.consumers.consumer.BatchConsumer;
 import pl.allegro.tech.hermes.consumers.consumer.Consumer;
 import pl.allegro.tech.hermes.consumers.consumer.ConsumerAuthorizationHandler;
 import pl.allegro.tech.hermes.consumers.consumer.ConsumerMessageSenderFactory;
+import pl.allegro.tech.hermes.consumers.consumer.LoggingConsumer;
 import pl.allegro.tech.hermes.consumers.consumer.SerialConsumer;
 import pl.allegro.tech.hermes.consumers.consumer.batch.MessageBatchFactory;
 import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResolver;
@@ -90,19 +91,20 @@ public class ConsumerFactory {
     SubscriptionLoadRecorder loadRecorder =
         subscriptionLoadRecordersRegistry.register(subscription.getQualifiedName());
     if (subscription.isBatchSubscription()) {
-      return new BatchConsumer(
-          messageReceiverFactory,
-          batchSenderFactory.create(subscription),
-          batchFactory,
-          messageConverterResolver,
-          compositeMessageContentWrapper,
-          metrics,
-          trackers,
-          subscription,
-          topic,
-          commonConsumerParameters.isUseTopicMessageSizeEnabled(),
-          loadRecorder,
-          commitPeriod);
+      return new LoggingConsumer(
+          new BatchConsumer(
+              messageReceiverFactory,
+              batchSenderFactory.create(subscription),
+              batchFactory,
+              messageConverterResolver,
+              compositeMessageContentWrapper,
+              metrics,
+              trackers,
+              subscription,
+              topic,
+              commonConsumerParameters.isUseTopicMessageSizeEnabled(),
+              loadRecorder,
+              commitPeriod));
     } else {
       SerialConsumerRateLimiter consumerRateLimiter =
           new SerialConsumerRateLimiter(
@@ -112,21 +114,22 @@ public class ConsumerFactory {
               consumerRateLimitSupervisor,
               clock);
 
-      return new SerialConsumer(
-          messageReceiverFactory,
-          metrics,
-          subscription,
-          consumerRateLimiter,
-          consumerMessageSenderFactory,
-          trackers,
-          messageConverterResolver,
-          topic,
-          commonConsumerParameters,
-          consumerAuthorizationHandler,
-          loadRecorder,
-          consumerPartitionAssignmentState,
-          commitPeriod,
-          offsetQueueSize);
+      return new LoggingConsumer(
+          new SerialConsumer(
+              messageReceiverFactory,
+              metrics,
+              subscription,
+              consumerRateLimiter,
+              consumerMessageSenderFactory,
+              trackers,
+              messageConverterResolver,
+              topic,
+              commonConsumerParameters,
+              consumerAuthorizationHandler,
+              loadRecorder,
+              consumerPartitionAssignmentState,
+              commitPeriod,
+              offsetQueueSize));
     }
   }
 }

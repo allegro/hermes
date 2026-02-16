@@ -20,6 +20,7 @@ import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreviewRepository;
 import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraintsRepository;
 import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider;
+import pl.allegro.tech.hermes.infrastructure.logback.LoggingWorkloadConstraintsRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperCredentialsRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperMessagePreviewRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperOAuthProviderRepository;
@@ -120,7 +121,8 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
       messagePreviewRepositoriesByDc.put(dcName, messagePreviewRepository);
 
       WorkloadConstraintsRepository workloadConstraintsRepository =
-          new ZookeeperWorkloadConstraintsRepository(zookeeper, mapper, paths);
+          new LoggingWorkloadConstraintsRepository(
+              new ZookeeperWorkloadConstraintsRepository(zookeeper, mapper, paths));
       workloadConstraintsRepositoriesByDc.put(dcName, workloadConstraintsRepository);
 
       LastUndeliveredMessageReader lastUndeliveredMessageReader =
