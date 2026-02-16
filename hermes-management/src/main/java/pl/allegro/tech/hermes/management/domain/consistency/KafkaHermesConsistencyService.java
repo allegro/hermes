@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.management.domain.consistency;
 
 import static java.util.Arrays.asList;
+import static pl.allegro.tech.hermes.common.logging.LoggingFields.TOPIC_NAME;
 
 import java.util.List;
 import java.util.Set;
@@ -10,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.management.config.kafka.KafkaClustersProperties;
 import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
-import pl.allegro.tech.hermes.management.domain.topic.TopicService;
+import pl.allegro.tech.hermes.management.domain.topic.TopicManagement;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 
 @Component
@@ -20,21 +21,21 @@ public class KafkaHermesConsistencyService {
 
   private static final String AVRO_SUFFIX = "_avro";
   private static final List<String> IGNORED_TOPIC = asList("__consumer_offsets");
-  private final TopicService topicService;
+  private final TopicManagement topicManagement;
   private final MultiDCAwareService multiDCAwareService;
   private final KafkaClustersProperties kafkaClustersProperties;
 
   public KafkaHermesConsistencyService(
-      TopicService topicService,
+      TopicManagement topicManagement,
       MultiDCAwareService multiDCAwareService,
       KafkaClustersProperties kafkaClustersProperties) {
-    this.topicService = topicService;
+    this.topicManagement = topicManagement;
     this.kafkaClustersProperties = kafkaClustersProperties;
     this.multiDCAwareService = multiDCAwareService;
   }
 
   public Set<String> listInconsistentTopics() {
-    List<String> topicsFromHermes = topicService.listQualifiedTopicNames();
+    List<String> topicsFromHermes = topicManagement.listQualifiedTopicNames();
 
     return multiDCAwareService.listTopicFromAllDC().stream()
         .filter(
@@ -45,13 +46,21 @@ public class KafkaHermesConsistencyService {
   }
 
   public void removeTopic(String topicName, RequestUser requestUser) {
-    logger.info(
-        "Removing topic {} only on brokers. Requested by {}", topicName, requestUser.getUsername());
+    logger
+        .atInfo()
+        .addKeyValue(TOPIC_NAME, topicName)
+        .log(
+            "Removing topic {} only on brokers. Requested by {}",
+            topicName,
+            requestUser.getUsername());
     multiDCAwareService.removeTopicByName(topicName);
-    logger.info(
-        "Successfully removed topic {} on brokers. Requested by {}",
-        topicName,
-        requestUser.getUsername());
+    logger
+        .atInfo()
+        .addKeyValue(TOPIC_NAME, topicName)
+        .log(
+            "Successfully removed topic {} on brokers. Requested by {}",
+            topicName,
+            requestUser.getUsername());
   }
 
   private String mapToHermesFormat(String topic) {

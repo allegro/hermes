@@ -18,7 +18,7 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.domain.filtering.chain.FilterChain;
 import pl.allegro.tech.hermes.domain.filtering.chain.FilterChainFactory;
 import pl.allegro.tech.hermes.domain.filtering.chain.FilterResult;
-import pl.allegro.tech.hermes.management.domain.topic.TopicService;
+import pl.allegro.tech.hermes.management.domain.topic.TopicManagement;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
 import tech.allegro.schema.json2avro.converter.AvroConversionException;
@@ -28,23 +28,23 @@ import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 public class FilteringService {
   private final FilterChainFactory filterChainFactory;
   private final SchemaRepository schemaRepository;
-  private final TopicService topicService;
+  private final TopicManagement topicManagement;
   private final JsonAvroConverter jsonAvroConverter;
 
   public FilteringService(
       FilterChainFactory filterChainFactory,
       SchemaRepository schemaRepository,
-      TopicService topicService,
+      TopicManagement topicManagement,
       JsonAvroConverter jsonAvroConverter) {
     this.filterChainFactory = filterChainFactory;
     this.schemaRepository = schemaRepository;
-    this.topicService = topicService;
+    this.topicManagement = topicManagement;
     this.jsonAvroConverter = jsonAvroConverter;
   }
 
   public MessageFiltersVerificationResult verify(
       MessageFiltersVerificationInput verification, TopicName topicName) {
-    Topic topic = topicService.getTopicDetails(topicName);
+    Topic topic = topicManagement.getTopicDetails(topicName);
     CompiledSchema<Schema> avroSchema = getLatestAvroSchemaIfExists(topic);
 
     byte[] messageContent;

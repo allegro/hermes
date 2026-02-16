@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.common.message.wrapper;
 
 import static java.util.Arrays.asList;
+import static pl.allegro.tech.hermes.common.logging.LoggingFields.TOPIC_NAME;
 import static pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentUnwrapperResult.AvroMessageContentUnwrapperResultStatus.SUCCESS;
 
 import java.util.Collection;
@@ -54,10 +55,13 @@ public class CompositeMessageContentWrapper implements MessageContentWrapper {
       }
     }
 
-    logger.error(
-        "All attempts to unwrap Avro message for topic {} with schema version {} failed",
-        topic.getQualifiedName(),
-        schemaVersion);
+    logger
+        .atError()
+        .addKeyValue(TOPIC_NAME, topic.getQualifiedName())
+        .log(
+            "All attempts to unwrap Avro message for topic {} with schema version {} failed",
+            topic.getQualifiedName(),
+            schemaVersion);
     throw new SchemaMissingException(topic);
   }
 

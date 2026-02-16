@@ -1,5 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.oauth;
 
+import static pl.allegro.tech.hermes.common.logging.LoggingFields.SUBSCRIPTION_NAME;
+
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.LoadingCache;
 import java.util.Optional;
@@ -32,7 +34,11 @@ public class OAuthSubscriptionAccessTokens implements OAuthAccessTokens {
     try {
       return Optional.ofNullable(subscriptionTokens.get(subscriptionName));
     } catch (Exception e) {
-      logger.error("Could not get access token for subscription {}", subscriptionName, e);
+      logger
+          .atError()
+          .addKeyValue(SUBSCRIPTION_NAME, subscriptionName.getQualifiedName())
+          .setCause(e)
+          .log("Could not get access token for subscription {}", subscriptionName);
       return Optional.empty();
     }
   }
@@ -43,10 +49,13 @@ public class OAuthSubscriptionAccessTokens implements OAuthAccessTokens {
       OAuthAccessToken token = tokenLoader.load(subscriptionName);
       subscriptionTokens.put(subscriptionName, token);
     } catch (Exception e) {
-      logger.error(
-          "An error occurred while refreshing access token for subscription {}",
-          subscriptionName,
-          e);
+      logger
+          .atError()
+          .addKeyValue(SUBSCRIPTION_NAME, subscriptionName.getQualifiedName())
+          .setCause(e)
+          .log(
+              "An error occurred while refreshing access token for subscription {}",
+              subscriptionName);
     }
   }
 

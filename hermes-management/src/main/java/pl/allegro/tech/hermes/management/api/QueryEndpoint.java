@@ -16,24 +16,24 @@ import pl.allegro.tech.hermes.api.SubscriptionNameWithMetrics;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicNameWithMetrics;
 import pl.allegro.tech.hermes.management.domain.group.GroupService;
-import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
-import pl.allegro.tech.hermes.management.domain.topic.TopicService;
+import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionManagement;
+import pl.allegro.tech.hermes.management.domain.topic.TopicManagement;
 
 @Path("query")
 @Component
 public class QueryEndpoint {
 
-  private final SubscriptionService subscriptionService;
-  private final TopicService topicService;
+  private final SubscriptionManagement subscriptionManagement;
+  private final TopicManagement topicManagement;
   private final GroupService groupService;
 
   @Autowired
   public QueryEndpoint(
-      SubscriptionService subscriptionService,
-      TopicService topicService,
+      SubscriptionManagement subscriptionManagement,
+      TopicManagement topicManagement,
       GroupService groupService) {
-    this.subscriptionService = subscriptionService;
-    this.topicService = topicService;
+    this.subscriptionManagement = subscriptionManagement;
+    this.topicManagement = topicManagement;
     this.groupService = groupService;
   }
 
@@ -50,7 +50,7 @@ public class QueryEndpoint {
   @Produces(APPLICATION_JSON)
   @Path("/topics")
   public List<Topic> queryTopics(Query<Topic> query) {
-    return topicService.queryTopic(query);
+    return topicManagement.queryTopic(query);
   }
 
   @POST
@@ -58,7 +58,7 @@ public class QueryEndpoint {
   @Produces(APPLICATION_JSON)
   @Path("/subscriptions")
   public List<Subscription> querySubscriptions(Query<Subscription> query) {
-    return subscriptionService.querySubscription(query);
+    return subscriptionManagement.querySubscription(query);
   }
 
   @POST
@@ -66,7 +66,7 @@ public class QueryEndpoint {
   @Produces(APPLICATION_JSON)
   @Path("/topics/metrics")
   public List<TopicNameWithMetrics> queryTopicsMetrics(Query<TopicNameWithMetrics> query) {
-    return topicService.queryTopicsMetrics(query);
+    return topicManagement.queryTopicsMetrics(query);
   }
 
   @POST
@@ -75,6 +75,6 @@ public class QueryEndpoint {
   @Path("subscriptions/metrics")
   public List<SubscriptionNameWithMetrics> querySubscriptionsMetrics(
       Query<SubscriptionNameWithMetrics> query) {
-    return subscriptionService.querySubscriptionsMetrics(query);
+    return subscriptionManagement.querySubscriptionsMetrics(query);
   }
 }

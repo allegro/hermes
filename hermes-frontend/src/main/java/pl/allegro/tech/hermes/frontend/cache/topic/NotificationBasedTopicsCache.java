@@ -1,5 +1,7 @@
 package pl.allegro.tech.hermes.frontend.cache.topic;
 
+import static pl.allegro.tech.hermes.common.logging.LoggingFields.TOPIC_NAME;
+
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Optional;
@@ -56,11 +58,14 @@ public class NotificationBasedTopicsCache implements TopicCallback, TopicsCache 
       if (cachedTopic.equals(topic)) {
         topicCache.remove(topic.getName().qualifiedName());
       } else {
-        logger.warn(
-            "Received event about removed topic but cache contains different topic under the same name."
-                + "Cached topic {}, removed topic {}",
-            cachedTopic,
-            topic);
+        logger
+            .atWarn()
+            .addKeyValue(TOPIC_NAME, topic.getQualifiedName())
+            .log(
+                "Received event about removed topic but cache contains different topic under the same name. "
+                    + "Cached topic {}, removed topic {}",
+                cachedTopic,
+                topic);
       }
     }
   }

@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer;
 
-import static java.lang.String.format;
 import static org.apache.commons.lang3.math.NumberUtils.INTEGER_ZERO;
+import static pl.allegro.tech.hermes.common.logging.LoggingFields.SUBSCRIPTION_NAME;
 import static pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset.subscriptionPartitionOffset;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -116,7 +116,11 @@ public class ConsumerMessageSender {
     try {
       retrySingleThreadExecutor.awaitTermination(1, TimeUnit.MINUTES);
     } catch (InterruptedException e) {
-      logger.warn("Failed to stop retry executor within one minute with following exception", e);
+      logger
+          .atWarn()
+          .addKeyValue(SUBSCRIPTION_NAME, subscription.getQualifiedName().getQualifiedName())
+          .setCause(e)
+          .log("Failed to stop retry executor within one minute with following exception");
     }
   }
 
@@ -162,13 +166,17 @@ public class ConsumerMessageSender {
             new ResponseHandlingListener(message, timer, profiler), deliveryReportingExecutor)
         .exceptionally(
             e -> {
-              logger.error(
-                  "An error occurred while handling message sending response of subscription {} [partition={}, offset={}, id={}]",
-                  subscription.getQualifiedName(),
-                  message.getPartition(),
-                  message.getOffset(),
-                  message.getId(),
-                  e);
+              logger
+                  .atError()
+                  .addKeyValue(
+                      SUBSCRIPTION_NAME, subscription.getQualifiedName().getQualifiedName())
+                  .setCause(e)
+                  .log(
+                      "An error occurred while handling message sending response of subscription {} [partition={}, offset={}, id={}]",
+                      subscription.getQualifiedName().getQualifiedName(),
+                      message.getPartition(),
+                      message.getOffset(),
+                      message.getId());
               return null;
             });
   }
@@ -283,16 +291,18 @@ public class ConsumerMessageSender {
   }
 
   private void logResultInfo(Message message, MessageSendingResultLogInfo logInfo) {
-    logger.debug(
-        format(
-            "Retrying message send to endpoint %s; messageId %s; offset: %s; partition: %s; sub id: %s; rootCause: %s",
+    logger
+        .atDebug()
+        .addKeyValue(SUBSCRIPTION_NAME, subscription.getQualifiedName().getQualifiedName())
+        .setCause(logInfo.getFailure())
+        .log(
+            "Retrying message send to endpoint {}; messageId {}; offset: {}; partition: {}; sub id: {}; rootCause: {}",
             logInfo.getUrlString(),
             message.getId(),
             message.getOffset(),
             message.getPartition(),
-            subscription.getQualifiedName(),
-            logInfo.getRootCause()),
-        logInfo.getFailure());
+            subscription.getQualifiedName().getQualifiedName(),
+            logInfo.getRootCause());
   }
 
   private void handleMessageDiscarding(
@@ -363,14 +373,17 @@ public class ConsumerMessageSender {
           handleFailedSending(message, result, profiler);
         }
       } else {
-        logger.warn(
-            "Process of subscription {} is not running. "
-                + "Ignoring sending message result [successful={}, partition={}, offset={}, id={}]",
-            subscription.getQualifiedName(),
-            result.succeeded(),
-            message.getPartition(),
-            message.getOffset(),
-            message.getId());
+        logger
+            .atWarn()
+            .addKeyValue(SUBSCRIPTION_NAME, subscription.getQualifiedName().getQualifiedName())
+            .log(
+                "Process of subscription {} is not running. "
+                    + "Ignoring sending message result [successful={}, partition={}, offset={}, id={}]",
+                subscription.getQualifiedName().getQualifiedName(),
+                result.succeeded(),
+                message.getPartition(),
+                message.getOffset(),
+                message.getId());
       }
     }
   }
