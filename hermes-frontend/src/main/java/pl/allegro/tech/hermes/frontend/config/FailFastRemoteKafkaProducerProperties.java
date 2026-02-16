@@ -40,6 +40,8 @@ public class FailFastRemoteKafkaProducerProperties implements KafkaProducerParam
 
   private boolean idempotenceEnabled = false;
 
+  private long bufferMemory = 256 * 1024 * 1024;
+
   private String partitionerClass = "";
 
   private int poolSize = 1;
@@ -204,5 +206,14 @@ public class FailFastRemoteKafkaProducerProperties implements KafkaProducerParam
 
   public void setPoolSize(int poolSize) {
     this.poolSize = poolSize;
+  }
+
+  @Override
+  public long getBufferMemory() {
+    return bufferMemory;
+  }
+
+  public void setBufferMemory(long bufferMemory) {
+    this.bufferMemory = bufferMemory;
   }
 }

@@ -76,6 +76,8 @@ public class FailFastLocalKafkaProducerProperties implements KafkaProducerParame
 
   private int poolSize = 1;
 
+  private long bufferMemory = 256 * 1024 * 1024;
+
   @Override
   public Duration getMaxBlock() {
     return maxBlock;
@@ -235,5 +237,14 @@ public class FailFastLocalKafkaProducerProperties implements KafkaProducerParame
 
   public void setPoolSize(int poolSize) {
     this.poolSize = poolSize;
+  }
+
+  @Override
+  public long getBufferMemory() {
+    return bufferMemory;
+  }
+
+  public void setBufferMemory(long bufferMemory) {
+    this.bufferMemory = bufferMemory;
   }
 }

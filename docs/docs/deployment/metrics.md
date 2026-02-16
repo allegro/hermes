@@ -64,18 +64,6 @@ Metrics:
 * `validation-latency`
 * `validation-latency.{groupName}.{topicName}`
 
-### Buffers
-
-These metrics indicate available [buffer](../user/publishing.md#buffering) size for both ACK-all:
-
-* `ack-all.buffer-total-bytes`
-* `ack-all.buffer-available-bytes`
-
-and ACK-leader buffers:
-
-* `ack-leader.buffer-total-bytes`
-* `ack-leader.buffer-available-bytes`
-
 ### Compression
 
 When using Kafka compression algorithm, these metrics show average compression rate of messages:
