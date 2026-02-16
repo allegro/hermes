@@ -28,8 +28,8 @@ public class HermesMockDefine {
   /**
    * Defines a JSON topic.
    *
-   * @param topicName qualified topic name in format {@code [a-zA-Z0-9_.-]+.[a-zA-Z0-9_.-]+},
-   *     where group and topic name must match the pattern {@code [a-zA-Z0-9_.-]+}, e.g.
+   * @param topicName qualified topic name in format {@code [a-zA-Z0-9_.-]+.[a-zA-Z0-9_.-]+}, where
+   *     group and topic name must match the pattern {@code [a-zA-Z0-9_.-]+}, e.g.
    *     "pl.allegro.public.MyTopic"
    * @return stub mapping for the defined topic
    * @throws IllegalArgumentException if topic name is not in qualified format
