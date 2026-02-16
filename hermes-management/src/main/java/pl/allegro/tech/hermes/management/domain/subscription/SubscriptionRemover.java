@@ -42,24 +42,25 @@ public class SubscriptionRemover {
     this.clock = clock;
   }
 
-  public void removeSubscription(
-      TopicName topicName, String subscriptionName, RequestUser removedBy) {
+  public void removeSubscription(SubscriptionName subscriptionName, RequestUser removedBy) {
     auditor.beforeObjectRemoval(
-        removedBy.getUsername(), Subscription.class.getSimpleName(), subscriptionName);
+        removedBy.getUsername(),
+        Subscription.class.getSimpleName(),
+        subscriptionName.getQualifiedName());
     Subscription subscription =
-        subscriptionRepository.getSubscriptionDetails(topicName, subscriptionName);
+        subscriptionRepository.getSubscriptionDetails(
+            subscriptionName.getTopicName(), subscriptionName.getName());
     multiDcExecutor.executeByUser(
-        new RemoveSubscriptionRepositoryCommand(topicName, subscriptionName), removedBy);
+        new RemoveSubscriptionRepositoryCommand(subscriptionName), removedBy);
 
     if (scheduleConsumerGroupRemoval) {
       multiDcExecutor.executeByUser(
-          new ScheduleConsumerGroupToDeleteCommand(
-              new SubscriptionName(subscriptionName, topicName), Instant.now(clock)),
+          new ScheduleConsumerGroupToDeleteCommand(subscriptionName, Instant.now(clock)),
           removedBy);
     }
 
     auditor.objectRemoved(removedBy.getUsername(), subscription);
-    subscriptionOwnerCache.onRemovedSubscription(subscriptionName, topicName);
+    subscriptionOwnerCache.onRemovedSubscription(subscriptionName);
   }
 
   public void removeSubscriptionRelatedToTopic(Topic topic, RequestUser removedBy) {
@@ -68,7 +69,7 @@ public class SubscriptionRemover {
     logger.info(
         "Removing subscriptions of topic: {}, subscriptions: {}", topic.getName(), subscriptions);
     long start = System.currentTimeMillis();
-    subscriptions.forEach(sub -> removeSubscription(topic.getName(), sub.getName(), removedBy));
+    subscriptions.forEach(sub -> removeSubscription(sub.getQualifiedName(), removedBy));
     logger.info(
         "Removed subscriptions of topic: {} in {} ms",
         topic.getName(),

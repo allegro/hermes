@@ -1,5 +1,7 @@
 package pl.allegro.tech.hermes.infrastructure.zookeeper;
 
+import static pl.allegro.tech.hermes.common.logging.LoggingFields.SUBSCRIPTION_NAME;
+
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
@@ -7,6 +9,7 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.KeeperException.NoNodeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
@@ -152,12 +155,16 @@ public class ZookeeperSubscriptionOffsetChangeIndicator
                 partition));
       } catch (InternalProcessingException ex) {
         if (ex.getCause() instanceof NoNodeException) {
-          logger.warn(
-              "No offset for partition {} in kafka topic {} for topic {} subscription {}",
-              partition,
-              kafkaTopicName,
-              topic,
-              subscriptionName);
+          SubscriptionName theSubscriptionName = new SubscriptionName(subscriptionName, topic);
+          logger
+              .atWarn()
+              .addKeyValue(SUBSCRIPTION_NAME, theSubscriptionName.getQualifiedName())
+              .log(
+                  "No offset for partition {} in kafka topic {} for topic {} subscription {}",
+                  partition,
+                  kafkaTopicName,
+                  topic,
+                  subscriptionName);
           continue;
         }
         throw ex;

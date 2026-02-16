@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.management.domain.topic;
 import static java.util.stream.Collectors.toList;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
+import static pl.allegro.tech.hermes.common.logging.LoggingFields.TOPIC_NAME;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.nio.charset.StandardCharsets;
@@ -18,8 +19,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.MessageTextPreview;
 import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.PatchData;
@@ -32,6 +31,7 @@ import pl.allegro.tech.hermes.api.TopicNameWithMetrics;
 import pl.allegro.tech.hermes.api.TopicStats;
 import pl.allegro.tech.hermes.api.TopicWithSchema;
 import pl.allegro.tech.hermes.api.helpers.Patch;
+import pl.allegro.tech.hermes.common.logging.LoggingContext;
 import pl.allegro.tech.hermes.domain.topic.TopicAlreadyExistsException;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreview;
@@ -52,8 +52,7 @@ import pl.allegro.tech.hermes.management.domain.topic.schema.SchemaService;
 import pl.allegro.tech.hermes.management.domain.topic.validator.TopicValidator;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 
-@Component
-public class TopicService {
+public class TopicService implements TopicManagement {
 
   private static final Logger logger = LoggerFactory.getLogger(TopicService.class);
 
@@ -76,7 +75,6 @@ public class TopicService {
       Executors.newSingleThreadScheduledExecutor(
           new ThreadFactoryBuilder().setNameFormat("scheduled-topic-executor-%d").build());
 
-  @Autowired
   public TopicService(
       MultiDCAwareService multiDCAwareService,
       TopicRepository topicRepository,
@@ -108,6 +106,7 @@ public class TopicService {
     this.subscriptionRemover = subscriptionRemover;
   }
 
+  @Override
   public void createTopicWithSchema(
       TopicWithSchema topicWithSchema, RequestUser createdBy, CreatorRights isAllowedToManage) {
     Topic topic = topicWithSchema.getTopic();
@@ -125,6 +124,7 @@ public class TopicService {
     createTopic(topic, createdBy, isAllowedToManage);
   }
 
+  @Override
   public void removeTopicWithSchema(Topic topic, RequestUser removedBy) {
     auditor.beforeObjectRemoval(
         removedBy.getUsername(), Topic.class.getSimpleName(), topic.getQualifiedName());
@@ -136,6 +136,7 @@ public class TopicService {
     removeTopic(topic, removedBy);
   }
 
+  @Override
   public void updateTopicWithSchema(TopicName topicName, PatchData patch, RequestUser modifiedBy) {
     Topic topic = getTopicDetails(topicName);
     extractSchema(patch)
@@ -147,7 +148,7 @@ public class TopicService {
     updateTopic(topicName, patch, modifiedBy);
   }
 
-  public void updateTopic(TopicName topicName, PatchData patch, RequestUser modifiedBy) {
+  private void updateTopic(TopicName topicName, PatchData patch, RequestUser modifiedBy) {
     auditor.beforeObjectUpdate(
         modifiedBy.getUsername(), Topic.class.getSimpleName(), topicName, patch);
     groupService.checkGroupExists(topicName.getGroupName());
@@ -185,22 +186,18 @@ public class TopicService {
     }
   }
 
-  public void touchTopic(TopicName topicName, RequestUser touchedBy) {
-    logger.info("Touching topic {}", topicName.qualifiedName());
-    multiDcExecutor.executeByUser(new TouchTopicRepositoryCommand(topicName), touchedBy);
-  }
-
   /**
    * Topic is touched so other Hermes instances are notified to read latest topic schema from
    * schema-registry. However, schema-registry can be distributed so when schema is written there
    * then it can not be available on all nodes immediately. This is the reason why we delay touch of
    * topic here, to wait until schema is distributed on schema-registry nodes.
    */
+  @Override
   public void scheduleTouchTopic(TopicName topicName, RequestUser touchedBy) {
     if (topicProperties.isTouchSchedulerEnabled()) {
       logger.info("Scheduling touch of topic {}", topicName.qualifiedName());
       scheduledTopicExecutor.schedule(
-          () -> touchTopic(topicName, touchedBy),
+          () -> touchTopicWithLogging(topicName, touchedBy),
           topicProperties.getTouchDelayInSeconds(),
           TimeUnit.SECONDS);
     } else {
@@ -208,12 +205,24 @@ public class TopicService {
     }
   }
 
+  private void touchTopicWithLogging(TopicName topicName, RequestUser touchedBy) {
+    LoggingContext.runWithLogging(
+        TOPIC_NAME, topicName.qualifiedName(), () -> touchTopic(topicName, touchedBy));
+  }
+
+  private void touchTopic(TopicName topicName, RequestUser touchedBy) {
+    logger.info("Touching topic {}", topicName.qualifiedName());
+    multiDcExecutor.executeByUser(new TouchTopicRepositoryCommand(topicName), touchedBy);
+  }
+
+  @Override
   public List<String> listQualifiedTopicNames(String groupName) {
     return topicRepository.listTopicNames(groupName).stream()
         .map(topicName -> new TopicName(groupName, topicName).qualifiedName())
         .collect(toList());
   }
 
+  @Override
   public List<String> listQualifiedTopicNames() {
     return groupService.listGroupNames().stream()
         .map(this::listQualifiedTopicNames)
@@ -222,14 +231,17 @@ public class TopicService {
         .collect(toList());
   }
 
+  @Override
   public List<Topic> listTopics(String groupName) {
     return topicRepository.listTopics(groupName);
   }
 
+  @Override
   public Topic getTopicDetails(TopicName topicName) {
     return topicRepository.getTopicDetails(topicName);
   }
 
+  @Override
   public TopicWithSchema getTopicWithSchema(TopicName topicName) {
     Topic topic = getTopicDetails(topicName);
     Optional<RawSchema> schema = Optional.empty();
@@ -241,18 +253,21 @@ public class TopicService {
         .orElseGet(() -> topicWithSchema(topic));
   }
 
+  @Override
   public TopicMetrics getTopicMetrics(TopicName topicName) {
     return topicRepository.topicExists(topicName)
         ? metricRepository.loadMetrics(topicName)
         : TopicMetrics.unavailable();
   }
 
+  @Override
   public String fetchSingleMessageFromPrimary(
       String brokersClusterName, TopicName topicName, Integer partition, Long offset) {
     return multiDCAwareService.readMessageFromPrimary(
         brokersClusterName, getTopicDetails(topicName), partition, offset);
   }
 
+  @Override
   public List<String> listTrackedTopicNames() {
     return groupService.listGroupNames().stream()
         .map(topicRepository::listTopics)
@@ -262,6 +277,7 @@ public class TopicService {
         .collect(toList());
   }
 
+  @Override
   public List<String> listTrackedTopicNames(String groupName) {
     return listTopics(groupName).stream()
         .filter(Topic::isTrackingEnabled)
@@ -269,22 +285,27 @@ public class TopicService {
         .collect(toList());
   }
 
+  @Override
   public List<String> listFilteredTopicNames(Query<Topic> query) {
     return queryTopic(query).stream().map(Topic::getQualifiedName).collect(toList());
   }
 
+  @Override
   public List<String> listFilteredTopicNames(String groupName, Query<Topic> query) {
     return query.filter(listTopics(groupName)).map(Topic::getQualifiedName).collect(toList());
   }
 
+  @Override
   public List<Topic> queryTopic(Query<Topic> query) {
     return query.filter(getAllTopics()).collect(toList());
   }
 
+  @Override
   public List<Topic> getAllTopics() {
     return topicRepository.listAllTopics();
   }
 
+  @Override
   public Optional<byte[]> preview(TopicName topicName, int idx) {
     List<byte[]> result =
         loadMessagePreviewsFromAllDc(topicName).stream().map(MessagePreview::getContent).toList();
@@ -296,6 +317,7 @@ public class TopicService {
     }
   }
 
+  @Override
   public List<MessageTextPreview> previewText(TopicName topicName) {
     return loadMessagePreviewsFromAllDc(topicName).stream()
         .map(
@@ -305,11 +327,13 @@ public class TopicService {
         .collect(toList());
   }
 
+  @Override
   public List<TopicNameWithMetrics> queryTopicsMetrics(Query<TopicNameWithMetrics> query) {
     List<Topic> filteredNames = query.filterNames(getAllTopics()).collect(toList());
     return query.filter(getTopicsMetrics(filteredNames)).collect(toList());
   }
 
+  @Override
   public TopicStats getStats() {
     List<Topic> topics = getAllTopics();
     long ackAllTopicCount = topics.stream().filter(t -> t.getAck() == Topic.Ack.ALL).count();
@@ -411,7 +435,7 @@ public class TopicService {
   }
 
   private Optional<String> extractSchema(PatchData patch) {
-    return Optional.ofNullable(patch.getPatch().get("schema")).map(o -> (String) o);
+    return Optional.ofNullable(patch.patch().get("schema")).map(o -> (String) o);
   }
 
   private List<MessagePreview> loadMessagePreviewsFromAllDc(TopicName topicName) {
@@ -438,6 +462,7 @@ public class TopicService {
         .collect(toList());
   }
 
+  @Override
   public List<Topic> listForOwnerId(OwnerId ownerId) {
     Collection<TopicName> topicNames = topicOwnerCache.get(ownerId);
     return topicRepository.getTopicsDetails(topicNames);

@@ -11,6 +11,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 
+// FIXME Threads created here are never cleaned up!
+// https://github.com/allegro-internal/alle-hermes/issues/584
 public class InstrumentedExecutorServiceFactory {
 
   private final MetricsFacade metricsFacade;

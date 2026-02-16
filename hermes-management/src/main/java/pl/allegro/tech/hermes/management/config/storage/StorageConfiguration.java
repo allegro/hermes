@@ -21,6 +21,9 @@ import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider;
 import pl.allegro.tech.hermes.infrastructure.dc.DcNameSource;
 import pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProvider;
 import pl.allegro.tech.hermes.infrastructure.dc.EnvironmentVariableDatacenterNameProvider;
+import pl.allegro.tech.hermes.infrastructure.logback.LoggingSubscriptionRepository;
+import pl.allegro.tech.hermes.infrastructure.logback.LoggingTopicRepository;
+import pl.allegro.tech.hermes.infrastructure.logback.LoggingWorkloadConstraintsRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperCredentialsRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperGroupRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperMessagePreviewRepository;
@@ -123,15 +126,19 @@ public class StorageConfiguration {
   @Bean
   TopicRepository topicRepository() {
     ZookeeperClient localClient = clientManager().getLocalClient();
-    return new ZookeeperTopicRepository(
-        localClient.getCuratorFramework(), objectMapper, zookeeperPaths(), groupRepository());
+    ZookeeperTopicRepository zkRepository =
+        new ZookeeperTopicRepository(
+            localClient.getCuratorFramework(), objectMapper, zookeeperPaths(), groupRepository());
+    return new LoggingTopicRepository(zkRepository);
   }
 
   @Bean
   SubscriptionRepository subscriptionRepository() {
     ZookeeperClient localClient = clientManager().getLocalClient();
-    return new ZookeeperSubscriptionRepository(
-        localClient.getCuratorFramework(), objectMapper, zookeeperPaths(), topicRepository());
+    ZookeeperSubscriptionRepository zkRepository =
+        new ZookeeperSubscriptionRepository(
+            localClient.getCuratorFramework(), objectMapper, zookeeperPaths(), topicRepository());
+    return new LoggingSubscriptionRepository(zkRepository);
   }
 
   @Bean
@@ -151,8 +158,9 @@ public class StorageConfiguration {
   @Bean
   WorkloadConstraintsRepository workloadConstraintsRepository() {
     ZookeeperClient localClient = clientManager().getLocalClient();
-    return new ZookeeperWorkloadConstraintsRepository(
-        localClient.getCuratorFramework(), objectMapper, zookeeperPaths());
+    return new LoggingWorkloadConstraintsRepository(
+        new ZookeeperWorkloadConstraintsRepository(
+            localClient.getCuratorFramework(), objectMapper, zookeeperPaths()));
   }
 
   @Bean

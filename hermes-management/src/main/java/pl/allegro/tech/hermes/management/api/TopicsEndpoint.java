@@ -46,21 +46,23 @@ import pl.allegro.tech.hermes.management.domain.owner.OwnerSourceNotFound;
 import pl.allegro.tech.hermes.management.domain.owner.OwnerSources;
 import pl.allegro.tech.hermes.management.domain.topic.CreatorRights;
 import pl.allegro.tech.hermes.management.domain.topic.SingleMessageReaderException;
-import pl.allegro.tech.hermes.management.domain.topic.TopicService;
+import pl.allegro.tech.hermes.management.domain.topic.TopicManagement;
 
 @Component
 @Path("/topics")
 @Api(value = "/topics", description = "Operations on topics")
 public class TopicsEndpoint {
 
-  private final TopicService topicService;
+  private final TopicManagement topicManagement;
   private final ManagementRights managementRights;
   private final OwnerSources ownerSources;
 
   @Autowired
   public TopicsEndpoint(
-      TopicService topicService, ManagementRights managementRights, OwnerSources ownerSources) {
-    this.topicService = topicService;
+      TopicManagement topicManagement,
+      ManagementRights managementRights,
+      OwnerSources ownerSources) {
+    this.topicManagement = topicManagement;
     this.managementRights = managementRights;
     this.ownerSources = ownerSources;
   }
@@ -90,8 +92,8 @@ public class TopicsEndpoint {
       @DefaultValue("") @QueryParam("groupName") String groupName, Query<Topic> query) {
 
     return isNullOrEmpty(groupName)
-        ? topicService.listFilteredTopicNames(query)
-        : topicService.listFilteredTopicNames(groupName, query);
+        ? topicManagement.listFilteredTopicNames(query)
+        : topicManagement.listFilteredTopicNames(groupName, query);
   }
 
   @POST
@@ -104,7 +106,7 @@ public class TopicsEndpoint {
     RequestUser requestUser = new HermesSecurityAwareRequestUser(requestContext);
     CreatorRights isAllowedToManage =
         checkedTopic -> managementRights.isUserAllowedToManageTopic(checkedTopic, requestContext);
-    topicService.createTopicWithSchema(topicWithSchema, requestUser, isAllowedToManage);
+    topicManagement.createTopicWithSchema(topicWithSchema, requestUser, isAllowedToManage);
     return status(Response.Status.CREATED).build();
   }
 
@@ -117,8 +119,9 @@ public class TopicsEndpoint {
       @PathParam("topicName") String qualifiedTopicName,
       @Context ContainerRequestContext requestContext) {
     RequestUser requestUser = new HermesSecurityAwareRequestUser(requestContext);
-    topicService.removeTopicWithSchema(
-        topicService.getTopicDetails(TopicName.fromQualifiedName(qualifiedTopicName)), requestUser);
+    topicManagement.removeTopicWithSchema(
+        topicManagement.getTopicDetails(TopicName.fromQualifiedName(qualifiedTopicName)),
+        requestUser);
     return status(Response.Status.OK).build();
   }
 
@@ -133,7 +136,7 @@ public class TopicsEndpoint {
       PatchData patch,
       @Context ContainerRequestContext requestContext) {
     RequestUser requestUser = new HermesSecurityAwareRequestUser(requestContext);
-    topicService.updateTopicWithSchema(
+    topicManagement.updateTopicWithSchema(
         TopicName.fromQualifiedName(qualifiedTopicName), patch, requestUser);
     return status(Response.Status.OK).build();
   }
@@ -143,7 +146,7 @@ public class TopicsEndpoint {
   @Path("/{topicName}")
   @ApiOperation(value = "Topic details", httpMethod = HttpMethod.GET)
   public TopicWithSchema get(@PathParam("topicName") String qualifiedTopicName) {
-    return topicService.getTopicWithSchema(TopicName.fromQualifiedName(qualifiedTopicName));
+    return topicManagement.getTopicWithSchema(TopicName.fromQualifiedName(qualifiedTopicName));
   }
 
   @GET
@@ -151,7 +154,7 @@ public class TopicsEndpoint {
   @Path("/{topicName}/metrics")
   @ApiOperation(value = "Topic metrics", httpMethod = HttpMethod.GET)
   public TopicMetrics getMetrics(@PathParam("topicName") String qualifiedTopicName) {
-    return topicService.getTopicMetrics(TopicName.fromQualifiedName(qualifiedTopicName));
+    return topicManagement.getTopicMetrics(TopicName.fromQualifiedName(qualifiedTopicName));
   }
 
   @GET
@@ -159,7 +162,7 @@ public class TopicsEndpoint {
   @Path("/{topicName}/preview")
   @ApiOperation(value = "Topic publisher preview", httpMethod = HttpMethod.GET)
   public List<MessageTextPreview> getPreview(@PathParam("topicName") String qualifiedTopicName) {
-    return topicService.previewText(TopicName.fromQualifiedName(qualifiedTopicName));
+    return topicManagement.previewText(TopicName.fromQualifiedName(qualifiedTopicName));
   }
 
   @GET
@@ -169,7 +172,7 @@ public class TopicsEndpoint {
   public byte[] getPreviewRaw(
       @PathParam("topicName") String qualifiedTopicName, @PathParam("idx") Integer idx) {
     TopicName topicName = TopicName.fromQualifiedName(qualifiedTopicName);
-    Optional<byte[]> preview = topicService.preview(topicName, idx);
+    Optional<byte[]> preview = topicManagement.preview(topicName, idx);
     if (preview.isPresent()) {
       return preview.get();
     } else {
@@ -191,7 +194,7 @@ public class TopicsEndpoint {
       @PathParam("partition") Integer partition,
       @PathParam("offset") Long offset) {
     try {
-      return topicService.fetchSingleMessageFromPrimary(
+      return topicManagement.fetchSingleMessageFromPrimary(
           brokersClusterName, TopicName.fromQualifiedName(qualifiedTopicName), partition, offset);
     } catch (BrokerNotFoundForPartitionException | SingleMessageReaderException exception) {
       throw new NotFoundException(
@@ -214,18 +217,18 @@ public class TopicsEndpoint {
       throw new OwnerSource.OwnerNotFound(ownerSourceName, id);
     }
     OwnerId ownerId = new OwnerId(ownerSource.name(), id);
-    return topicService.listForOwnerId(ownerId);
+    return topicManagement.listForOwnerId(ownerId);
   }
 
   private List<String> listTracked(String groupName) {
     return isNullOrEmpty(groupName)
-        ? topicService.listTrackedTopicNames()
-        : topicService.listTrackedTopicNames(groupName);
+        ? topicManagement.listTrackedTopicNames()
+        : topicManagement.listTrackedTopicNames(groupName);
   }
 
   private List<String> listNames(String groupName) {
     return isNullOrEmpty(groupName)
-        ? topicService.listQualifiedTopicNames()
-        : topicService.listQualifiedTopicNames(groupName);
+        ? topicManagement.listQualifiedTopicNames()
+        : topicManagement.listQualifiedTopicNames(groupName);
   }
 }

@@ -1,5 +1,7 @@
 package pl.allegro.tech.hermes.common.message.wrapper;
 
+import static pl.allegro.tech.hermes.common.logging.LoggingFields.TOPIC_NAME;
+
 import org.apache.avro.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,11 +47,14 @@ public class AvroMessageHeaderSchemaVersionContentWrapper implements AvroMessage
       return AvroMessageContentUnwrapperResult.success(
           avroMessageContentWrapper.unwrapContent(data, avroSchema));
     } catch (Exception ex) {
-      logger.warn(
-          "Could not unwrap content for topic [{}] using schema version provided in header [{}] - falling back",
-          topic.getQualifiedName(),
-          schemaVersion,
-          ex);
+      logger
+          .atWarn()
+          .addKeyValue(TOPIC_NAME, topic.getQualifiedName())
+          .setCause(ex)
+          .log(
+              "Could not unwrap content for topic [{}] using schema version provided in header [{}] - falling back",
+              topic.getQualifiedName(),
+              schemaVersion);
 
       deserializationWithErrorsUsingHeaderSchemaVersion.increment();
 
