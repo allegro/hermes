@@ -26,6 +26,7 @@ public class ConsoleProperties {
   private ConsistencyView consistency = new ConsistencyView();
   private GroupView group = new GroupView();
   private Costs costs = new Costs();
+  private Logs logs = new Logs();
 
   public Dashboard getDashboard() {
     return dashboard;
@@ -89,6 +90,14 @@ public class ConsoleProperties {
 
   public void setCosts(Costs costs) {
     this.costs = costs;
+  }
+
+  public Logs getLogs() {
+    return logs;
+  }
+
+  public void setLogs(Logs logs) {
+    this.logs = logs;
   }
 
   public static final class Console {
@@ -952,6 +961,45 @@ public class ConsoleProperties {
 
     public void setMonitoringDocsUrl(String monitoringDocsUrl) {
       this.monitoringDocsUrl = monitoringDocsUrl;
+    }
+  }
+
+  public static final class Logs {
+    private boolean enabled = false;
+    private String baseUrl = "";
+    private String topicLogsFilter = "";
+    private String subscriptionLogsFilter = "";
+
+    public boolean isEnabled() {
+      return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+      this.enabled = enabled;
+    }
+
+    public String getBaseUrl() {
+      return baseUrl;
+    }
+
+    public void setBaseUrl(String baseUrl) {
+      this.baseUrl = baseUrl;
+    }
+
+    public String getTopicLogsFilter() {
+      return topicLogsFilter;
+    }
+
+    public void setTopicLogsFilter(String topicLogsFilter) {
+      this.topicLogsFilter = topicLogsFilter;
+    }
+
+    public String getSubscriptionLogsFilter() {
+      return subscriptionLogsFilter;
+    }
+
+    public void setSubscriptionLogsFilter(String subscriptionLogsFilter) {
+      this.subscriptionLogsFilter = subscriptionLogsFilter;
     }
   }
 }

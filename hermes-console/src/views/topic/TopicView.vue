@@ -124,6 +124,15 @@
       topic.value?.offlineStorage.enabled,
   );
 
+  const topicLogsUrl = computed(() => {
+    const logs = configStore.appConfig?.logs;
+    if (!logs?.baseUrl || !logs?.topicLogsFilter) return '';
+    return (
+      logs.baseUrl +
+      logs.topicLogsFilter.replace('{{topic_name}}', topicName.value)
+    );
+  });
+
   const Tab = {
     General: 'general',
     Schema: 'schema',
@@ -131,6 +140,7 @@
     OfflineClients: 'offlineClients',
     Messages: 'messages',
     OfflineRetransmission: 'offlineRetransmission',
+    Logs: 'logs',
   };
   const currentTab = ref<string>(Tab.General);
 </script>
@@ -190,6 +200,13 @@
           </v-tab>
           <v-tab :value="Tab.OfflineRetransmission" class="text-capitalize">
             {{ $t('topicView.tabs.offlineRetransmission') }}
+          </v-tab>
+          <v-tab
+            v-if="configStore.appConfig?.logs.enabled"
+            :value="Tab.Logs"
+            class="text-capitalize"
+          >
+            {{ $t('topicView.tabs.logs') }}
           </v-tab>
         </v-tabs>
       </v-container>
@@ -275,6 +292,36 @@
               :roles="roles"
               :tasks="activeRetransmissions"
             />
+          </v-container>
+        </v-tabs-window-item>
+
+        <v-tabs-window-item
+          v-if="configStore.appConfig?.logs.enabled"
+          :value="Tab.Logs"
+        >
+          <v-container class="py-0">
+            <v-card rounded="lg">
+              <v-card-item class="border-b">
+                <div class="d-flex justify-space-between align-start">
+                  <v-card-title class="font-weight-bold">
+                    {{ $t('logsCard.title') }}
+                  </v-card-title>
+                  <v-btn
+                    class="text-none"
+                    prepend-icon="mdi-open-in-new"
+                    target="_blank"
+                    :href="topicLogsUrl"
+                    variant="text"
+                    color="primary"
+                  >
+                    {{ $t('logsCard.viewLogs') }}
+                  </v-btn>
+                </div>
+              </v-card-item>
+              <v-card-text>
+                {{ $t('logsCard.description') }}
+              </v-card-text>
+            </v-card>
           </v-container>
         </v-tabs-window-item>
       </v-tabs-window>

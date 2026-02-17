@@ -315,6 +315,7 @@ const en_US = {
       offlineClients: 'Offline clients',
       messages: 'Messages',
       offlineRetransmission: 'Offline retransmission',
+      logs: 'Logs',
     },
     confirmationDialog: {
       remove: {
@@ -443,6 +444,7 @@ const en_US = {
       messages: 'Messages',
       filters: 'Filters',
       mutations: 'Mutations',
+      logs: 'Logs',
     },
     confirmationDialog: {
       remove: {
@@ -910,6 +912,12 @@ const en_US = {
   costsCard: {
     title: 'Costs',
     detailsButton: 'Dashboard',
+  },
+  logsCard: {
+    title: 'Logs',
+    viewLogs: 'View logs',
+    description:
+      'View Hermes logs for this resource in an external logging provider.',
   },
   trackingCard: {
     title: 'Tracking',
