@@ -16,7 +16,7 @@ class HermesMockDefineValidationTest {
     hermesMock.start();
 
     try {
-      // when & then
+      // expect
       assertThatThrownBy(() -> hermesMock.define().jsonTopic("invalid-topic-name"))
           .isInstanceOf(IllegalArgumentException.class)
           .hasMessageContaining("Invalid qualified name");
@@ -33,7 +33,7 @@ class HermesMockDefineValidationTest {
     hermesMock.start();
 
     try {
-      // when & then
+      // expect
       assertThatThrownBy(() -> hermesMock.define().avroTopic("invalid-topic-name"))
           .isInstanceOf(IllegalArgumentException.class)
           .hasMessageContaining("Invalid qualified name");

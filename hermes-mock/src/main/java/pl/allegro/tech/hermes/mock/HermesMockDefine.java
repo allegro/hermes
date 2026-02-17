@@ -21,10 +21,6 @@ public class HermesMockDefine {
     this.hermesMockHelper = hermesMockHelper;
   }
 
-  private void validateTopicName(String topicName) {
-    TopicName.fromQualifiedName(topicName);
-  }
-
   /**
    * Defines a JSON topic.
    *
@@ -151,5 +147,9 @@ public class HermesMockDefine {
   private StubMapping addTopic(
       String topicName, Response response, String contentType, ValueMatcher<Request> valueMatcher) {
     return hermesMockHelper.addStub(topicName, response, contentType, valueMatcher);
+  }
+
+  private void validateTopicName(String topicName) {
+    TopicName.fromQualifiedName(topicName);
   }
 }
