@@ -67,17 +67,7 @@ public class ConsumerProcess implements Runnable {
     } finally {
       logger.info("Releasing consumer process thread of subscription {}", getSubscriptionName());
       refreshHealthcheck();
-      try {
-        stop();
-      } catch (Exception exceptionWhileStopping) {
-        logger.error(
-            "An error occurred while stopping consumer process of subscription {}",
-            getSubscriptionName(),
-            exceptionWhileStopping);
-      } finally {
-        onConsumerStopped.accept(getSubscriptionName());
-        Thread.currentThread().setName("consumer-released-thread");
-      }
+      stop();
     }
   }
 
@@ -119,7 +109,7 @@ public class ConsumerProcess implements Runnable {
               "Stopping main loop for consumer {}. {}",
               signal.getTarget(),
               signal.getLogWithIdAndType());
-          this.running = false;
+          stop();
           break;
         case RETRANSMIT:
           retransmit(signal);
@@ -159,15 +149,27 @@ public class ConsumerProcess implements Runnable {
   }
 
   private void stop() {
-    long startTime = clock.millis();
-    logger.info("Stopping consumer for subscription {}", getSubscriptionName());
-
-    consumer.tearDown();
-
-    logger.info(
-        "Stopped consumer for subscription {} in {}ms",
-        getSubscriptionName(),
-        clock.millis() - startTime);
+    if (!running) {
+      return;
+    }
+    this.running = false;
+    try {
+      long startTime = clock.millis();
+      logger.info("Stopping consumer for subscription {}", getSubscriptionName());
+      consumer.tearDown();
+      logger.info(
+          "Stopped consumer for subscription {} in {}ms",
+          getSubscriptionName(),
+          clock.millis() - startTime);
+    } catch (Exception exceptionWhileStopping) {
+      logger.error(
+          "An error occurred while stopping consumer process of subscription {}",
+          getSubscriptionName(),
+          exceptionWhileStopping);
+    } finally {
+      onConsumerStopped.accept(getSubscriptionName());
+      Thread.currentThread().setName("consumer-released-thread");
+    }
   }
 
   private void retransmit(Signal signal) {
