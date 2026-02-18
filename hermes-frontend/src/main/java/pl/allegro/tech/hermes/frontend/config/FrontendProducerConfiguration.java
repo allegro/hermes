@@ -147,7 +147,8 @@ public class FrontendProducerConfiguration {
         topicLoadingProperties.getMetadata().getRetryCount(),
         topicLoadingProperties.getMetadata().getRetryInterval(),
         topicLoadingProperties.getMetadata().getThreadPoolSize(),
-        localMessageStorageProperties.getBufferedSizeBytes(),
+        localMessageStorageProperties
+            .getBufferedSizeBytes(), // TODO deprecated feature and will be replaced
         kafkaProducerProperties.getMetadataMaxAge(),
         chaosScheduler);
   }

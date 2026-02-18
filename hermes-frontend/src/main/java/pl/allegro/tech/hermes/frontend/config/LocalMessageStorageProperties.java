@@ -6,6 +6,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.frontend.buffer.BackupMessagesLoaderParameters;
 import pl.allegro.tech.hermes.frontend.buffer.PersistentBufferExtensionParameters;
 
+/**
+ * @deprecated This feature is deprecated and will be removed in a future version.
+ */
+@Deprecated
 @ConfigurationProperties(prefix = "frontend.messages.local.storage")
 public class LocalMessageStorageProperties
     implements BackupMessagesLoaderParameters, PersistentBufferExtensionParameters {
