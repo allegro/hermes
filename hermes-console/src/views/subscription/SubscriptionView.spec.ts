@@ -101,6 +101,7 @@ describe('SubscriptionView', () => {
       'subscription.tabs.general',
       'subscription.tabs.filters',
       'subscription.tabs.messages',
+      'subscription.tabs.logs',
     ];
     expectedTabs.forEach((boxTitle) => {
       expect(getByText(boxTitle)).toBeVisible();
@@ -111,6 +112,7 @@ describe('SubscriptionView', () => {
     'subscription.tabs.general',
     'subscription.tabs.filters',
     'subscription.tabs.messages',
+    'subscription.tabs.logs',
   ])('should activate tab on click', async (tab: string) => {
     // given
     const user = userEvent.setup();
@@ -432,5 +434,49 @@ describe('SubscriptionView', () => {
 
     // then
     expect(queryByText('trackingCard.title')).not.toBeInTheDocument();
+  });
+
+  it('should show logs card on logs tab click', async () => {
+    // given
+    const user = userEvent.setup();
+    const { getByText } = render(SubscriptionView, {
+      testPinia: createTestingPiniaWithState(),
+    });
+
+    // when
+    await user.click(getByText('subscription.tabs.logs'));
+
+    // then
+    expect(getByText('logsCard.title')).toBeVisible();
+    expect(getByText('logsCard.viewLogs')).toBeVisible();
+    expect(getByText('logsCard.description')).toBeVisible();
+  });
+
+  it('should not show logs tab when kibana is disabled in app config', () => {
+    // when
+    const { queryByText } = render(SubscriptionView, {
+      testPinia: createTestingPinia({
+        initialState: {
+          appConfig: {
+            appConfig: {
+              ...dummyAppConfig,
+              logs: {
+                enabled: false,
+                baseUrl: '',
+                topicLogsFilter: '',
+                subscriptionLogsFilter: '',
+              },
+            },
+            loading: false,
+            error: {
+              loadConfig: null,
+            },
+          },
+        },
+      }),
+    });
+
+    // then
+    expect(queryByText('subscription.tabs.logs')).not.toBeInTheDocument();
   });
 });

@@ -10,6 +10,7 @@ export interface AppConfiguration {
   consistency: ConsistencyViewConfiguration;
   group: GroupViewConfiguration;
   costs: CostsConfiguration;
+  logs: LogsConfiguration;
 }
 
 export interface ConsoleConfiguration {
@@ -175,4 +176,11 @@ export interface OfflineRetransmission {
   fromViewDocsUrl: string;
   globalTaskQueueUrl: string;
   monitoringDocsUrl: string;
+}
+
+export interface LogsConfiguration {
+  enabled: boolean;
+  baseUrl: string;
+  topicLogsFilter: string;
+  subscriptionLogsFilter: string;
 }

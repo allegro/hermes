@@ -137,4 +137,12 @@ export const dummyAppConfig: AppConfiguration = {
     subscriptionIframeUrl: '',
     subscriptionDetailsUrl: '',
   },
+  logs: {
+    enabled: true,
+    baseUrl: 'https://logging.example.com/app/discover',
+    topicLogsFilter:
+      "#/?_a=(filters:!((query:(match_phrase:(topic-name:'{{topic_name}}')))))",
+    subscriptionLogsFilter:
+      "#/?_a=(filters:!((query:(match_phrase:(subscription-name:'{{subscription_name}}')))))",
+  },
 };
