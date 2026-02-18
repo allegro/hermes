@@ -9,6 +9,8 @@ public class HttpClientsMonitoringProperties {
 
   private boolean requestQueueMonitoringEnabled = true;
 
+  private boolean requestProcessingMonitoringEnabled = true;
+
   public boolean isConnectionPoolMonitoringEnabled() {
     return connectionPoolMonitoringEnabled;
   }
@@ -23,5 +25,13 @@ public class HttpClientsMonitoringProperties {
 
   public void setRequestQueueMonitoringEnabled(boolean requestQueueMonitoringEnabled) {
     this.requestQueueMonitoringEnabled = requestQueueMonitoringEnabled;
+  }
+
+  public boolean isRequestProcessingMonitoringEnabled() {
+    return requestProcessingMonitoringEnabled;
+  }
+
+  public void setRequestProcessingMonitoringEnabled(boolean requestProcessingMonitoringEnabled) {
+    this.requestProcessingMonitoringEnabled = requestProcessingMonitoringEnabled;
   }
 }

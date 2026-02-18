@@ -9,8 +9,9 @@ import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.MultiplexConnectionPool;
 import org.eclipse.jetty.client.transport.HttpDestination;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
+import pl.allegro.tech.hermes.metrics.HermesTimer;
 
-public class HttpClientsWorkloadReporter {
+public class HttpClientsMetricsReporter {
 
   private final MetricsFacade metrics;
   private final HttpClient http1SerialClient;
@@ -18,20 +19,23 @@ public class HttpClientsWorkloadReporter {
   private final Http2ClientHolder http2ClientHolder;
   private final boolean isRequestQueueMonitoringEnabled;
   private final boolean isConnectionPoolMonitoringEnabled;
+  private final boolean isRequestProcessingMonitoringEnabled;
 
-  public HttpClientsWorkloadReporter(
+  public HttpClientsMetricsReporter(
       MetricsFacade metrics,
       HttpClient http1SerialClient,
       HttpClient http1BatchClient,
       Http2ClientHolder http2ClientHolder,
       boolean isRequestQueueMonitoringEnabled,
-      boolean isConnectionPoolMonitoringEnabled) {
+      boolean isConnectionPoolMonitoringEnabled,
+      boolean isRequestProcessingMonitoringEnabled) {
     this.metrics = metrics;
     this.http1SerialClient = http1SerialClient;
     this.http1BatchClient = http1BatchClient;
     this.http2ClientHolder = http2ClientHolder;
     this.isRequestQueueMonitoringEnabled = isRequestQueueMonitoringEnabled;
     this.isConnectionPoolMonitoringEnabled = isConnectionPoolMonitoringEnabled;
+    this.isRequestProcessingMonitoringEnabled = isRequestProcessingMonitoringEnabled;
   }
 
   public void start() {
@@ -41,51 +45,54 @@ public class HttpClientsWorkloadReporter {
     if (isConnectionPoolMonitoringEnabled) {
       registerConnectionGauges();
     }
+    if (isRequestProcessingMonitoringEnabled) {
+      registerRequestProcessingListeners();
+    }
   }
 
   private void registerRequestQueueSizeGauges() {
     metrics
         .consumerSender()
-        .registerRequestQueueSizeGauge(this, HttpClientsWorkloadReporter::getQueuesSize);
+        .registerRequestQueueSizeGauge(this, HttpClientsMetricsReporter::getQueuesSize);
     metrics
         .consumerSender()
         .registerHttp1SerialClientRequestQueueSizeGauge(
-            this, HttpClientsWorkloadReporter::getHttp1SerialQueueSize);
+            this, HttpClientsMetricsReporter::getHttp1SerialQueueSize);
     metrics
         .consumerSender()
         .registerHttp1BatchClientRequestQueueSizeGauge(
-            this, HttpClientsWorkloadReporter::getHttp1BatchQueueSize);
+            this, HttpClientsMetricsReporter::getHttp1BatchQueueSize);
     metrics
         .consumerSender()
         .registerHttp2RequestQueueSizeGauge(
-            this, HttpClientsWorkloadReporter::getHttp2SerialQueueSize);
+            this, HttpClientsMetricsReporter::getHttp2SerialQueueSize);
   }
 
   private void registerConnectionGauges() {
     metrics
         .consumerSender()
         .registerHttp1SerialClientActiveConnectionsGauge(
-            this, HttpClientsWorkloadReporter::getHttp1SerialActiveConnections);
+            this, HttpClientsMetricsReporter::getHttp1SerialActiveConnections);
     metrics
         .consumerSender()
         .registerHttp1SerialClientIdleConnectionsGauge(
-            this, HttpClientsWorkloadReporter::getHttp1SerialIdleConnections);
+            this, HttpClientsMetricsReporter::getHttp1SerialIdleConnections);
     metrics
         .consumerSender()
         .registerHttp1BatchClientActiveConnectionsGauge(
-            this, HttpClientsWorkloadReporter::getHttp1BatchActiveConnections);
+            this, HttpClientsMetricsReporter::getHttp1BatchActiveConnections);
     metrics
         .consumerSender()
         .registerHttp1BatchClientIdleConnectionsGauge(
-            this, HttpClientsWorkloadReporter::getHttp1BatchIdleConnections);
+            this, HttpClientsMetricsReporter::getHttp1BatchIdleConnections);
     metrics
         .consumerSender()
         .registerHttp2SerialClientConnectionsGauge(
-            this, HttpClientsWorkloadReporter::getHttp2SerialConnections);
+            this, HttpClientsMetricsReporter::getHttp2SerialConnections);
     metrics
         .consumerSender()
         .registerHttp2SerialClientPendingConnectionsGauge(
-            this, HttpClientsWorkloadReporter::getHttp2SerialPendingConnections);
+            this, HttpClientsMetricsReporter::getHttp2SerialPendingConnections);
   }
 
   int getQueuesSize() {
@@ -177,5 +184,31 @@ public class HttpClientsWorkloadReporter {
 
   private Stream<MultiplexConnectionPool> getHttp2ConnectionPool(HttpClient http2Client) {
     return getConnectionPool(http2Client).map(MultiplexConnectionPool.class::cast);
+  }
+
+  private void registerRequestProcessingListeners() {
+    enrichWithRequestProcessingMetrics(
+        http1SerialClient,
+        metrics.consumerSender().http1SerialClientRequestQueueWaitingTimer(),
+        metrics.consumerSender().http1SerialClientRequestProcessingTimer());
+    enrichWithRequestProcessingMetrics(
+        http1BatchClient,
+        metrics.consumerSender().http1BatchClientRequestQueueWaitingTimer(),
+        metrics.consumerSender().http1BatchClientRequestProcessingTimer());
+    http2ClientHolder
+        .getHttp2Client()
+        .ifPresent(
+            http2Client ->
+                enrichWithRequestProcessingMetrics(
+                    http2Client,
+                    metrics.consumerSender().http2SerialClientRequestQueueWaitingTimer(),
+                    metrics.consumerSender().http2SerialClientRequestProcessingTimer()));
+  }
+
+  private static void enrichWithRequestProcessingMetrics(
+      HttpClient client, HermesTimer requestQueueWaitingTimer, HermesTimer requestProcessingTimer) {
+    client
+        .getRequestListeners()
+        .addListener(new JettyHttpClientMetrics(requestQueueWaitingTimer, requestProcessingTimer));
   }
 }
