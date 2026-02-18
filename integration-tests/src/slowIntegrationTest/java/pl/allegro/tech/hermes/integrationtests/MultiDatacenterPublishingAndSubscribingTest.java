@@ -5,12 +5,10 @@ import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.sub
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
 
 import java.util.Map;
-import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.testcontainers.lifecycle.Startable;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesConsumersTestApp;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesFrontendTestApp;
@@ -22,7 +20,6 @@ import pl.allegro.tech.hermes.test.helper.client.integration.HermesInitHelper;
 import pl.allegro.tech.hermes.test.helper.containers.ConfluentSchemaRegistryContainer;
 import pl.allegro.tech.hermes.test.helper.containers.KafkaContainerCluster;
 import pl.allegro.tech.hermes.test.helper.containers.ZookeeperContainer;
-import pl.allegro.tech.hermes.test.helper.environment.HermesTestApp;
 import pl.allegro.tech.hermes.test.helper.message.TestMessage;
 
 public class MultiDatacenterPublishingAndSubscribingTest {
@@ -40,7 +37,8 @@ public class MultiDatacenterPublishingAndSubscribingTest {
 
   @BeforeAll
   public static void setup() {
-    Stream.of(dc1, dc2).parallel().forEach(HermesDatacenter::startKafkaAndZookeeper);
+    dc1.startKafkaAndZookeeper();
+    dc2.startKafkaAndZookeeper();
     schemaRegistry.start();
     management =
         new HermesManagementTestApp(
@@ -56,7 +54,8 @@ public class MultiDatacenterPublishingAndSubscribingTest {
   @AfterAll
   public static void clean() {
     management.stop();
-    Stream.of(dc1, dc2).parallel().forEach(HermesDatacenter::stop);
+    dc1.stop();
+    dc2.stop();
     schemaRegistry.stop();
   }
 
@@ -94,7 +93,8 @@ public class MultiDatacenterPublishingAndSubscribingTest {
     }
 
     void startKafkaAndZookeeper() {
-      Stream.of(hermesZookeeper, kafka).parallel().forEach(Startable::start);
+      hermesZookeeper.start();
+      kafka.start();
     }
 
     void startConsumersAndFrontend() {
@@ -104,8 +104,10 @@ public class MultiDatacenterPublishingAndSubscribingTest {
     }
 
     void stop() {
-      Stream.of(consumers, frontend).parallel().forEach(HermesTestApp::stop);
-      Stream.of(hermesZookeeper, kafka).parallel().forEach(Startable::stop);
+      consumers.stop();
+      frontend.stop();
+      hermesZookeeper.stop();
+      kafka.stop();
     }
 
     FrontendTestClient api() {

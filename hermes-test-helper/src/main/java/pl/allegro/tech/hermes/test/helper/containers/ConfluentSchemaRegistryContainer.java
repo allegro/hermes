@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.test.helper.containers;
 
 import static java.lang.String.format;
 
+import java.time.Duration;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
@@ -19,6 +20,11 @@ public class ConfluentSchemaRegistryContainer
     withExposedPorts(SCHEMA_REGISTRY_PORT);
     withNetworkAliases("schema-registry");
     waitingFor(Wait.forHttp("/subjects"));
+  }
+
+  @Override
+  public void start() {
+    TestcontainersUtils.startWithRetry(super::start, 3, Duration.ofSeconds(2));
   }
 
   public ConfluentSchemaRegistryContainer withKafkaCluster(KafkaContainerCluster cluster) {

@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.test.helper.containers;
 
+import java.time.Duration;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +40,7 @@ public class ZookeeperContainer extends GenericContainer<ZookeeperContainer> {
 
   @Override
   public void start() {
-    super.start();
+    TestcontainersUtils.startWithRetry(() -> super.start(), 3, Duration.ofSeconds(2));
     waitingFor(Wait.forHealthcheck());
     setupLogger();
   }

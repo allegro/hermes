@@ -8,11 +8,9 @@ import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 import java.time.Duration;
 import java.util.Map;
-import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.lifecycle.Startable;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.env.BrokerOperations;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesManagementTestApp;
@@ -40,7 +38,9 @@ public class TopicCreationRollbackTest {
 
   @BeforeAll
   public static void setup() {
-    Stream.of(hermesZookeeper, kafka1, kafka2).parallel().forEach(Startable::start);
+    hermesZookeeper.start();
+    kafka1.start();
+    kafka2.start();
     schemaRegistry.start();
     management =
         new HermesManagementTestApp(
@@ -57,7 +57,9 @@ public class TopicCreationRollbackTest {
   @AfterAll
   public static void clean() {
     management.stop();
-    Stream.of(hermesZookeeper, kafka1, kafka2).parallel().forEach(Startable::stop);
+    hermesZookeeper.stop();
+    kafka1.stop();
+    kafka2.stop();
     schemaRegistry.stop();
   }
 
