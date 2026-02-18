@@ -39,17 +39,18 @@ Minimal request:
 
 All options:
 
-| Option                             | Description                                                                           | Default value                                        |
-|------------------------------------|---------------------------------------------------------------------------------------|------------------------------------------------------|
-| trackingMode                       | track outgoing messages                                                               | trackingOff                                          |
-| contentType                        | delivered message format (JSON or BATCH)                                              | JSON                                                 |
-| deliveryType                       | delivery type (SERIAL or BATCH)                                                       | SERIAL                                               |
-| subscriptionPolicy                 | see [delivery types](#delivery-type)                                                  | [serial](#serial-delivery), [batch](#batch-delivery) |
-| mode                               | whether to send message to single (ANYCAST) or all (BROADCAST) subscription endpoints | ANYCAST                                              |
-| headers                            | additional HTTP request headers                                                       | [] (array of headers)                                |
-| filters                            | used for skipping unwanted messages                                                   | [] (array of filters)                                |
-| endpointAddressResolverMetadata    | additional address resolver metadata                                                  | {} (map)                                             |
-| subscriptionIdentityHeadersEnabled | attach HTTP headers with subscription identity                                        | false                                                |
+| Option                                  | Description                                                                           | Default value                                        |
+|-----------------------------------------|---------------------------------------------------------------------------------------|------------------------------------------------------|
+| trackingMode                            | track outgoing messages                                                               | trackingOff                                          |
+| contentType                             | delivered message format (JSON or BATCH)                                              | JSON                                                 |
+| deliveryType                            | delivery type (SERIAL or BATCH)                                                       | SERIAL                                               |
+| subscriptionPolicy                      | see [delivery types](#delivery-type)                                                  | [serial](#serial-delivery), [batch](#batch-delivery) |
+| mode                                    | whether to send message to single (ANYCAST) or all (BROADCAST) subscription endpoints | ANYCAST                                              |
+| headers                                 | additional HTTP request headers                                                       | [] (array of headers)                                |
+| filters                                 | used for skipping unwanted messages                                                   | [] (array of filters)                                |
+| endpointAddressResolverMetadata         | additional address resolver metadata                                                  | {} (map)                                             |
+| subscriptionIdentityHeadersEnabled      | attach HTTP headers with subscription identity                                        | false                                                |
+| [metricsConfig](#metrics-configuration) | subscription-specific metrics configuration (e.g. message processing time)            | {} (no extra metrics enabled)                        |
 
 Possible values for **trackingMode** are:
 
@@ -104,7 +105,16 @@ Request that specifies all available options:
         "ignoreMessageHeaders": true,
         "serviceInstanceId": 123
     },
-    "subscriptionIdentityHeadersEnabled": false
+    "subscriptionIdentityHeadersEnabled": false,
+    "metricsConfig": {
+        "messageProcessing": {
+            "enabled": true,
+            "thresholdsMilliseconds": [
+                60000,
+                300000
+            ]
+        }
+    }
 }
 ```
 
@@ -564,6 +574,49 @@ providerName | OAuth provider name to be used for token request
 username     | Resource owner's username
 password     | Resource owner's password
 scope        | An optional scope of the access request
+
+## Metrics configuration
+
+`metricsConfig` allows you to enable additional, subscription-scoped metrics. Currently, it supports the
+**message processing time** metric.
+
+### Message processing time metric
+
+**Message processing time** measures how long it takes for an event to be processed from **publication** on a topic
+until its **successful delivery** (HTTP 2xx) to the subscriber. It includes Hermes retries, backoffs, configured
+sending delays, lag and rate limiting. Only successfully delivered events are counted; discarded or permanently
+failed messages are not included.
+
+The metric is:
+
+- configured per subscription,
+- disabled by default,
+- currently available only for **serial** (non-batch) subscriptions.
+
+To enable it, use the `metricsConfig.messageProcessing` section in the subscription definition:
+
+```json
+{
+  "metricsConfig": {
+    "messageProcessing": {
+      "enabled": true,
+      "thresholdsMilliseconds": [
+        60000,
+        300000
+      ]
+    }
+  }
+}
+```
+
+Where:
+
+| Option                 | Description                                                                                                                                                              | Default value |
+|------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------|
+| enabled                | Turns message processing time metric on or off for this subscription.                                                                                                    | false         |
+| thresholdsMilliseconds | List of histogram bucket thresholds in **milliseconds**; provide a single threshold for a simple "processed within X ms" view or multiple for full distribution and p99. | [] (disabled) |
+
+You can change `thresholdsMilliseconds` later; Hermes will recreate the histogram with the new bucket layout.
 
 ## Metrics
 
