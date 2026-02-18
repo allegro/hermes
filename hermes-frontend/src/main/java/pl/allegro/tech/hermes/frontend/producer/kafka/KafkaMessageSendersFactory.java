@@ -45,7 +45,6 @@ public class KafkaMessageSendersFactory {
   private final List<KafkaParameters> remoteKafkaParameters;
   private final BrokerLatencyReporter brokerLatencyReporter;
   private final MetricsFacade metricsFacade;
-  private final long bufferedSizeBytes;
   private final ScheduledExecutorService chaosScheduler;
 
   public KafkaMessageSendersFactory(
@@ -58,14 +57,12 @@ public class KafkaMessageSendersFactory {
       int retryCount,
       Duration retryInterval,
       int threadPoolSize,
-      long bufferedSizeBytes,
       Duration metadataMaxAge,
       ScheduledExecutorService chaosScheduler) {
     this.topicMetadataLoadingExecutor =
         new TopicMetadataLoadingExecutor(topicsCache, retryCount, retryInterval, threadPoolSize);
     this.localMinInSyncReplicasLoader =
         new MinInSyncReplicasLoader(localAdminClient, metadataMaxAge);
-    this.bufferedSizeBytes = bufferedSizeBytes;
     this.kafkaParameters = kafkaParameters;
     this.remoteKafkaParameters = remoteKafkaParameters;
     this.metricsFacade = metricsFacade;
@@ -113,9 +110,7 @@ public class KafkaMessageSendersFactory {
     props.put(BOOTSTRAP_SERVERS_CONFIG, kafkaParameters.getBrokerList());
     props.put(MAX_BLOCK_MS_CONFIG, (int) kafkaProducerParameters.getMaxBlock().toMillis());
     props.put(COMPRESSION_TYPE_CONFIG, kafkaProducerParameters.getCompressionCodec());
-    props.put(
-        BUFFER_MEMORY_CONFIG,
-        bufferedSizeBytes); // TODO @deprecated to be moved to the KafkaProducerParameters
+    props.put(BUFFER_MEMORY_CONFIG, kafkaProducerParameters.getBufferMemory());
     props.put(
         REQUEST_TIMEOUT_MS_CONFIG, (int) kafkaProducerParameters.getRequestTimeout().toMillis());
     props.put(

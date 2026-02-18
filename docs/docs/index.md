@@ -25,10 +25,9 @@ It was also designed to be easily scalable. Each component is stateless and can 
 
 ## Reliability
 
-Hermes was designed to handle sensitive data, which needs highest guarantees of delivery. Using internal buffering
-Hermes is able to operate and accept traffic while Kafka brokers are down. It also has a (configurable) guaranteed
-maximum response time, which is kept even if Kafka is having trouble. Since Hermes is just a simple HTTP service, it
-is sometimes much easier to keep it running than Kafka cluster.
+Hermes was designed to handle sensitive data, which needs highest guarantees of delivery. Hermes also supports different 
+acknowledgment levels, which can be used to tune the durability of messages and latency of publishing. Using fallback 
+to the remote data center can increase the durability of your messages.
 
 ## Measure everything
 

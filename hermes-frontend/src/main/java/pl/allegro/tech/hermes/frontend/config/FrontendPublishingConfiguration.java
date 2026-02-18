@@ -13,7 +13,6 @@ import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrap
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreviewRepository;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
-import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 import pl.allegro.tech.hermes.frontend.metric.ThroughputRegistry;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.HandlersChainFactory;
@@ -84,10 +83,8 @@ public class FrontendPublishingConfiguration {
 
   @Bean
   public MessageEndProcessor messageEndProcessor(
-      Trackers trackers,
-      BrokerListeners brokerListeners,
-      TrackingHeadersExtractor trackingHeadersExtractor) {
-    return new MessageEndProcessor(trackers, brokerListeners, trackingHeadersExtractor);
+      Trackers trackers, TrackingHeadersExtractor trackingHeadersExtractor) {
+    return new MessageEndProcessor(trackers, trackingHeadersExtractor);
   }
 
   @Bean

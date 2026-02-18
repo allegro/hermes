@@ -17,9 +17,7 @@ To do so, use
 * `frontend.handlers.longIdleTimeout` for all ACK
 
 Those timeouts are counted from the time the request has been parsed till response is sent. This means, that
-interaction with Kafka needs to take place during this period. If timeout is reached when event is in
-*sending to Kafka* state, **202 Accepted** response is returned, since message is already in sending buffer and Hermes
-guarantees it will end up in Kafka. Otherwise, normal *request timed out* message is sent.
+interaction with Kafka needs to take place during this period, otherwise, *request timed out* message is sent.
 
 
 Option                                      | Description                                                                          | Default value
@@ -32,15 +30,6 @@ frontend.server.workerThreadCount           | number of Undertow worker threads 
 frontend.server.gracefulShutdownInitialWait | time between setting health endpoint to return DOWN and actually stopping the server | 10s
 
 Default timeout settings make Frontend safe against [Slowloris attack](https://en.wikipedia.org/wiki/Slowloris_(software)).
-
-
-## Buffers
-
-Hermes uses Kafka in-memory send buffers to tolerate any downtime or hiccups, as described in
-[publishing guide](../user/publishing.md#buffering). Use `frontend.messages.local.storage.bufferedSizeBytes` option to change the size of buffer.
-By default it is set to **256 MB**. Changing the size might extend the period for which Hermes is able to receive
-messages in case of Kafka downtime. Since internally there are two Kafka producers spawned, one for ACK-leader and one
-for ACK-all, there are also **two buffers** - keep this in mind when deciding on heap size.
 
 ## Kafka
 
