@@ -51,3 +51,5 @@ scripts/pip-selfcheck.json
 .factorypath
 .settings
 bin
+
+.vscode
