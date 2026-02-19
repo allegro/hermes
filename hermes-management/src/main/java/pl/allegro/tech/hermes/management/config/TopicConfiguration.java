@@ -22,11 +22,45 @@ import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareServic
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 import pl.allegro.tech.hermes.management.domain.topic.schema.SchemaService;
 import pl.allegro.tech.hermes.management.domain.topic.validator.TopicValidator;
-import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 
 @Configuration
 @EnableConfigurationProperties(CacheProperties.class)
 public class TopicConfiguration {
+
+  @Bean
+  public TopicManagement topicManagement(
+      MultiDCAwareService multiDCAwareService,
+      TopicRepository topicRepository,
+      GroupService groupService,
+      TopicProperties topicProperties,
+      SchemaService schemaService,
+      TopicMetricsRepository metricRepository,
+      TopicValidator topicValidator,
+      TopicContentTypeMigrationService topicContentTypeMigrationService,
+      Clock clock,
+      Auditor auditor,
+      MultiDatacenterRepositoryCommandExecutor multiDcExecutor,
+      RepositoryManager repositoryManager,
+      TopicOwnerCache topicOwnerCache,
+      SubscriptionRemover subscriptionRemover) {
+    TopicService topicService =
+        new TopicService(
+            multiDCAwareService,
+            topicRepository,
+            groupService,
+            topicProperties,
+            schemaService,
+            metricRepository,
+            topicValidator,
+            topicContentTypeMigrationService,
+            clock,
+            auditor,
+            multiDcExecutor,
+            repositoryManager,
+            topicOwnerCache,
+            subscriptionRemover);
+    return new LoggingTopicService(topicService);
+  }
 
   @Bean
   public TopicOwnerCache topicOwnerCache(
@@ -42,39 +76,4 @@ public class TopicConfiguration {
       Clock clock) {
     return new TopicContentTypeMigrationService(subscriptionRepository, multiDCAwareService, clock);
   }
-
-    @Bean
-    public TopicManagement topicManagement(
-            MultiDCAwareService multiDCAwareService,
-            TopicRepository topicRepository,
-            GroupService groupService,
-            TopicProperties topicProperties,
-            SchemaService schemaService,
-            TopicMetricsRepository metricRepository,
-            TopicValidator topicValidator,
-            TopicContentTypeMigrationService topicContentTypeMigrationService,
-            Clock clock,
-            Auditor auditor,
-            MultiDatacenterRepositoryCommandExecutor multiDcExecutor,
-            RepositoryManager repositoryManager,
-            TopicOwnerCache topicOwnerCache,
-            SubscriptionRemover subscriptionRemover) {
-        TopicService topicService =
-                new TopicService(
-                        multiDCAwareService,
-                        topicRepository,
-                        groupService,
-                        topicProperties,
-                        schemaService,
-                        metricRepository,
-                        topicValidator,
-                        topicContentTypeMigrationService,
-                        clock,
-                        auditor,
-                        multiDcExecutor,
-                        repositoryManager,
-                        topicOwnerCache,
-                        subscriptionRemover);
-        return new LoggingTopicService(topicService);
-    }
 }

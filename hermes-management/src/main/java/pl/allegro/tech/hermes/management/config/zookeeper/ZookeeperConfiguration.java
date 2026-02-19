@@ -143,10 +143,10 @@ public class ZookeeperConfiguration {
       GroupRepository groupRepository,
       ZookeeperClientManager zookeeperClientManager) {
     ZookeeperClient localClient = zookeeperClientManager.getLocalClient();
-      ZookeeperTopicRepository zkRepository =
-              new ZookeeperTopicRepository(
-                      localClient.getCuratorFramework(), objectMapper, zookeeperPaths, groupRepository);
-      return new LoggingTopicRepository(zkRepository);
+    ZookeeperTopicRepository zkRepository =
+        new ZookeeperTopicRepository(
+            localClient.getCuratorFramework(), objectMapper, zookeeperPaths, groupRepository);
+    return new LoggingTopicRepository(zkRepository);
   }
 
   @Bean
@@ -155,10 +155,10 @@ public class ZookeeperConfiguration {
       TopicRepository topicRepository,
       ZookeeperClientManager zookeeperClientManager) {
     ZookeeperClient localClient = zookeeperClientManager.getLocalClient();
-      ZookeeperSubscriptionRepository zkRepository =
-              new ZookeeperSubscriptionRepository(
-                      localClient.getCuratorFramework(), objectMapper, zookeeperPaths, topicRepository);
-      return new LoggingSubscriptionRepository(zkRepository);
+    ZookeeperSubscriptionRepository zkRepository =
+        new ZookeeperSubscriptionRepository(
+            localClient.getCuratorFramework(), objectMapper, zookeeperPaths, topicRepository);
+    return new LoggingSubscriptionRepository(zkRepository);
   }
 
   @Bean
@@ -181,9 +181,9 @@ public class ZookeeperConfiguration {
   WorkloadConstraintsRepository workloadConstraintsRepository(
       ZookeeperPaths zookeeperPaths, ZookeeperClientManager zookeeperClientManager) {
     ZookeeperClient localClient = zookeeperClientManager.getLocalClient();
-      return new LoggingWorkloadConstraintsRepository(
-              new ZookeeperWorkloadConstraintsRepository(
-                      localClient.getCuratorFramework(), objectMapper, zookeeperPaths));
+    return new LoggingWorkloadConstraintsRepository(
+        new ZookeeperWorkloadConstraintsRepository(
+            localClient.getCuratorFramework(), objectMapper, zookeeperPaths));
   }
 
   @Bean

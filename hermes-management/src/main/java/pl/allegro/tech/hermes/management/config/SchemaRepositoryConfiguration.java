@@ -38,7 +38,8 @@ public class SchemaRepositoryConfiguration {
   private final SchemaRepositoryProperties schemaRepositoryProperties;
 
   public SchemaRepositoryConfiguration(
-      @Lazy TopicManagement topicManagement, SchemaRepositoryProperties schemaRepositoryProperties) {
+      @Lazy TopicManagement topicManagement,
+      SchemaRepositoryProperties schemaRepositoryProperties) {
     this.topicManagement = topicManagement;
     this.schemaRepositoryProperties = schemaRepositoryProperties;
   }

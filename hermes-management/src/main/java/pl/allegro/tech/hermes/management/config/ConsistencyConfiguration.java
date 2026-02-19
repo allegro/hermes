@@ -9,7 +9,7 @@ import pl.allegro.tech.hermes.management.config.kafka.KafkaClustersProperties;
 import pl.allegro.tech.hermes.management.domain.consistency.DcConsistencyService;
 import pl.allegro.tech.hermes.management.domain.consistency.KafkaHermesConsistencyService;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryManager;
-import pl.allegro.tech.hermes.management.domain.topic.TopicService;
+import pl.allegro.tech.hermes.management.domain.topic.TopicManagement;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 
 @Configuration
@@ -18,11 +18,11 @@ public class ConsistencyConfiguration {
 
   @Bean
   public KafkaHermesConsistencyService kafkaHermesConsistencyService(
-      TopicService topicService,
+      TopicManagement topicManagement,
       MultiDCAwareService multiDCAwareService,
       KafkaClustersProperties kafkaClustersProperties) {
     return new KafkaHermesConsistencyService(
-        topicService,
+        topicManagement,
         multiDCAwareService,
         kafkaClustersProperties.getNamespace(),
         kafkaClustersProperties.getNamespaceSeparator());
