@@ -11,6 +11,10 @@ import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.frontend.buffer.chronicle.ChronicleMapMessageRepository;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 
+/**
+ * @deprecated This feature is deprecated and will be removed in a future version.
+ */
+@Deprecated
 public class PersistentBufferExtension {
 
   private static final Logger logger = LoggerFactory.getLogger(PersistentBufferExtension.class);

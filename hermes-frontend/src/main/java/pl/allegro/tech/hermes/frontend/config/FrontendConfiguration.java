@@ -52,8 +52,12 @@ public class FrontendConfiguration {
         kafkaNamesMapper);
   }
 
+  /**
+   * @deprecated Will be removed in a future version.
+   */
   @Bean
   @ConditionalOnProperty(name = "frontend.messages.local.storage.enabled", havingValue = "true")
+  @Deprecated
   public BackupMessagesLoader backupMessagesLoader(
       @Named("localDatacenterBrokerProducer") BrokerMessageProducer brokerMessageProducer,
       BrokerListeners brokerListeners,
@@ -72,8 +76,12 @@ public class FrontendConfiguration {
         localMessageStorageProperties);
   }
 
+  /**
+   * @deprecated Will be removed in a future version.
+   */
   @Bean(initMethod = "extend")
   @ConditionalOnProperty(name = "frontend.messages.local.storage.enabled", havingValue = "true")
+  @Deprecated
   public PersistentBufferExtension persistentBufferExtension(
       LocalMessageStorageProperties localMessageStorageProperties,
       Clock clock,
@@ -84,7 +92,11 @@ public class FrontendConfiguration {
         localMessageStorageProperties, clock, listeners, backupMessagesLoader, metricsFacade);
   }
 
+  /**
+   * @deprecated Will be removed in a future version.
+   */
   @Bean
+  @Deprecated
   public BrokerListeners defaultBrokerListeners() {
     return new BrokerListeners();
   }
