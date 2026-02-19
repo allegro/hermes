@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.benchmark.environment;
+package pl.allegro.tech.hermes.benchmark.frontend;
 
 import java.util.Map;
 import org.apache.avro.Schema;

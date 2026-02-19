@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.benchmark.environment;
+package pl.allegro.tech.hermes.benchmark.frontend;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
