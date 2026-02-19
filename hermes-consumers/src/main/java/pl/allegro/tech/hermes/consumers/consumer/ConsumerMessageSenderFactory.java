@@ -10,7 +10,7 @@ import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
 import pl.allegro.tech.hermes.consumers.consumer.load.SubscriptionLoadRecorder;
 import pl.allegro.tech.hermes.consumers.consumer.offset.PendingOffsets;
-import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
+import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.result.DefaultErrorHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.DefaultSuccessHandler;
 import pl.allegro.tech.hermes.consumers.consumer.result.ErrorHandler;
@@ -65,7 +65,7 @@ public class ConsumerMessageSenderFactory {
 
   public ConsumerMessageSender create(
       Subscription subscription,
-      SerialConsumerRateLimiter consumerRateLimiter,
+      ConsumerRateLimiter consumerRateLimiter,
       PendingOffsets pendingOffsets,
       SubscriptionLoadRecorder subscriptionLoadRecorder,
       MetricsFacade metrics) {

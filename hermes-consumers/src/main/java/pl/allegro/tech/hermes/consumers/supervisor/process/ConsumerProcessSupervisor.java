@@ -1,5 +1,7 @@
 package pl.allegro.tech.hermes.consumers.supervisor.process;
 
+import static pl.allegro.tech.hermes.common.logging.LoggingContext.runWithLogging;
+import static pl.allegro.tech.hermes.common.logging.LoggingFields.SUBSCRIPTION_NAME;
 import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.START;
 import static pl.allegro.tech.hermes.consumers.supervisor.process.Signal.SignalType.STOP;
 
@@ -154,7 +156,7 @@ public class ConsumerProcessSupervisor implements Runnable {
 
     switch (signal.getType()) {
       case START:
-        start(signal);
+        startWithLogging(signal);
         break;
       case UPDATE_SUBSCRIPTION:
         updateSubscription(signal);
@@ -175,14 +177,21 @@ public class ConsumerProcessSupervisor implements Runnable {
 
   private void updateSubscription(Signal signal) {
     if (runningConsumerProcesses.hasProcess(signal.getTarget())) {
-      stopOrUpdateConsumer(signal);
+      stopOrUpdateConsumerWithLogging(signal);
     } else {
       drop(signal);
     }
   }
 
-  private void stopOrUpdateConsumer(Signal signal) {
+  private void stopOrUpdateConsumerWithLogging(Signal signal) {
     Subscription signalSubscription = signal.getPayload();
+    runWithLogging(
+        SUBSCRIPTION_NAME,
+        signalSubscription.getQualifiedName().getQualifiedName(),
+        () -> stopOrUpdateConsumer(signal, signalSubscription));
+  }
+
+  private void stopOrUpdateConsumer(Signal signal, Subscription signalSubscription) {
     if (!deliveryTypesEqual(signalSubscription)) {
       logger.info(
           "Stopping subscription: {} because of delivery type update",
@@ -229,9 +238,15 @@ public class ConsumerProcessSupervisor implements Runnable {
     logger.warn("Dropping signal {} as running target consumer process does not exist.", signal);
   }
 
-  private void start(Signal start) {
+  private void startWithLogging(Signal start) {
     Subscription subscription = getSubscriptionFromPayload(start);
+    runWithLogging(
+        SUBSCRIPTION_NAME,
+        subscription.getQualifiedName().getQualifiedName(),
+        () -> start(start, subscription));
+  }
 
+  private void start(Signal start, Subscription subscription) {
     if (!hasProcess(start.getTarget())) {
       try {
         logger.info("Creating consumer for {}", subscription.getQualifiedName());

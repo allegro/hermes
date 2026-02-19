@@ -54,3 +54,88 @@ Sample `logback.xml` file that will log to file using [async appender](http://lo
 ```
 
 This configuration is tuned for Frontend, but Consumers and Management config is more or less the same.
+
+## Structured logging
+
+We use structured logging in Hermes modules for easier log searchability, filtering, and analysis in production
+environments.
+
+**Location:** `pl.allegro.tech.hermes.common.logging.LoggingFields`
+
+Always use constants from `LoggingFields` to ensure consistency across all services.
+
+| Constant            | Field Name          | Description                 | Example Value                       |
+|---------------------|---------------------|-----------------------------|-------------------------------------|
+| `TOPIC_NAME`        | `topic-name`        | Qualified topic name        | `"my.events.topic"`                 |
+| `SUBSCRIPTION_NAME` | `subscription-name` | Qualified subscription name | `"my.events.topic$my-subscription"` |
+
+### Example usage and used patterns
+
+#### Direct addKeyValue usage (single log entry)
+
+```java
+logger.atInfo()
+    .addKeyValue(SUBSCRIPTION_NAME, subscription.getQualifiedName())
+    .log("Creating subscription {}", subscription.getQualifiedName());
+```
+
+#### LoggingEventBuilder usage (multiple logs, same level)
+
+```java
+LoggingEventBuilder subscriptionLogger = logger.atInfo()
+    .addKeyValue(SUBSCRIPTION_NAME, subscription.getQualifiedName());
+subscriptionLogger.log("First message {}", ...);
+subscriptionLogger.log("Second message {}", ...);
+```
+
+#### LoggingEventBuilder usage (multiple logs, different levels)
+
+```java
+LoggingEventBuilder infoLogger = logger.atInfo()
+    .addKeyValue(TOPIC_NAME, topic.getQualifiedName());
+LoggingEventBuilder errorLogger = logger.atError()
+    .addKeyValue(TOPIC_NAME, topic.getQualifiedName());
+```
+
+#### LoggingContext/MDC usage (wrap method execution)
+
+```java
+import static pl.allegro.tech.hermes.common.logging.LoggingContext.runWithLogging;
+
+LoggingContext.runWithLogging(
+    SUBSCRIPTION_NAME,
+    subscription.getQualifiedName().getQualifiedName(),
+    () -> {
+        // All logs in this scope automatically have SUBSCRIPTION_NAME in MDC
+    });
+```
+
+#### Wrapper/Delegate usage
+
+```java
+public class LoggingConsumer implements Consumer {
+    private final Consumer delegate;
+    @Override
+    public void consume(Runnable signalsInterrupt) {
+        LoggingContext.runWithLogging(
+            SUBSCRIPTION_NAME,
+            delegate.getSubscription().getQualifiedName().getQualifiedName(),
+            () -> delegate.consume(signalsInterrupt));
+    }
+}
+```
+
+#### Wrapper method usage (preserving git blame)
+
+```java
+// New wrapper method
+private void startWithLogging(Signal start) {
+    Subscription subscription = getSubscriptionFromPayload(start);
+    runWithLogging(SUBSCRIPTION_NAME, subscription.getQualifiedName().getQualifiedName(),
+        () -> start(start, subscription));
+}
+// Original method kept intact - git blame preserved
+private void start(Signal start, Subscription subscription) {
+    // Original implementation unchanged
+}
+```

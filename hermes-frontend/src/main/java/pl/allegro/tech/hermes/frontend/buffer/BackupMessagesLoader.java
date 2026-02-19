@@ -39,6 +39,10 @@ import pl.allegro.tech.hermes.schema.SchemaRepository;
 import pl.allegro.tech.hermes.schema.SchemaVersion;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 
+/**
+ * @deprecated This feature is deprecated and will be removed in a future version.
+ */
+@Deprecated
 public class BackupMessagesLoader {
 
   private static final Logger logger = LoggerFactory.getLogger(BackupMessagesLoader.class);

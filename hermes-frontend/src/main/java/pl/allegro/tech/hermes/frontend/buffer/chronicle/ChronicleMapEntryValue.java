@@ -5,6 +5,10 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * @deprecated This feature is deprecated and will be removed in a future version.
+ */
+@Deprecated
 public class ChronicleMapEntryValue implements Serializable {
   static final long serialVersionUID = -2149667159974528954L;
 

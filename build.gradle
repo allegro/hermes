@@ -67,11 +67,11 @@ allprojects {
             json2avro         : '0.2.14',
             // TODO: newest version requires subject alternative name in a certificate during host verification, current test cert does not have a one
             okhttp            : '3.9.1',
-            undertow          : '2.3.12.Final',
+            undertow          : '2.3.23.Final',
             spring_web        : '6.1.6',
             failsafe          : '3.3.2',
             junit_jupiter     : '5.10.2',
-            testcontainers    : '1.19.8',
+            testcontainers    : '1.21.4',
             spring            : '3.2.4',
             assertj           : '3.25.3',
             allure            : '2.24.0'

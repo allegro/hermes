@@ -1,5 +1,8 @@
 package pl.allegro.tech.hermes.consumers.supervisor.process;
 
+import static pl.allegro.tech.hermes.common.logging.LoggingContext.runWithLogging;
+import static pl.allegro.tech.hermes.common.logging.LoggingFields.SUBSCRIPTION_NAME;
+
 import java.time.Clock;
 import java.util.Optional;
 import java.util.concurrent.Future;
@@ -32,15 +35,20 @@ class RunningConsumerProcess {
     timeOfDeath.ifPresent(
         timeOfDeath -> {
           SubscriptionName subscriptionName = process.getSubscriptionName();
-          logger.info(
-              "Canceling consumer process for subscription {}. It should have been killed {}ms ago.",
-              subscriptionName,
-              clock.millis() - timeOfDeath);
-          if (executionHandle.cancel(true)) {
-            logger.info("Canceled consumer process for subscription {}", subscriptionName);
-          } else {
-            logger.error("Failed to cancel consumer process for {}.", subscriptionName);
-          }
+          runWithLogging(
+              SUBSCRIPTION_NAME,
+              subscriptionName.getQualifiedName(),
+              () -> {
+                logger.info(
+                    "Canceling consumer process for subscription {}. It should have been killed {}ms ago.",
+                    subscriptionName,
+                    clock.millis() - timeOfDeath);
+                if (executionHandle.cancel(true)) {
+                  logger.info("Canceled consumer process for subscription {}", subscriptionName);
+                } else {
+                  logger.error("Failed to cancel consumer process for {}.", subscriptionName);
+                }
+              });
         });
   }
 
