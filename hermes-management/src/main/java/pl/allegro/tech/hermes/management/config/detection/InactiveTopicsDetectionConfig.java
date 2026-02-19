@@ -16,7 +16,7 @@ import pl.allegro.tech.hermes.management.domain.detection.InactiveTopicsNotifier
 import pl.allegro.tech.hermes.management.domain.detection.InactiveTopicsRepository;
 import pl.allegro.tech.hermes.management.domain.detection.InactiveTopicsStorageService;
 import pl.allegro.tech.hermes.management.domain.detection.LastPublishedMessageMetricsRepository;
-import pl.allegro.tech.hermes.management.domain.topic.TopicService;
+import pl.allegro.tech.hermes.management.domain.topic.TopicManagement;
 import pl.allegro.tech.hermes.management.infrastructure.detection.InactiveTopicsDetectionScheduler;
 import pl.allegro.tech.hermes.management.infrastructure.detection.ZookeeperLastPublishedMessageMetricsRepository;
 import pl.allegro.tech.hermes.management.infrastructure.leader.ManagementLeadership;
@@ -50,7 +50,7 @@ public class InactiveTopicsDetectionConfig {
 
   @Bean
   public InactiveTopicsDetectionJob inactiveTopicsDetectionJob(
-      TopicService topicService,
+      TopicManagement topicManagement,
       InactiveTopicsStorageService inactiveTopicsStorageService,
       InactiveTopicsDetectionService inactiveTopicsDetectionService,
       Optional<InactiveTopicsNotifier> notifier,
@@ -58,7 +58,7 @@ public class InactiveTopicsDetectionConfig {
       Clock clock,
       MeterRegistry meterRegistry) {
     return new InactiveTopicsDetectionJob(
-        topicService,
+        topicManagement,
         inactiveTopicsStorageService,
         inactiveTopicsDetectionService,
         notifier,

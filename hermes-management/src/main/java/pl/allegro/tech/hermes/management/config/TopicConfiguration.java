@@ -60,18 +60,18 @@ public class TopicConfiguration {
     return new LoggingTopicService(topicService);
   }
 
-    @Bean
-    public TopicOwnerCache topicOwnerCache(
-            TopicRepository topicRepository, GroupService groupService, CacheProperties cacheProperties) {
-        return new TopicOwnerCache(
-                topicRepository, groupService, cacheProperties.getTopicOwnerRefreshRateInSeconds());
-    }
+  @Bean
+  public TopicOwnerCache topicOwnerCache(
+      TopicRepository topicRepository, GroupService groupService, CacheProperties cacheProperties) {
+    return new TopicOwnerCache(
+        topicRepository, groupService, cacheProperties.getTopicOwnerRefreshRateInSeconds());
+  }
 
-    @Bean
-    public TopicContentTypeMigrationService topicContentTypeMigrationService(
-            SubscriptionRepository subscriptionRepository,
-            MultiDCAwareService multiDCAwareService,
-            Clock clock) {
-        return new TopicContentTypeMigrationService(subscriptionRepository, multiDCAwareService, clock);
-    }
+  @Bean
+  public TopicContentTypeMigrationService topicContentTypeMigrationService(
+      SubscriptionRepository subscriptionRepository,
+      MultiDCAwareService multiDCAwareService,
+      Clock clock) {
+    return new TopicContentTypeMigrationService(subscriptionRepository, multiDCAwareService, clock);
+  }
 }
