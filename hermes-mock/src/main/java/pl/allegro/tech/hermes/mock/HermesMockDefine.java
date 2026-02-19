@@ -22,7 +22,7 @@ public class HermesMockDefine {
   }
 
   /**
-   * Defines a JSON topic.
+   * Defines a JSON topic with fixed 201 status code.
    *
    * @param topicName qualified topic name in format {@code [a-zA-Z0-9_.-]+.[a-zA-Z0-9_.-]+}, where
    *     group and topic name must match the pattern {@code [a-zA-Z0-9_.-]+}, e.g.
@@ -80,7 +80,7 @@ public class HermesMockDefine {
   }
 
   /**
-   * Defines an Avro topic.
+   * Defines an Avro topic with fixed 201 status code.
    *
    * @param topicName qualified topic name in format {@code [a-zA-Z0-9_.-]+.[a-zA-Z0-9_.-]+}
    * @return stub mapping for the defined topic
