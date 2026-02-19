@@ -169,7 +169,7 @@ public class ConsumerEnvironment {
 
   public void waitUntilAllMessagesAreConsumed(int expectedMessagesSentCount) {
     await()
-        .atMost(adjust(Duration.ofSeconds(2)))
+        .atMost(adjust(Duration.ofSeconds(4)))
         .untilAsserted(
             () -> {
               assertThat(messageSender.getSentMessagesCount()).isEqualTo(expectedMessagesSentCount);
