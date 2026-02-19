@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.management.domain.topic.schema;
 
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
+import static pl.allegro.tech.hermes.common.logging.LoggingFields.TOPIC_NAME;
 
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -67,13 +68,19 @@ public class SchemaService {
     if (!removeSchemaEnabled) {
       throw new SchemaRemovalDisabledException();
     }
-    logger.info("Removing all schema versions for topic: {}", qualifiedTopicName);
+    logger
+        .atInfo()
+        .addKeyValue(TOPIC_NAME, qualifiedTopicName)
+        .log("Removing all schema versions for topic: {}", qualifiedTopicName);
     long start = System.currentTimeMillis();
     rawSchemaClient.deleteAllSchemaVersions(fromQualifiedName(qualifiedTopicName));
-    logger.info(
-        "Removed all schema versions for topic: {} in {} ms",
-        qualifiedTopicName,
-        System.currentTimeMillis() - start);
+    logger
+        .atInfo()
+        .addKeyValue(TOPIC_NAME, qualifiedTopicName)
+        .log(
+            "Removed all schema versions for topic: {} in {} ms",
+            qualifiedTopicName,
+            System.currentTimeMillis() - start);
   }
 
   public void validateSchema(Topic topic, String schema) {

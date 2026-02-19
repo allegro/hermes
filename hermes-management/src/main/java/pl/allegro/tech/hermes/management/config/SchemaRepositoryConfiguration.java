@@ -17,7 +17,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import pl.allegro.tech.hermes.management.config.kafka.KafkaClustersProperties;
-import pl.allegro.tech.hermes.management.domain.topic.TopicService;
+import pl.allegro.tech.hermes.management.domain.topic.TopicManagement;
 import pl.allegro.tech.hermes.schema.CompiledSchemaRepository;
 import pl.allegro.tech.hermes.schema.DirectCompiledSchemaRepository;
 import pl.allegro.tech.hermes.schema.DirectSchemaVersionsRepository;
@@ -34,12 +34,12 @@ import pl.allegro.tech.hermes.schema.resolver.SchemaRepositoryInstanceResolver;
 @EnableConfigurationProperties({SchemaRepositoryProperties.class})
 public class SchemaRepositoryConfiguration {
 
-  private final TopicService topicService;
+  private final TopicManagement topicManagement;
   private final SchemaRepositoryProperties schemaRepositoryProperties;
 
   public SchemaRepositoryConfiguration(
-      @Lazy TopicService topicService, SchemaRepositoryProperties schemaRepositoryProperties) {
-    this.topicService = topicService;
+      @Lazy TopicManagement topicManagement, SchemaRepositoryProperties schemaRepositoryProperties) {
+    this.topicManagement = topicManagement;
     this.schemaRepositoryProperties = schemaRepositoryProperties;
   }
 

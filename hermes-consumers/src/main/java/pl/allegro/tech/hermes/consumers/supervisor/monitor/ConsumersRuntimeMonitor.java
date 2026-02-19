@@ -1,5 +1,7 @@
 package pl.allegro.tech.hermes.consumers.supervisor.monitor;
 
+import static pl.allegro.tech.hermes.common.logging.LoggingFields.SUBSCRIPTION_NAME;
+
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.time.Duration;
@@ -106,11 +108,17 @@ public class ConsumersRuntimeMonitor implements Runnable {
       Set<SubscriptionName> missing,
       Set<SubscriptionName> oversubscribed) {
     for (SubscriptionName subscriptionName : missing) {
-      logger.warn("Missing consumer process for subscription: {}", subscriptionName);
+      logger
+          .atWarn()
+          .addKeyValue(SUBSCRIPTION_NAME, subscriptionName.getQualifiedName())
+          .log("Missing consumer process for subscription: {}", subscriptionName);
     }
 
     for (SubscriptionName subscriptionName : oversubscribed) {
-      logger.warn("Unwanted consumer process for subscription: {}", subscriptionName);
+      logger
+          .atWarn()
+          .addKeyValue(SUBSCRIPTION_NAME, subscriptionName.getQualifiedName())
+          .log("Unwanted consumer process for subscription: {}", subscriptionName);
     }
 
     logger.info(

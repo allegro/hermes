@@ -11,18 +11,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import pl.allegro.tech.hermes.api.Stats;
 import pl.allegro.tech.hermes.api.SubscriptionStats;
 import pl.allegro.tech.hermes.api.TopicStats;
-import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
-import pl.allegro.tech.hermes.management.domain.topic.TopicService;
+import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionManagement;
+import pl.allegro.tech.hermes.management.domain.topic.TopicManagement;
 
 @Path("stats")
 public class StatsEndpoint {
-  private final SubscriptionService subscriptionService;
-  private final TopicService topicService;
+  private final SubscriptionManagement subscriptionManagement;
+  private final TopicManagement topicManagement;
 
   @Autowired
-  public StatsEndpoint(SubscriptionService subscriptionService, TopicService topicService) {
-    this.subscriptionService = subscriptionService;
-    this.topicService = topicService;
+  public StatsEndpoint(
+      SubscriptionManagement subscriptionManagement, TopicManagement topicManagement) {
+    this.subscriptionManagement = subscriptionManagement;
+    this.topicManagement = topicManagement;
   }
 
   @GET
@@ -32,8 +33,8 @@ public class StatsEndpoint {
       response = Stats.class,
       httpMethod = HttpMethod.GET)
   public Stats getStats() {
-    TopicStats topicStats = topicService.getStats();
-    SubscriptionStats subscriptionStats = subscriptionService.getStats();
+    TopicStats topicStats = topicManagement.getStats();
+    SubscriptionStats subscriptionStats = subscriptionManagement.getStats();
     return new Stats(topicStats, subscriptionStats);
   }
 }

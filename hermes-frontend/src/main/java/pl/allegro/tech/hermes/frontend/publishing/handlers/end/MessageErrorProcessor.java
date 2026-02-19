@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.frontend.publishing.handlers.end;
 import static pl.allegro.tech.hermes.api.ErrorCode.INTERNAL_ERROR;
 import static pl.allegro.tech.hermes.api.ErrorDescription.error;
 import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.MESSAGE_ID;
+import static pl.allegro.tech.hermes.common.logging.LoggingFields.TOPIC_NAME;
 import static pl.allegro.tech.hermes.frontend.publishing.handlers.end.RemoteHostReader.readHostAndPort;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,6 +16,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.spi.LoggingEventBuilder;
 import pl.allegro.tech.hermes.api.ErrorDescription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.AttachmentContent;
@@ -87,12 +89,14 @@ public class MessageErrorProcessor {
 
   public void sendQuietly(
       HttpServerExchange exchange, ErrorDescription error, String messageId, String topicName) {
+    LoggingEventBuilder warnLogger = logger.atWarn().addKeyValue(TOPIC_NAME, topicName);
+
     try {
       if (exchange.getConnection().isOpen()) {
         if (!exchange.isResponseStarted()) {
           send(exchange, error, messageId);
         } else {
-          logger.warn(
+          warnLogger.log(
               "Not sending error message to a client as response has already been started. "
                   + "Error message: {} Topic: {} MessageId: {} Host: {}",
               error.getMessage(),
@@ -101,7 +105,7 @@ public class MessageErrorProcessor {
               readHostAndPort(exchange));
         }
       } else {
-        logger.warn(
+        warnLogger.log(
             "Connection to a client closed. Can't send error response. "
                 + "Error message: {} Topic: {} MessageId: {} Host: {}",
             error.getMessage(),
@@ -111,13 +115,14 @@ public class MessageErrorProcessor {
         exchange.endExchange();
       }
     } catch (Exception e) {
-      logger.warn(
-          "Exception in sending error response to a client. {} Topic: {} MessageId: {} Host: {}",
-          error.getMessage(),
-          topicName,
-          messageId,
-          readHostAndPort(exchange),
-          e);
+      warnLogger
+          .setCause(e)
+          .log(
+              "Exception in sending error response to a client. {} Topic: {} MessageId: {} Host: {}",
+              error.getMessage(),
+              topicName,
+              messageId,
+              readHostAndPort(exchange));
     }
   }
 
@@ -138,14 +143,15 @@ public class MessageErrorProcessor {
       String messageId,
       String hostAndPort,
       Map<String, String> extraRequestHeaders) {
-    logger.error(
-        errorMessage
-            + "; publishing on topic: "
-            + topic.getQualifiedName()
-            + "; message id: "
-            + messageId
-            + "; remote host: "
-            + hostAndPort);
+    logger
+        .atError()
+        .addKeyValue(TOPIC_NAME, topic.getQualifiedName())
+        .log(
+            "{}; publishing on topic: {}; message id: {}; remote host: {}",
+            errorMessage,
+            topic.getQualifiedName(),
+            messageId,
+            hostAndPort);
     trackers
         .get(topic)
         .logError(messageId, topic.getName(), errorMessage, hostAndPort, extraRequestHeaders);
@@ -158,15 +164,16 @@ public class MessageErrorProcessor {
       String hostAndPort,
       Exception exception,
       Map<String, String> extraRequestHeaders) {
-    logger.error(
-        errorMessage
-            + "; publishing on topic: "
-            + topic.getQualifiedName()
-            + "; message id: "
-            + messageId
-            + "; remote host: "
-            + hostAndPort,
-        exception);
+    logger
+        .atError()
+        .addKeyValue(TOPIC_NAME, topic.getQualifiedName())
+        .setCause(exception)
+        .log(
+            "{}; publishing on topic: {}; message id: {}; remote host: {}",
+            errorMessage,
+            topic.getQualifiedName(),
+            messageId,
+            hostAndPort);
     trackers
         .get(topic)
         .logError(messageId, topic.getName(), errorMessage, hostAndPort, extraRequestHeaders);

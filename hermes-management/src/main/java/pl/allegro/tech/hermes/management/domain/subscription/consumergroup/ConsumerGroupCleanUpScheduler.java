@@ -10,7 +10,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
+import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionManagement;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 import pl.allegro.tech.hermes.management.infrastructure.leader.ManagementLeadership;
 
@@ -20,7 +20,7 @@ public class ConsumerGroupCleanUpScheduler {
   private final MultiDCAwareService multiDCAwareService;
   private final Map<String, ConsumerGroupToDeleteRepository>
       consumerGroupToDeleteRepositoriesByDatacenter;
-  private final SubscriptionService subscriptionService;
+  private final SubscriptionManagement subscriptionManagement;
   private final ScheduledExecutorService scheduler =
       Executors.newSingleThreadScheduledExecutor(
           new ThreadFactoryBuilder().setNameFormat("consumer-group-clean-up-%d").build());
@@ -33,14 +33,14 @@ public class ConsumerGroupCleanUpScheduler {
   public ConsumerGroupCleanUpScheduler(
       MultiDCAwareService multiDCAwareService,
       Map<String, ConsumerGroupToDeleteRepository> consumerGroupToDeleteRepositoriesByDatacenter,
-      SubscriptionService subscriptionService,
+      SubscriptionManagement subscriptionManagement,
       ConsumerGroupCleanUpParameters cleanUpParameters,
       ManagementLeadership managementLeadership,
       Clock clock) {
     this.multiDCAwareService = multiDCAwareService;
     this.consumerGroupToDeleteRepositoriesByDatacenter =
         consumerGroupToDeleteRepositoriesByDatacenter;
-    this.subscriptionService = subscriptionService;
+    this.subscriptionManagement = subscriptionManagement;
     this.managementLeadership = managementLeadership;
     this.clock = clock;
     this.enabled = cleanUpParameters.isEnabled();
@@ -56,7 +56,7 @@ public class ConsumerGroupCleanUpScheduler {
           new ConsumerGroupCleanUpTask(
               multiDCAwareService,
               consumerGroupToDeleteRepositoriesByDatacenter,
-              subscriptionService,
+              subscriptionManagement,
               cleanUpParameters,
               managementLeadership,
               clock);

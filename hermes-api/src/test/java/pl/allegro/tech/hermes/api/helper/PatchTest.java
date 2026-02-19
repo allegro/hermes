@@ -60,7 +60,7 @@ public class PatchTest {
         patchData()
             .set(
                 "subscriptionPolicy",
-                patchData().set("rate", 200).set("messageTtl", 8).build().getPatch())
+                patchData().set("rate", 200).set("messageTtl", 8).build().patch())
             .build();
 
     // when

@@ -11,6 +11,8 @@ import pl.allegro.tech.hermes.management.config.subscription.consumergroup.Consu
 import pl.allegro.tech.hermes.management.domain.Auditor;
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryManager;
+import pl.allegro.tech.hermes.management.domain.subscription.LoggingSubscriptionService;
+import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionManagement;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionMetricsRepository;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionOwnerCache;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionRemover;
@@ -24,7 +26,7 @@ import pl.allegro.tech.hermes.management.domain.subscription.health.problem.Rece
 import pl.allegro.tech.hermes.management.domain.subscription.health.problem.TimingOutIndicator;
 import pl.allegro.tech.hermes.management.domain.subscription.health.problem.UnreachableIndicator;
 import pl.allegro.tech.hermes.management.domain.subscription.validator.SubscriptionValidator;
-import pl.allegro.tech.hermes.management.domain.topic.TopicService;
+import pl.allegro.tech.hermes.management.domain.topic.TopicManagement;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 import pl.allegro.tech.hermes.tracker.management.LogRepository;
 
@@ -89,10 +91,10 @@ public class SubscriptionHealthConfiguration {
   }
 
   @Bean
-  public SubscriptionService subscriptionService(
+  public SubscriptionManagement subscriptionManagement(
       SubscriptionRepository subscriptionRepository,
       SubscriptionOwnerCache subscriptionOwnerCache,
-      TopicService topicService,
+      TopicManagement topicManagement,
       SubscriptionMetricsRepository metricsRepository,
       SubscriptionHealthChecker subscriptionHealthChecker,
       LogRepository logRepository,
@@ -103,25 +105,27 @@ public class SubscriptionHealthConfiguration {
       RepositoryManager repositoryManager,
       SubscriptionHealthProperties subscriptionHealthProperties,
       SubscriptionRemover subscriptionRemover) {
-    return new SubscriptionService(
-        subscriptionRepository,
-        subscriptionOwnerCache,
-        topicService,
-        metricsRepository,
-        subscriptionHealthChecker,
-        logRepository,
-        subscriptionValidator,
-        auditor,
-        multiDcExecutor,
-        multiDCAwareService,
-        repositoryManager,
-        Executors.newFixedThreadPool(
-            subscriptionHealthProperties.getThreads(),
-            new ThreadFactoryBuilder()
-                .setNameFormat("subscription-health-check-executor-%d")
-                .build()),
-        subscriptionHealthProperties.getTimeoutMillis(),
-        subscriptionRemover);
+    SubscriptionService subscriptionService =
+        new SubscriptionService(
+            subscriptionRepository,
+            subscriptionOwnerCache,
+            topicManagement,
+            metricsRepository,
+            subscriptionHealthChecker,
+            logRepository,
+            subscriptionValidator,
+            auditor,
+            multiDcExecutor,
+            multiDCAwareService,
+            repositoryManager,
+            Executors.newFixedThreadPool(
+                subscriptionHealthProperties.getThreads(),
+                new ThreadFactoryBuilder()
+                    .setNameFormat("subscription-health-check-executor-%d")
+                    .build()),
+            subscriptionHealthProperties.getTimeoutMillis(),
+            subscriptionRemover);
+    return new LoggingSubscriptionService(subscriptionService);
   }
 
   @Bean

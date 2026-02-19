@@ -6,6 +6,10 @@ import pl.allegro.tech.hermes.frontend.listeners.BrokerErrorListener;
 import pl.allegro.tech.hermes.frontend.listeners.BrokerTimeoutListener;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 
+/**
+ * @deprecated This feature is deprecated and will be removed in a future version.
+ */
+@Deprecated
 public class BrokerListener
     implements BrokerAcknowledgeListener, BrokerTimeoutListener, BrokerErrorListener {
 

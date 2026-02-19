@@ -70,6 +70,10 @@ public class MetricsFacade {
     return deadLettersMetrics;
   }
 
+  /**
+   * @deprecated This feature is deprecated and will be removed in a future version.
+   */
+  @Deprecated
   public PersistentBufferMetrics persistentBuffer() {
     return persistentBufferMetrics;
   }

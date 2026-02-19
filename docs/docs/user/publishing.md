@@ -118,7 +118,7 @@ used to track how event flew through the system.
 There are two possible response status codes that represent success:
 
 * **201 Created** - event received and acknowledged by Kafka
-* **202 Accepted** - event has not been acknowledged by Kafka, Hermes is buffering it and will try to deliver ASAP
+* **202 Accepted** - event has not been acknowledged by Kafka, Hermes is buffering it and will try to deliver ASAP (deprecated, see Buffering section below)
 
 Failure statuses:
 
@@ -172,7 +172,9 @@ is killed before message is spilled to disk or the data on disk becomes corrupte
 is similar to `ACK leader` because a single node failure could cause the message be lost.
 
 ### Deprecation notice
+
 The buffering mechanism in Hermes is considered deprecated and is set to be removed in the future.
+See Remote DC fallback section below for an alternative solution.
 
 ## Remote DC fallback
 
@@ -208,5 +210,6 @@ Table below summarizes remote fallback configuration options:
 | frontend.handlers.maxPublishRequestDuration            | global | 500ms         |
 
 ## Partition assignment
+
 `Partition-Key` header can be used by publishers to specify Kafka `key` which will be used for partition assignment for a message. This will ensure 
 that all messages with given `Partition-Key` will be sent to the same Kafka partition. 

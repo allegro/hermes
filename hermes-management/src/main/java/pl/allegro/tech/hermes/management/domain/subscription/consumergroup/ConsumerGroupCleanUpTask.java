@@ -1,12 +1,14 @@
 package pl.allegro.tech.hermes.management.domain.subscription.consumergroup;
 
+import static pl.allegro.tech.hermes.common.logging.LoggingFields.SUBSCRIPTION_NAME;
+
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
+import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionManagement;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 import pl.allegro.tech.hermes.management.infrastructure.leader.ManagementLeadership;
 
@@ -16,7 +18,7 @@ public class ConsumerGroupCleanUpTask implements Runnable {
 
   private final MultiDCAwareService multiDCAwareService;
   private final Map<String, ConsumerGroupToDeleteRepository> repositoriesByDatacenter;
-  private final SubscriptionService subscriptionService;
+  private final SubscriptionManagement subscriptionManagement;
   private final ManagementLeadership managementLeadership;
   private final Clock clock;
 
@@ -27,14 +29,14 @@ public class ConsumerGroupCleanUpTask implements Runnable {
   public ConsumerGroupCleanUpTask(
       MultiDCAwareService multiDCAwareService,
       Map<String, ConsumerGroupToDeleteRepository> repositoriesByDatacenter,
-      SubscriptionService subscriptionService,
+      SubscriptionManagement subscriptionManagement,
       ConsumerGroupCleanUpParameters cleanUpParameters,
       ManagementLeadership managementLeadership,
       Clock clock) {
 
     this.multiDCAwareService = multiDCAwareService;
     this.repositoriesByDatacenter = repositoriesByDatacenter;
-    this.subscriptionService = subscriptionService;
+    this.subscriptionManagement = subscriptionManagement;
     this.managementLeadership = managementLeadership;
     this.clock = clock;
 
@@ -54,7 +56,7 @@ public class ConsumerGroupCleanUpTask implements Runnable {
   }
 
   private void processDeletionTask(ConsumerGroupToDelete task) {
-    if (subscriptionService.subscriptionExists(task.subscriptionName())) {
+    if (subscriptionManagement.subscriptionExists(task.subscriptionName())) {
       logSkippingDeletion(task);
       removeDeletionTask(task);
       return;
@@ -102,45 +104,63 @@ public class ConsumerGroupCleanUpTask implements Runnable {
   }
 
   private void logSkippingDeletion(ConsumerGroupToDelete task) {
-    logger.info(
-        "Skipping consumer group deletion: Subscription {} still exists in datacenter {}",
-        task.subscriptionName().getQualifiedName(),
-        task.datacenter());
+    logger
+        .atInfo()
+        .addKeyValue(SUBSCRIPTION_NAME, task.subscriptionName().getQualifiedName())
+        .log(
+            "Skipping consumer group deletion: Subscription {} still exists in datacenter {}",
+            task.subscriptionName().getQualifiedName(),
+            task.datacenter());
   }
 
   private void logTaskExpiration(ConsumerGroupToDelete task) {
-    logger.warn(
-        "Consumer group deletion task expired: Subscription {} in datacenter {}",
-        task.subscriptionName().getQualifiedName(),
-        task.datacenter());
+    logger
+        .atWarn()
+        .addKeyValue(SUBSCRIPTION_NAME, task.subscriptionName().getQualifiedName())
+        .log(
+            "Consumer group deletion task expired: Subscription {} in datacenter {}",
+            task.subscriptionName().getQualifiedName(),
+            task.datacenter());
   }
 
   private void logDeletionAttempt(ConsumerGroupToDelete task) {
-    logger.info(
-        "Attempting to delete consumer group for subscription {} in datacenter {}",
-        task.subscriptionName().getQualifiedName(),
-        task.datacenter());
+    logger
+        .atInfo()
+        .addKeyValue(SUBSCRIPTION_NAME, task.subscriptionName().getQualifiedName())
+        .log(
+            "Attempting to delete consumer group for subscription {} in datacenter {}",
+            task.subscriptionName().getQualifiedName(),
+            task.datacenter());
   }
 
   private void logDeletionFailure(ConsumerGroupToDelete task, Exception e) {
-    logger.error(
-        "Failed to delete consumer group for subscription {} in datacenter {}",
-        task.subscriptionName().getQualifiedName(),
-        task.datacenter(),
-        e);
+    logger
+        .atError()
+        .addKeyValue(SUBSCRIPTION_NAME, task.subscriptionName().getQualifiedName())
+        .setCause(e)
+        .log(
+            "Failed to delete consumer group for subscription {} in datacenter {}",
+            task.subscriptionName().getQualifiedName(),
+            task.datacenter());
   }
 
   private void logSuccessfulDeletion(ConsumerGroupToDelete task) {
-    logger.info(
-        "Successfully deleted consumer group for subscription {} in datacenter {}",
-        task.subscriptionName().getQualifiedName(),
-        task.datacenter());
+    logger
+        .atInfo()
+        .addKeyValue(SUBSCRIPTION_NAME, task.subscriptionName().getQualifiedName())
+        .log(
+            "Successfully deleted consumer group for subscription {} in datacenter {}",
+            task.subscriptionName().getQualifiedName(),
+            task.datacenter());
   }
 
   private void logTaskRemoval(ConsumerGroupToDelete task) {
-    logger.info(
-        "Removed consumer group deletion task for subscription {} in datacenter {}",
-        task.subscriptionName().getQualifiedName(),
-        task.datacenter());
+    logger
+        .atInfo()
+        .addKeyValue(SUBSCRIPTION_NAME, task.subscriptionName().getQualifiedName())
+        .log(
+            "Removed consumer group deletion task for subscription {} in datacenter {}",
+            task.subscriptionName().getQualifiedName(),
+            task.datacenter());
   }
 }

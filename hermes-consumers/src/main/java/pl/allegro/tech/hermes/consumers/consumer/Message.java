@@ -282,6 +282,11 @@ public class Message implements FilterableMessage {
       return this;
     }
 
+    public Builder withPartitionOffset(PartitionOffset partitionOffset) {
+      this.partitionOffset = partitionOffset;
+      return this;
+    }
+
     public Builder withNoSchema() {
       this.schema = Optional.empty();
       return this;

@@ -5,6 +5,10 @@ import static pl.allegro.tech.hermes.common.metric.Gauges.BACKUP_STORAGE_SIZE;
 import io.micrometer.core.instrument.MeterRegistry;
 import java.util.function.ToDoubleFunction;
 
+/**
+ * @deprecated Will be removed in a future version.
+ */
+@Deprecated
 public class PersistentBufferMetrics {
   private final MeterRegistry meterRegistry;
 

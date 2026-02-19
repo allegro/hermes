@@ -17,7 +17,7 @@ import pl.allegro.tech.hermes.management.domain.subscription.validator.EndpointO
 import pl.allegro.tech.hermes.management.domain.subscription.validator.NoOpEndpointOwnershipValidator;
 import pl.allegro.tech.hermes.management.domain.subscription.validator.SubscriberWithAccessToAnyTopic;
 import pl.allegro.tech.hermes.management.domain.subscription.validator.SubscriptionValidator;
-import pl.allegro.tech.hermes.management.domain.topic.TopicService;
+import pl.allegro.tech.hermes.management.domain.topic.TopicManagement;
 
 @Configuration
 @EnableConfigurationProperties({SubscriptionProperties.class, CacheProperties.class})
@@ -34,7 +34,7 @@ public class SubscriptionConfiguration {
   public SubscriptionValidator subscriptionValidator(
       OwnerIdValidator ownerIdValidator,
       ApiPreconditions apiPreconditions,
-      TopicService topicService,
+      TopicManagement topicManagement,
       SubscriptionRepository subscriptionRepository,
       List<EndpointAddressValidator> endpointAddressValidators,
       EndpointOwnershipValidator endpointOwnershipValidator,
@@ -42,7 +42,7 @@ public class SubscriptionConfiguration {
     return new SubscriptionValidator(
         ownerIdValidator,
         apiPreconditions,
-        topicService,
+        topicManagement,
         subscriptionRepository,
         endpointAddressValidators,
         endpointOwnershipValidator,
