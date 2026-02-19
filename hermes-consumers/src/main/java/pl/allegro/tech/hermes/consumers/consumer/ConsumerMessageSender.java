@@ -66,6 +66,18 @@ public class ConsumerMessageSender {
   private ScheduledExecutorService retrySingleThreadExecutor;
   private volatile boolean running = true;
 
+  List<SuccessHandler> getSuccessHandlers() {
+    return successHandlers;
+  }
+
+  List<ErrorHandler> getErrorHandlers() {
+    return errorHandlers;
+  }
+
+  List<ErrorHandler> getDiscardedHandlers() {
+    return discardedHandlers;
+  }
+
   public ConsumerMessageSender(
       Subscription subscription,
       MessageSenderFactory messageSenderFactory,

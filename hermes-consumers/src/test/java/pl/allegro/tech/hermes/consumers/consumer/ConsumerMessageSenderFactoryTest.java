@@ -128,9 +128,9 @@ public class ConsumerMessageSenderFactoryTest {
             subscription, consumerRateLimiter, pendingOffsets, subscriptionLoadRecorder, metrics);
 
     // then
-    List<SuccessHandler> successHandlers = getField(sender, "successHandlers");
-    List<ErrorHandler> errorHandlers = getField(sender, "errorHandlers");
-    List<ErrorHandler> discardedHandlers = getField(sender, "discardedHandlers");
+    List<SuccessHandler> successHandlers = sender.getSuccessHandlers();
+    List<ErrorHandler> errorHandlers = sender.getErrorHandlers();
+    List<ErrorHandler> discardedHandlers = sender.getDiscardedHandlers();
 
     assertThat(successHandlers)
         .hasSize(3) // auth, default, supported
@@ -152,9 +152,4 @@ public class ConsumerMessageSenderFactoryTest {
         .anyMatch(h -> h instanceof DefaultErrorHandler);
   }
 
-  private <T> T getField(Object object, String fieldName) throws Exception {
-    Field field = object.getClass().getDeclaredField(fieldName);
-    field.setAccessible(true);
-    return (T) field.get(object);
-  }
 }
