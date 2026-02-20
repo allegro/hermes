@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.management.domain.topic.validator
 
 import pl.allegro.tech.hermes.api.RetentionTime
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions
-import pl.allegro.tech.hermes.management.config.TopicProperties
 import pl.allegro.tech.hermes.management.domain.auth.TestRequestUser
 import pl.allegro.tech.hermes.management.domain.owner.validator.OwnerIdValidator
 import pl.allegro.tech.hermes.schema.SchemaRepository
@@ -27,10 +26,9 @@ class TopicValidatorWithRealApiPreconditionsTest extends Specification {
     def schemaRepository = Stub(SchemaRepository)
     def ownerDescriptorValidator = Stub(OwnerIdValidator)
     def contentTypeWhitelistValidator = Stub(ContentTypeValidator)
-    def topicProperties = new TopicProperties()
 
     @Subject
-    def topicValidator = new TopicValidator(ownerDescriptorValidator, contentTypeWhitelistValidator, schemaRepository, new ApiPreconditions(), topicProperties)
+    def topicValidator = new TopicValidator(ownerDescriptorValidator, contentTypeWhitelistValidator, schemaRepository, new ApiPreconditions(), false)
 
     @Unroll
     def "creating and updating topic with up to 7 days retention time should be valid"() {

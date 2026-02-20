@@ -10,7 +10,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.management.config.subscription.consumergroup.ConsumerGroupCleanUpProperties;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionManagement;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 import pl.allegro.tech.hermes.management.infrastructure.leader.ManagementLeadership;
@@ -29,13 +28,13 @@ public class ConsumerGroupCleanUpScheduler {
   private final Clock clock;
   private final boolean enabled;
   private final long cleanUpIntervalInSeconds;
-  private final ConsumerGroupCleanUpProperties cleanUpProperties;
+  private final ConsumerGroupCleanUpParameters cleanUpParameters;
 
   public ConsumerGroupCleanUpScheduler(
       MultiDCAwareService multiDCAwareService,
       Map<String, ConsumerGroupToDeleteRepository> consumerGroupToDeleteRepositoriesByDatacenter,
       SubscriptionManagement subscriptionManagement,
-      ConsumerGroupCleanUpProperties cleanUpProperties,
+      ConsumerGroupCleanUpParameters cleanUpParameters,
       ManagementLeadership managementLeadership,
       Clock clock) {
     this.multiDCAwareService = multiDCAwareService;
@@ -44,9 +43,9 @@ public class ConsumerGroupCleanUpScheduler {
     this.subscriptionManagement = subscriptionManagement;
     this.managementLeadership = managementLeadership;
     this.clock = clock;
-    this.enabled = cleanUpProperties.isEnabled();
-    this.cleanUpIntervalInSeconds = cleanUpProperties.getInterval().toSeconds();
-    this.cleanUpProperties = cleanUpProperties;
+    this.enabled = cleanUpParameters.isEnabled();
+    this.cleanUpIntervalInSeconds = cleanUpParameters.getInterval().toSeconds();
+    this.cleanUpParameters = cleanUpParameters;
   }
 
   @PostConstruct
@@ -58,7 +57,7 @@ public class ConsumerGroupCleanUpScheduler {
               multiDCAwareService,
               consumerGroupToDeleteRepositoriesByDatacenter,
               subscriptionManagement,
-              cleanUpProperties,
+              cleanUpParameters,
               managementLeadership,
               clock);
       scheduler.scheduleAtFixedRate(

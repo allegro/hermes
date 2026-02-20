@@ -23,7 +23,8 @@ public class ZookeeperProperties implements ZookeeperParameters {
 
   private int processingThreadPoolSize = 5;
 
-  private ZookeeperAuthorizationProperties authorization = new ZookeeperAuthorizationProperties();
+  private ZookeeperAuthenticationProperties authentication =
+      new ZookeeperAuthenticationProperties();
 
   @Override
   public String getConnectionString() {
@@ -102,38 +103,38 @@ public class ZookeeperProperties implements ZookeeperParameters {
   }
 
   @Override
-  public boolean isAuthorizationEnabled() {
-    return authorization.enabled;
+  public boolean isAuthenticationEnabled() {
+    return authentication.enabled;
   }
 
   @Override
   public String getScheme() {
-    return authorization.scheme;
+    return authentication.scheme;
   }
 
   @Override
   public String getUser() {
-    return authorization.user;
+    return authentication.user;
   }
 
   @Override
   public String getPassword() {
-    return authorization.password;
+    return authentication.password;
   }
 
   public void setProcessingThreadPoolSize(int processingThreadPoolSize) {
     this.processingThreadPoolSize = processingThreadPoolSize;
   }
 
-  public ZookeeperAuthorizationProperties getAuthorization() {
-    return authorization;
+  public ZookeeperAuthenticationProperties getAuthentication() {
+    return authentication;
   }
 
-  public void setAuthorization(ZookeeperAuthorizationProperties authorization) {
-    this.authorization = authorization;
+  public void setAuthentication(ZookeeperAuthenticationProperties authentication) {
+    this.authentication = authentication;
   }
 
-  public static class ZookeeperAuthorizationProperties {
+  public static class ZookeeperAuthenticationProperties {
 
     private boolean enabled = false;
 

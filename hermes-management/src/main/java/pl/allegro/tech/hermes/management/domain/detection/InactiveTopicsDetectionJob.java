@@ -15,20 +15,17 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
-import pl.allegro.tech.hermes.management.config.detection.InactiveTopicsDetectionProperties;
 import pl.allegro.tech.hermes.management.domain.topic.TopicManagement;
 
-@Component
 public class InactiveTopicsDetectionJob {
   private final TopicManagement topicManagement;
   private final InactiveTopicsStorageService inactiveTopicsStorageService;
   private final InactiveTopicsDetectionService inactiveTopicsDetectionService;
   private final Optional<InactiveTopicsNotifier> notifier;
-  private final InactiveTopicsDetectionProperties properties;
+  private final InactiveTopicsDetectionParameters parameters;
   private final Clock clock;
   private final MeterRegistry meterRegistry;
 
@@ -39,13 +36,13 @@ public class InactiveTopicsDetectionJob {
       InactiveTopicsStorageService inactiveTopicsStorageService,
       InactiveTopicsDetectionService inactiveTopicsDetectionService,
       Optional<InactiveTopicsNotifier> notifier,
-      InactiveTopicsDetectionProperties properties,
+      InactiveTopicsDetectionParameters parameters,
       Clock clock,
       MeterRegistry meterRegistry) {
     this.topicManagement = topicManagement;
     this.inactiveTopicsStorageService = inactiveTopicsStorageService;
     this.inactiveTopicsDetectionService = inactiveTopicsDetectionService;
-    this.properties = properties;
+    this.parameters = parameters;
     this.clock = clock;
     this.meterRegistry = meterRegistry;
     if (notifier.isEmpty()) {
@@ -135,7 +132,7 @@ public class InactiveTopicsDetectionJob {
 
   private List<InactiveTopic> limitHistory(List<InactiveTopic> inactiveTopics) {
     return inactiveTopics.stream()
-        .map(topic -> topic.limitNotificationsHistory(properties.notificationsHistoryLimit()))
+        .map(topic -> topic.limitNotificationsHistory(parameters.notificationsHistoryLimit()))
         .toList();
   }
 

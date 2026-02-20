@@ -476,16 +476,16 @@ To register an OAuth provider in Hermes send `POST` request with to `/oauth/prov
 }
 ```
 
-Field                    | Description
------------------------- | ---------------------------------------------------
-name                     | Hermes-wide id of a specific OAuth provider
-tokenEndpoint            | Token request URL of the provider
-clientId                 | OAuth client id of Hermes
-clientSecret             | OAuth client secret of Hermes
-tokenRequestInitialDelay | Min delay between possible token requests
-tokenRequestMaxDelay     | Max delay between possible token requests
-requestTimeout           | HTTP timeout for token request
-socketTimeout            | Maximum time of inactivity between two data packets
+| Field                    | Description                                         |
+|--------------------------|-----------------------------------------------------|
+| name                     | Hermes-wide id of a specific OAuth provider         |
+| tokenEndpoint            | Token request URL of the provider                   |
+| clientId                 | OAuth client id of Hermes                           |
+| clientSecret             | OAuth client secret of Hermes                       |
+| tokenRequestInitialDelay | Min delay between possible token requests           |
+| tokenRequestMaxDelay     | Max delay between possible token requests           |
+| requestTimeout           | HTTP timeout for token request                      |
+| socketTimeout            | Maximum time of inactivity between two data packets |
 
 Verify the OAuth provider is registered by calling `GET` on `/oauth/providers` and `/oauth/providers/{providerName}` endpoints.
 Hermes HTTP endpoints return asterisks (`******`) in place of the actual secrets.
@@ -528,11 +528,11 @@ Enable this grant type by extending the subscription definition with `oAuthPolic
 }
 ```
 
-Field        | Description
--------------| ----------------------------------------------------------
-grantType    | Needs to be set to `clientCredentials` for this grant type
-providerName | OAuth provider to be used for token request
-scope        | An optional scope of the access request
+| Field        | Description                                                |
+|--------------|------------------------------------------------------------|
+| grantType    | Needs to be set to `clientCredentials` for this grant type |
+| providerName | OAuth provider to be used for token request                |
+| scope        | An optional scope of the access request                    |
 
 #### Resource owner password grant
 
@@ -557,13 +557,13 @@ Enable this grant type by extending the subscription definition with following c
 }
 ```
 
-Field        | Description
--------------| ----------------------------------------------------------
-grantType    | Needs to be set to `password` for this grant type
-providerName | OAuth provider name to be used for token request
-username     | Resource owner's username
-password     | Resource owner's password
-scope        | An optional scope of the access request
+| Field        | Description                                       |
+|--------------|---------------------------------------------------|
+| grantType    | Needs to be set to `password` for this grant type |
+| providerName | OAuth provider name to be used for token request  |
+| username     | Resource owner's username                         |
+| password     | Resource owner's password                         |
+| scope        | An optional scope of the access request           |
 
 ## Metrics
 
@@ -606,7 +606,7 @@ It will return **404 Not Found** if there is no message to display. Otherwise it
     "message": "body of a message",
     "partition": 5,
     "offset": 368741824,
-    "cluster": "primary"
+    "cluster": "primary-dc"
 }
 ```
 
@@ -731,7 +731,7 @@ It returns array of message tracking information in following format:
         "topicName": "topic-name",
         "status": "DISCARDED",
         "reason": "Message sending failed with status code:400",
-        "cluster": "primary",
+        "cluster": "primary-dc",
         "offset": 171165098,
         "partition": 5
     }

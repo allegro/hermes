@@ -63,11 +63,10 @@ Minimal request:
 
 Other options:
 
-Option               | Description                             | Options     | Default value
----------------      | --------------------------------------- | ----------- | -------------
-ack                  | acknowledgement level                   | ALL, LEADER | LEADER
-trackingEnabled      | track incoming messages?                | -           | false
-
+| Option          | Description              | Options     | Default value |
+|-----------------|--------------------------|-------------|---------------|
+| ack             | acknowledgement level    | ALL, LEADER | LEADER        |
+| trackingEnabled | track incoming messages? | -           | false         |
 
 Request that specifies all available options:
 

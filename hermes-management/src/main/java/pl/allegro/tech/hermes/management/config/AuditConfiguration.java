@@ -39,13 +39,19 @@ public class AuditConfiguration {
   }
 
   @Bean
-  @ConditionalOnProperty(prefix = "audit", value = "isLoggingAuditEnabled", havingValue = "true")
+  @ConditionalOnProperty(
+      prefix = "management.audit",
+      value = "isLoggingAuditEnabled",
+      havingValue = "true")
   public LoggingAuditor loggingAuditor(ObjectMapper objectMapper) {
     return new LoggingAuditor(javers(), objectMapper);
   }
 
   @Bean
-  @ConditionalOnProperty(prefix = "audit", value = "isEventAuditEnabled", havingValue = "true")
+  @ConditionalOnProperty(
+      prefix = "management.audit",
+      value = "isEventAuditEnabled",
+      havingValue = "true")
   public EventAuditor eventAuditor(
       AuditProperties auditProperties,
       @Qualifier("eventAuditorRestTemplate") RestTemplate eventAuditorRestTemplate,

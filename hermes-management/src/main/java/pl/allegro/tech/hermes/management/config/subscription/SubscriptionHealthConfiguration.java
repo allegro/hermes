@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.management.config.subscription;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.time.Clock;
 import java.util.concurrent.Executors;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,7 +35,12 @@ import pl.allegro.tech.hermes.tracker.management.LogRepository;
 public class SubscriptionHealthConfiguration {
   private static final DisabledIndicator DISABLED_INDICATOR = new DisabledIndicator();
 
-  @Autowired private SubscriptionHealthProperties subscriptionHealthProperties;
+  private final SubscriptionHealthProperties subscriptionHealthProperties;
+
+  public SubscriptionHealthConfiguration(
+      SubscriptionHealthProperties subscriptionHealthProperties) {
+    this.subscriptionHealthProperties = subscriptionHealthProperties;
+  }
 
   @Bean
   public SubscriptionHealthProblemIndicator laggingIndicator() {

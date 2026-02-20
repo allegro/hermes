@@ -29,7 +29,7 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperSubscriptionOffs
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperSubscriptionRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperTopicRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperWorkloadConstraintsRepository;
-import pl.allegro.tech.hermes.management.config.storage.ZookeeperGroupRepositoryFactory;
+import pl.allegro.tech.hermes.management.config.zookeeper.ZookeeperGroupRepositoryFactory;
 import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryManager;
 import pl.allegro.tech.hermes.management.domain.detection.InactiveTopicsRepository;

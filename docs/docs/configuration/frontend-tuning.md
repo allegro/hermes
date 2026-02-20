@@ -22,14 +22,14 @@ interaction with Kafka needs to take place during this period. If timeout is rea
 guarantees it will end up in Kafka. Otherwise, normal *request timed out* message is sent.
 
 
-Option                                      | Description                                                                          | Default value
-------------------------------------------- | ------------------------------------------------------------------------------------ | -------------
-frontend.server.port                        | port to listen on                                                                    | 8080
-frontend.server.readTimeout                 | maximum time to wait for first portion of data to appear on socket                   | 2s
-frontend.server.requestParseTimeout         | maximum time to wait before full request is received                                 | 5s
-frontend.server.ioThreadsCount              | number of Undertow IO threads                                                        | 2 * cores
-frontend.server.workerThreadCount           | number of Undertow worker threads                                                    | 200
-frontend.server.gracefulShutdownInitialWait | time between setting health endpoint to return DOWN and actually stopping the server | 10s
+| Option                                      | Description                                                                          | Default value |
+|---------------------------------------------|--------------------------------------------------------------------------------------|---------------|
+| frontend.server.port                        | port to listen on                                                                    | 8080          |
+| frontend.server.readTimeout                 | maximum time to wait for first portion of data to appear on socket                   | 2s            |
+| frontend.server.requestParseTimeout         | maximum time to wait before full request is received                                 | 5s            |
+| frontend.server.ioThreadsCount              | number of Undertow IO threads                                                        | 2 * cores     |
+| frontend.server.workerThreadCount           | number of Undertow worker threads                                                    | 200           |
+| frontend.server.gracefulShutdownInitialWait | time between setting health endpoint to return DOWN and actually stopping the server | 10s           |
 
 Default timeout settings make Frontend safe against [Slowloris attack](https://en.wikipedia.org/wiki/Slowloris_(software)).
 
@@ -47,14 +47,14 @@ for ACK-all, there are also **two buffers** - keep this in mind when deciding on
 Kafka producer properties map 1:1 to Kafka producer configuration options. See Kafka documentation if you have any doubts
 or need an extended description.
 
-Option                                    | Kafka config            | Description                            | Default value
------------------------------------------ | ----------------------- | -------------------------------------- | -------------
-frontend.kafka.producer.metadataMaxAge    | METADATA_MAX_AGE_CONFIG | how old can topic metadata be          | 5m
-frontend.kafka.producer.compressionCodec  | COMPRESSION_TYPE_CONFIG | compression algorithm                  | none
-frontend.kafka.producer.retries           | RETRIES_CONFIG          | how many times should we retry sending | Integer.MAX_VALUE
-frontend.kafka.producer.retryBackoff      | RETRY_BACKOFF_MS_CONFIG | backoff between retries                | 256ms
-frontend.kafka.producer.batchSize         | BATCH_SIZE_CONFIG       | size of sent message batch in bytes    | 16 kB
-frontend.kafka.producer.tcpSendBuffer     | SEND_BUFFER_CONFIG      | size of TCP buffer                     | 128 kB
+| Option                                   | Kafka config            | Description                            | Default value     |
+|------------------------------------------|-------------------------|----------------------------------------|-------------------|
+| frontend.kafka.producer.metadataMaxAge   | METADATA_MAX_AGE_CONFIG | how old can topic metadata be          | 5m                |
+| frontend.kafka.producer.compressionCodec | COMPRESSION_TYPE_CONFIG | compression algorithm                  | none              |
+| frontend.kafka.producer.retries          | RETRIES_CONFIG          | how many times should we retry sending | Integer.MAX_VALUE |
+| frontend.kafka.producer.retryBackoff     | RETRY_BACKOFF_MS_CONFIG | backoff between retries                | 256ms             |
+| frontend.kafka.producer.batchSize        | BATCH_SIZE_CONFIG       | size of sent message batch in bytes    | 16 kB             |
+| frontend.kafka.producer.tcpSendBuffer    | SEND_BUFFER_CONFIG      | size of TCP buffer                     | 128 kB            |
 
 ## Graceful startup
 
@@ -65,12 +65,12 @@ To get rid of this issue and reduce event processing latency, all the required d
 just before it's health-check goes green.
 Note, enabling startup data loading will make frontend boot a little longer.
 
-Option                                                   | Description                                             | Default value
--------------------------------------------------------- | ------------------------------------------------------- | -------------
-frontend.startup.topic.loading.metadata.enabled          | should the startup topic metadata loading be enabled    | false
-frontend.startup.topic.loading.metadata.retryInterval    | retry interval between retry loops                      | 1s
-frontend.startup.topic.loading.metadata.retryCount       | number of retries between topic metadata fetch loops    | 5
-frontend.startup.topic.loading.metadata.threadPoolSize   | number of worker threads loading metadata concurrently  | 16
-frontend.startup.topic.loading.schema.enabled            | should the startup topic schema loading be enabled      | false
-frontend.startup.topic.loading.schema.retryCount         | number of retries between topic schema fetch loops      | 3
-frontend.startup.topic.loading.schema.threadPoolSize     | number of worker threads loading schemas concurrently   | 16
+| Option                                                 | Description                                            | Default value |
+|--------------------------------------------------------|--------------------------------------------------------|---------------|
+| frontend.startup.topic.loading.metadata.enabled        | should the startup topic metadata loading be enabled   | false         |
+| frontend.startup.topic.loading.metadata.retryInterval  | retry interval between retry loops                     | 1s            |
+| frontend.startup.topic.loading.metadata.retryCount     | number of retries between topic metadata fetch loops   | 5             |
+| frontend.startup.topic.loading.metadata.threadPoolSize | number of worker threads loading metadata concurrently | 16            |
+| frontend.startup.topic.loading.schema.enabled          | should the startup topic schema loading be enabled     | false         |
+| frontend.startup.topic.loading.schema.retryCount       | number of retries between topic schema fetch loops     | 3             |
+| frontend.startup.topic.loading.schema.threadPoolSize   | number of worker threads loading schemas concurrently  | 16            |

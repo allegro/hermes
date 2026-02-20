@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "jersey")
+@ConfigurationProperties(prefix = "management.jersey")
 public class JerseyProperties {
 
   private List<String> packagesToScan = new ArrayList<>();

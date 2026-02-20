@@ -10,7 +10,6 @@ import java.net.URI;
 import org.apache.avro.Schema;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -35,9 +34,15 @@ import pl.allegro.tech.hermes.schema.resolver.SchemaRepositoryInstanceResolver;
 @EnableConfigurationProperties({SchemaRepositoryProperties.class})
 public class SchemaRepositoryConfiguration {
 
-  @Autowired @Lazy TopicManagement topicManagement;
+  private final TopicManagement topicManagement;
+  private final SchemaRepositoryProperties schemaRepositoryProperties;
 
-  @Autowired private SchemaRepositoryProperties schemaRepositoryProperties;
+  public SchemaRepositoryConfiguration(
+      @Lazy TopicManagement topicManagement,
+      SchemaRepositoryProperties schemaRepositoryProperties) {
+    this.topicManagement = topicManagement;
+    this.schemaRepositoryProperties = schemaRepositoryProperties;
+  }
 
   @Bean(name = "schemaRepositoryClient")
   public Client schemaRepositoryClient(ObjectMapper mapper) {
@@ -60,7 +65,7 @@ public class SchemaRepositoryConfiguration {
         .withNamespacePrefixIf(
             schemaRepositoryProperties.isSubjectNamespaceEnabled(),
             new SubjectNamingStrategy.Namespace(
-                kafkaClustersProperties.getDefaultNamespace(),
+                kafkaClustersProperties.getNamespace(),
                 kafkaClustersProperties.getNamespaceSeparator()))
         .withValueSuffixIf(schemaRepositoryProperties.isSubjectSuffixEnabled());
   }

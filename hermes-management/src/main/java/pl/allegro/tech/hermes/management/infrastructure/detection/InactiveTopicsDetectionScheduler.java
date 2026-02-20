@@ -19,7 +19,7 @@ public class InactiveTopicsDetectionScheduler {
     this.job = job;
   }
 
-  @Scheduled(cron = "${detection.inactive-topics.cron}")
+  @Scheduled(cron = "${management.detection.inactive-topics.cron:0 0 8 * * *}")
   public void run() {
     if (leader.isLeader()) {
       logger.info("Inactive topics detection started");

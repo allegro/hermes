@@ -7,35 +7,30 @@ import static pl.allegro.tech.hermes.common.logging.LoggingFields.TOPIC_NAME;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.RawSchema;
 import pl.allegro.tech.hermes.api.RawSchemaWithMetadata;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.infrastructure.schema.validator.SchemaValidator;
 import pl.allegro.tech.hermes.management.infrastructure.schema.validator.SchemaValidatorProvider;
 import pl.allegro.tech.hermes.schema.RawSchemaClient;
 import pl.allegro.tech.hermes.schema.SchemaId;
 import pl.allegro.tech.hermes.schema.SchemaVersion;
 
-@Component
 public class SchemaService {
 
   private final RawSchemaClient rawSchemaClient;
   private final SchemaValidatorProvider validatorProvider;
-  private final TopicProperties topicProperties;
+  private final boolean removeSchemaEnabled;
 
   private static final Logger logger = LoggerFactory.getLogger(SchemaService.class);
 
-  @Autowired
   public SchemaService(
       RawSchemaClient rawSchemaClient,
       SchemaValidatorProvider validatorProvider,
-      TopicProperties topicProperties) {
+      boolean removeSchemaEnabled) {
     this.rawSchemaClient = rawSchemaClient;
     this.validatorProvider = validatorProvider;
-    this.topicProperties = topicProperties;
+    this.removeSchemaEnabled = removeSchemaEnabled;
   }
 
   public Optional<RawSchema> getSchema(String qualifiedTopicName) {
@@ -70,7 +65,7 @@ public class SchemaService {
   }
 
   public void deleteAllSchemaVersions(String qualifiedTopicName) {
-    if (!topicProperties.isRemoveSchema()) {
+    if (!removeSchemaEnabled) {
       throw new SchemaRemovalDisabledException();
     }
     logger

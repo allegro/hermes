@@ -9,17 +9,12 @@ public class KafkaProperties implements KafkaParameters {
 
   private String datacenter = "dc";
 
-  private String clusterName = "primary";
+  private String clusterName = "primary-dc";
 
   private String brokerList = "localhost:9092";
 
   public KafkaAuthenticationProperties getAuthentication() {
     return authentication;
-  }
-
-  @Deprecated
-  public void setAuthorization(KafkaAuthenticationProperties authorization) {
-    this.authentication = authorization;
   }
 
   public void setAuthentication(KafkaAuthenticationProperties authentication) {

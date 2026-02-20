@@ -1,17 +1,13 @@
 package pl.allegro.tech.hermes.management.domain.owner.validator;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.management.domain.owner.OwnerSource;
 import pl.allegro.tech.hermes.management.domain.owner.OwnerSources;
 
-@Component
 public class OwnerIdValidator {
 
   private final OwnerSources ownerSources;
 
-  @Autowired
   public OwnerIdValidator(OwnerSources ownerSources) {
     this.ownerSources = ownerSources;
   }

@@ -28,7 +28,7 @@ import pl.allegro.tech.hermes.management.infrastructure.prometheus.PrometheusMet
 import pl.allegro.tech.hermes.management.infrastructure.prometheus.RestTemplatePrometheusClient;
 
 @Configuration
-@ConditionalOnProperty(value = "prometheus.client.enabled", havingValue = "true")
+@ConditionalOnProperty(value = "management.prometheus.client.enabled", havingValue = "true")
 public class ExternalMonitoringConfiguration {
 
   @Bean

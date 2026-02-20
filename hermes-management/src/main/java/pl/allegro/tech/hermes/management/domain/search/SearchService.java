@@ -2,8 +2,6 @@ package pl.allegro.tech.hermes.management.domain.search;
 
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.SearchItem;
 import pl.allegro.tech.hermes.api.SearchResults;
 import pl.allegro.tech.hermes.api.SubscriptionSearchItem;
@@ -13,12 +11,10 @@ import pl.allegro.tech.hermes.management.domain.search.cache.CachedSubscriptionI
 import pl.allegro.tech.hermes.management.domain.search.cache.CachedTopicItem;
 import pl.allegro.tech.hermes.management.domain.search.cache.SearchCache;
 
-@Component
 public class SearchService {
   private final SearchCache searchCache;
   private final SearchPredicateFactory searchPredicateFactory;
 
-  @Autowired
   public SearchService(SearchCache searchCache, SearchPredicateFactory searchPredicateFactory) {
     this.searchCache = searchCache;
     this.searchPredicateFactory = searchPredicateFactory;
