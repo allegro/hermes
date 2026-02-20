@@ -15,7 +15,6 @@ import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.lifecycle.Startable;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
@@ -67,7 +66,8 @@ public class HermesExtension
   @Override
   public void beforeAll(ExtensionContext context) {
     if (!started) {
-      Stream.of(hermesZookeeper, kafka).parallel().forEach(Startable::start);
+      hermesZookeeper.start();
+      kafka.start();
       schemaRegistry.start();
       management.addEventAuditorListener(auditEventsReceiver.getPort());
       management.start();
@@ -92,8 +92,12 @@ public class HermesExtension
 
   @Override
   public void close() {
-    Stream.of(management, consumers, frontend).parallel().forEach(HermesTestApp::stop);
-    Stream.of(hermesZookeeper, kafka, schemaRegistry).parallel().forEach(Startable::stop);
+    management.stop();
+    consumers.stop();
+    frontend.stop();
+    hermesZookeeper.stop();
+    kafka.stop();
+    schemaRegistry.stop();
     started = false;
   }
 
