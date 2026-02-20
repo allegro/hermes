@@ -84,18 +84,20 @@ public class DefaultErrorHandler implements ErrorHandler {
     result
         .getLogInfo()
         .forEach(
-            logInfo ->
-                undeliveredMessageLog.add(
-                    undeliveredMessage()
-                        .withSubscription(subscription.getName())
-                        .withTopicName(subscription.getQualifiedTopicName())
-                        .withMessage(new String(message.getData()))
-                        .withReason(logInfo.getFailure().getMessage())
-                        .withTimestamp(clock.millis())
-                        .withPartition(message.getPartition())
-                        .withOffset(message.getOffset())
-                        .withCluster(cluster)
-                        .build()));
+            logInfo -> {
+              Throwable failure = logInfo.getFailure();
+              undeliveredMessageLog.add(
+                  undeliveredMessage()
+                      .withSubscription(subscription.getName())
+                      .withTopicName(subscription.getQualifiedTopicName())
+                      .withMessage(new String(message.getData()))
+                      .withReason(failure != null ? failure.getMessage() : "")
+                      .withTimestamp(clock.millis())
+                      .withPartition(message.getPartition())
+                      .withOffset(message.getOffset())
+                      .withCluster(cluster)
+                      .build());
+            });
   }
 
   private void logResult(Message message, Subscription subscription, MessageSendingResult result) {

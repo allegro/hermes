@@ -32,7 +32,7 @@ final class ContentLengthChecker {
         throw new ContentTooLargeException(contentLength, max);
       } else {
         logger
-            .atInfo()
+            .atWarn()
             .addKeyValue(TOPIC_NAME, attachment.getCachedTopic().getQualifiedName())
             .log(
                 "Content-Length is larger than max on this topic [length:{}, max:{}, topic: {}]",
