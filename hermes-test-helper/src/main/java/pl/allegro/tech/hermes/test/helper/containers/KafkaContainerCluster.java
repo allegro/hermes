@@ -115,7 +115,7 @@ public class KafkaContainerCluster implements Startable {
   }
 
   private void startToxiproxy() {
-    toxiproxy.start();
+    TestcontainersUtils.startWithRetry(toxiproxy::start, 3, Duration.ofSeconds(2));
     for (KafkaContainer kafkaContainer : brokers) {
       ContainerProxy proxy =
           toxiproxy.getProxy(kafkaContainer, kafkaContainer.getExposedPorts().get(0));
@@ -125,11 +125,11 @@ public class KafkaContainerCluster implements Startable {
   }
 
   public void stop(List<BrokerId> brokerIds) {
-    select(brokerIds).stream().parallel().forEach(KafkaContainer::stopKafka);
+    select(brokerIds).stream().forEach(KafkaContainer::stopKafka);
   }
 
   public void start(List<BrokerId> brokerIds) {
-    select(brokerIds).stream().parallel().forEach(KafkaContainer::startKafka);
+    select(brokerIds).stream().forEach(KafkaContainer::startKafka);
   }
 
   private Set<KafkaContainer> select(List<BrokerId> brokerIds) {
@@ -141,9 +141,7 @@ public class KafkaContainerCluster implements Startable {
   @Override
   public void stop() {
     toxiproxy.stop();
-    Stream.concat(brokers.stream(), Stream.of(zookeeper))
-        .parallel()
-        .forEach(GenericContainer::stop);
+    Stream.concat(brokers.stream(), Stream.of(zookeeper)).forEach(GenericContainer::stop);
   }
 
   public void cutOffConnectionsBetweenBrokersAndClients() {
@@ -155,10 +153,7 @@ public class KafkaContainerCluster implements Startable {
   }
 
   public void startAllStoppedBrokers() {
-    brokers.stream()
-        .filter(broker -> !broker.isKafkaRunning())
-        .parallel()
-        .forEach(KafkaContainer::startKafka);
+    brokers.stream().filter(broker -> !broker.isKafkaRunning()).forEach(KafkaContainer::startKafka);
     waitForClusterFormation();
   }
 
