@@ -18,7 +18,7 @@ class HermesMockRuleTest extends Specification {
 
     def 'simple publish-expect test'() {
         given:
-            def topicName = "my-test-topic"
+            def topicName = "test.my-test-topic"
             hermes.define().jsonTopic(topicName)
 
         when:

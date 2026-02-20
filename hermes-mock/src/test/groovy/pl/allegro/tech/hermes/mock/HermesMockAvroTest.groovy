@@ -44,8 +44,8 @@ class HermesMockAvroTest extends Specification {
 
     def "should receive an Avro message matched by pattern different schema"() {
         given: "define wiremock responses for 2 topics with different schemas"
-            def topicName = "my-test-avro-topic-1"
-            def topicName2 = "my-test-avro-topic-2"
+            def topicName = "test.my-test-avro-topic-1"
+            def topicName2 = "test.my-test-avro-topic-2"
 
             hermes.define().avroTopic(topicName,
                     aResponse().withStatusCode(201).build(),
@@ -76,8 +76,8 @@ class HermesMockAvroTest extends Specification {
 
     def "should receive an Avro message matched by pattern different nullable schema"() {
         given: "define wiremock responses for 2 topics with different schemas"
-            def topicName = "my-test-avro-topic-1"
-            def topicName2 = "my-test-avro-topic-2"
+            def topicName = "test.my-test-avro-topic-1"
+            def topicName2 = "test.my-test-avro-topic-2"
 
             hermes.define().avroTopic(topicName,
                     aResponse().withStatusCode(201).build(),
@@ -107,7 +107,7 @@ class HermesMockAvroTest extends Specification {
 
     def "should receive an Avro message matched by pattern"() {
         given: "define wiremock response for matching avro pattern"
-            def topicName = "my-test-avro-topic"
+            def topicName = "test.my-test-avro-topic"
             hermes.define().avroTopic(topicName,
                     aResponse().withStatusCode(201).build(),
                     schema,
@@ -125,7 +125,7 @@ class HermesMockAvroTest extends Specification {
 
     def "should not match avro pattern"() {
         given: "define wiremock response for matching avro pattern"
-            def topicName = "my-test-avro-topic"
+            def topicName = "test.my-test-avro-topic"
             hermes.define().avroTopic(topicName,
                     aResponse().withStatusCode(201).build(),
                     schema,
@@ -142,7 +142,7 @@ class HermesMockAvroTest extends Specification {
 
     def "should receive an Avro message"() {
         given:
-            def topicName = "my-test-avro-topic"
+            def topicName = "test.my-test-avro-topic"
             hermes.define().avroTopic(topicName)
 
         when:
@@ -156,7 +156,7 @@ class HermesMockAvroTest extends Specification {
 
     def "should respond with a delay"() {
         given:
-            def topicName = "my-test-avro-topic"
+            def topicName = "test.my-test-avro-topic"
             Duration fixedDelay = Duration.ofMillis(500)
             hermes.define().avroTopic(topicName, aResponse().withFixedDelay(fixedDelay).build())
             Instant start = now()
@@ -172,7 +172,7 @@ class HermesMockAvroTest extends Specification {
 
     def "should respond for a message send with delay"() {
         given:
-            def topicName = "my-test-avro-topic"
+            def topicName = "test.my-test-avro-topic"
             def delayInMillis = 2_000
             hermes.define().avroTopic(topicName, aResponse().build())
 
@@ -188,7 +188,7 @@ class HermesMockAvroTest extends Specification {
 
     def "should get all messages as avro"() {
         given:
-            def topicName = "get-all-avro-topic"
+            def topicName = "test.get-all-avro-topic"
             hermes.define().avroTopic(topicName)
 
             def messages = (1..5).collect { new TestMessage("key-" + it, "value-" + it) }
@@ -202,7 +202,7 @@ class HermesMockAvroTest extends Specification {
 
     def "should get all filtered messages as avro"() {
         given:
-            def topicName = "get-all-filtered-avro-topic"
+            def topicName = "test.get-all-filtered-avro-topic"
             hermes.define().avroTopic(topicName)
 
             def messages = (1..5).collect { new TestMessage("key-" + it, "value-" + it) }
@@ -217,7 +217,7 @@ class HermesMockAvroTest extends Specification {
 
     def "should get messages with schema from file"() {
         given:
-            def topicName = "my-avro-from-file"
+            def topicName = "test.my-avro-from-file"
             hermes.define().avroTopic(topicName)
             def schema = AvroUserSchemaLoader.load("/msg.avsc")
             def json = '''
@@ -241,7 +241,7 @@ class HermesMockAvroTest extends Specification {
     def "should throw on incorrect Avro schema"() {
         given:
             def schema = ReflectData.get().getSchema(TestMessage)
-            def topicName = "my-first-avro-failing-test-topic"
+            def topicName = "test.my-first-avro-failing-test-topic"
             hermes.define().avroTopic(topicName)
 
         when:
@@ -257,7 +257,7 @@ class HermesMockAvroTest extends Specification {
 
     def "should get all avro message with schema"() {
         given:
-            def topicName = "get-all-test-topic"
+            def topicName = "test.get-all-test-topic"
             hermes.define().avroTopic(topicName)
 
             def messages = (1..5).collect() { new TestMessage("key-" + it, "value-" + it) }
@@ -274,7 +274,7 @@ class HermesMockAvroTest extends Specification {
 
     def "should get all avro message as raw bytes"() {
         given:
-            def topicName = "get-all-test-topic"
+            def topicName = "test.get-all-test-topic"
             hermes.define().avroTopic(topicName)
 
             def messages = (1..5).collect() { new TestMessage("key-" + it, "value-" + it) }
@@ -290,7 +290,7 @@ class HermesMockAvroTest extends Specification {
 
     def "should get last message as raw bytes"() {
         given:
-            def topicName = "my-topic"
+            def topicName = "test.my-topic"
             hermes.define().avroTopic(topicName)
             def count = 3
             def messages = (1..count).collect { new TestMessage("key-" + it, "value-" + it) }
@@ -309,7 +309,7 @@ class HermesMockAvroTest extends Specification {
 
     def "should return last message that matches filter"() {
         given:
-            def topicName = "my-topic"
+            def topicName = "test.my-topic"
             hermes.define().avroTopic(topicName)
             def count = 3
             def messages = (1..count).collect { new TestMessage("key", "value-" + it) }
@@ -329,7 +329,7 @@ class HermesMockAvroTest extends Specification {
 
     def "should return proper number of message"() {
         given:
-            def topicName = "my-topic"
+            def topicName = "test.my-topic"
             hermes.define().jsonTopic(topicName)
             def count = 3
             def messages = (1..count).collect { new TestMessage("key-" + it, "value-" + it) }
@@ -343,7 +343,7 @@ class HermesMockAvroTest extends Specification {
 
     def "should return proper number of matching messages"() {
         given:
-            def topicName = "my-topic"
+            def topicName = "test.my-topic"
             hermes.define().jsonTopic(topicName)
             def messages = (1..3).collect { new TestMessage("key-" + it, "value-" + it) }
             def filter = { TestMessage m -> m.key.startsWith("key-1") }
@@ -358,7 +358,7 @@ class HermesMockAvroTest extends Specification {
 
     def "should remove stub mapping for an Avro topic matched by pattern"() {
         given: "define wiremock response for two different matching avro patterns on the same topic"
-        def topicName = "my-test-avro-topic"
+        def topicName = "test.my-test-avro-topic"
         def pattern1 = "test-key-pattern-1"
         def pattern2 = "test-key-pattern-2"
         def value = "test-key-value"
