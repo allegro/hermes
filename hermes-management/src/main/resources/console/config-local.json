@@ -37,10 +37,6 @@
       "url": "localhost:8092/auth",
       "clientId": "hermes",
       "scope": "hermes"
-    },
-    "headers": {
-      "enabled": false,
-      "adminHeader": "Hermes-Admin-Password"
     }
   },
   "topic": {
@@ -48,8 +44,6 @@
     "offlineClientsEnabled": false
   },
   "subscription": {
-    "showHeadersFilter": false,
-    "showFixedHeaders": false,
     "requestTimeoutWarningThreshold": 1001,
     "deliveryTypes": [
       {"value": "SERIAL", "label": "SERIAL"},

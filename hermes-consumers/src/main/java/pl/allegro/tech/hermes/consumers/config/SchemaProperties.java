@@ -13,8 +13,6 @@ public class SchemaProperties {
 
   private boolean idHeaderEnabled = false;
 
-  private boolean idSerializationEnabled = false;
-
   private boolean versionTruncationEnabled = false;
 
   public SchemaCacheProperties getCache() {
@@ -39,14 +37,6 @@ public class SchemaProperties {
 
   public void setIdHeaderEnabled(boolean idHeaderEnabled) {
     this.idHeaderEnabled = idHeaderEnabled;
-  }
-
-  public boolean isIdSerializationEnabled() {
-    return idSerializationEnabled;
-  }
-
-  public void setIdSerializationEnabled(boolean idSerializationEnabled) {
-    this.idSerializationEnabled = idSerializationEnabled;
   }
 
   public boolean isVersionTruncationEnabled() {

@@ -14,13 +14,11 @@ import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -35,7 +33,6 @@ import pl.allegro.tech.hermes.api.PublishingChaosPolicy;
 import pl.allegro.tech.hermes.api.PublishingChaosPolicy.ChaosPolicy;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.api.TopicLabel;
 import pl.allegro.tech.hermes.api.TopicWithSchema;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesExtension;
 import pl.allegro.tech.hermes.management.TestSecurityProvider;
@@ -617,141 +614,6 @@ public class TopicManagementTest {
             .getOfflineStorage()
             .isEnabled();
     assertThat(fetchedIsOfflineStorageEnabled).isTrue();
-  }
-
-  @Test
-  public void shouldCreateTopicWithLabels() {
-    // given
-    TopicWithSchema topic =
-        new TopicWithSchema(
-            topicWithRandomName()
-                .withLabels(
-                    ImmutableSet.of(
-                        new TopicLabel("label-1"),
-                        new TopicLabel("label-2"),
-                        new TopicLabel("label-3")))
-                .build(),
-            null);
-    hermes.initHelper().createGroup(Group.from(topic.getName().getGroupName()));
-
-    // when
-    WebTestClient.ResponseSpec response = hermes.api().createTopic(topic);
-
-    // then
-    response.expectStatus().isCreated();
-    Set<TopicLabel> fetchedLabels =
-        hermes
-            .api()
-            .getTopicResponse(topic.getQualifiedName())
-            .expectBody(TopicWithSchema.class)
-            .returnResult()
-            .getResponseBody()
-            .getLabels();
-    assertThat(fetchedLabels)
-        .containsAll(
-            ImmutableSet.of(
-                new TopicLabel("label-1"), new TopicLabel("label-2"), new TopicLabel("label-3")));
-  }
-
-  @Test
-  public void shouldUpdateTopicWithLabels() {
-    // given
-    TopicWithSchema topic =
-        new TopicWithSchema(
-            topicWithRandomName()
-                .withLabels(ImmutableSet.of(new TopicLabel("label-1"), new TopicLabel("label-3")))
-                .build(),
-            null);
-    hermes.initHelper().createTopic(topic);
-
-    // when
-    PatchData patchData =
-        PatchData.from(
-            ImmutableMap.of(
-                "labels",
-                ImmutableSet.of(
-                    new TopicLabel("label-1"),
-                    new TopicLabel("label-2"),
-                    new TopicLabel("label-3"))));
-    WebTestClient.ResponseSpec response =
-        hermes.api().updateTopic(topic.getQualifiedName(), patchData);
-
-    // then
-    response.expectStatus().isOk();
-    Set<TopicLabel> fetchedLabels =
-        hermes
-            .api()
-            .getTopicResponse(topic.getQualifiedName())
-            .expectBody(TopicWithSchema.class)
-            .returnResult()
-            .getResponseBody()
-            .getLabels();
-    assertThat(fetchedLabels)
-        .containsAll(
-            ImmutableSet.of(
-                new TopicLabel("label-1"), new TopicLabel("label-2"), new TopicLabel("label-3")));
-  }
-
-  @Test
-  public void shouldNotCreateTopicWithDisallowedLabels() {
-    // given
-    TopicWithSchema topic =
-        new TopicWithSchema(
-            topicWithRandomName()
-                .withLabels(
-                    ImmutableSet.of(
-                        new TopicLabel("some-random-label"),
-                        new TopicLabel("label-2"),
-                        new TopicLabel("label-3")))
-                .build(),
-            null);
-    hermes.initHelper().createGroup(Group.from(topic.getName().getGroupName()));
-
-    // when
-    WebTestClient.ResponseSpec response = hermes.api().createTopic(topic);
-
-    // then
-    response.expectStatus().isBadRequest();
-    assertThat(getErrorCode(response)).isEqualTo(ErrorCode.VALIDATION_ERROR);
-    hermes.api().getTopicResponse(topic.getQualifiedName()).expectStatus().isNotFound();
-  }
-
-  @Test
-  public void shouldNotUpdateTopicWithDisallowedLabels() {
-    // given
-    TopicWithSchema topic =
-        new TopicWithSchema(
-            topicWithRandomName()
-                .withLabels(ImmutableSet.of(new TopicLabel("label-1"), new TopicLabel("label-3")))
-                .build(),
-            null);
-    hermes.initHelper().createTopic(topic);
-
-    // when
-    PatchData patchData =
-        PatchData.from(
-            ImmutableMap.of(
-                "labels",
-                ImmutableSet.of(
-                    new TopicLabel("some-random-label"),
-                    new TopicLabel("label-2"),
-                    new TopicLabel("label-3"))));
-    WebTestClient.ResponseSpec response =
-        hermes.api().updateTopic(topic.getQualifiedName(), patchData);
-
-    // then
-    response.expectStatus().isBadRequest();
-    assertThat(getErrorCode(response)).isEqualTo(ErrorCode.VALIDATION_ERROR);
-    Set<TopicLabel> fetchedLabels =
-        hermes
-            .api()
-            .getTopicResponse(topic.getQualifiedName())
-            .expectBody(TopicWithSchema.class)
-            .returnResult()
-            .getResponseBody()
-            .getLabels();
-    assertThat(fetchedLabels)
-        .containsAll(ImmutableSet.of(new TopicLabel("label-1"), new TopicLabel("label-3")));
   }
 
   @Test

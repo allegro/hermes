@@ -30,7 +30,6 @@ import pl.allegro.tech.hermes.common.message.undelivered.ZookeeperUndeliveredMes
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageHeaderSchemaIdContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageHeaderSchemaVersionContentWrapper;
-import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageSchemaIdAwareContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageSchemaVersionTruncationContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
@@ -200,26 +199,20 @@ public class CommonConfiguration {
   }
 
   @Bean
-  public ObjectMapper objectMapper(
-      SchemaProperties schemaProperties, TopicDefaultsProperties topicDefaults) {
-    return new ObjectMapperFactory(
-            schemaProperties.isIdSerializationEnabled(),
-            topicDefaults.isFallbackToRemoteDatacenterEnabled())
-        .provide();
+  public ObjectMapper objectMapper(TopicDefaultsProperties topicDefaults) {
+    return new ObjectMapperFactory(topicDefaults.isFallbackToRemoteDatacenterEnabled()).provide();
   }
 
   @Bean
   public CompositeMessageContentWrapper messageContentWrapper(
       JsonMessageContentWrapper jsonMessageContentWrapper,
       AvroMessageContentWrapper avroMessageContentWrapper,
-      AvroMessageSchemaIdAwareContentWrapper schemaIdAwareContentWrapper,
       AvroMessageHeaderSchemaVersionContentWrapper headerSchemaVersionContentWrapper,
       AvroMessageHeaderSchemaIdContentWrapper headerSchemaIdContentWrapper,
       AvroMessageSchemaVersionTruncationContentWrapper schemaVersionTruncationContentWrapper) {
     return new CompositeMessageContentWrapper(
         jsonMessageContentWrapper,
         avroMessageContentWrapper,
-        schemaIdAwareContentWrapper,
         headerSchemaVersionContentWrapper,
         headerSchemaIdContentWrapper,
         schemaVersionTruncationContentWrapper);
@@ -270,15 +263,6 @@ public class CommonConfiguration {
       AvroMessageContentWrapper avroMessageContentWrapper,
       MetricsFacade metricsFacade) {
     return new AvroMessageHeaderSchemaVersionContentWrapper(
-        schemaRepository, avroMessageContentWrapper, metricsFacade);
-  }
-
-  @Bean
-  public AvroMessageSchemaIdAwareContentWrapper avroMessageSchemaIdAwareContentWrapper(
-      SchemaRepository schemaRepository,
-      AvroMessageContentWrapper avroMessageContentWrapper,
-      MetricsFacade metricsFacade) {
-    return new AvroMessageSchemaIdAwareContentWrapper(
         schemaRepository, avroMessageContentWrapper, metricsFacade);
   }
 

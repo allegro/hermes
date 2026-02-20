@@ -11,10 +11,6 @@ public class ConsoleService {
     this.repository = repository;
   }
 
-  public String getConfiguration() {
-    return "var config = " + repository.getConfiguration();
-  }
-
   public String getConfigurationJson() {
     return repository.getConfiguration();
   }

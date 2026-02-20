@@ -24,7 +24,6 @@ public class TopicValidator {
 
   private final OwnerIdValidator ownerIdValidator;
   private final ContentTypeValidator contentTypeValidator;
-  private final TopicLabelsValidator topicLabelsValidator;
   private final SchemaRepository schemaRepository;
   private final ApiPreconditions apiPreconditions;
   private final TopicProperties topicProperties;
@@ -33,13 +32,11 @@ public class TopicValidator {
   public TopicValidator(
       OwnerIdValidator ownerIdValidator,
       ContentTypeValidator contentTypeValidator,
-      TopicLabelsValidator topicLabelsValidator,
       SchemaRepository schemaRepository,
       ApiPreconditions apiPreconditions,
       TopicProperties topicProperties) {
     this.ownerIdValidator = ownerIdValidator;
     this.contentTypeValidator = contentTypeValidator;
-    this.topicLabelsValidator = topicLabelsValidator;
     this.schemaRepository = schemaRepository;
     this.apiPreconditions = apiPreconditions;
     this.topicProperties = topicProperties;
@@ -50,7 +47,6 @@ public class TopicValidator {
     apiPreconditions.checkConstraints(created, createdBy.isAdmin());
     checkOwner(created);
     checkContentType(created);
-    checkTopicLabels(created);
 
     if ((created.isFallbackToRemoteDatacenterEnabled()
             != topicProperties.isDefaultFallbackToRemoteDatacenterEnabled())
@@ -80,7 +76,6 @@ public class TopicValidator {
   public void ensureUpdatedTopicIsValid(Topic updated, Topic previous, RequestUser modifiedBy) {
     apiPreconditions.checkConstraints(updated, modifiedBy.isAdmin());
     checkOwner(updated);
-    checkTopicLabels(updated);
 
     if (previous.isFallbackToRemoteDatacenterEnabled()
         && !updated.isFallbackToRemoteDatacenterEnabled()
@@ -192,10 +187,6 @@ public class TopicValidator {
 
   private void checkContentType(Topic checked) {
     contentTypeValidator.check(checked.getContentType());
-  }
-
-  private void checkTopicLabels(Topic checked) {
-    topicLabelsValidator.check(checked.getLabels());
   }
 
   private void validateChaosPolicy(PublishingChaosPolicy chaosPolicy) {

@@ -35,7 +35,6 @@ import pl.allegro.tech.hermes.common.message.undelivered.ZookeeperUndeliveredMes
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageHeaderSchemaIdContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageHeaderSchemaVersionContentWrapper;
-import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageSchemaIdAwareContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageSchemaVersionTruncationContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
@@ -194,9 +193,8 @@ public class CommonConfiguration {
   }
 
   @Bean
-  public ObjectMapper objectMapper(SchemaProperties schemaProperties) {
+  public ObjectMapper objectMapper() {
     return new ObjectMapperFactory(
-            schemaProperties.isIdSerializationEnabled(),
             /* fallbackToRemoteDatacenter is frontend specific property, we so don't expose consumer side property for it */
             false)
         .provide();
@@ -216,8 +214,6 @@ public class CommonConfiguration {
         new JsonMessageContentWrapper(
             contentRootProperties.getMessage(), contentRootProperties.getMetadata(), mapper),
         avroMessageContentWrapper,
-        new AvroMessageSchemaIdAwareContentWrapper(
-            schemaRepository, avroMessageContentWrapper, metricsFacade),
         new AvroMessageHeaderSchemaVersionContentWrapper(
             schemaRepository, avroMessageContentWrapper, metricsFacade),
         new AvroMessageHeaderSchemaIdContentWrapper(

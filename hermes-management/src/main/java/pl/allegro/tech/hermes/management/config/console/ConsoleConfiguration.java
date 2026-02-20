@@ -1,24 +1,19 @@
 package pl.allegro.tech.hermes.management.config.console;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.concurrent.TimeUnit;
-import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
-import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
-import org.apache.hc.core5.http.io.SocketConfig;
+import java.util.stream.Collectors;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.springframework.web.client.RestTemplate;
+import pl.allegro.tech.hermes.management.config.GroupProperties;
+import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.domain.console.ConsoleConfigurationRepository;
-import pl.allegro.tech.hermes.management.infrastructure.console.ClasspathFileConsoleConfigurationRepository;
 import pl.allegro.tech.hermes.management.infrastructure.console.FrontendRoutesFilter;
-import pl.allegro.tech.hermes.management.infrastructure.console.HttpConsoleConfigurationRepository;
 import pl.allegro.tech.hermes.management.infrastructure.console.SpringConfigConsoleConfigurationRepository;
 
 @Configuration
-@EnableConfigurationProperties({ConsoleConfigProperties.class, ConsoleProperties.class})
+@EnableConfigurationProperties(ConsoleProperties.class)
 public class ConsoleConfiguration {
 
   @Bean
@@ -30,38 +25,29 @@ public class ConsoleConfiguration {
 
   @Bean
   ConsoleConfigurationRepository consoleConfigurationRepository(
-      ConsoleConfigProperties properties,
       ObjectMapper objectMapper,
-      ConsoleProperties consoleProperties) {
-    switch (properties.getType()) {
-      case CLASSPATH_RESOURCE:
-        return new ClasspathFileConsoleConfigurationRepository(properties);
-      case HTTP_RESOURCE:
-        return httpConsoleConfigurationRepository(properties);
-      case SPRING_CONFIG:
-        return new SpringConfigConsoleConfigurationRepository(objectMapper, consoleProperties);
-      default:
-        throw new IllegalArgumentException("Unsupported console config type");
-    }
-  }
+      ConsoleProperties consoleProperties,
+      GroupProperties groupProperties,
+      TopicProperties topicProperties) {
 
-  private ConsoleConfigurationRepository httpConsoleConfigurationRepository(
-      ConsoleConfigProperties properties) {
-    var httpClientProperties = properties.getHttpClient();
-    var socketConfig =
-        SocketConfig.custom()
-            .setSoTimeout(
-                (int) httpClientProperties.getReadTimeout().toMillis(), TimeUnit.MILLISECONDS)
-            .build();
-    var connectionManager =
-        PoolingHttpClientConnectionManagerBuilder.create()
-            .setDefaultSocketConfig(socketConfig)
-            .build();
-    var client = HttpClientBuilder.create().setConnectionManager(connectionManager).build();
-    HttpComponentsClientHttpRequestFactory requestFactory =
-        new HttpComponentsClientHttpRequestFactory(client);
-    requestFactory.setConnectTimeout(properties.getHttpClient().getConnectTimeout());
-    RestTemplate restTemplate = new RestTemplate(requestFactory);
-    return new HttpConsoleConfigurationRepository(properties, restTemplate);
+    // Override group settings from GroupProperties (source of truth)
+    // Note: console.group.nonAdminCreationEnabled is IGNORED if configured in application.yaml
+    // See JavaDoc on ConsoleProperties.GroupView for details
+    consoleProperties
+        .getGroup()
+        .setNonAdminCreationEnabled(groupProperties.isNonAdminCreationEnabled());
+
+    // Override content types from TopicProperties (source of truth)
+    // Note: console.topic.contentTypes is IGNORED if configured in application.yaml
+    // See JavaDoc on ConsoleProperties.TopicView for details
+    var contentTypes =
+        topicProperties.getAllowedContentTypes().stream()
+            .map(
+                contentType ->
+                    new ConsoleProperties.TopicContentType(contentType.name(), contentType.name()))
+            .collect(Collectors.toList());
+    consoleProperties.getTopic().setContentTypes(contentTypes);
+
+    return new SpringConfigConsoleConfigurationRepository(objectMapper, consoleProperties);
   }
 }

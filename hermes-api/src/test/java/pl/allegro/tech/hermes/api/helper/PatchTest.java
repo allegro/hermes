@@ -75,13 +75,13 @@ public class PatchTest {
   public void shouldNotResetPrimitiveFields() {
     // given
     Topic topic = topic("group.topic").withTrackingEnabled(true).build();
-    PatchData patch = patchData().set("schemaIdAwareSerializationEnabled", true).build();
+    PatchData patch = patchData().set("fallbackToRemoteDatacenterEnabled", true).build();
 
     // when
     Topic patched = Patch.apply(topic, patch);
 
     // then
     assertThat(patched.isTrackingEnabled()).isTrue();
-    assertThat(patched.isSchemaIdAwareSerializationEnabled()).isTrue();
+    assertThat(patched.isFallbackToRemoteDatacenterEnabled()).isTrue();
   }
 }
