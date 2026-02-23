@@ -26,7 +26,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.InconsistentGroup;
 import pl.allegro.tech.hermes.api.InconsistentMetadata;
@@ -43,11 +42,9 @@ import pl.allegro.tech.hermes.domain.subscription.SubscriptionNotExistsException
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicNotExistsException;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
-import pl.allegro.tech.hermes.management.config.ConsistencyCheckerProperties;
 import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryManager;
 
-@Component
 public class DcConsistencyService {
   private static final Logger logger = LoggerFactory.getLogger(DcConsistencyService.class);
 
@@ -63,7 +60,7 @@ public class DcConsistencyService {
   public DcConsistencyService(
       RepositoryManager repositoryManager,
       ObjectMapper objectMapper,
-      ConsistencyCheckerProperties properties,
+      ConsistencyCheckerParameters parameters,
       MetricsFacade metricsFacade) {
     this.groupRepositories = repositoryManager.getRepositories(GroupRepository.class);
     this.topicRepositories = repositoryManager.getRepositories(TopicRepository.class);
@@ -71,16 +68,16 @@ public class DcConsistencyService {
     this.objectMapper = objectMapper;
     this.executor =
         Executors.newFixedThreadPool(
-            properties.getThreadPoolSize(),
+            parameters.getThreadPoolSize(),
             new ThreadFactoryBuilder().setNameFormat("consistency-checker-%d").build());
     this.scheduler =
         Executors.newSingleThreadScheduledExecutor(
             new ThreadFactoryBuilder().setNameFormat("consistency-checker-scheduler-%d").build());
-    if (properties.isPeriodicCheckEnabled()) {
+    if (parameters.isPeriodicCheckEnabled()) {
       scheduler.scheduleAtFixedRate(
           this::reportConsistency,
-          properties.getInitialRefreshDelay().getSeconds(),
-          properties.getRefreshInterval().getSeconds(),
+          parameters.getInitialRefreshDelay().getSeconds(),
+          parameters.getRefreshInterval().getSeconds(),
           TimeUnit.SECONDS);
       metricsFacade
           .consistency()

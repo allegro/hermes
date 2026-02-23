@@ -137,65 +137,67 @@ public class HermesManagementTestApp implements HermesTestApp {
   private List<String> createArgs() {
     List<String> args = new ArrayList<>();
     args.add("--spring.profiles.active=integration");
-    args.add("--server.port=0");
-    args.add("--prometheus.client.enabled=true");
-    args.add("--prometheus.client.socketTimeoutMillis=500");
+    args.add("--management.backend.port=0");
+    args.add("--management.prometheus.client.enabled=true");
+    args.add("--management.prometheus.client.socketTimeoutMillis=500");
     if (prometheus != null) {
-      args.add("--prometheus.client.externalMonitoringUrl=" + prometheus.getEndpoint());
-      args.add("--prometheus.client.cacheTtlSeconds=0");
+      args.add("--management.prometheus.client.externalMonitoringUrl=" + prometheus.getEndpoint());
+      args.add("--management.prometheus.client.cacheTtlSeconds=0");
     }
-    args.add("--topic.partitions=2");
-    args.add("--topic.uncleanLeaderElectionEnabled=false");
+    args.add("--management.topic.partitions=2");
+    args.add("--management.topic.uncleanLeaderElectionEnabled=false");
     int smallestClusterSize =
         kafkaClusters.values().stream()
             .map(cluster -> cluster.getAllBrokers().size())
             .min(Integer::compareTo)
             .orElse(1);
-    args.add("--topic.replicationFactor=" + smallestClusterSize);
+    args.add("--management.topic.replicationFactor=" + smallestClusterSize);
     int idx = 0;
     for (Map.Entry<String, ZookeeperContainer> zk : hermesZookeepers.entrySet()) {
-      args.add("--storage.clusters[" + idx + "].datacenter=" + zk.getKey());
-      args.add("--storage.clusters[" + idx + "].clusterName=zk");
-      args.add("--storage.clusters[" + idx + "].root=/hermes");
+      args.add("--management.zookeeper.clusters[" + idx + "].datacenter=" + zk.getKey());
+      args.add("--management.zookeeper.clusters[" + idx + "].clusterName=zk");
+      args.add("--management.zookeeper.clusters[" + idx + "].root=/hermes");
       args.add(
-          "--storage.clusters["
+          "--management.zookeeper.clusters["
               + idx
               + "].connectionString="
               + zk.getValue().getConnectionString());
       idx++;
     }
     idx = 0;
+    args.add("--management.kafka.namespace=itTest");
     for (Map.Entry<String, KafkaContainerCluster> kafka : kafkaClusters.entrySet()) {
-      args.add("--kafka.clusters[" + idx + "].datacenter=" + kafka.getKey());
-      args.add("--kafka.clusters[" + idx + "].clusterName=primary");
+      args.add("--management.kafka.clusters[" + idx + "].datacenter=" + kafka.getKey());
+      args.add("--management.kafka.clusters[" + idx + "].clusterName=primary-" + kafka.getKey());
       args.add(
-          "--kafka.clusters["
+          "--management.kafka.clusters["
               + idx
-              + "].bootstrapKafkaServer="
+              + "].brokerList="
               + kafka.getValue().getBootstrapServersForExternalClients());
-      args.add("--kafka.clusters[" + idx + "].namespace=itTest");
       idx++;
     }
 
-    args.add("--schema.repository.serverUrl=" + schemaRegistry.getUrl());
-    args.add("--topic.touchSchedulerEnabled=" + false);
-    args.add("--topic.allowRemoval=" + true);
+    args.add("--management.schema.repository.serverUrl=" + schemaRegistry.getUrl());
+    args.add("--management.topic.touchSchedulerEnabled=" + false);
+    args.add("--management.topic.allowRemoval=" + true);
     if (auditEventPort != -1) {
-      args.add("--audit.isEventAuditEnabled=" + true);
-      args.add("--audit.eventUrl=" + "http://localhost:" + auditEventPort + AUDIT_EVENT_PATH);
+      args.add("--management.audit.isEventAuditEnabled=" + true);
+      args.add(
+          "--management.audit.eventUrl=" + "http://localhost:" + auditEventPort + AUDIT_EVENT_PATH);
     }
 
-    args.add("--topic.removeSchema=" + true);
-    args.add("--storage.pathPrefix=" + "/hermes");
-    args.add("--subscription.subscribersWithAccessToAnyTopic[0].ownerSource=" + "Plaintext");
+    args.add("--management.topic.removeSchema=" + true);
     args.add(
-        "--subscription.subscribersWithAccessToAnyTopic[0].ownerId="
+        "--management.subscription.subscribersWithAccessToAnyTopic[0].ownerSource=" + "Plaintext");
+    args.add(
+        "--management.subscription.subscribersWithAccessToAnyTopic[0].ownerId="
             + "subscriberAllowedToAccessAnyTopic");
-    args.add("--subscription.subscribersWithAccessToAnyTopic[0].protocols=" + "http, https");
-    args.add("--group.allowedGroupNameRegex=" + "[a-zA-Z0-9_.-]+");
-    args.add("--group.nonAdminCreationEnabled=" + true);
-    args.add("--schema.repository.type=schema_registry");
-    args.add("--schema.repository.deleteSchemaPathSuffix=");
+    args.add(
+        "--management.subscription.subscribersWithAccessToAnyTopic[0].protocols=" + "http, https");
+    args.add("--management.group.allowedGroupNameRegex=" + "[a-zA-Z0-9_.-]+");
+    args.add("--management.group.nonAdminCreationEnabled=" + true);
+    args.add("--management.schema.repository.type=schema_registry");
+    args.add("--management.schema.repository.deleteSchemaPathSuffix=");
 
     args.addAll(extraArgs);
 

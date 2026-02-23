@@ -17,10 +17,10 @@ public class ConsumerGroupCleanUpTest {
   public static final HermesExtension hermes =
       new HermesExtension()
           .withManagementArgs(
-              "--consumer-group.clean-up.enabled=true",
-              "--consumer-group.clean-up.interval=PT5S",
-              "--consumer-group.clean-up.initial-delay=PT0S",
-              "--consumer-group.clean-up.timeout=PT20S");
+              "--management.consumer-group.clean-up.enabled=true",
+              "--management.consumer-group.clean-up.interval=PT5S",
+              "--management.consumer-group.clean-up.initial-delay=PT0S",
+              "--management.consumer-group.clean-up.timeout=PT20S");
 
   @Test
   public void shouldRemoveConsumerGroupAfterSubscriptionRemoval() {

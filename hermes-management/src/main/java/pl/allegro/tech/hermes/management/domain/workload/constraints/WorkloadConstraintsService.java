@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.management.domain.workload.constraints;
 
-import org.springframework.stereotype.Service;
 import pl.allegro.tech.hermes.api.Constraints;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
@@ -15,7 +14,6 @@ import pl.allegro.tech.hermes.management.domain.workload.constraints.command.Del
 import pl.allegro.tech.hermes.management.domain.workload.constraints.command.UpdateSubscriptionConstraintsRepositoryCommand;
 import pl.allegro.tech.hermes.management.domain.workload.constraints.command.UpdateTopicConstraintsRepositoryCommand;
 
-@Service
 public class WorkloadConstraintsService {
 
   private final WorkloadConstraintsRepository workloadConstraintsRepository;

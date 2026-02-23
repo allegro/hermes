@@ -69,13 +69,11 @@ Thanks to this other service(s) can get information about groups, topics and sub
 It can be configured using following options:
 
 
-Option                    | Description                            | Default value
-------------------------- | -------------------------------------- | -------------
-isLoggingAuditEnabled     | enable Logging Auditor                 | false
-isEventAuditEnabled       | enable Event Auditor to provided URL   | false
-eventUrl                  | URL to which events will be sent       | null
-
-
+| Option                | Description                          | Default value |
+|-----------------------|--------------------------------------|---------------|
+| isLoggingAuditEnabled | enable Logging Auditor               | false         |
+| isEventAuditEnabled   | enable Event Auditor to provided URL | false         |
+| eventUrl              | URL to which events will be sent     | null          |
 
 Auditor uses `java.security.Principal` obtained from `javax.ws.rs.core.SecurityContext` to get username.
 `SecurityContext` is provided by component implementing `pl.allegro.tech.hermes.management.api.auth.SecurityContextProvider` as in `MyCustomSecurityContextProvider` example above.

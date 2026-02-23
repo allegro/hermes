@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.management.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "audit")
+@ConfigurationProperties(prefix = "management.audit")
 class AuditProperties {
 
   private String eventUrl = null;

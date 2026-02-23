@@ -26,24 +26,24 @@ to provide schema repository if Avro topics are not used.
 
 Frontend and Consumers modules have the same configuration options.
 
-Option                                   | Description                                                        | Default value
--------------------------------------------------------- | ---------------------------------------------------------------------- | -------------
-{modulePrefix}.schema.repository.serverUrl               | URL of a repository                                                    | `http://localhost:8888/`
-{modulePrefix}.schema.repository.subjectSuffixEnabled    | Add `-value` suffix to every subject name                              | `false`
-{modulePrefix}.schema.repository.subjectNamespaceEnabled | Add `kafka.namespace` property value as a prefix to every subject name | `false`
-{modulePrefix}.schema.cache.refreshAfterWrite            | schema cache background refresh period                                 | 10m
-{modulePrefix}.schema.cache.reloadThreadPoolSize         | how many background threads should maintain the cache                  | 2
-{modulePrefix}.schema.cache.expireAfterWrite             | if schema can't be refreshed, it will be deleted after this period     | 24h
+| Option                                                   | Description                                                            | Default value            |
+|----------------------------------------------------------|------------------------------------------------------------------------|--------------------------|
+| {modulePrefix}.schema.repository.serverUrl               | URL of a repository                                                    | `http://localhost:8888/` |
+| {modulePrefix}.schema.repository.subjectSuffixEnabled    | Add `-value` suffix to every subject name                              | `false`                  |
+| {modulePrefix}.schema.repository.subjectNamespaceEnabled | Add `kafka.namespace` property value as a prefix to every subject name | `false`                  |
+| {modulePrefix}.schema.cache.refreshAfterWrite            | schema cache background refresh period                                 | 10m                      |
+| {modulePrefix}.schema.cache.reloadThreadPoolSize         | how many background threads should maintain the cache                  | 2                        |
+| {modulePrefix}.schema.cache.expireAfterWrite             | if schema can't be refreshed, it will be deleted after this period     | 24h                      |
 
 ### Management
 
-Option                                   | Description                                                        | Default value
----------------------------------------- | ------------------------------------------------------------------ | -------------
-schema.repository.serverUrl              | URL of a repository                                                | `http://localhost:8888/`
-schema.repository.validationEnabled      | Allows to use validation API in schema repository                  | `false`
-schema.repository.connectionTimeoutMillis| Connection timeout used in http client (specified in milliseconds) | 1000
-schema.repository.socketTimeoutMillis    | Read socket timeout used in http client (specified in milliseconds)| 3000
-schema.repository.deleteSchemaPathSuffix | A suffix of the URL to delete all schema versions: `/subjects/{subject}/{deleteSchemaPathSuffix}| `versions`
-schema.repository.subjectSuffixEnabled   | Add `-value` suffix to every subject name                          | `false`
-schema.repository.subjectNamespaceEnabled| Add `kafka.defaultNamespace` property value as a prefix to every subject name | `false`
+| Option                                    | Description                                                                                      | Default value            |
+|-------------------------------------------|--------------------------------------------------------------------------------------------------|--------------------------|
+| schema.repository.serverUrl               | URL of a repository                                                                              | `http://localhost:8888/` |
+| schema.repository.validationEnabled       | Allows to use validation API in schema repository                                                | `false`                  |
+| schema.repository.connectionTimeoutMillis | Connection timeout used in http client (specified in milliseconds)                               | 1000                     |
+| schema.repository.socketTimeoutMillis     | Read socket timeout used in http client (specified in milliseconds)                              | 3000                     |
+| schema.repository.deleteSchemaPathSuffix  | A suffix of the URL to delete all schema versions: `/subjects/{subject}/{deleteSchemaPathSuffix} | `versions`               |
+| schema.repository.subjectSuffixEnabled    | Add `-value` suffix to every subject name                                                        | `false`                  |
+| schema.repository.subjectNamespaceEnabled | Add `kafka.namespace` property value as a prefix to every subject name                           | `false`                  |
 

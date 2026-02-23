@@ -43,7 +43,7 @@ public class KafkaConsumerPool {
     this.brokerStorage = brokerStorage;
     this.kafkaConsumers =
         CacheBuilder.newBuilder()
-            .expireAfterAccess(poolConfig.getCacheExpirationSeconds(), TimeUnit.SECONDS)
+            .expireAfterAccess(poolConfig.cacheExpirationSeconds(), TimeUnit.SECONDS)
             .removalListener(new KafkaConsumerRemoveListener())
             .build(new KafkaConsumerSupplier(poolConfig, configuredBootstrapServers));
   }
@@ -90,20 +90,19 @@ public class KafkaConsumerPool {
 
       Properties props = new Properties();
       props.put(BOOTSTRAP_SERVERS_CONFIG, configuredBootstrapServers);
-      props.put(
-          GROUP_ID_CONFIG, poolConfig.getIdPrefix() + "_" + poolConfig.getConsumerGroupName());
-      props.put(RECEIVE_BUFFER_CONFIG, poolConfig.getBufferSizeBytes());
+      props.put(GROUP_ID_CONFIG, poolConfig.idPrefix() + "_" + poolConfig.consumerGroupName());
+      props.put(RECEIVE_BUFFER_CONFIG, poolConfig.bufferSizeBytes());
       props.put(ENABLE_AUTO_COMMIT_CONFIG, false);
-      props.put(FETCH_MAX_WAIT_MS_CONFIG, poolConfig.getFetchMaxWaitMillis());
-      props.put(FETCH_MIN_BYTES_CONFIG, poolConfig.getFetchMinBytes());
+      props.put(FETCH_MAX_WAIT_MS_CONFIG, poolConfig.fetchMaxWaitMillis());
+      props.put(FETCH_MIN_BYTES_CONFIG, poolConfig.fetchMinBytes());
       props.put("key.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
       props.put(
           "value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer");
 
       if (poolConfig.isSaslEnabled()) {
-        props.put(SASL_MECHANISM, poolConfig.getSecurityMechanism());
-        props.put(SECURITY_PROTOCOL_CONFIG, poolConfig.getSecurityProtocol());
-        props.put(SASL_JAAS_CONFIG, poolConfig.getSaslJaasConfig());
+        props.put(SASL_MECHANISM, poolConfig.securityMechanism());
+        props.put(SECURITY_PROTOCOL_CONFIG, poolConfig.securityProtocol());
+        props.put(SASL_JAAS_CONFIG, poolConfig.saslJaasConfig());
       }
       return new KafkaConsumer<>(props);
     }

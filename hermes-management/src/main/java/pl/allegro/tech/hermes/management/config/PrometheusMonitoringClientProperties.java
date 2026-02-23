@@ -1,5 +1,8 @@
 package pl.allegro.tech.hermes.management.config;
 
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+@ConfigurationProperties("management.prometheus.client")
 public class PrometheusMonitoringClientProperties extends ExternalMonitoringClientProperties {
   private String consumersMetricsPrefix = "hermes_consumers";
   private String frontendMetricsPrefix = "hermes_frontend";

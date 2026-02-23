@@ -6,9 +6,10 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.api.ContentType;
+import pl.allegro.tech.hermes.management.domain.topic.TopicParameters;
 
-@ConfigurationProperties(prefix = "topic")
-public class TopicProperties {
+@ConfigurationProperties(prefix = "management.topic")
+public class TopicProperties implements TopicParameters {
 
   private int replicationFactor = 1;
 
@@ -77,6 +78,7 @@ public class TopicProperties {
     this.partitionsPerDc = partitionsPerDc;
   }
 
+  @Override
   public boolean isAllowRemoval() {
     return allowRemoval;
   }
@@ -85,6 +87,7 @@ public class TopicProperties {
     this.allowRemoval = allowRemoval;
   }
 
+  @Override
   public boolean isRemoveSchema() {
     return removeSchema;
   }
@@ -109,6 +112,7 @@ public class TopicProperties {
     this.uncleanLeaderElectionEnabled = uncleanLeaderElectionEnabled;
   }
 
+  @Override
   public int getTouchDelayInSeconds() {
     return touchDelayInSeconds;
   }
@@ -117,6 +121,7 @@ public class TopicProperties {
     this.touchDelayInSeconds = touchDelayInSeconds;
   }
 
+  @Override
   public boolean isTouchSchedulerEnabled() {
     return touchSchedulerEnabled;
   }
@@ -125,6 +130,7 @@ public class TopicProperties {
     this.touchSchedulerEnabled = touchSchedulerEnabled;
   }
 
+  @Override
   public int getSubscriptionsAssignmentsCompletedTimeoutSeconds() {
     return subscriptionsAssignmentsCompletedTimeoutSeconds;
   }

@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.management.config.subscription;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "subscription-health")
+@ConfigurationProperties(prefix = "management.subscription-health")
 public class SubscriptionHealthProperties {
   private int maxLagInSeconds = 600;
   private double maxOtherErrorsRatio = 0.5;
