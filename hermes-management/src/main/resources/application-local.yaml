@@ -17,9 +17,6 @@ console:
       url: localhost:8092/auth
       clientId: hermes
       scope: hermes
-    headers:
-      enabled: false
-      adminHeader: Hermes-Admin-Password
   topic:
     messagePreviewEnabled: true
     offline-retransmission:
@@ -32,8 +29,6 @@ console:
       - value: DAYS
         label: DAYS
   subscription:
-    showHeadersFilter: true
-    showFixedHeaders: false
     deliveryTypes:
       - value: SERIAL
         label: SERIAL

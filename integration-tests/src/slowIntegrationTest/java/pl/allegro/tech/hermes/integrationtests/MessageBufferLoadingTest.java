@@ -145,7 +145,7 @@ public class MessageBufferLoadingTest {
         new JsonMessageContentWrapper("message", "metadata", new ObjectMapper());
 
     CompositeMessageContentWrapper wrapper =
-        new CompositeMessageContentWrapper(contentWrapper, null, null, null, null, null);
+        new CompositeMessageContentWrapper(contentWrapper, null, null, null, null);
 
     String messageId = MessageIdGenerator.generate();
     long timestamp = now().toEpochMilli();

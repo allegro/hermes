@@ -5,7 +5,6 @@ import org.apache.avro.Schema;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.MessageContentWrapper;
-import pl.allegro.tech.hermes.common.message.wrapper.SchemaAwareSerDe;
 import pl.allegro.tech.hermes.common.message.wrapper.UnwrappedMessageContent;
 import pl.allegro.tech.hermes.schema.CompiledSchema;
 
@@ -36,12 +35,8 @@ public class BenchmarkMessageContentWrapper implements MessageContentWrapper {
       Topic topic,
       CompiledSchema<Schema> schema,
       Map<String, String> externalMetadata) {
-    byte[] wrapped =
-        avroMessageContentWrapper.wrapContent(
-            data, id, timestamp, schema.getSchema(), externalMetadata);
-    return topic.isSchemaIdAwareSerializationEnabled()
-        ? SchemaAwareSerDe.serialize(schema.getId(), wrapped)
-        : wrapped;
+    return avroMessageContentWrapper.wrapContent(
+        data, id, timestamp, schema.getSchema(), externalMetadata);
   }
 
   @Override

@@ -45,11 +45,6 @@ audit:
   isEventAuditEnabled: false
   eventUrl: null
 
-topic:
-  allowedTopicLabels: &ALLOWED_LABELS
-    - internal
-    - deprecated
-
 topicOwnerCache:
   refreshRateInSeconds: 300 # 5 minutes
 
@@ -57,10 +52,7 @@ subscriptionOwnerCache:
   refreshRateInSeconds: 300
 
 console:
-  configurationLocation: console/config-local.json
-  configurationType: classpath_resource
   topic:
-    allowedTopicLabels: *ALLOWED_LABELS
     retentionUnits:
       - value: TimeUnit.HOURS
         label: Hours
@@ -70,10 +62,6 @@ console:
       offlineStorage:
         retentionTime:
           duration: 60
-
-  subscription:
-    showHeadersFilter: false
-    showFixedHeaders: false
 
 detection:
   inactive-topics:

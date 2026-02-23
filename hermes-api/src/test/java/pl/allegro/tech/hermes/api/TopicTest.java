@@ -23,14 +23,12 @@ public class TopicTest {
     assertThat(topic.getName().getName()).isEqualTo("bar");
     assertThat(topic.getName().getGroupName()).isEqualTo("foo");
     assertThat(topic.getDescription()).isEqualTo("description");
-    assertThat(topic.isSchemaIdAwareSerializationEnabled()).isEqualTo(true);
   }
 
   @Test
   public void shouldDeserializeTopic() throws Exception {
     // given
-    String json =
-        "{\"name\":\"foo.bar\", \"description\": \"description\", \"schemaIdAwareSerializationEnabled\": \"false\"}";
+    String json = "{\"name\":\"foo.bar\", \"description\": \"description\"}";
 
     // when
     Topic topic = objectMapper.readValue(json, Topic.class);
@@ -39,7 +37,6 @@ public class TopicTest {
     assertThat(topic.getName().getName()).isEqualTo("bar");
     assertThat(topic.getName().getGroupName()).isEqualTo("foo");
     assertThat(topic.getDescription()).isEqualTo("description");
-    assertThat(topic.isSchemaIdAwareSerializationEnabled()).isEqualTo(false);
   }
 
   @Test
@@ -101,13 +98,12 @@ public class TopicTest {
   private ObjectMapper createObjectMapper(boolean fallbackToRemoteDatacenterEnabled) {
     ObjectMapper mapper = new ObjectMapper();
 
-    final InjectableValues defaultSchemaIdAwareSerializationEnabled =
+    final InjectableValues defaultFallbackToRemoteDatacenter =
         new InjectableValues.Std()
-            .addValue(Topic.DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY, true)
             .addValue(
                 Topic.DEFAULT_FALLBACK_TO_REMOTE_DATACENTER_KEY, fallbackToRemoteDatacenterEnabled);
 
-    mapper.setInjectableValues(defaultSchemaIdAwareSerializationEnabled);
+    mapper.setInjectableValues(defaultFallbackToRemoteDatacenter);
     mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
     return mapper;
   }

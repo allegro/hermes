@@ -14,7 +14,7 @@ public class ObjectMapperFactoryTest {
 
   @Before
   public void init() {
-    ObjectMapperFactory factory = new ObjectMapperFactory(false, false);
+    ObjectMapperFactory factory = new ObjectMapperFactory(false);
     mapper = factory.provide();
   }
 
@@ -42,21 +42,5 @@ public class ObjectMapperFactoryTest {
     assertThat(jsonValue).doesNotContain("name").doesNotContain("null");
   }
 
-  private static final class DummyUser {
-    private String name;
-
-    private DummyUser() {}
-
-    private DummyUser(String name) {
-      this.name = name;
-    }
-
-    public void setName(String name) {
-      this.name = name;
-    }
-
-    public String getName() {
-      return name;
-    }
-  }
+  private record DummyUser(String name) {}
 }

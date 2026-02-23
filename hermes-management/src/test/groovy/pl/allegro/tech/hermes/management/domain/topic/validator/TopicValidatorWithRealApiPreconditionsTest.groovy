@@ -27,11 +27,10 @@ class TopicValidatorWithRealApiPreconditionsTest extends Specification {
     def schemaRepository = Stub(SchemaRepository)
     def ownerDescriptorValidator = Stub(OwnerIdValidator)
     def contentTypeWhitelistValidator = Stub(ContentTypeValidator)
-    def topicLabelsValidator = Stub(TopicLabelsValidator)
     def topicProperties = new TopicProperties()
 
     @Subject
-    def topicValidator = new TopicValidator(ownerDescriptorValidator, contentTypeWhitelistValidator, topicLabelsValidator, schemaRepository, new ApiPreconditions(), topicProperties)
+    def topicValidator = new TopicValidator(ownerDescriptorValidator, contentTypeWhitelistValidator, schemaRepository, new ApiPreconditions(), topicProperties)
 
     @Unroll
     def "creating and updating topic with up to 7 days retention time should be valid"() {

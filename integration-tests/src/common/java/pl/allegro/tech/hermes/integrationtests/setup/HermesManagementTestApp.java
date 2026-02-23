@@ -180,7 +180,6 @@ public class HermesManagementTestApp implements HermesTestApp {
     args.add("--schema.repository.serverUrl=" + schemaRegistry.getUrl());
     args.add("--topic.touchSchedulerEnabled=" + false);
     args.add("--topic.allowRemoval=" + true);
-    args.add("--topic.allowedTopicLabels=" + "label-1, label-2, label-3");
     if (auditEventPort != -1) {
       args.add("--audit.isEventAuditEnabled=" + true);
       args.add("--audit.eventUrl=" + "http://localhost:" + auditEventPort + AUDIT_EVENT_PATH);

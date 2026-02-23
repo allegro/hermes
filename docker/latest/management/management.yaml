@@ -60,7 +60,3 @@ prometheus:
   client:
     enabled: true
     externalMonitoringUrl: http://prometheus:8428
-
-console:
-  configurationLocation: console/config-local.json
-  configurationType: classpath_resource

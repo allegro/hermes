@@ -1,11 +1,9 @@
 package pl.allegro.tech.hermes.management.infrastructure.kafka.service;
 
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
-import pl.allegro.tech.hermes.common.message.wrapper.SchemaAwarePayload;
-import pl.allegro.tech.hermes.common.message.wrapper.SchemaAwareSerDe;
 import pl.allegro.tech.hermes.management.domain.topic.SingleMessageReader;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
@@ -30,17 +28,10 @@ public class KafkaSingleMessageReader implements SingleMessageReader {
     if (topic.getContentType() == ContentType.AVRO) {
       bytes = convertAvroToJson(topic, bytes);
     }
-    return new String(bytes, Charset.forName("UTF-8"));
+    return new String(bytes, StandardCharsets.UTF_8);
   }
 
   private byte[] convertAvroToJson(Topic topic, byte[] bytes) {
-    if (topic.isSchemaIdAwareSerializationEnabled()) {
-      SchemaAwarePayload payload = SchemaAwareSerDe.deserialize(bytes);
-      return converter.convertToJson(
-          payload.getPayload(),
-          schemaRepository.getAvroSchema(topic, payload.getSchemaId()).getSchema());
-    }
-
     return converter.convertToJson(bytes, schemaRepository.getLatestAvroSchema(topic).getSchema());
   }
 }

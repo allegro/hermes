@@ -13,6 +13,3 @@ spring:
   mvc:
     servlet:
       path: /status
-
-topic:
-  defaultSchemaIdAwareSerializationEnabled: true
