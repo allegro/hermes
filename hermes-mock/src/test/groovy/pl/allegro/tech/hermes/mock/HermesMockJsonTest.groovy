@@ -35,7 +35,7 @@ class HermesMockJsonTest extends Specification {
 
     def "should receive a Json message matched by pattern"() {
         given: "define wiremock response for matching json pattern"
-            def topicName = "my-test-json-topic"
+            def topicName = "test.my-test-json-topic"
             hermes.define().jsonTopic(topicName,
                     aResponse().withStatusCode(201).build(),
                     TestMessage,
@@ -52,7 +52,7 @@ class HermesMockJsonTest extends Specification {
 
     def "should not match json pattern"() {
         given: "define wiremock response for matching json pattern"
-            def topicName = "my-test-json-topic"
+            def topicName = "test.my-test-json-topic"
             hermes.define().jsonTopic(topicName,
                     aResponse().withStatusCode(201).build(),
                     TestMessage,
@@ -68,7 +68,7 @@ class HermesMockJsonTest extends Specification {
 
     def "should receive an json message"() {
         given:
-        def topicName = "my-test-json-topic"
+        def topicName = "test.my-test-json-topic"
         hermes.define().jsonTopic(topicName, HttpStatus.SC_OK)
 
         when:
@@ -81,7 +81,7 @@ class HermesMockJsonTest extends Specification {
 
     def "should respond with a delay"() {
         given:
-        def topicName = "my-test-json-topic"
+        def topicName = "test.my-test-json-topic"
         Duration fixedDelay = Duration.ofMillis(500)
         hermes.define().jsonTopic(topicName, aResponse().withFixedDelay(fixedDelay).build())
         Instant start = now()
@@ -96,7 +96,7 @@ class HermesMockJsonTest extends Specification {
 
     def "should respond for a message send with delay"() {
         given:
-        def topicName = "my-test-json-topic"
+        def topicName = "test.my-test-json-topic"
         def delayInMillis = 2_000
         hermes.define().jsonTopic(topicName)
 
@@ -112,7 +112,7 @@ class HermesMockJsonTest extends Specification {
 
     def "should remove stub mapping for a Json topic matched by pattern"() {
         given: "define wiremock response for two different matching json patterns on the same topic"
-        def topicName = "my-test-json-topic"
+        def topicName = "test.my-test-json-topic"
         def keyPattern1 = "test-key-pattern-1"
         def keyPattern2 = "test-key-pattern-2"
         def value = "test-key-value"
