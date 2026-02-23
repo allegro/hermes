@@ -8,9 +8,8 @@ import java.time.Instant;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
-import pl.allegro.tech.hermes.management.config.subscription.consumergroup.ConsumerGroupCleanUpProperties;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionManagement;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 import pl.allegro.tech.hermes.management.infrastructure.leader.ManagementLeadership;
 
 public class ConsumerGroupCleanUpTask implements Runnable {

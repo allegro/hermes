@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.management.config;
 
 import java.time.Clock;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import java.time.Clock;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
@@ -11,17 +10,16 @@ import pl.allegro.tech.hermes.management.domain.Auditor;
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryManager;
 import pl.allegro.tech.hermes.management.domain.group.GroupService;
-import pl.allegro.tech.hermes.management.domain.topic.TopicContentTypeMigrationService;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionRemover;
 import pl.allegro.tech.hermes.management.domain.topic.LoggingTopicService;
 import pl.allegro.tech.hermes.management.domain.topic.TopicContentTypeMigrationService;
 import pl.allegro.tech.hermes.management.domain.topic.TopicManagement;
 import pl.allegro.tech.hermes.management.domain.topic.TopicMetricsRepository;
 import pl.allegro.tech.hermes.management.domain.topic.TopicOwnerCache;
-import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 import pl.allegro.tech.hermes.management.domain.topic.schema.SchemaService;
 import pl.allegro.tech.hermes.management.domain.topic.validator.TopicValidator;
+import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 
 @Configuration
 @EnableConfigurationProperties(CacheProperties.class)

@@ -10,7 +10,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionManagement;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 import pl.allegro.tech.hermes.management.infrastructure.leader.ManagementLeadership;
@@ -58,7 +57,7 @@ public class ConsumerGroupCleanUpScheduler {
               multiDCAwareService,
               consumerGroupToDeleteRepositoriesByDatacenter,
               subscriptionManagement,
-                  cleanUpParameters,
+              cleanUpParameters,
               managementLeadership,
               clock);
       scheduler.scheduleAtFixedRate(

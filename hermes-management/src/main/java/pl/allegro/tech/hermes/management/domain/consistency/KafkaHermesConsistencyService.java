@@ -28,7 +28,7 @@ public class KafkaHermesConsistencyService {
       MultiDCAwareService multiDCAwareService,
       String namespace,
       String namespaceSeparator) {
-      this.topicManagement = topicManagement;
+    this.topicManagement = topicManagement;
     this.multiDCAwareService = multiDCAwareService;
     this.namespace = namespace;
     this.namespaceSeparator = namespaceSeparator;

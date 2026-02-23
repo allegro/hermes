@@ -196,8 +196,8 @@ public class TopicService implements TopicManagement {
     if (topicParameters.isTouchSchedulerEnabled()) {
       logger.info("Scheduling touch of topic {}", topicName.qualifiedName());
       scheduledTopicExecutor.schedule(
-              () -> touchTopicWithLogging(topicName, touchedBy),
-              topicParameters.getTouchDelayInSeconds(),
+          () -> touchTopicWithLogging(topicName, touchedBy),
+          topicParameters.getTouchDelayInSeconds(),
           TimeUnit.SECONDS);
     } else {
       touchTopic(topicName, touchedBy);
