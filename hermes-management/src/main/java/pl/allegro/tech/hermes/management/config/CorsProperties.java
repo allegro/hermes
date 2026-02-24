@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.management.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties("cors")
+@ConfigurationProperties("management.cors")
 public class CorsProperties {
 
   private String allowedOrigin = "*";

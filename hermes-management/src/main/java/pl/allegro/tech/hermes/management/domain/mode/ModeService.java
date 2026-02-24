@@ -1,8 +1,5 @@
 package pl.allegro.tech.hermes.management.domain.mode;
 
-import org.springframework.stereotype.Component;
-
-@Component
 public class ModeService {
 
   public static final String READ_WRITE = "readWrite";

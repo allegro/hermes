@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.management.config.subscription.consumergroup;
 
 import java.time.Clock;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,14 +15,13 @@ import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperRepos
 @EnableConfigurationProperties(ConsumerGroupCleanUpProperties.class)
 public class ConsumerGroupCleanUpConfig {
 
-  @Autowired ZookeeperRepositoryManager zookeeperRepositoryManager;
-
   @Bean
   ConsumerGroupCleanUpScheduler consumerGroupCleanUpScheduler(
       MultiDCAwareService multiDCAwareService,
       SubscriptionManagement subscriptionManagement,
       ConsumerGroupCleanUpProperties properties,
       ManagementLeadership managementLeadership,
+      ZookeeperRepositoryManager zookeeperRepositoryManager,
       Clock clock) {
     return new ConsumerGroupCleanUpScheduler(
         multiDCAwareService,

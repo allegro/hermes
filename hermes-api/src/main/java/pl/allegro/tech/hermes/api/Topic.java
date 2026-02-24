@@ -11,10 +11,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 @JsonIgnoreProperties(
     value = {"createdAt", "modifiedAt"},
@@ -23,33 +20,29 @@ public class Topic {
 
   public static final int MIN_MESSAGE_SIZE = 1024;
   public static final int MAX_MESSAGE_SIZE = 2 * 1024 * 1024;
-  public static final String DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY =
-      "defaultSchemaIdAwareSerializationEnabled";
   private static final int DEFAULT_MAX_MESSAGE_SIZE = 50 * 1024;
-  private final boolean schemaIdAwareSerializationEnabled;
   private final TopicDataOfflineStorage offlineStorage;
-  @Valid @NotNull private TopicName name;
-  @NotNull private String description;
-  @Valid @NotNull private OwnerId owner;
-  private boolean jsonToAvroDryRunEnabled = false;
-  @NotNull private Ack ack;
+  @Valid @NotNull private final TopicName name;
+  @NotNull private final String description;
+  @Valid @NotNull private final OwnerId owner;
+  private final boolean jsonToAvroDryRunEnabled;
+  @NotNull private final Ack ack;
   public static final String DEFAULT_FALLBACK_TO_REMOTE_DATACENTER_KEY =
       "defaultFallbackToRemoteDatacenterEnabled";
   private final boolean fallbackToRemoteDatacenterEnabled;
-  private PublishingChaosPolicy chaos;
-  @NotNull private ContentType contentType;
+  private final PublishingChaosPolicy chaos;
+  @NotNull private final ContentType contentType;
 
   @Min(MIN_MESSAGE_SIZE)
   @Max(MAX_MESSAGE_SIZE)
-  private int maxMessageSize;
+  private final int maxMessageSize;
 
-  @Valid @NotNull private RetentionTime retentionTime = RetentionTime.of(1, TimeUnit.DAYS);
-  private boolean trackingEnabled = false;
-  private boolean migratedFromJsonType = false;
-  private boolean subscribingRestricted = false;
+  @Valid @NotNull private final RetentionTime retentionTime;
+  private final boolean trackingEnabled;
+  private final boolean migratedFromJsonType;
+  private final boolean subscribingRestricted;
 
-  private PublishingAuth publishingAuth;
-  @Valid private Set<TopicLabel> labels;
+  private final PublishingAuth publishingAuth;
   private Instant createdAt;
   private Instant modifiedAt;
 
@@ -66,15 +59,10 @@ public class Topic {
       boolean trackingEnabled,
       ContentType contentType,
       boolean jsonToAvroDryRunEnabled,
-      @JacksonInject(
-              value = DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY,
-              useInput = OptBoolean.TRUE)
-          Boolean schemaIdAwareSerializationEnabled,
       int maxMessageSize,
       PublishingAuth publishingAuth,
       boolean subscribingRestricted,
       TopicDataOfflineStorage offlineStorage,
-      Set<TopicLabel> labels,
       Instant createdAt,
       Instant modifiedAt) {
     this.name = name;
@@ -88,12 +76,10 @@ public class Topic {
     this.migratedFromJsonType = migratedFromJsonType;
     this.contentType = contentType;
     this.jsonToAvroDryRunEnabled = jsonToAvroDryRunEnabled;
-    this.schemaIdAwareSerializationEnabled = schemaIdAwareSerializationEnabled;
     this.maxMessageSize = maxMessageSize;
     this.publishingAuth = publishingAuth;
     this.subscribingRestricted = subscribingRestricted;
     this.offlineStorage = offlineStorage;
-    this.labels = labels;
     this.createdAt = createdAt;
     this.modifiedAt = modifiedAt;
   }
@@ -112,17 +98,11 @@ public class Topic {
       @JsonProperty("chaos") PublishingChaosPolicy chaos,
       @JsonProperty("trackingEnabled") boolean trackingEnabled,
       @JsonProperty("migratedFromJsonType") boolean migratedFromJsonType,
-      @JsonProperty("schemaIdAwareSerializationEnabled")
-          @JacksonInject(
-              value = DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY,
-              useInput = OptBoolean.TRUE)
-          Boolean schemaIdAwareSerializationEnabled,
       @JsonProperty("contentType") ContentType contentType,
       @JsonProperty("maxMessageSize") Integer maxMessageSize,
       @JsonProperty("auth") PublishingAuth publishingAuth,
       @JsonProperty("subscribingRestricted") boolean subscribingRestricted,
       @JsonProperty("offlineStorage") TopicDataOfflineStorage offlineStorage,
-      @JsonProperty("labels") Set<TopicLabel> labels,
       @JsonProperty("createdAt") Instant createdAt,
       @JsonProperty("modifiedAt") Instant modifiedAt) {
     this(
@@ -137,12 +117,10 @@ public class Topic {
         trackingEnabled,
         contentType,
         jsonToAvroDryRunEnabled,
-        schemaIdAwareSerializationEnabled,
         maxMessageSize == null ? DEFAULT_MAX_MESSAGE_SIZE : maxMessageSize,
         publishingAuth == null ? PublishingAuth.disabled() : publishingAuth,
         subscribingRestricted,
         offlineStorage == null ? TopicDataOfflineStorage.defaultOfflineStorage() : offlineStorage,
-        labels == null ? Collections.emptySet() : labels,
         createdAt,
         modifiedAt);
   }
@@ -165,12 +143,10 @@ public class Topic {
         chaos,
         contentType,
         jsonToAvroDryRunEnabled,
-        schemaIdAwareSerializationEnabled,
         maxMessageSize,
         publishingAuth,
         subscribingRestricted,
-        offlineStorage,
-        labels);
+        offlineStorage);
   }
 
   @Override
@@ -190,8 +166,6 @@ public class Topic {
         && Objects.equals(this.jsonToAvroDryRunEnabled, other.jsonToAvroDryRunEnabled)
         && Objects.equals(this.trackingEnabled, other.trackingEnabled)
         && Objects.equals(this.migratedFromJsonType, other.migratedFromJsonType)
-        && Objects.equals(
-            this.schemaIdAwareSerializationEnabled, other.schemaIdAwareSerializationEnabled)
         && Objects.equals(this.ack, other.ack)
         && Objects.equals(
             this.fallbackToRemoteDatacenterEnabled, other.fallbackToRemoteDatacenterEnabled)
@@ -200,8 +174,7 @@ public class Topic {
         && Objects.equals(this.maxMessageSize, other.maxMessageSize)
         && Objects.equals(this.subscribingRestricted, other.subscribingRestricted)
         && Objects.equals(this.publishingAuth, other.publishingAuth)
-        && Objects.equals(this.offlineStorage, other.offlineStorage)
-        && Objects.equals(this.labels, other.labels);
+        && Objects.equals(this.offlineStorage, other.offlineStorage);
   }
 
   @JsonProperty("name")
@@ -257,10 +230,6 @@ public class Topic {
     return getAck() == Ack.ALL;
   }
 
-  public boolean isSchemaIdAwareSerializationEnabled() {
-    return schemaIdAwareSerializationEnabled;
-  }
-
   public int getMaxMessageSize() {
     return maxMessageSize;
   }
@@ -290,10 +259,6 @@ public class Topic {
 
   public TopicDataOfflineStorage getOfflineStorage() {
     return offlineStorage;
-  }
-
-  public Set<TopicLabel> getLabels() {
-    return Collections.unmodifiableSet(labels);
   }
 
   public Instant getCreatedAt() {

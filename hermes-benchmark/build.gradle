@@ -23,6 +23,7 @@ jmh {
     forceGC =  false
     duplicateClassesStrategy = DuplicatesStrategy.EXCLUDE
     profilers = ['gc']
+    resultFormat = 'JSON'
 }
 
 dependencies {

@@ -82,16 +82,14 @@ consumer:
         connectionString: "localhost:14192"
         connectionTimeout: 10s
         sessionTimeout: 10s
-        authorization:
+        authentication:
           enabled: false
           user: admin
           password: admin
   kafka:
     namespace: "itTest"
     clusters:
-      - authorization:
+      - authentication:
           enabled: false
-          mechanism: PLAIN
-          protocol: SASL_PLAINTEXT
           username: hermes
           password: alice-secret

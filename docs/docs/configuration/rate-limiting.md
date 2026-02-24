@@ -25,15 +25,14 @@ In **heartbeat mode** requests are sent each *HEARTBEAT_DELAY* seconds:
 
 Each of parameters written in capital letters can be configured:
 
-Parameter name     | Option                                          | Default value
------------------- | ----------------------------------------------- | -------------
-LIMITER_PERIOD     | consumer.rate.limiterSupervisorPeriod           | 30s
-SPEEDUP_TOLERANCE  | consumer.rate.failuresSpeedUpToleranceRatio     | 0.01
-TOLERANCE          | consumer.rate.failuresNoChangeToleranceRatio    | 0.05
-CONVERGENCE_FACTOR | consumer.rate.convergenceFactor                 | 0.2
-SLOW_DELAY         | consumer.rate.limiterSlowModeDelay              | 60s
-HEARTBEAT_DELAY    | consumer.rate.limiterHeartbeatModeDelay         | 60s
-
+| Parameter name     | Option                                       | Default value |
+|--------------------|----------------------------------------------|---------------|
+| LIMITER_PERIOD     | consumer.rate.limiterSupervisorPeriod        | 30s           |
+| SPEEDUP_TOLERANCE  | consumer.rate.failuresSpeedUpToleranceRatio  | 0.01          |
+| TOLERANCE          | consumer.rate.failuresNoChangeToleranceRatio | 0.05          |
+| CONVERGENCE_FACTOR | consumer.rate.convergenceFactor              | 0.2           |
+| SLOW_DELAY         | consumer.rate.limiterSlowModeDelay           | 60s           |
+| HEARTBEAT_DELAY    | consumer.rate.limiterHeartbeatModeDelay      | 60s           |
 
 ### How the negotiated algorithm works
 
@@ -55,12 +54,12 @@ the algorithm is able to determine busy and non-busy consumers and balance the a
 
 
 
-Parameter name                 | Option                                          | Default value
------------------------------- | ------------------------------------------------| --------------
-BALANCE_INTERVAL               | consumer.maxrate.balanceInterval                | 30s
-UPDATE_INTERVAL                | consumer.maxrate.updateInterval                 | 15s
-RATE_HISTORY_SIZE              | consumer.maxrate.historySize                    | 1
-BUSY_TOLERANCE                 | consumer.maxrate.busyTolerance                  | 0.1
-MIN_MAX_RATE                   | consumer.maxrate.minMaxRate                     | 1.0
-MIN_CHANGE_PERCENT             | consumer.maxrate.minAllowedChangePercent        | 1.0
-MIN_SIGNIFICANT_CHANGE_PERCENT | consumer.maxrate.minSignificantUpdatePercent    | 9.0
+| Parameter name                 | Option                                       | Default value |
+|--------------------------------|----------------------------------------------|---------------|
+| BALANCE_INTERVAL               | consumer.maxrate.balanceInterval             | 30s           |
+| UPDATE_INTERVAL                | consumer.maxrate.updateInterval              | 15s           |
+| RATE_HISTORY_SIZE              | consumer.maxrate.historySize                 | 1             |
+| BUSY_TOLERANCE                 | consumer.maxrate.busyTolerance               | 0.1           |
+| MIN_MAX_RATE                   | consumer.maxrate.minMaxRate                  | 1.0           |
+| MIN_CHANGE_PERCENT             | consumer.maxrate.minAllowedChangePercent     | 1.0           |
+| MIN_SIGNIFICANT_CHANGE_PERCENT | consumer.maxrate.minSignificantUpdatePercent | 9.0           |

@@ -2,8 +2,6 @@ package pl.allegro.tech.hermes.management.domain.topic.validator;
 
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.PublishingChaosPolicy;
 import pl.allegro.tech.hermes.api.PublishingChaosPolicy.ChaosMode;
@@ -11,7 +9,6 @@ import pl.allegro.tech.hermes.api.PublishingChaosPolicy.ChaosPolicy;
 import pl.allegro.tech.hermes.api.RetentionTime;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
-import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 import pl.allegro.tech.hermes.management.domain.owner.validator.OwnerIdValidator;
 import pl.allegro.tech.hermes.management.domain.topic.CreatorRights;
@@ -19,30 +16,25 @@ import pl.allegro.tech.hermes.schema.CouldNotLoadSchemaException;
 import pl.allegro.tech.hermes.schema.SchemaNotFoundException;
 import pl.allegro.tech.hermes.schema.SchemaRepository;
 
-@Component
 public class TopicValidator {
 
   private final OwnerIdValidator ownerIdValidator;
   private final ContentTypeValidator contentTypeValidator;
-  private final TopicLabelsValidator topicLabelsValidator;
   private final SchemaRepository schemaRepository;
   private final ApiPreconditions apiPreconditions;
-  private final TopicProperties topicProperties;
+  private final boolean defaultFallbackToRemoteDatacenterEnabled;
 
-  @Autowired
   public TopicValidator(
       OwnerIdValidator ownerIdValidator,
       ContentTypeValidator contentTypeValidator,
-      TopicLabelsValidator topicLabelsValidator,
       SchemaRepository schemaRepository,
       ApiPreconditions apiPreconditions,
-      TopicProperties topicProperties) {
+      boolean defaultFallbackToRemoteDatacenterEnabled) {
     this.ownerIdValidator = ownerIdValidator;
     this.contentTypeValidator = contentTypeValidator;
-    this.topicLabelsValidator = topicLabelsValidator;
     this.schemaRepository = schemaRepository;
     this.apiPreconditions = apiPreconditions;
-    this.topicProperties = topicProperties;
+    this.defaultFallbackToRemoteDatacenterEnabled = defaultFallbackToRemoteDatacenterEnabled;
   }
 
   public void ensureCreatedTopicIsValid(
@@ -50,10 +42,8 @@ public class TopicValidator {
     apiPreconditions.checkConstraints(created, createdBy.isAdmin());
     checkOwner(created);
     checkContentType(created);
-    checkTopicLabels(created);
 
-    if ((created.isFallbackToRemoteDatacenterEnabled()
-            != topicProperties.isDefaultFallbackToRemoteDatacenterEnabled())
+    if ((created.isFallbackToRemoteDatacenterEnabled() != defaultFallbackToRemoteDatacenterEnabled)
         && !createdBy.isAdmin()) {
       throw new TopicValidationException(
           "User is not allowed to set non-default fallback to remote datacenter for this topic");
@@ -80,7 +70,6 @@ public class TopicValidator {
   public void ensureUpdatedTopicIsValid(Topic updated, Topic previous, RequestUser modifiedBy) {
     apiPreconditions.checkConstraints(updated, modifiedBy.isAdmin());
     checkOwner(updated);
-    checkTopicLabels(updated);
 
     if (previous.isFallbackToRemoteDatacenterEnabled()
         && !updated.isFallbackToRemoteDatacenterEnabled()
@@ -192,10 +181,6 @@ public class TopicValidator {
 
   private void checkContentType(Topic checked) {
     contentTypeValidator.check(checked.getContentType());
-  }
-
-  private void checkTopicLabels(Topic checked) {
-    topicLabelsValidator.check(checked.getLabels());
   }
 
   private void validateChaosPolicy(PublishingChaosPolicy chaosPolicy) {

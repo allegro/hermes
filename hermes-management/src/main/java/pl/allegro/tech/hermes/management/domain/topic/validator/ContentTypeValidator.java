@@ -2,11 +2,8 @@ package pl.allegro.tech.hermes.management.domain.topic.validator;
 
 import java.util.EnumSet;
 import java.util.Set;
-import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.ContentType;
-import pl.allegro.tech.hermes.management.config.TopicProperties;
 
-@Component
 public class ContentTypeValidator {
 
   private static final String ERROR_MESSAGE =
@@ -14,8 +11,8 @@ public class ContentTypeValidator {
 
   private final Set<ContentType> allowedContentTypes;
 
-  public ContentTypeValidator(TopicProperties topicProperties) {
-    this.allowedContentTypes = EnumSet.copyOf(topicProperties.getAllowedContentTypes());
+  public ContentTypeValidator(Set<ContentType> allowedContentTypes) {
+    this.allowedContentTypes = EnumSet.copyOf(allowedContentTypes);
   }
 
   public void check(ContentType contentType) {

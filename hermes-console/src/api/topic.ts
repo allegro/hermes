@@ -15,13 +15,11 @@ export interface Topic {
   ack: Ack;
   trackingEnabled: boolean;
   migratedFromJsonType: boolean;
-  schemaIdAwareSerializationEnabled: boolean;
   contentType: ContentType;
   maxMessageSize?: number;
   auth: PublishingAuth;
   subscribingRestricted: boolean;
   offlineStorage: TopicDataOfflineStorage;
-  labels: TopicLabel[];
   createdAt: number; // java.time.Instant
   modifiedAt: number; // java.time.Instant
   fallbackToRemoteDatacenterEnabled: boolean;
@@ -54,10 +52,6 @@ export interface TopicDataOfflineStorage {
 export interface OfflineRetentionTime {
   duration: number;
   infinite: boolean;
-}
-
-export interface TopicLabel {
-  value: string;
 }
 
 export interface TopicMetrics {

@@ -33,12 +33,11 @@ public class ChronicleMapMessageRepositoryTest {
   private static final int ENTRIES = 100;
   private static final int AVERAGE_MESSAGE_SIZE = 600;
 
-  private File file;
   private MessageRepository messageRepository;
 
   @Before
   public void setUp() throws Throwable {
-    file = File.createTempFile("local_backup", ".dat");
+    File file = File.createTempFile("local_backup", ".dat");
     messageRepository = new ChronicleMapMessageRepository(file, ENTRIES, AVERAGE_MESSAGE_SIZE);
   }
 
@@ -178,7 +177,7 @@ public class ChronicleMapMessageRepositoryTest {
 
     // then
     assertThat(loadedMessages).hasSize(1);
-    BackupMessage message = loadedMessages.get(0);
+    BackupMessage message = loadedMessages.getFirst();
     assertThat(message.getMessageId()).isEqualTo("573e570c-890d-49c6-8916-434a1ecb6c66");
     assertThat(message.getTimestamp()).isEqualTo(1704280749690L);
     assertThat(message.getQualifiedTopicName())
@@ -191,7 +190,7 @@ public class ChronicleMapMessageRepositoryTest {
     JsonMessageContentWrapper contentWrapper =
         new JsonMessageContentWrapper("message", "metadata", new ObjectMapper());
     CompositeMessageContentWrapper wrapper =
-        new CompositeMessageContentWrapper(contentWrapper, null, null, null, null, null);
+        new CompositeMessageContentWrapper(contentWrapper, null, null, null, null);
     byte[] content =
         wrapper.wrapJson(
             "message".getBytes(defaultCharset()),

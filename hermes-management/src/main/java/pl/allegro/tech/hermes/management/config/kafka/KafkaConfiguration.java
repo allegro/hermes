@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
 import org.apache.kafka.clients.admin.AdminClient;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -50,15 +49,24 @@ import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
 @EnableConfigurationProperties(KafkaClustersProperties.class)
 public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
 
-  @Autowired KafkaClustersProperties kafkaClustersProperties;
+  private final KafkaClustersProperties kafkaClustersProperties;
+  private final TopicProperties topicProperties;
+  private final SubscriptionProperties subscriptionProperties;
+  private final ZookeeperRepositoryManager zookeeperRepositoryManager;
+  private final MultiDatacenterRepositoryCommandExecutor multiDcExecutor;
 
-  @Autowired TopicProperties topicProperties;
-
-  @Autowired SubscriptionProperties subscriptionProperties;
-
-  @Autowired ZookeeperRepositoryManager zookeeperRepositoryManager;
-
-  @Autowired MultiDatacenterRepositoryCommandExecutor multiDcExecutor;
+  public KafkaConfiguration(
+      KafkaClustersProperties kafkaClustersProperties,
+      TopicProperties topicProperties,
+      SubscriptionProperties subscriptionProperties,
+      ZookeeperRepositoryManager zookeeperRepositoryManager,
+      MultiDatacenterRepositoryCommandExecutor multiDcExecutor) {
+    this.kafkaClustersProperties = kafkaClustersProperties;
+    this.topicProperties = topicProperties;
+    this.subscriptionProperties = subscriptionProperties;
+    this.zookeeperRepositoryManager = zookeeperRepositoryManager;
+    this.multiDcExecutor = multiDcExecutor;
+  }
 
   @Bean
   MultiDCAwareService multiDCAwareService(
@@ -74,7 +82,7 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
             .map(
                 kafkaProperties -> {
                   KafkaNamesMapper kafkaNamesMapper =
-                      kafkaNamesMappers.getMapper(kafkaProperties.getQualifiedClusterName());
+                      kafkaNamesMappers.getMapper(kafkaProperties.getClusterName());
                   AdminClient brokerAdminClient = brokerAdminClient(kafkaProperties);
                   BrokerStorage storage = brokersStorage(brokerAdminClient);
                   BrokerTopicManagement brokerTopicManagement =
@@ -101,7 +109,7 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
                           kafkaRawMessageReader, schemaRepository, jsonAvroConverter);
                   return new BrokersClusterService(
                       kafkaProperties.getDatacenter(),
-                      kafkaProperties.getQualifiedClusterName(),
+                      kafkaProperties.getClusterName(),
                       messageReader,
                       retransmissionService,
                       brokerTopicManagement,
@@ -129,7 +137,7 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
     return subscriptionProperties.isCreateConsumerGroupManuallyEnabled()
         ? new KafkaConsumerGroupManager(
             kafkaNamesMapper,
-            kafkaProperties.getQualifiedClusterName(),
+            kafkaProperties.getClusterName(),
             kafkaProperties.getBrokerList(),
             kafkaProperties,
             kafkaAdminClient)
@@ -140,7 +148,7 @@ public class KafkaConfiguration implements MultipleDcKafkaNamesMappersFactory {
       List<DatacenterBoundRepositoryHolder<SubscriptionOffsetChangeIndicator>> repositories,
       KafkaProperties kafkaProperties) {
     if (repositories.size() == 1) {
-      return repositories.get(0).getRepository();
+      return repositories.getFirst().getRepository();
     }
     return repositories.stream()
         .filter(

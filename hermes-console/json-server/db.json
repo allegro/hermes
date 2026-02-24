@@ -216,7 +216,6 @@
       "fallbackToRemoteDatacenterEnabled": true,
       "trackingEnabled": true,
       "migratedFromJsonType": false,
-      "schemaIdAwareSerializationEnabled": false,
       "contentType": "AVRO",
       "maxMessageSize": 10240,
       "auth": {
@@ -232,11 +231,6 @@
           "infinite": false
         }
       },
-      "labels": [
-        {
-          "value": "internal"
-        }
-      ],
       "createdAt": 1634916242.877000000,
       "modifiedAt": 1636451113.517000000
     }
@@ -629,14 +623,6 @@
       "metrics": "http://localhost:8082",
       "docs": "http://hermes-pubsub.rtfd.org"
     },
-    "hermes": {
-      "discovery": {
-        "type": "simple",
-        "simple": {
-          "url": ""
-        }
-      }
-    },
     "metrics": {
       "fetchingDashboardUrlEnabled": true
     },
@@ -648,10 +634,6 @@
         "tokenEndpoint": "/auth/oauth/token",
         "clientId": "hermes",
         "scope": "hermes"
-      },
-      "headers": {
-        "enabled": false,
-        "adminHeader": "Hermes-Admin-Password"
       }
     },
     "owner": {
@@ -665,7 +647,6 @@
     "topic": {
       "messagePreviewEnabled": true,
       "offlineClientsEnabled": true,
-      "authEnabled": true,
       "defaults": {
         "ack": "LEADER",
         "contentType": "JSON",
@@ -681,10 +662,6 @@
           }
         }
       },
-      "buttonsExtension": "",
-      "removeSchema": false,
-      "schemaIdAwareSerializationEnabled": false,
-      "avroContentTypeMetadataRequired": true,
       "contentTypes": [
         {
           "value": "AVRO",
@@ -696,7 +673,6 @@
         }
       ],
       "readOnlyModeEnabled": false,
-      "allowedTopicLabels": [],
       "retentionUnits": [
         {
           "value": "DAYS",
@@ -719,8 +695,6 @@
           "type": "boolean"
         }
       },
-      "showHeadersFilter": false,
-      "showFixedHeaders": false,
       "requestTimeoutWarningThreshold": 1001,
       "defaults": {
         "subscriptionPolicy": {

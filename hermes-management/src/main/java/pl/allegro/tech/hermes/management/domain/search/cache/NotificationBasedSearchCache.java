@@ -5,7 +5,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.domain.notifications.InternalNotificationsBus;
@@ -14,7 +13,6 @@ import pl.allegro.tech.hermes.domain.notifications.TopicCallback;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 
-@Component
 public class NotificationBasedSearchCache
     implements SearchCache, TopicCallback, SubscriptionCallback {
 
