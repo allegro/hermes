@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.benchmark.consumer;
 
 import static com.google.common.collect.ImmutableMap.of;
 
+import java.time.Duration;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Level;
@@ -26,6 +27,7 @@ import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 public class HermesConsumerFilteringBenchmark {
 
   private static final int MESSAGES_COUNT = 100_000;
+  public static final Duration TIMEOUT = Duration.ofSeconds(4);
   private ConsumerEnvironment consumerEnvironment;
 
   @Setup
@@ -51,7 +53,7 @@ public class HermesConsumerFilteringBenchmark {
   @BenchmarkMode(Mode.Throughput)
   public void benchmarkConsumingThroughput() {
     consumerEnvironment.startConsumer();
-    consumerEnvironment.waitUntilAllMessagesAreConsumed(MESSAGES_COUNT / 2);
+    consumerEnvironment.waitUntilAllMessagesAreConsumed(MESSAGES_COUNT / 2, TIMEOUT);
   }
 
   @TearDown(Level.Iteration)

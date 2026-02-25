@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.benchmark.consumer;
 
+import java.time.Duration;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Level;
@@ -21,6 +22,7 @@ import org.openjdk.jmh.runner.options.TimeValue;
 public class HermesConsumerBenchmark {
 
   private static final int MESSAGES_COUNT = 100_000;
+  private static final Duration TIMEOUT = Duration.ofSeconds(4);
   private ConsumerEnvironment consumerEnvironment;
 
   @Setup
@@ -37,7 +39,7 @@ public class HermesConsumerBenchmark {
   @BenchmarkMode(Mode.Throughput)
   public void benchmarkConsumingThroughput() {
     consumerEnvironment.startConsumer();
-    consumerEnvironment.waitUntilAllMessagesAreConsumed(MESSAGES_COUNT);
+    consumerEnvironment.waitUntilAllMessagesAreConsumed(MESSAGES_COUNT, TIMEOUT);
   }
 
   @TearDown(Level.Iteration)

@@ -69,8 +69,7 @@ public class ConsumerEnvironment {
         new InMemoryReceiverFactory(this.inMemoryMessageReceiver);
     topic = createTopic();
     subscription = createSubscription(topic, null);
-    consumerProcess =
-        createConsumerProcess(messageReceiverFactory, inMemoryMessageReceiver, messagesCount);
+    consumerProcess = createConsumerProcess(messageReceiverFactory, messagesCount);
     executorService = createExecutor();
   }
 
@@ -99,20 +98,14 @@ public class ConsumerEnvironment {
   }
 
   private ConsumerProcess createConsumerProcess(
-      ReceiverFactory messageReceiverFactory,
-      InMemoryMessageReceiver inMemoryMessageReceiver,
-      int messagesCount) {
+      ReceiverFactory messageReceiverFactory, int messagesCount) {
     NoOpConsumerAuthorizationHandler authorizationHandler = new NoOpConsumerAuthorizationHandler();
     InMemoryProtocolMessageSenderProvider messageSenderProvider =
         new InMemoryProtocolMessageSenderProvider(messageSender);
     ConsumerMessageSenderFactory consumerMessageSenderFactory =
         createMessageSenderFactory(authorizationHandler, messageSenderProvider);
     SerialConsumer serialConsumer =
-        createSerialConsumer(
-            messageReceiverFactory,
-            inMemoryMessageReceiver,
-            consumerMessageSenderFactory,
-            messagesCount);
+        createSerialConsumer(messageReceiverFactory, consumerMessageSenderFactory, messagesCount);
     return new ConsumerProcess(
         Signal.of(Signal.SignalType.START, subscription.getQualifiedName()),
         serialConsumer,
@@ -124,10 +117,8 @@ public class ConsumerEnvironment {
 
   private SerialConsumer createSerialConsumer(
       ReceiverFactory messageReceiverFactory,
-      InMemoryMessageReceiver inMemoryMessageReceiver,
       ConsumerMessageSenderFactory consumerMessageSenderFactory,
       int messagesCount) {
-    this.inMemoryMessageReceiver = inMemoryMessageReceiver;
 
     return new SerialConsumer(
         messageReceiverFactory,
@@ -167,9 +158,9 @@ public class ConsumerEnvironment {
     return topicWithRandomName().withContentType(ContentType.AVRO).build();
   }
 
-  public void waitUntilAllMessagesAreConsumed(int expectedMessagesSentCount) {
+  public void waitUntilAllMessagesAreConsumed(int expectedMessagesSentCount, Duration timeout) {
     await()
-        .atMost(adjust(Duration.ofSeconds(4)))
+        .atMost(adjust(timeout))
         .untilAsserted(
             () -> {
               assertThat(messageSender.getSentMessagesCount()).isEqualTo(expectedMessagesSentCount);
@@ -201,8 +192,7 @@ public class ConsumerEnvironment {
     InMemoryFilteringReceiverFactory messageReceiverFactory = createFilteringReceiverFactory();
     topic = createTopic();
     subscription = createSubscription(topic, filterSpecification);
-    consumerProcess =
-        createConsumerProcess(messageReceiverFactory, inMemoryMessageReceiver, messagesCount);
+    consumerProcess = createConsumerProcess(messageReceiverFactory, messagesCount);
     executorService = createExecutor();
   }
 
