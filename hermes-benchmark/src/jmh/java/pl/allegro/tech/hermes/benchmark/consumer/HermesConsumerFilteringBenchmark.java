@@ -3,27 +3,30 @@ package pl.allegro.tech.hermes.benchmark.consumer;
 import static com.google.common.collect.ImmutableMap.of;
 
 import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Level;
+import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Threads;
+import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.infra.Blackhole;
-import org.openjdk.jmh.profile.GCProfiler;
-import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
-import org.openjdk.jmh.runner.options.Options;
-import org.openjdk.jmh.runner.options.OptionsBuilder;
-import org.openjdk.jmh.runner.options.TimeValue;
 import pl.allegro.tech.hermes.api.MessageFilterSpecification;
+import pl.allegro.tech.hermes.benchmark.config.JmhRunner;
 import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 
 @State(Scope.Thread)
 @Threads(1)
+@Fork(1)
+@Warmup(iterations = 6, time = 5, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 6, time = 5, timeUnit = TimeUnit.SECONDS)
 public class HermesConsumerFilteringBenchmark {
 
   private static final int MESSAGES_COUNT = 100_000;
@@ -67,19 +70,6 @@ public class HermesConsumerFilteringBenchmark {
   }
 
   public static void main(String[] args) throws RunnerException {
-    Options opt =
-        new OptionsBuilder()
-            .include(".*" + HermesConsumerFilteringBenchmark.class.getSimpleName() + ".*")
-            .warmupIterations(6)
-            .measurementIterations(6)
-            .measurementTime(TimeValue.seconds(5))
-            .warmupTime(TimeValue.seconds(2))
-            .forks(1)
-            .threads(1)
-            .syncIterations(false)
-            .addProfiler(GCProfiler.class)
-            .build();
-
-    new Runner(opt).run();
+    JmhRunner.runBenchmark(HermesConsumerFilteringBenchmark.class);
   }
 }

@@ -33,9 +33,9 @@ import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageIdGenerator;
 
 @Fork(1)
-@Warmup(iterations = 5)
-@Measurement(iterations = 5)
-@Threads(value = 100)
+@Warmup(iterations = 6, time = 4, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 6, time = 4, timeUnit = TimeUnit.SECONDS)
+@Threads(value = 10)
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 public class MessageRepositoryBenchmark {

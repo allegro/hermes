@@ -1,3 +1,6 @@
+import groovy.json.JsonSlurper
+import groovy.json.JsonOutput
+
 plugins {
     id 'me.champeau.jmh' version '0.7.2'
 }
@@ -12,11 +15,11 @@ jmh {
     jmhVersion = '1.36'
     zip64 = true
     verbosity = 'NORMAL'
-    iterations = intProperty('jmh.iterations', 4)
-    timeOnIteration = stringProperty('jmh.timeOnIteration', '80s')
-    fork = intProperty('jmh.fork', 1)
-    warmupIterations = intProperty('jmh.warmupIterations', 4)
-    warmup = stringProperty('jmh.timeOnWarmupIteration', '80s')
+    fork = optionalIntegerProperty('jmh.fork')
+    iterations = optionalIntegerProperty('jmh.iterations')
+    timeOnIteration = optionalStringProperty('jmh.timeOnIteration')
+    warmupIterations = optionalIntegerProperty('jmh.warmupIterations')
+    warmup = optionalStringProperty('jmh.timeOnWarmupIteration')
     jvmArgs = listProperty('jmh.jvmArgs', ['-Xmx1g', '-Xms1g', '-XX:+UseG1GC'] + chronicleMapJvmArgs)
     failOnError = booleanProperty('jmh.failOnError', true)
     synchronizeIterations = false
@@ -47,14 +50,64 @@ String stringProperty(String property, String defaultValue) {
     project.hasProperty(property) ? project.property(property) : defaultValue
 }
 
+String optionalStringProperty(String property) {
+    stringProperty(property, null)
+}
+
 List listProperty(String property, List defaultValue) {
     project.hasProperty(property) ? ((String) project.property(property)).split(' ').toList() : defaultValue
 }
 
-int intProperty(String property, int defaultValue) {
-    project.hasProperty(property) ? Integer.valueOf(project.property(property)) : defaultValue
-}
-
 boolean booleanProperty(String property, boolean defaultValue) {
     project.hasProperty(property) ? Boolean.valueOf(project.property(property)) : defaultValue
+}
+
+Integer optionalIntegerProperty(String property) {
+    project.hasProperty(property) ? Integer.valueOf(project.property(property)) : null
+}
+
+tasks.register('jmhCheck') {
+    description = 'Validates that all defined benchmarks were executed'
+    group = 'verification'
+    dependsOn 'jmh'
+
+    doLast {
+        Set<String> definedBenchmarks = findDefinedBenchmarks()
+        def jmhResultFile = file("${project.layout.buildDirectory.get()}/results/jmh/results.json")
+        def executedBenchmarks = findExecutedBenchmarks(jmhResultFile)
+        def missingBenchmarks = definedBenchmarks - executedBenchmarks
+        if (!missingBenchmarks.isEmpty()) {
+            throw new GradleException("The following benchmarks were defined but not executed correctly:\n  - ${missingBenchmarks.sort().join('\n  - ')}")
+        }
+        logger.lifecycle("All ${definedBenchmarks.size()} defined benchmarks were executed successfully.")
+    }
+}
+
+private Set<String> findExecutedBenchmarks(File jmhResultFile) {
+    if (!jmhResultFile.exists()) {
+        throw new GradleException("JMH results file not found: ${jmhResultFile}. Run 'jmh' task first.")
+    }
+    def jsonSlurper = new JsonSlurper()
+    return jsonSlurper.parse(jmhResultFile)
+            .collect { it.benchmark }
+            .toSet()
+}
+
+private Set<String> findDefinedBenchmarks() {
+    def jmhJarFile = tasks.jmhJar.archiveFile.get().asFile
+    def execResult = providers.exec {
+        commandLine 'java', '-jar', jmhJarFile.absolutePath, '-l'
+    }
+    def listOutput = execResult.standardOutput.asText.get()
+
+    def definedBenchmarks = listOutput
+            .readLines()
+            .findAll { it.startsWith('pl.allegro.tech.hermes.benchmark.') }
+            .collect { it.trim() }
+            .toSet()
+
+    if (definedBenchmarks.isEmpty()) {
+        throw new GradleException("No benchmarks found in JMH jar")
+    }
+    definedBenchmarks
 }
