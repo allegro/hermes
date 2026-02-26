@@ -1,5 +1,7 @@
 package pl.allegro.tech.hermes.benchmark.consumer;
 
+import static com.google.common.collect.ImmutableMap.of;
+
 import java.time.Duration;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -11,18 +13,21 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.infra.Blackhole;
+import org.openjdk.jmh.profile.GCProfiler;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.openjdk.jmh.runner.options.TimeValue;
+import pl.allegro.tech.hermes.api.MessageFilterSpecification;
+import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 
 @State(Scope.Thread)
 @Threads(1)
-public class HermesConsumerBenchmark {
+public class HermesConsumerFilteringBenchmark {
 
   private static final int MESSAGES_COUNT = 100_000;
-  private static final Duration TIMEOUT = Duration.ofSeconds(4);
+  public static final Duration TIMEOUT = Duration.ofSeconds(4);
   private ConsumerEnvironment consumerEnvironment;
 
   @Setup
@@ -32,14 +37,23 @@ public class HermesConsumerBenchmark {
 
   @Setup(Level.Iteration)
   public void setup() {
-    consumerEnvironment.createConsumer(MESSAGES_COUNT);
+    MessageFilterSpecification filter =
+        new MessageFilterSpecification(
+            of("type", "avropath", "path", ".name", "matcher", "Robert"));
+
+    consumerEnvironment.createFilteringConsumer(
+        HermesConsumerFilteringBenchmark::createMessage, filter, MESSAGES_COUNT);
+  }
+
+  private static AvroUser createMessage(int i) {
+    return new AvroUser(i < MESSAGES_COUNT / 2 ? "Mark" : "Robert", i, "blue");
   }
 
   @Benchmark
   @BenchmarkMode(Mode.Throughput)
   public void benchmarkConsumingThroughput() {
     consumerEnvironment.startConsumer();
-    consumerEnvironment.waitUntilAllMessagesAreConsumed(MESSAGES_COUNT, TIMEOUT);
+    consumerEnvironment.waitUntilAllMessagesAreConsumed(MESSAGES_COUNT / 2, TIMEOUT);
   }
 
   @TearDown(Level.Iteration)
@@ -55,7 +69,7 @@ public class HermesConsumerBenchmark {
   public static void main(String[] args) throws RunnerException {
     Options opt =
         new OptionsBuilder()
-            .include(".*" + HermesConsumerBenchmark.class.getSimpleName() + ".*")
+            .include(".*" + HermesConsumerFilteringBenchmark.class.getSimpleName() + ".*")
             .warmupIterations(6)
             .measurementIterations(6)
             .measurementTime(TimeValue.seconds(5))
@@ -63,6 +77,7 @@ public class HermesConsumerBenchmark {
             .forks(1)
             .threads(1)
             .syncIterations(false)
+            .addProfiler(GCProfiler.class)
             .build();
 
     new Runner(opt).run();

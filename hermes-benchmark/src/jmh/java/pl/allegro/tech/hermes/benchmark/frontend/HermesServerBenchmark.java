@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.benchmark;
+package pl.allegro.tech.hermes.benchmark.frontend;
 
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -12,7 +12,6 @@ import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.openjdk.jmh.runner.options.TimeValue;
-import pl.allegro.tech.hermes.benchmark.environment.HermesServerEnvironment;
 
 @State(Scope.Benchmark)
 public class HermesServerBenchmark {
