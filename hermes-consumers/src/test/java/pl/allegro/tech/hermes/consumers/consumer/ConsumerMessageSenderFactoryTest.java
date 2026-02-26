@@ -8,7 +8,6 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.lang.reflect.Field;
 import java.time.Clock;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -151,5 +150,4 @@ public class ConsumerMessageSenderFactoryTest {
         .doesNotContain(unsupportedHandler)
         .anyMatch(h -> h instanceof DefaultErrorHandler);
   }
-
 }
