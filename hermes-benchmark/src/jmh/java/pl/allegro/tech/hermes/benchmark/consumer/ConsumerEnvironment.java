@@ -92,6 +92,7 @@ public class ConsumerEnvironment {
         CLOCK,
         instrumentedExecutorServiceFactory,
         consumerAuthorizationHandler,
+        List.of(),
         1000,
         1,
         false);
