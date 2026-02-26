@@ -1,0 +1,53 @@
+name: 'JMH Benchmark'
+description: 'Checkout, build and run JMH benchmarks with Gradle'
+
+inputs:
+  ref:
+    description: 'Git ref to checkout'
+    required: true
+  version-name:
+    description: 'Name of tested version (used as directory name for checkout and build)'
+    required: true
+
+outputs:
+  raw-report-path:
+    description: 'Path to the JMH report'
+    value: ${{inputs.version-name}}/${{ steps.set-report-path.outputs.raw_report_path }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set report path
+      shell: bash
+      run: echo "raw_report_path=$(echo ${{ inputs.version-name }}/hermes-benchmark/build/results/jmh/results.json)" >> $GITHUB_OUTPUT
+      id: set-raw-report-path
+
+    - uses: actions/checkout@v4
+      with:
+        ref: ${{ inputs.ref }}
+        path: ${{ inputs.version-name }}
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v4
+
+    - name: Build JMH JAR
+      shell: bash
+      run: ./gradlew --no-daemon jmhJar
+      working-directory: ${{ inputs.version-name }}
+      env:
+        GRADLE_OPTS: '-Dorg.gradle.daemon=false'
+
+    - name: Run benchmarks
+      shell: bash
+      run: ./gradlew --no-daemon jmhCheck
+      working-directory: ${{ inputs.version-name }}
+      env:
+        GRADLE_OPTS: '-Dorg.gradle.daemon=false'
+
+    - name: Upload raw JMH results
+      id: upload-results
+      uses: actions/upload-artifact@v4
+      with:
+        path: ${{ steps.set-raw-report-path.outputs.raw_report_path }}
+        name: ${{ inputs.version-name }}-raw-report
+        retention-days: 7
