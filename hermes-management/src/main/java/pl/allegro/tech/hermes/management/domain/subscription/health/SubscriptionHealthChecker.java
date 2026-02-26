@@ -3,23 +3,20 @@ package pl.allegro.tech.hermes.management.domain.subscription.health;
 import static java.util.stream.Collectors.toSet;
 import static pl.allegro.tech.hermes.api.Subscription.State.SUSPENDED;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionHealth;
 import pl.allegro.tech.hermes.api.SubscriptionHealthProblem;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
 import pl.allegro.tech.hermes.api.TopicMetrics;
 
-@Component
 public class SubscriptionHealthChecker {
   private final Set<SubscriptionHealthProblemIndicator> problemIndicators;
 
-  @Autowired
-  public SubscriptionHealthChecker(Set<SubscriptionHealthProblemIndicator> problemIndicators) {
-    this.problemIndicators = problemIndicators;
+  public SubscriptionHealthChecker(List<SubscriptionHealthProblemIndicator> problemIndicators) {
+    this.problemIndicators = Set.copyOf(problemIndicators);
   }
 
   public SubscriptionHealth checkHealth(

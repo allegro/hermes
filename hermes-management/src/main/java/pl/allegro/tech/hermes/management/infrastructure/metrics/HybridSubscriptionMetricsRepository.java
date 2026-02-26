@@ -1,11 +1,11 @@
 package pl.allegro.tech.hermes.management.infrastructure.metrics;
 
 import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCauseMessage;
+import static pl.allegro.tech.hermes.common.logging.LoggingFields.SUBSCRIPTION_NAME;
 
 import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.PersistentSubscriptionMetrics;
 import pl.allegro.tech.hermes.api.SubscriptionMetrics;
 import pl.allegro.tech.hermes.api.SubscriptionName;
@@ -15,7 +15,6 @@ import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionLagSour
 import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionMetricsRepository;
 import pl.allegro.tech.hermes.management.infrastructure.metrics.MonitoringSubscriptionMetricsProvider.MonitoringSubscriptionMetrics;
 
-@Component
 public class HybridSubscriptionMetricsRepository implements SubscriptionMetricsRepository {
 
   private static final Logger logger =
@@ -94,10 +93,13 @@ public class HybridSubscriptionMetricsRepository implements SubscriptionMetricsR
     try {
       return supplier.get();
     } catch (Exception exception) {
-      logger.warn(
-          "Failed to read Zookeeper metrics for subscription: {}; root cause: {}",
-          name.getQualifiedName(),
-          getRootCauseMessage(exception));
+      logger
+          .atWarn()
+          .addKeyValue(SUBSCRIPTION_NAME, name.getQualifiedName())
+          .log(
+              "Failed to read Zookeeper metrics for subscription: {}; root cause: {}",
+              name.getQualifiedName(),
+              getRootCauseMessage(exception));
       return -1;
     }
   }

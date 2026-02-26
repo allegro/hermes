@@ -18,7 +18,7 @@ class MessagePreviewFactoryTest extends Specification {
         given:
             factory = new MessagePreviewFactory(maxContentSize)
         when:
-            MessagePreview preview = factory.create(new JsonMessage('message-id', new byte[messageSize], 0L, "partition-key", emptyMap()), false)
+            MessagePreview preview = factory.create(new JsonMessage('message-id', new byte[messageSize], 0L, "partition-key", emptyMap()))
         then:
             preview.truncated == shouldTruncate
         where:
@@ -36,7 +36,7 @@ class MessagePreviewFactoryTest extends Specification {
             def message = new AvroMessage('message-id', avroUser.asBytes(), 0L, avroUser.compiledSchema, null, emptyMap())
             factory = new MessagePreviewFactory((avroUser.asJson().length() - 1) / 1024 as int)
         when:
-            MessagePreview preview = factory.create(message, false)
+            MessagePreview preview = factory.create(message)
         then:
             preview.truncated
     }

@@ -4,9 +4,20 @@ public class FrontendConfigurationProperties {
   public static String SPRING_PROFILES_ACTIVE = "spring.profiles.active";
   public static String AUTH_USERNAME = "auth.username";
   public static String AUTH_PASSWORD = "auth.password";
+
+  /**
+   * @deprecated Will be removed in a future version.
+   */
+  @Deprecated
   public static String MESSAGES_LOCAL_STORAGE_DIRECTORY =
       "frontend.messages.local.storage.directory";
+
+  /**
+   * @deprecated Will be removed in a future version.
+   */
+  @Deprecated
   public static String MESSAGES_LOCAL_STORAGE_ENABLED = "frontend.messages.local.storage.enabled";
+
   public static String FRONTEND_THROUGHPUT_TYPE = "frontend.throughput.type";
   public static String FRONTEND_THROUGHPUT_FIXED_MAX = "frontend.throughput.fixedMax";
   public static String FRONTEND_MESSAGE_PREVIEW_ENABLED = "frontend.message.preview.enabled";

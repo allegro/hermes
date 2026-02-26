@@ -1,10 +1,12 @@
 package pl.allegro.tech.hermes.integrationtests;
 
+import static org.awaitility.Awaitility.await;
 import static pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProvider.DEFAULT_DC_NAME;
 import static pl.allegro.tech.hermes.integrationtests.assertions.HermesAssertions.assertThatMetrics;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -14,7 +16,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.testcontainers.lifecycle.Startable;
 import pl.allegro.tech.hermes.api.PublishingChaosPolicy;
 import pl.allegro.tech.hermes.api.PublishingChaosPolicy.ChaosMode;
 import pl.allegro.tech.hermes.api.PublishingChaosPolicy.ChaosPolicy;
@@ -67,7 +68,7 @@ public class RemoteDatacenterProduceFallbackTest {
 
   @BeforeAll
   public static void setup() {
-    Stream.of(dc1, dc2, dc3).parallel().forEach(HermesDatacenter::startKafkaAndZookeeper);
+    Stream.of(dc1, dc2, dc3).forEach(HermesDatacenter::startKafkaAndZookeeper);
     schemaRegistry.start();
     management =
         new HermesManagementTestApp(
@@ -105,14 +106,16 @@ public class RemoteDatacenterProduceFallbackTest {
 
   @AfterAll
   public static void clean() {
-    management.stop();
-    consumerDC2.stop();
-    consumerDC3.stop();
-    frontendDC1.stop();
-    frontendDC2.stop();
-    consumerDC1.stop();
+    if (management != null) management.stop();
+    if (consumerDC2 != null) consumerDC2.stop();
+    if (consumerDC3 != null) consumerDC3.stop();
+    if (frontendDC1 != null) frontendDC1.stop();
+    if (frontendDC2 != null) frontendDC2.stop();
+    if (consumerDC1 != null) consumerDC1.stop();
     schemaRegistry.stop();
-    Stream.of(dc1, dc2, dc3).parallel().forEach(HermesDatacenter::stop);
+    dc1.stop();
+    dc2.stop();
+    dc3.stop();
   }
 
   @AfterEach
@@ -167,7 +170,7 @@ public class RemoteDatacenterProduceFallbackTest {
   }
 
   @Test
-  public void shouldNotPublishViaRemoteDCNotListedInConfig() throws InterruptedException {
+  public void shouldNotPublishViaRemoteDCNotListedInConfig() {
     // given
     TestSubscriber subscriber = subscribers.createSubscriber();
     Topic topic =
@@ -185,10 +188,10 @@ public class RemoteDatacenterProduceFallbackTest {
     DC1.publishUntilStatus(topic.getQualifiedName(), message.body(), 503);
 
     // wait for a few seconds to ensure no messages are published in the background
-    Thread.sleep(5000);
-
-    // then no messages are received
-    subscriber.noMessagesReceived();
+    await()
+        .during(Duration.ofSeconds(5))
+        .atMost(Duration.ofSeconds(6))
+        .untilAsserted(subscriber::noMessagesReceived);
   }
 
   @Test
@@ -327,11 +330,13 @@ public class RemoteDatacenterProduceFallbackTest {
     }
 
     void startKafkaAndZookeeper() {
-      Stream.of(hermesZookeeper, kafka).parallel().forEach(Startable::start);
+      hermesZookeeper.start();
+      kafka.start();
     }
 
     void stop() {
-      Stream.of(hermesZookeeper, kafka).parallel().forEach(Startable::stop);
+      hermesZookeeper.stop();
+      kafka.stop();
     }
   }
 

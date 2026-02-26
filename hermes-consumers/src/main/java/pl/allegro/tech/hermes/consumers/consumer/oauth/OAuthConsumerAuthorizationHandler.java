@@ -1,5 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.oauth;
 
+import static pl.allegro.tech.hermes.common.logging.LoggingFields.SUBSCRIPTION_NAME;
+
 import com.google.common.util.concurrent.RateLimiter;
 import java.time.Duration;
 import java.util.List;
@@ -45,7 +47,10 @@ public class OAuthConsumerAuthorizationHandler
         .create(subscriptionName)
         .ifPresent(
             handler -> {
-              logger.info("OAuth handler for subscription {} created", subscriptionName);
+              logger
+                  .atInfo()
+                  .addKeyValue(SUBSCRIPTION_NAME, subscriptionName.getQualifiedName())
+                  .log("OAuth handler for subscription {} created", subscriptionName);
               handlers.put(subscriptionName, handler);
               handler.initialize();
             });
@@ -54,7 +59,10 @@ public class OAuthConsumerAuthorizationHandler
   @Override
   public void removeSubscriptionHandler(SubscriptionName subscriptionName) {
     if (handlers.remove(subscriptionName) != null) {
-      logger.info("OAuth handler for subscription {} removed", subscriptionName);
+      logger
+          .atInfo()
+          .addKeyValue(SUBSCRIPTION_NAME, subscriptionName.getQualifiedName())
+          .log("OAuth handler for subscription {} removed", subscriptionName);
     }
   }
 

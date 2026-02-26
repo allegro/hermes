@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.frontend.publishing.handlers.end;
 
 import static pl.allegro.tech.hermes.common.http.MessageMetadataHeaders.MESSAGE_ID;
+import static pl.allegro.tech.hermes.common.logging.LoggingFields.TOPIC_NAME;
 import static pl.allegro.tech.hermes.frontend.publishing.handlers.end.RemoteHostReader.readHostAndPort;
 
 import io.undertow.server.HttpServerExchange;
@@ -49,16 +50,28 @@ public class MessageEndProcessor {
     sendResponse(exchange, attachment, StatusCodes.CREATED);
   }
 
+  /**
+   * @deprecated This feature is deprecated and will be removed in a future version.
+   */
+  @Deprecated
   public void delayedSent(CachedTopic cachedTopic, Message message) {
     brokerListeners.onAcknowledge(message, cachedTopic.getTopic());
   }
 
+  /**
+   * @deprecated This feature is deprecated and will be removed in a future version.
+   */
+  @Deprecated
   public void bufferedButDelayedProcessing(
       HttpServerExchange exchange, AttachmentContent attachment) {
     bufferedButDelayed(exchange, attachment);
     attachment.getCachedTopic().markDelayedProcessing();
   }
 
+  /**
+   * @deprecated This feature is deprecated and will be removed in a future version.
+   */
+  @Deprecated
   public void bufferedButDelayed(HttpServerExchange exchange, AttachmentContent attachment) {
     Topic topic = attachment.getTopic();
     brokerListeners.onTimeout(attachment.getMessage(), topic);
@@ -85,28 +98,35 @@ public class MessageEndProcessor {
       exchange.setStatusCode(statusCode);
       exchange.getResponseHeaders().add(messageIdHeader, attachment.getMessageId());
     } else {
-      logger.warn(
-          "The response has already been started. Status code set on exchange: {}; Expected status code: {};"
-              + "Topic: {}; Message id: {}; Remote host {}",
-          exchange.getStatusCode(),
-          statusCode,
-          attachment.getCachedTopic().getQualifiedName(),
-          attachment.getMessageId(),
-          readHostAndPort(exchange));
+      logger
+          .atWarn()
+          .addKeyValue(TOPIC_NAME, attachment.getCachedTopic().getQualifiedName())
+          .log(
+              "The response has already been started. Status code set on exchange: {}; "
+                  + "Expected status code: {}; Topic: {}; Message id: {}; Remote host {}",
+              exchange.getStatusCode(),
+              statusCode,
+              attachment.getCachedTopic().getQualifiedName(),
+              attachment.getMessageId(),
+              readHostAndPort(exchange));
     }
     attachment.markResponseAsReady();
     try {
       exchange.endExchange();
     } catch (RuntimeException exception) {
-      logger.error(
-          "Exception while ending exchange. Status code set on exchange: {}; Expected status code: {};"
-              + "Topic: {}; Message id: {}; Remote host {}",
-          exchange.getStatusCode(),
-          statusCode,
-          attachment.getCachedTopic().getQualifiedName(),
-          attachment.getMessageId(),
-          readHostAndPort(exchange),
-          exception);
+      logger
+          .atError()
+          .addKeyValue(TOPIC_NAME, attachment.getCachedTopic().getQualifiedName())
+          .setCause(exception)
+          .log(
+              "Exception while ending exchange. Status code set on exchange: {}; "
+                  + "Expected status code: {}; Topic: {}; Message id: {}; Remote host {}",
+              exchange.getStatusCode(),
+              statusCode,
+              attachment.getCachedTopic().getQualifiedName(),
+              attachment.getMessageId(),
+              readHostAndPort(exchange),
+              exception);
     }
   }
 }

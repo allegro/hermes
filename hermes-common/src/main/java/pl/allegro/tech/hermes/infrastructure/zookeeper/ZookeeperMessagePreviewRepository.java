@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.infrastructure.zookeeper;
 
 import static java.lang.String.format;
+import static pl.allegro.tech.hermes.common.logging.LoggingFields.TOPIC_NAME;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,8 +50,13 @@ public class ZookeeperMessagePreviewRepository extends ZookeeperBasedRepository
   }
 
   private void persistMessage(TopicName topic, List<MessagePreview> messages) {
-    logger.debug(
-        "Persisting {} messages for preview of topic: {}", messages.size(), topic.qualifiedName());
+    logger
+        .atDebug()
+        .addKeyValue(TOPIC_NAME, topic.qualifiedName())
+        .log(
+            "Persisting {} messages for preview of topic: {}",
+            messages.size(),
+            topic.qualifiedName());
     try {
       if (pathExists(paths.topicPath(topic))) {
         String previewPath = paths.topicPreviewPath(topic);
@@ -58,8 +64,11 @@ public class ZookeeperMessagePreviewRepository extends ZookeeperBasedRepository
         overwrite(previewPath, messages);
       }
     } catch (Exception exception) {
-      logger.warn(
-          format("Could not log preview messages for topic: %s", topic.qualifiedName()), exception);
+      logger
+          .atWarn()
+          .addKeyValue(TOPIC_NAME, topic.qualifiedName())
+          .setCause(exception)
+          .log("Could not log preview messages for topic: {}", topic.qualifiedName());
     }
   }
 }

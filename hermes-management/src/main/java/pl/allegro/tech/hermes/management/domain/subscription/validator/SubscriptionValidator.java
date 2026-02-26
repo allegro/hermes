@@ -11,14 +11,14 @@ import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
 import pl.allegro.tech.hermes.management.domain.PermissionDeniedException;
 import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 import pl.allegro.tech.hermes.management.domain.owner.validator.OwnerIdValidator;
-import pl.allegro.tech.hermes.management.domain.topic.TopicService;
+import pl.allegro.tech.hermes.management.domain.topic.TopicManagement;
 
 public class SubscriptionValidator {
 
   private final OwnerIdValidator ownerIdValidator;
   private final ApiPreconditions apiPreconditions;
   private final MessageFilterTypeValidator messageFilterTypeValidator;
-  private final TopicService topicService;
+  private final TopicManagement topicManagement;
   private final SubscriptionRepository subscriptionRepository;
   private final List<EndpointAddressValidator> endpointAddressValidators;
   private final EndpointOwnershipValidator endpointOwnershipValidator;
@@ -27,7 +27,7 @@ public class SubscriptionValidator {
   public SubscriptionValidator(
       OwnerIdValidator ownerIdValidator,
       ApiPreconditions apiPreconditions,
-      TopicService topicService,
+      TopicManagement topicManagement,
       SubscriptionRepository subscriptionRepository,
       List<EndpointAddressValidator> endpointAddressValidators,
       EndpointOwnershipValidator endpointOwnershipValidator,
@@ -35,7 +35,7 @@ public class SubscriptionValidator {
     this.ownerIdValidator = ownerIdValidator;
     this.apiPreconditions = apiPreconditions;
     this.messageFilterTypeValidator = new MessageFilterTypeValidator();
-    this.topicService = topicService;
+    this.topicManagement = topicManagement;
     this.subscriptionRepository = subscriptionRepository;
     this.endpointAddressValidators = endpointAddressValidators;
     this.endpointOwnershipValidator = endpointOwnershipValidator;
@@ -48,7 +48,7 @@ public class SubscriptionValidator {
     checkEndpoint(toCheck);
     checkPermissionsToManageSubscription(toCheck, createdBy);
     ensureCreatedSubscriptionInflightIsValid(toCheck, createdBy);
-    Topic topic = topicService.getTopicDetails(toCheck.getTopicName());
+    Topic topic = topicManagement.getTopicDetails(toCheck.getTopicName());
     checkFilters(toCheck, topic);
     checkIfSubscribingToTopicIsAllowed(toCheck, topic, createdBy);
     if (subscriptionRepository.subscriptionExists(toCheck.getTopicName(), toCheck.getName())) {
@@ -63,7 +63,7 @@ public class SubscriptionValidator {
     checkEndpoint(toCheck);
     checkPermissionsToManageSubscription(toCheck, modifiedBy);
     ensureUpdatedSubscriptionInflightIsValid(previous, toCheck, modifiedBy);
-    Topic topic = topicService.getTopicDetails(toCheck.getTopicName());
+    Topic topic = topicManagement.getTopicDetails(toCheck.getTopicName());
     checkFilters(toCheck, topic);
     if (!toCheck.getEndpoint().equals(previous.getEndpoint())) {
       checkIfModifyingEndpointIsAllowed(toCheck, topic, modifiedBy);

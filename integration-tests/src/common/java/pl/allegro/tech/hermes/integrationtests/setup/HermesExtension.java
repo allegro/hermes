@@ -15,9 +15,9 @@ import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.lifecycle.Startable;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.Subscription;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.domain.group.GroupNotEmptyException;
 import pl.allegro.tech.hermes.env.BrokerOperations;
@@ -26,8 +26,8 @@ import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscriber;
 import pl.allegro.tech.hermes.integrationtests.subscriber.TestSubscribersExtension;
 import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 import pl.allegro.tech.hermes.management.domain.group.GroupService;
-import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
-import pl.allegro.tech.hermes.management.domain.topic.TopicService;
+import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionManagement;
+import pl.allegro.tech.hermes.management.domain.topic.TopicManagement;
 import pl.allegro.tech.hermes.test.helper.client.integration.HermesInitHelper;
 import pl.allegro.tech.hermes.test.helper.client.integration.HermesTestClient;
 import pl.allegro.tech.hermes.test.helper.containers.ConfluentSchemaRegistryContainer;
@@ -66,7 +66,8 @@ public class HermesExtension
   @Override
   public void beforeAll(ExtensionContext context) {
     if (!started) {
-      Stream.of(hermesZookeeper, kafka).parallel().forEach(Startable::start);
+      hermesZookeeper.start();
+      kafka.start();
       schemaRegistry.start();
       management.addEventAuditorListener(auditEventsReceiver.getPort());
       management.start();
@@ -91,8 +92,12 @@ public class HermesExtension
 
   @Override
   public void close() {
-    Stream.of(management, consumers, frontend).parallel().forEach(HermesTestApp::stop);
-    Stream.of(hermesZookeeper, kafka, schemaRegistry).parallel().forEach(Startable::stop);
+    management.stop();
+    consumers.stop();
+    frontend.stop();
+    hermesZookeeper.stop();
+    kafka.stop();
+    schemaRegistry.stop();
     started = false;
   }
 
@@ -125,26 +130,31 @@ public class HermesExtension
   }
 
   private void removeSubscriptions() {
-    SubscriptionService service = management.subscriptionService();
-    List<Subscription> subscriptions = service.getAllSubscriptions();
+    SubscriptionManagement subscriptionManagement = management.subscriptionManagement();
+    List<Subscription> subscriptions = subscriptionManagement.getAllSubscriptions();
     for (Subscription subscription : subscriptions) {
-      service.removeSubscription(subscription.getTopicName(), subscription.getName(), testUser);
+      SubscriptionName subscriptionName =
+          new SubscriptionName(subscription.getName(), subscription.getTopicName());
+      subscriptionManagement.removeSubscription(subscriptionName, testUser);
     }
 
     waitAtMost(adjust(Duration.ofMinutes(1)))
         .untilAsserted(
-            () -> Assertions.assertThat(service.getAllSubscriptions().size()).isEqualTo(0));
+            () ->
+                Assertions.assertThat(subscriptionManagement.getAllSubscriptions().size())
+                    .isEqualTo(0));
   }
 
   private void removeTopics() {
-    TopicService service = management.topicService();
-    List<Topic> topics = service.getAllTopics();
+    TopicManagement topicManagement = management.topicManagement();
+    List<Topic> topics = topicManagement.getAllTopics();
     for (Topic topic : topics) {
-      service.removeTopicWithSchema(topic, testUser);
+      topicManagement.removeTopicWithSchema(topic, testUser);
     }
 
     waitAtMost(adjust(Duration.ofMinutes(1)))
-        .untilAsserted(() -> Assertions.assertThat(service.getAllTopics().size()).isEqualTo(0));
+        .untilAsserted(
+            () -> Assertions.assertThat(topicManagement.getAllTopics().size()).isEqualTo(0));
   }
 
   private void removeGroups() {

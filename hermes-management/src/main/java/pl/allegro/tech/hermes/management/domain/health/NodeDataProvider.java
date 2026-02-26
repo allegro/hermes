@@ -2,15 +2,12 @@ package pl.allegro.tech.hermes.management.domain.health;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
-@Component
-class NodeDataProvider {
+public class NodeDataProvider {
 
   private final String serverPort;
 
-  NodeDataProvider(@Value("${server.port}") String serverPort) {
+  public NodeDataProvider(String serverPort) {
     this.serverPort = serverPort;
   }
 

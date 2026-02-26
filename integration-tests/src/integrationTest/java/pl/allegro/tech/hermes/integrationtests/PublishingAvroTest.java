@@ -428,8 +428,7 @@ public class PublishingAvroTest {
     // given
     TopicWithSchema topicWithSchema =
         topicWithSchema(
-            topicWithRandomName().withContentType(AVRO).withSchemaIdAwareSerialization().build(),
-            user.getSchemaAsString());
+            topicWithRandomName().withContentType(AVRO).build(), user.getSchemaAsString());
 
     Topic topic = hermes.initHelper().createTopicWithSchema(topicWithSchema);
 
@@ -469,8 +468,7 @@ public class PublishingAvroTest {
     // given
     TopicWithSchema topicWithSchema =
         topicWithSchema(
-            topicWithRandomName().withContentType(AVRO).withSchemaIdAwareSerialization().build(),
-            user.getSchemaAsString());
+            topicWithRandomName().withContentType(AVRO).build(), user.getSchemaAsString());
 
     Topic topic = hermes.initHelper().createTopicWithSchema(topicWithSchema);
 

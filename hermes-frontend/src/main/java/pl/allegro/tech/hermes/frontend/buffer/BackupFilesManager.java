@@ -18,6 +18,10 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @deprecated This feature is deprecated and will be removed in a future version.
+ */
+@Deprecated
 public class BackupFilesManager {
 
   private static final Logger logger = LoggerFactory.getLogger(BackupFilesManager.class);

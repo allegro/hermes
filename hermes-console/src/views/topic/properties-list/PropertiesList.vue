@@ -18,7 +18,6 @@
     props.topic.auth.publishers?.length === 0
       ? t('topicView.properties.authorizedPublishersNotSet')
       : props.topic.auth.publishers?.join(', ');
-  const labels = props.topic.labels.map((label) => label.value).join(', ');
   const retentionTime = `${
     props.topic.retentionTime.duration
   } ${props.topic.retentionTime.retentionUnit.toLowerCase()}`;
@@ -32,10 +31,6 @@
     <key-value-card-item
       :name="$t('topicView.properties.contentType')"
       :value="topic.contentType"
-    />
-    <key-value-card-item
-      :name="$t('topicView.properties.labels')"
-      :value="labels"
     />
     <key-value-card-item
       :name="$t('topicView.properties.acknowledgement')"
@@ -54,10 +49,6 @@
     <key-value-card-item
       :name="$t('topicView.properties.maxMessageSize')"
       :value="topic.maxMessageSize"
-    />
-    <key-value-card-item
-      :name="$t('topicView.properties.schemaIdAwareSerializationEnabled')"
-      :value="topic.schemaIdAwareSerializationEnabled"
     />
     <key-value-card-item
       :name="$t('topicView.properties.authorizationEnabled')"

@@ -340,7 +340,7 @@ public class BatchConsumer implements Consumer {
         logger.info("Restoring interrupted status", e);
         Thread.currentThread().interrupt();
       } else {
-        logger.error(
+        logger.warn(
             "Batch was rejected [batch_id={}, subscription={}].",
             batch.getId(),
             subscription.getQualifiedName(),

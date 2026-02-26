@@ -1,5 +1,7 @@
 package pl.allegro.tech.hermes.consumers;
 
+import com.google.api.gax.core.CredentialsProvider;
+import com.google.api.gax.core.NoCredentialsProvider;
 import com.google.api.gax.grpc.GrpcTransportChannel;
 import com.google.api.gax.rpc.FixedTransportChannelProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
@@ -27,5 +29,12 @@ public class GoogleTransportChannelProviderConfiguration {
             .usePlaintext()
             .build();
     return FixedTransportChannelProvider.create(GrpcTransportChannel.create(channel));
+  }
+
+  @Bean
+  @Primary
+  @Profile("integration")
+  public CredentialsProvider integrationCredentialsProvider() {
+    return NoCredentialsProvider.create();
   }
 }

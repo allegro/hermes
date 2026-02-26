@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.supervisor.workload;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static pl.allegro.tech.hermes.common.logging.LoggingFields.SUBSCRIPTION_NAME;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.util.Optional;
@@ -12,6 +13,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.spi.LoggingEventBuilder;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
@@ -89,30 +91,47 @@ public class WorkloadSupervisor
   @Override
   public void onSubscriptionAssigned(SubscriptionName subscriptionName) {
     Subscription subscription = subscriptionsCache.getSubscription(subscriptionName);
-    logger.info("Scheduling assignment consumer for {}", subscription.getQualifiedName());
+    logger
+        .atInfo()
+        .addKeyValue(SUBSCRIPTION_NAME, subscription.getQualifiedName().getQualifiedName())
+        .log("Scheduling assignment consumer for {}", subscription.getQualifiedName());
     assignmentExecutor.execute(
         () -> {
-          logger.info("Assigning consumer for {}", subscription.getQualifiedName());
+          LoggingEventBuilder subscriptionLogger =
+              logger
+                  .atInfo()
+                  .addKeyValue(
+                      SUBSCRIPTION_NAME, subscription.getQualifiedName().getQualifiedName());
+          subscriptionLogger.log("Assigning consumer for {}", subscription.getQualifiedName());
           supervisor.assignConsumerForSubscription(subscription);
-          logger.info("Consumer assigned for {}", subscription.getQualifiedName());
+          subscriptionLogger.log("Consumer assigned for {}", subscription.getQualifiedName());
         });
   }
 
   @Override
   public void onAssignmentRemoved(SubscriptionName subscription) {
-    logger.info("Scheduling assignment removal consumer for {}", subscription.getQualifiedName());
+    logger
+        .atInfo()
+        .addKeyValue(SUBSCRIPTION_NAME, subscription.getQualifiedName())
+        .log("Scheduling assignment removal consumer for {}", subscription.getQualifiedName());
     assignmentExecutor.execute(
         () -> {
-          logger.info("Removing assignment from consumer for {}", subscription.getQualifiedName());
+          LoggingEventBuilder subscriptionLogger =
+              logger.atInfo().addKeyValue(SUBSCRIPTION_NAME, subscription.getQualifiedName());
+          subscriptionLogger.log(
+              "Removing assignment from consumer for {}", subscription.getQualifiedName());
           supervisor.deleteConsumerForSubscriptionName(subscription);
-          logger.info("Consumer removed for {}", subscription.getName());
+          subscriptionLogger.log("Consumer removed for {}", subscription.getName());
         });
   }
 
   @Override
   public void onSubscriptionChanged(Subscription subscription) {
     if (assignmentCache.isAssignedTo(subscription.getQualifiedName())) {
-      logger.info("Updating subscription {}", subscription.getName());
+      logger
+          .atInfo()
+          .addKeyValue(SUBSCRIPTION_NAME, subscription.getQualifiedName().getQualifiedName())
+          .log("Updating subscription {}", subscription.getName());
       supervisor.updateSubscription(subscription);
     }
   }
@@ -176,7 +195,10 @@ public class WorkloadSupervisor
   @Override
   public void onRetransmissionStarts(SubscriptionName subscription) throws Exception {
     if (assignmentCache.isAssignedTo(subscription)) {
-      logger.info("Triggering retransmission for subscription {}", subscription);
+      logger
+          .atInfo()
+          .addKeyValue(SUBSCRIPTION_NAME, subscription.getQualifiedName())
+          .log("Triggering retransmission for subscription {}", subscription);
       supervisor.retransmit(subscription);
     }
   }

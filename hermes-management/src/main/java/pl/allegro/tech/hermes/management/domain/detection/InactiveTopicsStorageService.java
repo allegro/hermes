@@ -1,11 +1,9 @@
 package pl.allegro.tech.hermes.management.domain.detection;
 
 import java.util.List;
-import org.springframework.stereotype.Service;
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor;
 import pl.allegro.tech.hermes.management.domain.detection.command.MarkTopicsAsInactiveRepositoryCommand;
 
-@Service
 public class InactiveTopicsStorageService {
   private final InactiveTopicsRepository inactiveTopicsRepository;
   private final MultiDatacenterRepositoryCommandExecutor multiDcExecutor;

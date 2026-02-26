@@ -9,24 +9,14 @@ import pl.allegro.tech.hermes.api.jackson.PatchDataSerializer;
 
 @JsonDeserialize(using = PatchDataDeserializer.class)
 @JsonSerialize(using = PatchDataSerializer.class)
-public class PatchData {
-
-  private final Map<String, Object> patch;
-
-  public PatchData(Map<String, Object> patch) {
-    this.patch = patch;
-  }
+public record PatchData(Map<String, Object> patch) {
 
   public static PatchData from(Map<String, Object> patch) {
     return new PatchData(patch);
   }
 
-  public static Builder patchData() {
-    return new Builder();
-  }
-
-  public Map<String, Object> getPatch() {
-    return patch;
+  public static PatchData.Builder patchData() {
+    return new PatchData.Builder();
   }
 
   public boolean valueChanged(String field, Object originalValue) {
@@ -41,7 +31,7 @@ public class PatchData {
       return PatchData.from(map);
     }
 
-    public Builder set(String field, Object value) {
+    public PatchData.Builder set(String field, Object value) {
       this.map.put(field, value);
       return this;
     }

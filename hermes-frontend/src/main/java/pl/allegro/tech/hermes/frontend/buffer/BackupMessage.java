@@ -6,6 +6,10 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * @deprecated This feature is deprecated and will be removed in a future version.
+ */
+@Deprecated
 public class BackupMessage implements Serializable {
 
   private final String messageId;

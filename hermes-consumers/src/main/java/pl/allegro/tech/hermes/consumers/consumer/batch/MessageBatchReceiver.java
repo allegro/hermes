@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.batch;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static pl.allegro.tech.hermes.common.logging.LoggingFields.SUBSCRIPTION_NAME;
 import static pl.allegro.tech.hermes.consumers.consumer.Message.message;
 import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
 
@@ -14,6 +15,7 @@ import javax.annotation.concurrent.NotThreadSafe;
 import org.apache.avro.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.spi.LoggingEventBuilder;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffsets;
@@ -64,16 +66,21 @@ public class MessageBatchReceiver {
   }
 
   public MessageBatchingResult next(Subscription subscription, Runnable signalsInterrupt) {
-    if (logger.isDebugEnabled()) {
-      logger.debug(
-          "Trying to allocate memory for new batch [subscription={}]",
-          subscription.getQualifiedName());
-    }
+    LoggingEventBuilder debugLogger =
+        logger
+            .atDebug()
+            .addKeyValue(SUBSCRIPTION_NAME, subscription.getQualifiedName().getQualifiedName());
+    LoggingEventBuilder errorLogger =
+        logger
+            .atError()
+            .addKeyValue(SUBSCRIPTION_NAME, subscription.getQualifiedName().getQualifiedName());
+
+    debugLogger.log(
+        "Trying to allocate memory for new batch [subscription={}]",
+        subscription.getQualifiedName());
 
     MessageBatch batch = batchFactory.createBatch(subscription);
-    if (logger.isDebugEnabled()) {
-      logger.debug("New batch allocated [subscription={}]", subscription.getQualifiedName());
-    }
+    debugLogger.log("New batch allocated [subscription={}]", subscription.getQualifiedName());
     List<MessageMetadata> discarded = new ArrayList<>();
 
     while (isReceiving()
@@ -97,14 +104,14 @@ public class MessageBatchReceiver {
         if (batch.canFit(message.getData())) {
           batch.append(message.getData(), toMessageMetadata(message, subscription, batch.getId()));
         } else if (batch.isBiggerThanTotalCapacity(message.getData())) {
-          logger.error(
+          errorLogger.log(
               "Message size exceeds buffer total capacity [size={}, capacity={}, subscription={}]",
               message.getData().length,
               batch.getCapacity(),
               subscription.getQualifiedName());
           discarded.add(toMessageMetadata(message, subscription));
         } else {
-          logger.debug(
+          debugLogger.log(
               "Message too large for current batch [message_size={}, subscription={}]",
               message.getData().length,
               subscription.getQualifiedName());
@@ -113,10 +120,8 @@ public class MessageBatchReceiver {
         }
       }
     }
-    if (logger.isDebugEnabled()) {
-      logger.debug(
-          "Batch is ready for delivery [subscription={}]", subscription.getQualifiedName());
-    }
+    debugLogger.log(
+        "Batch is ready for delivery [subscription={}]", subscription.getQualifiedName());
     return new MessageBatchingResult(batch.close(), discarded);
   }
 

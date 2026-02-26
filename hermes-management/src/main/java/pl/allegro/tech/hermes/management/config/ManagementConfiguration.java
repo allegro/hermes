@@ -9,8 +9,6 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.micrometer.core.instrument.MeterRegistry;
 import java.time.Clock;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -30,17 +28,15 @@ import pl.allegro.tech.hermes.metrics.PathsCompiler;
 @Configuration
 @EnableConfigurationProperties({
   TopicProperties.class,
-  HttpClientProperties.class,
   ConsistencyCheckerProperties.class,
   PrometheusProperties.class,
   MicrometerRegistryProperties.class,
+  ManagementLeadershipProperties.class,
 })
 public class ManagementConfiguration {
 
-  @Autowired TopicProperties topicProperties;
-
   @Bean
-  public ObjectMapper objectMapper() {
+  public ObjectMapper objectMapper(TopicProperties topicProperties) {
     ObjectMapper mapper = new ObjectMapper();
     mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
     mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
@@ -50,16 +46,13 @@ public class ManagementConfiguration {
         new Jdk8Module()); // Jdk8Module is required for Jackson to serialize & deserialize Optional
     // type
 
-    final InjectableValues defaultSchemaIdAwareSerializationEnabled =
+    final InjectableValues defaultFallbackToRemoteDatacenterEnabled =
         new InjectableValues.Std()
-            .addValue(
-                Topic.DEFAULT_SCHEMA_ID_SERIALIZATION_ENABLED_KEY,
-                topicProperties.isDefaultSchemaIdAwareSerializationEnabled())
             .addValue(
                 Topic.DEFAULT_FALLBACK_TO_REMOTE_DATACENTER_KEY,
                 topicProperties.isDefaultFallbackToRemoteDatacenterEnabled());
 
-    mapper.setInjectableValues(defaultSchemaIdAwareSerializationEnabled);
+    mapper.setInjectableValues(defaultFallbackToRemoteDatacenterEnabled);
 
     return mapper;
   }
@@ -93,8 +86,9 @@ public class ManagementConfiguration {
   @Bean
   ManagementLeadership managementLeadership(
       ZookeeperClientManager zookeeperClientManager,
-      @Value("${management.leadership.zookeeper-dc}") String leaderElectionDc,
+      ManagementLeadershipProperties leadershipProperties,
       ZookeeperPaths zookeeperPaths) {
-    return new ManagementLeadership(zookeeperClientManager, leaderElectionDc, zookeeperPaths);
+    return new ManagementLeadership(
+        zookeeperClientManager, leadershipProperties.getZookeeperDc(), zookeeperPaths);
   }
 }

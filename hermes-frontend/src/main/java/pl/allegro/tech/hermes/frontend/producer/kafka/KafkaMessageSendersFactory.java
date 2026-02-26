@@ -113,7 +113,9 @@ public class KafkaMessageSendersFactory {
     props.put(BOOTSTRAP_SERVERS_CONFIG, kafkaParameters.getBrokerList());
     props.put(MAX_BLOCK_MS_CONFIG, (int) kafkaProducerParameters.getMaxBlock().toMillis());
     props.put(COMPRESSION_TYPE_CONFIG, kafkaProducerParameters.getCompressionCodec());
-    props.put(BUFFER_MEMORY_CONFIG, bufferedSizeBytes);
+    props.put(
+        BUFFER_MEMORY_CONFIG,
+        bufferedSizeBytes); // TODO @deprecated to be moved to the KafkaProducerParameters
     props.put(
         REQUEST_TIMEOUT_MS_CONFIG, (int) kafkaProducerParameters.getRequestTimeout().toMillis());
     props.put(

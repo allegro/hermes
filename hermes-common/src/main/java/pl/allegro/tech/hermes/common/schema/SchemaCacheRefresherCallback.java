@@ -1,5 +1,8 @@
 package pl.allegro.tech.hermes.common.schema;
 
+import static pl.allegro.tech.hermes.common.logging.LoggingContext.runWithLogging;
+import static pl.allegro.tech.hermes.common.logging.LoggingFields.TOPIC_NAME;
+
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,8 +17,7 @@ import pl.allegro.tech.hermes.schema.SchemaVersionsResult;
 
 class SchemaCacheRefresherCallback<T> implements TopicCallback {
 
-  private static final Logger logger =
-      LoggerFactory.getLogger(SchemaVersionsRepositoryFactory.class);
+  private static final Logger logger = LoggerFactory.getLogger(SchemaCacheRefresherCallback.class);
 
   public static final boolean REFRESH_ONLINE = true;
 
@@ -37,12 +39,12 @@ class SchemaCacheRefresherCallback<T> implements TopicCallback {
 
   @Override
   public void onTopicCreated(Topic topic) {
-    refreshSchemas(topic);
+    runWithLogging(TOPIC_NAME, topic.getQualifiedName(), () -> refreshSchemas(topic));
   }
 
   @Override
   public void onTopicChanged(Topic topic) {
-    refreshSchemas(topic);
+    runWithLogging(TOPIC_NAME, topic.getQualifiedName(), () -> refreshSchemas(topic));
   }
 
   private void refreshSchemas(Topic topic) {

@@ -24,7 +24,7 @@ public class NoOpConsumerNodeLoadRegistry implements ConsumerNodeLoadRegistry {
     return SUBSCRIPTION_LOAD_RECORDER;
   }
 
-  private static class NoOpSubscriptionLoadRecorder implements SubscriptionLoadRecorder {
+  public static class NoOpSubscriptionLoadRecorder implements SubscriptionLoadRecorder {
 
     @Override
     public void initialize() {}

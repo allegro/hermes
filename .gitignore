@@ -45,3 +45,9 @@ scripts/pip-selfcheck.json
 !./.idea/externalDependencies.xml
 !./.idea/google-java-format.xml
 !./.idea/vcs.xml
+
+.classpath
+.project
+.factorypath
+.settings
+bin

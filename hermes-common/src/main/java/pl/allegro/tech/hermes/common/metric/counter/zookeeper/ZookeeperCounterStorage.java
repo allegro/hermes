@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.common.metric.counter.zookeeper;
 
+import static pl.allegro.tech.hermes.common.logging.LoggingFields.SUBSCRIPTION_NAME;
 import static pl.allegro.tech.hermes.metrics.PathContext.pathContext;
 import static pl.allegro.tech.hermes.metrics.PathsCompiler.GROUP;
 import static pl.allegro.tech.hermes.metrics.PathsCompiler.SUBSCRIPTION;
@@ -7,6 +8,7 @@ import static pl.allegro.tech.hermes.metrics.PathsCompiler.TOPIC;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.common.metric.counter.MetricsDeltaCalculator;
@@ -47,7 +49,7 @@ public class ZookeeperCounterStorage implements CounterStorage {
           + SUBSCRIPTION
           + "/metrics/volume";
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(ZookeeperCounterStorage.class);
+  private static final Logger logger = LoggerFactory.getLogger(ZookeeperCounterStorage.class);
 
   private final MetricsDeltaCalculator deltaCalculator = new MetricsDeltaCalculator();
   private final SharedCounter sharedCounter;
@@ -90,10 +92,7 @@ public class ZookeeperCounterStorage implements CounterStorage {
       subscriptionRepository.ensureSubscriptionExists(topicName, subscriptionName);
       incrementSharedCounter(subscriptionDeliveredCounter(topicName, subscriptionName), count);
     } catch (SubscriptionNotExistsException e) {
-      LOGGER.debug(
-          "Trying to report metric on not existing subscription {} {}",
-          topicName,
-          subscriptionName);
+      logNonExistingSubscription(topicName, subscriptionName);
     }
   }
 
@@ -104,10 +103,7 @@ public class ZookeeperCounterStorage implements CounterStorage {
       subscriptionRepository.ensureSubscriptionExists(topicName, subscriptionName);
       incrementSharedCounter(subscriptionDiscardedCounter(topicName, subscriptionName), count);
     } catch (SubscriptionNotExistsException e) {
-      LOGGER.debug(
-          "Trying to report metric on not existing subscription {} {}",
-          topicName,
-          subscriptionName);
+      logNonExistingSubscription(topicName, subscriptionName);
     }
   }
 
@@ -117,16 +113,23 @@ public class ZookeeperCounterStorage implements CounterStorage {
       subscriptionRepository.ensureSubscriptionExists(topicName, subscriptionName);
       incrementSharedCounter(volumeCounterPath(topicName, subscriptionName), value);
     } catch (SubscriptionNotExistsException e) {
-      LOGGER.debug(
-          "Trying to report metric on not existing subscription {} {}",
-          topicName,
-          subscriptionName);
+      logNonExistingSubscription(topicName, subscriptionName);
     }
   }
 
   @Override
   public void incrementVolumeCounter(TopicName topicName, long value) {
     incrementSharedCounter(topicVolumeCounter(topicName), value);
+  }
+
+  private void logNonExistingSubscription(TopicName topicName, String subscriptionName) {
+    SubscriptionName theSubscriptionName = new SubscriptionName(subscriptionName, topicName);
+    logger
+        .atDebug()
+        .addKeyValue(SUBSCRIPTION_NAME, theSubscriptionName.getQualifiedName())
+        .log(
+            "Trying to report metric on not existing subscription {}",
+            theSubscriptionName.getQualifiedName());
   }
 
   private void incrementSharedCounter(String metricPath, long count) {

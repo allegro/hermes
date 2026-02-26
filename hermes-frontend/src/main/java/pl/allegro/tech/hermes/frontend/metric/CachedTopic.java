@@ -131,6 +131,10 @@ public class CachedTopic {
     throughputMeter.increment(size);
   }
 
+  /**
+   * @deprecated This feature is deprecated and will be removed in a future version.
+   */
+  @Deprecated
   public void markDelayedProcessing() {
     topicDelayedProcessingMeter.increment(1L);
     globalDelayedProcessingMeter.increment(1L);

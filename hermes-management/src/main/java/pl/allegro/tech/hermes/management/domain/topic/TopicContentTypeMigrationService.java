@@ -1,5 +1,7 @@
 package pl.allegro.tech.hermes.management.domain.topic;
 
+import static pl.allegro.tech.hermes.common.logging.LoggingFields.TOPIC_NAME;
+
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -8,15 +10,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 
-@Component
 public class TopicContentTypeMigrationService {
 
   private static final Logger logger =
@@ -31,7 +30,6 @@ public class TopicContentTypeMigrationService {
   private final MultiDCAwareService multiDCAwareService;
   private final Clock clock;
 
-  @Autowired
   public TopicContentTypeMigrationService(
       SubscriptionRepository subscriptionRepository,
       MultiDCAwareService multiDCAwareService,
@@ -43,7 +41,10 @@ public class TopicContentTypeMigrationService {
 
   void notifySubscriptions(Topic topic, Instant beforeMigrationInstant, RequestUser requester) {
     waitUntilOffsetsAvailableOnAllKafkaTopics(topic, CHECK_OFFSETS_AVAILABLE_TIMEOUT);
-    logger.info("Offsets available on all partitions of topic {}", topic.getQualifiedName());
+    logger
+        .atInfo()
+        .addKeyValue(TOPIC_NAME, topic.getQualifiedName())
+        .log("Offsets available on all partitions of topic {}", topic.getQualifiedName());
     notSuspendedSubscriptionsForTopic(topic)
         .map(Subscription::getName)
         .forEach(sub -> notifySingleSubscription(topic, beforeMigrationInstant, sub, requester));
@@ -80,9 +81,12 @@ public class TopicContentTypeMigrationService {
       if (clock.instant().isAfter(abortAttemptsInstant)) {
         throw new OffsetsNotAvailableException(topic);
       }
-      logger.info(
-          "Not all offsets related to hermes topic {} are available, will retry",
-          topic.getQualifiedName());
+      logger
+          .atInfo()
+          .addKeyValue(TOPIC_NAME, topic.getQualifiedName())
+          .log(
+              "Not all offsets related to hermes topic {} are available, will retry",
+              topic.getQualifiedName());
       sleep(INTERVAL_BETWEEN_OFFSETS_AVAILABLE_CHECK);
     }
   }

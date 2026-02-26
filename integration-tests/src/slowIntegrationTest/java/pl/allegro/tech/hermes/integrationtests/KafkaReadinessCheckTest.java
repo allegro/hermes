@@ -9,12 +9,10 @@ import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithR
 
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import org.testcontainers.lifecycle.Startable;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesFrontendTestApp;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesManagementTestApp;
@@ -37,7 +35,8 @@ public class KafkaReadinessCheckTest {
 
   @BeforeAll
   public static void setup() {
-    Stream.of(hermesZookeeper, kafka).parallel().forEach(Startable::start);
+    hermesZookeeper.start();
+    kafka.start();
     schemaRegistry.start();
     HermesTestApp management =
         new HermesManagementTestApp(hermesZookeeper, kafka, schemaRegistry).start();
@@ -49,7 +48,9 @@ public class KafkaReadinessCheckTest {
 
   @AfterAll
   public static void clean() {
-    Stream.of(hermesZookeeper, kafka, schemaRegistry).parallel().forEach(Startable::stop);
+    hermesZookeeper.stop();
+    kafka.stop();
+    schemaRegistry.stop();
   }
 
   @Test

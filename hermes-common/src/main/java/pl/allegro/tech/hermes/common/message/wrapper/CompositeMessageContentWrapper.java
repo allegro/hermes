@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.common.message.wrapper;
 
 import static java.util.Arrays.asList;
+import static pl.allegro.tech.hermes.common.logging.LoggingFields.TOPIC_NAME;
 import static pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentUnwrapperResult.AvroMessageContentUnwrapperResultStatus.SUCCESS;
 
 import java.util.Collection;
@@ -23,7 +24,6 @@ public class CompositeMessageContentWrapper implements MessageContentWrapper {
   public CompositeMessageContentWrapper(
       JsonMessageContentWrapper jsonMessageContentWrapper,
       AvroMessageContentWrapper avroMessageContentWrapper,
-      AvroMessageSchemaIdAwareContentWrapper schemaIdAwareContentWrapper,
       AvroMessageHeaderSchemaVersionContentWrapper headerSchemaVersionContentWrapper,
       AvroMessageHeaderSchemaIdContentWrapper headerSchemaIdContentWrapper,
       AvroMessageSchemaVersionTruncationContentWrapper schemaVersionTruncationContentWrapper) {
@@ -32,7 +32,6 @@ public class CompositeMessageContentWrapper implements MessageContentWrapper {
     this.avroMessageContentWrapper = avroMessageContentWrapper;
     this.avroMessageContentUnwrappers =
         asList(
-            schemaIdAwareContentWrapper,
             schemaVersionTruncationContentWrapper,
             headerSchemaVersionContentWrapper,
             headerSchemaIdContentWrapper);
@@ -54,10 +53,13 @@ public class CompositeMessageContentWrapper implements MessageContentWrapper {
       }
     }
 
-    logger.error(
-        "All attempts to unwrap Avro message for topic {} with schema version {} failed",
-        topic.getQualifiedName(),
-        schemaVersion);
+    logger
+        .atError()
+        .addKeyValue(TOPIC_NAME, topic.getQualifiedName())
+        .log(
+            "All attempts to unwrap Avro message for topic {} with schema version {} failed",
+            topic.getQualifiedName(),
+            schemaVersion);
     throw new SchemaMissingException(topic);
   }
 
@@ -68,12 +70,8 @@ public class CompositeMessageContentWrapper implements MessageContentWrapper {
       Topic topic,
       CompiledSchema<Schema> schema,
       Map<String, String> externalMetadata) {
-    byte[] wrapped =
-        avroMessageContentWrapper.wrapContent(
-            data, id, timestamp, schema.getSchema(), externalMetadata);
-    return topic.isSchemaIdAwareSerializationEnabled()
-        ? SchemaAwareSerDe.serialize(schema.getId(), wrapped)
-        : wrapped;
+    return avroMessageContentWrapper.wrapContent(
+        data, id, timestamp, schema.getSchema(), externalMetadata);
   }
 
   public byte[] wrapJson(

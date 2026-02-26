@@ -3,7 +3,7 @@ package pl.allegro.tech.hermes.management.domain.detection
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import pl.allegro.tech.hermes.api.Topic
 import pl.allegro.tech.hermes.management.config.detection.InactiveTopicsDetectionProperties
-import pl.allegro.tech.hermes.management.domain.topic.TopicService
+import pl.allegro.tech.hermes.management.domain.topic.TopicManagement
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder
 import spock.lang.Specification
 
@@ -16,7 +16,7 @@ import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName
 
 class InactiveTopicsDetectionJobTest extends Specification {
 
-    def topicServiceMock = Mock(TopicService)
+    def topicManagementMock = Mock(TopicManagement)
     def inactiveTopicsStorageServiceMock = Mock(InactiveTopicsStorageService)
     def metricsRepositoryMock = Mock(LastPublishedMessageMetricsRepository)
     def clockMock = Mock(Clock)
@@ -37,7 +37,7 @@ class InactiveTopicsDetectionJobTest extends Specification {
     static def meterRegistry = new SimpleMeterRegistry()
 
     InactiveTopicsDetectionJob detectionJob = new InactiveTopicsDetectionJob(
-            topicServiceMock,
+            topicManagementMock,
             inactiveTopicsStorageServiceMock,
             detectionService,
             Optional.of(inactiveTopicsNotifier),
@@ -55,7 +55,7 @@ class InactiveTopicsDetectionJobTest extends Specification {
         clockMock.instant() >> now
 
         and: "names of all topics"
-        topicServiceMock.getAllTopics() >> [
+        topicManagementMock.getAllTopics() >> [
                 topic("group.topic0"),
                 topic("group.topic1"),
                 topic("group.topic2"),
@@ -101,7 +101,7 @@ class InactiveTopicsDetectionJobTest extends Specification {
 
     def "should not notify if there are no inactive topics"() {
         given:
-        topicServiceMock.getAllTopics() >> [topic("group.topic0")]
+        topicManagementMock.getAllTopics() >> [topic("group.topic0")]
         inactiveTopicsStorageServiceMock.getInactiveTopics() >> []
 
         and:
@@ -122,7 +122,7 @@ class InactiveTopicsDetectionJobTest extends Specification {
     def "should not save new notification timestamp when notifier is not provided"() {
         given:
         def job = new InactiveTopicsDetectionJob(
-                topicServiceMock,
+                topicManagementMock,
                 inactiveTopicsStorageServiceMock,
                 detectionService,
                 Optional.empty(),
@@ -132,7 +132,7 @@ class InactiveTopicsDetectionJobTest extends Specification {
         )
 
         and:
-        topicServiceMock.getAllTopics() >> [topic("group.topic0")]
+        topicManagementMock.getAllTopics() >> [topic("group.topic0")]
         inactiveTopicsStorageServiceMock.getInactiveTopics() >> []
 
         and:
@@ -159,7 +159,7 @@ class InactiveTopicsDetectionJobTest extends Specification {
 
         and:
         def job = new InactiveTopicsDetectionJob(
-                topicServiceMock,
+                topicManagementMock,
                 inactiveTopicsStorageServiceMock,
                 detectionService,
                 Optional.of(notifierMock),
@@ -169,7 +169,7 @@ class InactiveTopicsDetectionJobTest extends Specification {
         )
 
         and:
-        topicServiceMock.getAllTopics() >> [topic("group.topic0"), topic("group.topic1")]
+        topicManagementMock.getAllTopics() >> [topic("group.topic0"), topic("group.topic1")]
         inactiveTopicsStorageServiceMock.getInactiveTopics() >> []
         notifierMock.notify(_) >> new NotificationResult(["group.topic0": true, "group.topic1": false])
 

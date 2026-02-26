@@ -50,20 +50,20 @@ import pl.allegro.tech.hermes.management.domain.subscription.commands.CreateSubs
 import pl.allegro.tech.hermes.management.domain.subscription.commands.UpdateSubscriptionRepositoryCommand;
 import pl.allegro.tech.hermes.management.domain.subscription.health.SubscriptionHealthChecker;
 import pl.allegro.tech.hermes.management.domain.subscription.validator.SubscriptionValidator;
-import pl.allegro.tech.hermes.management.domain.topic.TopicService;
+import pl.allegro.tech.hermes.management.domain.topic.TopicManagement;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MovingSubscriptionOffsetsValidationException;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCOffsetChangeSummary;
 import pl.allegro.tech.hermes.tracker.management.LogRepository;
 
-public class SubscriptionService {
+public class SubscriptionService implements SubscriptionManagement {
   private static final Logger logger = LoggerFactory.getLogger(SubscriptionService.class);
 
   private static final int LAST_MESSAGE_COUNT = 100;
 
   private final SubscriptionRepository subscriptionRepository;
   private final SubscriptionOwnerCache subscriptionOwnerCache;
-  private final TopicService topicService;
+  private final TopicManagement topicManagement;
   private final SubscriptionMetricsRepository metricsRepository;
   private final SubscriptionHealthChecker subscriptionHealthChecker;
   private final LogRepository logRepository;
@@ -79,7 +79,7 @@ public class SubscriptionService {
   public SubscriptionService(
       SubscriptionRepository subscriptionRepository,
       SubscriptionOwnerCache subscriptionOwnerCache,
-      TopicService topicService,
+      TopicManagement topicManagement,
       SubscriptionMetricsRepository metricsRepository,
       SubscriptionHealthChecker subscriptionHealthChecker,
       LogRepository logRepository,
@@ -93,7 +93,7 @@ public class SubscriptionService {
       SubscriptionRemover subscriptionRemover) {
     this.subscriptionRepository = subscriptionRepository;
     this.subscriptionOwnerCache = subscriptionOwnerCache;
-    this.topicService = topicService;
+    this.topicManagement = topicManagement;
     this.metricsRepository = metricsRepository;
     this.subscriptionHealthChecker = subscriptionHealthChecker;
     this.logRepository = logRepository;
@@ -107,10 +107,12 @@ public class SubscriptionService {
     this.subscriptionRemover = subscriptionRemover;
   }
 
+  @Override
   public List<String> listSubscriptionNames(TopicName topicName) {
     return subscriptionRepository.listSubscriptionNames(topicName);
   }
 
+  @Override
   public List<String> listTrackedSubscriptionNames(TopicName topicName) {
     return listSubscriptions(topicName).stream()
         .filter(Subscription::isTrackingEnabled)
@@ -118,21 +120,24 @@ public class SubscriptionService {
         .collect(toList());
   }
 
+  @Override
   public List<String> listFilteredSubscriptionNames(
       TopicName topicName, Query<Subscription> query) {
     return query.filter(listSubscriptions(topicName)).map(Subscription::getName).collect(toList());
   }
 
+  @Override
   public List<Subscription> listSubscriptions(TopicName topicName) {
     return subscriptionRepository.listSubscriptions(topicName);
   }
 
+  @Override
   public void createSubscription(
       Subscription subscription, RequestUser createdBy, String qualifiedTopicName) {
     auditor.beforeObjectCreation(createdBy.getUsername(), subscription);
     subscriptionValidator.checkCreation(subscription, createdBy);
 
-    Topic topic = topicService.getTopicDetails(fromQualifiedName(qualifiedTopicName));
+    Topic topic = topicManagement.getTopicDetails(fromQualifiedName(qualifiedTopicName));
     multiDCAwareService.createConsumerGroups(topic, subscription);
 
     multiDcExecutor.executeByUser(new CreateSubscriptionRepositoryCommand(subscription), createdBy);
@@ -140,10 +145,13 @@ public class SubscriptionService {
     subscriptionOwnerCache.onCreatedSubscription(subscription);
   }
 
-  public Subscription getSubscriptionDetails(TopicName topicName, String subscriptionName) {
+  @Override
+  public Subscription getSubscriptionDetails(SubscriptionName subscriptionName) {
     Subscription subscription =
-        subscriptionRepository.getSubscriptionDetails(topicName, subscriptionName).anonymize();
-    subscription.setState(getEffectiveState(topicName, subscriptionName));
+        subscriptionRepository
+            .getSubscriptionDetails(subscriptionName.getTopicName(), subscriptionName.getName())
+            .anonymize();
+    subscription.setState(getEffectiveState(subscriptionName));
     return subscription;
   }
 
@@ -154,8 +162,8 @@ public class SubscriptionService {
         subscriptionHealthCheckExecutorService);
   }
 
-  private Subscription.State getEffectiveState(TopicName topicName, String subscriptionName) {
-    Set<Subscription.State> states = loadSubscriptionStatesFromAllDc(topicName, subscriptionName);
+  private Subscription.State getEffectiveState(SubscriptionName subscriptionName) {
+    Set<Subscription.State> states = loadSubscriptionStatesFromAllDc(subscriptionName);
 
     if (states.size() > 1) {
       logger.warn("Some states are out of sync: {}", states);
@@ -171,41 +179,43 @@ public class SubscriptionService {
   }
 
   private Set<Subscription.State> loadSubscriptionStatesFromAllDc(
-      TopicName topicName, String subscriptionName) {
+      SubscriptionName subscriptionName) {
     List<DatacenterBoundRepositoryHolder<SubscriptionRepository>> holders =
         repositoryManager.getRepositories(SubscriptionRepository.class);
     Set<Subscription.State> states = new HashSet<>();
     for (DatacenterBoundRepositoryHolder<SubscriptionRepository> holder : holders) {
       try {
         Subscription.State state =
-            holder.getRepository().getSubscriptionDetails(topicName, subscriptionName).getState();
+            holder
+                .getRepository()
+                .getSubscriptionDetails(subscriptionName.getTopicName(), subscriptionName.getName())
+                .getState();
         states.add(state);
       } catch (Exception e) {
         logger.warn(
             "Could not load state of subscription (topic: {}, name: {}) from DC {}.",
-            topicName,
-            subscriptionName,
+            subscriptionName.getTopicName(),
+            subscriptionName.getName(),
             holder.getDatacenterName());
       }
     }
     return states;
   }
 
-  public void removeSubscription(
-      TopicName topicName, String subscriptionName, RequestUser removedBy) {
-    subscriptionRemover.removeSubscription(topicName, subscriptionName, removedBy);
+  @Override
+  public void removeSubscription(SubscriptionName subscriptionName, RequestUser removedBy) {
+    subscriptionRemover.removeSubscription(subscriptionName, removedBy);
   }
 
+  @Override
   public void updateSubscription(
-      TopicName topicName, String subscriptionName, PatchData patch, RequestUser modifiedBy) {
+      SubscriptionName subscriptionName, PatchData patch, RequestUser modifiedBy) {
     auditor.beforeObjectUpdate(
-        modifiedBy.getUsername(),
-        Subscription.class.getSimpleName(),
-        new SubscriptionName(subscriptionName, topicName),
-        patch);
+        modifiedBy.getUsername(), Subscription.class.getSimpleName(), subscriptionName, patch);
 
     Subscription retrieved =
-        subscriptionRepository.getSubscriptionDetails(topicName, subscriptionName);
+        subscriptionRepository.getSubscriptionDetails(
+            subscriptionName.getTopicName(), subscriptionName.getName());
     Subscription.State oldState = retrieved.getState();
     Subscription updated = Patch.apply(retrieved, patch);
     revertStateIfChangedToPending(updated, oldState);
@@ -224,20 +234,19 @@ public class SubscriptionService {
     }
   }
 
+  @Override
   public void updateSubscriptionState(
-      TopicName topicName,
-      String subscriptionName,
-      Subscription.State state,
-      RequestUser modifiedBy) {
+      SubscriptionName subscriptionName, Subscription.State state, RequestUser modifiedBy) {
     if (state != Subscription.State.PENDING) {
       PatchData patchData = PatchData.patchData().set("state", state).build();
       auditor.beforeObjectUpdate(
           modifiedBy.getUsername(),
           Subscription.class.getSimpleName(),
-          new SubscriptionName(subscriptionName, topicName),
+          subscriptionName,
           patchData);
       Subscription retrieved =
-          subscriptionRepository.getSubscriptionDetails(topicName, subscriptionName);
+          subscriptionRepository.getSubscriptionDetails(
+              subscriptionName.getTopicName(), subscriptionName.getName());
       if (!retrieved.getState().equals(state)) {
         Subscription updated = Patch.apply(retrieved, patchData);
         multiDcExecutor.executeByUser(new UpdateSubscriptionRepositoryCommand(updated), modifiedBy);
@@ -246,34 +255,45 @@ public class SubscriptionService {
     }
   }
 
-  public Subscription.State getSubscriptionState(TopicName topicName, String subscriptionName) {
-    return getSubscriptionDetails(topicName, subscriptionName).getState();
+  @Override
+  public Subscription.State getSubscriptionState(SubscriptionName subscriptionName) {
+    return getSubscriptionDetails(subscriptionName).getState();
   }
 
-  public SubscriptionMetrics getSubscriptionMetrics(TopicName topicName, String subscriptionName) {
-    subscriptionRepository.ensureSubscriptionExists(topicName, subscriptionName);
-    return metricsRepository.loadMetrics(topicName, subscriptionName);
+  @Override
+  public SubscriptionMetrics getSubscriptionMetrics(SubscriptionName subscriptionName) {
+    subscriptionRepository.ensureSubscriptionExists(
+        subscriptionName.getTopicName(), subscriptionName.getName());
+    return metricsRepository.loadMetrics(
+        subscriptionName.getTopicName(), subscriptionName.getName());
   }
 
+  @Override
   public PersistentSubscriptionMetrics getPersistentSubscriptionMetrics(
-      TopicName topicName, String subscriptionName) {
-    subscriptionRepository.ensureSubscriptionExists(topicName, subscriptionName);
-    return metricsRepository.loadZookeeperMetrics(topicName, subscriptionName);
+      SubscriptionName subscriptionName) {
+    subscriptionRepository.ensureSubscriptionExists(
+        subscriptionName.getTopicName(), subscriptionName.getName());
+    return metricsRepository.loadZookeeperMetrics(
+        subscriptionName.getTopicName(), subscriptionName.getName());
   }
 
-  public SubscriptionHealth getSubscriptionHealth(TopicName topicName, String subscriptionName) {
-    Subscription subscription = getSubscriptionDetails(topicName, subscriptionName);
+  @Override
+  public SubscriptionHealth getSubscriptionHealth(SubscriptionName subscriptionName) {
+    Subscription subscription = getSubscriptionDetails(subscriptionName);
     return getHealth(subscription);
   }
 
-  public Optional<SentMessageTrace> getLatestUndeliveredMessage(
-      TopicName topicName, String subscriptionName) {
+  @Override
+  public Optional<SentMessageTrace> getLatestUndeliveredMessage(SubscriptionName subscriptionName) {
     List<DatacenterBoundRepositoryHolder<LastUndeliveredMessageReader>> holders =
         repositoryManager.getRepositories(LastUndeliveredMessageReader.class);
     List<SentMessageTrace> traces = new ArrayList<>();
     for (DatacenterBoundRepositoryHolder<LastUndeliveredMessageReader> holder : holders) {
       try {
-        holder.getRepository().last(topicName, subscriptionName).ifPresent(traces::add);
+        holder
+            .getRepository()
+            .last(subscriptionName.getTopicName(), subscriptionName.getName())
+            .ifPresent(traces::add);
       } catch (Exception e) {
         logger.warn(
             "Could not load latest undelivered message from DC: {}", holder.getDatacenterName());
@@ -282,21 +302,27 @@ public class SubscriptionService {
     return traces.stream().max(Comparator.comparing(SentMessageTrace::getTimestamp));
   }
 
+  @Override
   public List<SentMessageTrace> getLatestUndeliveredMessagesTrackerLogs(
-      TopicName topicName, String subscriptionName) {
+      SubscriptionName subscriptionName) {
     return logRepository.getLastUndeliveredMessages(
-        topicName.qualifiedName(), subscriptionName, LAST_MESSAGE_COUNT);
+        subscriptionName.getTopicName().qualifiedName(),
+        subscriptionName.getName(),
+        LAST_MESSAGE_COUNT);
   }
 
-  public List<MessageTrace> getMessageStatus(
-      String qualifiedTopicName, String subscriptionName, String messageId) {
-    return logRepository.getMessageStatus(qualifiedTopicName, subscriptionName, messageId);
+  @Override
+  public List<MessageTrace> getMessageStatus(SubscriptionName subscriptionName, String messageId) {
+    return logRepository.getMessageStatus(
+        subscriptionName.getTopicName().qualifiedName(), subscriptionName.getName(), messageId);
   }
 
+  @Override
   public List<Subscription> querySubscription(Query<Subscription> query) {
     return query.filter(getAllSubscriptions()).collect(toList());
   }
 
+  @Override
   public List<SubscriptionNameWithMetrics> querySubscriptionsMetrics(
       Query<SubscriptionNameWithMetrics> query) {
     List<Subscription> filteredSubscriptions =
@@ -304,8 +330,9 @@ public class SubscriptionService {
     return query.filter(getSubscriptionsMetrics(filteredSubscriptions)).collect(toList());
   }
 
+  @Override
   public List<Subscription> getAllSubscriptions() {
-    return topicService.getAllTopics().stream()
+    return topicManagement.getAllTopics().stream()
         .map(Topic::getName)
         .map(this::listSubscriptions)
         .flatMap(List::stream)
@@ -313,11 +340,13 @@ public class SubscriptionService {
         .collect(toList());
   }
 
+  @Override
   public List<Subscription> getForOwnerId(OwnerId ownerId) {
     Collection<SubscriptionName> subscriptionNames = subscriptionOwnerCache.get(ownerId);
     return subscriptionRepository.getSubscriptionDetails(subscriptionNames);
   }
 
+  @Override
   public List<UnhealthySubscription> getAllUnhealthy(
       boolean respectMonitoringSeverity,
       List<String> subscriptionNames,
@@ -329,6 +358,7 @@ public class SubscriptionService {
         qualifiedTopicNames);
   }
 
+  @Override
   public List<UnhealthySubscription> getUnhealthyForOwner(
       OwnerId ownerId,
       boolean respectMonitoringSeverity,
@@ -341,6 +371,7 @@ public class SubscriptionService {
         qualifiedTopicNames);
   }
 
+  @Override
   public SubscriptionStats getStats() {
     List<Subscription> subscriptions = getAllSubscriptions();
     long trackingEnabledSubscriptionsCount =
@@ -386,6 +417,7 @@ public class SubscriptionService {
     }
   }
 
+  @Override
   public boolean subscriptionExists(SubscriptionName subscriptionName) {
     return subscriptionRepository.subscriptionExists(
         subscriptionName.getTopicName(), subscriptionName.getName());
@@ -441,9 +473,9 @@ public class SubscriptionService {
 
   private SubscriptionHealth getHealth(Subscription subscription) {
     TopicName topicName = subscription.getTopicName();
-    TopicMetrics topicMetrics = topicService.getTopicMetrics(topicName);
+    TopicMetrics topicMetrics = topicManagement.getTopicMetrics(topicName);
     SubscriptionMetrics subscriptionMetrics =
-        getSubscriptionMetrics(topicName, subscription.getName());
+        getSubscriptionMetrics(subscription.getQualifiedName());
     return subscriptionHealthChecker.checkHealth(subscription, topicMetrics, subscriptionMetrics);
   }
 
@@ -469,9 +501,14 @@ public class SubscriptionService {
         .collect(toList());
   }
 
+  @Override
   public MultiDCOffsetChangeSummary retransmit(
-      Topic topic, String subscriptionName, Long timestamp, boolean dryRun, RequestUser requester) {
-    Subscription subscription = getSubscriptionDetails(topic.getName(), subscriptionName);
+      Topic topic,
+      SubscriptionName subscriptionName,
+      Long timestamp,
+      boolean dryRun,
+      RequestUser requester) {
+    Subscription subscription = getSubscriptionDetails(subscriptionName);
 
     MultiDCOffsetChangeSummary multiDCOffsetChangeSummary =
         multiDCAwareService.fetchTopicOffsetsAt(topic, timestamp);
@@ -489,14 +526,14 @@ public class SubscriptionService {
       case ACTIVE:
         multiDCAwareService.moveOffsetsForActiveConsumers(
             topic,
-            subscriptionName,
+            subscriptionName.getName(),
             multiDCOffsetChangeSummary.getPartitionOffsetListPerBrokerName(),
             requester);
         break;
       case SUSPENDED:
         multiDCAwareService.moveOffsets(
             topic,
-            subscriptionName,
+            subscriptionName.getName(),
             multiDCOffsetChangeSummary.getPartitionOffsetListPerBrokerName());
         break;
       case PENDING:

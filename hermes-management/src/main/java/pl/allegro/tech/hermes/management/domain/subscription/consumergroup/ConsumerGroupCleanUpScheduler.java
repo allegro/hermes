@@ -10,8 +10,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.management.config.subscription.consumergroup.ConsumerGroupCleanUpProperties;
-import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
+import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionManagement;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 import pl.allegro.tech.hermes.management.infrastructure.leader.ManagementLeadership;
 
@@ -21,7 +20,7 @@ public class ConsumerGroupCleanUpScheduler {
   private final MultiDCAwareService multiDCAwareService;
   private final Map<String, ConsumerGroupToDeleteRepository>
       consumerGroupToDeleteRepositoriesByDatacenter;
-  private final SubscriptionService subscriptionService;
+  private final SubscriptionManagement subscriptionManagement;
   private final ScheduledExecutorService scheduler =
       Executors.newSingleThreadScheduledExecutor(
           new ThreadFactoryBuilder().setNameFormat("consumer-group-clean-up-%d").build());
@@ -29,24 +28,24 @@ public class ConsumerGroupCleanUpScheduler {
   private final Clock clock;
   private final boolean enabled;
   private final long cleanUpIntervalInSeconds;
-  private final ConsumerGroupCleanUpProperties cleanUpProperties;
+  private final ConsumerGroupCleanUpParameters cleanUpParameters;
 
   public ConsumerGroupCleanUpScheduler(
       MultiDCAwareService multiDCAwareService,
       Map<String, ConsumerGroupToDeleteRepository> consumerGroupToDeleteRepositoriesByDatacenter,
-      SubscriptionService subscriptionService,
-      ConsumerGroupCleanUpProperties cleanUpProperties,
+      SubscriptionManagement subscriptionManagement,
+      ConsumerGroupCleanUpParameters cleanUpParameters,
       ManagementLeadership managementLeadership,
       Clock clock) {
     this.multiDCAwareService = multiDCAwareService;
     this.consumerGroupToDeleteRepositoriesByDatacenter =
         consumerGroupToDeleteRepositoriesByDatacenter;
-    this.subscriptionService = subscriptionService;
+    this.subscriptionManagement = subscriptionManagement;
     this.managementLeadership = managementLeadership;
     this.clock = clock;
-    this.enabled = cleanUpProperties.isEnabled();
-    this.cleanUpIntervalInSeconds = cleanUpProperties.getInterval().toSeconds();
-    this.cleanUpProperties = cleanUpProperties;
+    this.enabled = cleanUpParameters.isEnabled();
+    this.cleanUpIntervalInSeconds = cleanUpParameters.getInterval().toSeconds();
+    this.cleanUpParameters = cleanUpParameters;
   }
 
   @PostConstruct
@@ -57,8 +56,8 @@ public class ConsumerGroupCleanUpScheduler {
           new ConsumerGroupCleanUpTask(
               multiDCAwareService,
               consumerGroupToDeleteRepositoriesByDatacenter,
-              subscriptionService,
-              cleanUpProperties,
+              subscriptionManagement,
+              cleanUpParameters,
               managementLeadership,
               clock);
       scheduler.scheduleAtFixedRate(

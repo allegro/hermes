@@ -25,7 +25,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.management.api.auth.HermesSecurityAwareRequestUser;
 import pl.allegro.tech.hermes.management.api.auth.Roles;
 import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
-import pl.allegro.tech.hermes.management.domain.topic.TopicService;
+import pl.allegro.tech.hermes.management.domain.topic.TopicManagement;
 import pl.allegro.tech.hermes.management.domain.topic.schema.SchemaService;
 import pl.allegro.tech.hermes.schema.SchemaId;
 import pl.allegro.tech.hermes.schema.SchemaVersion;
@@ -34,12 +34,12 @@ import pl.allegro.tech.hermes.schema.SchemaVersion;
 public class SchemaEndpoint {
 
   private final SchemaService schemaService;
-  private final TopicService topicService;
+  private final TopicManagement topicManagement;
 
   @Autowired
-  public SchemaEndpoint(SchemaService schemaService, TopicService topicService) {
+  public SchemaEndpoint(SchemaService schemaService, TopicManagement topicManagement) {
     this.schemaService = schemaService;
-    this.topicService = topicService;
+    this.topicManagement = topicManagement;
   }
 
   @GET
@@ -90,7 +90,7 @@ public class SchemaEndpoint {
       @DefaultValue("true") @QueryParam(value = "validate") boolean validate,
       @Context ContainerRequestContext requestContext,
       String schema) {
-    Topic topic = topicService.getTopicDetails(fromQualifiedName(qualifiedTopicName));
+    Topic topic = topicManagement.getTopicDetails(fromQualifiedName(qualifiedTopicName));
     RequestUser user = new HermesSecurityAwareRequestUser(requestContext);
     schemaService.registerSchema(topic, schema, validate);
     notifyFrontendSchemaChanged(qualifiedTopicName, user);
@@ -98,7 +98,7 @@ public class SchemaEndpoint {
   }
 
   private void notifyFrontendSchemaChanged(String qualifiedTopicName, RequestUser changedBy) {
-    topicService.scheduleTouchTopic(fromQualifiedName(qualifiedTopicName), changedBy);
+    topicManagement.scheduleTouchTopic(fromQualifiedName(qualifiedTopicName), changedBy);
   }
 
   @DELETE

@@ -25,7 +25,7 @@ import pl.allegro.tech.hermes.consumers.consumer.profiling.ConsumerRun;
 import pl.allegro.tech.hermes.consumers.consumer.profiling.DefaultConsumerProfiler;
 import pl.allegro.tech.hermes.consumers.consumer.profiling.Measurement;
 import pl.allegro.tech.hermes.consumers.consumer.profiling.NoOpConsumerProfiler;
-import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
+import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.MessageReceiver;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.ReceiverFactory;
 import pl.allegro.tech.hermes.consumers.consumer.receiver.UninitializedMessageReceiver;
@@ -37,7 +37,7 @@ public class SerialConsumer implements Consumer {
 
   private final ReceiverFactory messageReceiverFactory;
   private final MetricsFacade metrics;
-  private final SerialConsumerRateLimiter rateLimiter;
+  private final ConsumerRateLimiter rateLimiter;
   private final Trackers trackers;
   private final MessageConverterResolver messageConverterResolver;
   private final ConsumerMessageSender sender;
@@ -62,7 +62,7 @@ public class SerialConsumer implements Consumer {
       ReceiverFactory messageReceiverFactory,
       MetricsFacade metrics,
       Subscription subscription,
-      SerialConsumerRateLimiter rateLimiter,
+      ConsumerRateLimiter rateLimiter,
       ConsumerMessageSenderFactory consumerMessageSenderFactory,
       Trackers trackers,
       MessageConverterResolver messageConverterResolver,
@@ -134,14 +134,11 @@ public class SerialConsumer implements Consumer {
         if (message.isFiltered()) {
           profiler.flushMeasurements(ConsumerRun.FILTERED);
         } else {
-          if (logger.isDebugEnabled()) {
-            logger.debug(
-                "Read message {} partition {} offset {}",
-                message.getContentType(),
-                message.getPartition(),
-                message.getOffset());
-          }
-
+          logger.debug(
+              "Read message {} partition {} offset {}",
+              message.getContentType(),
+              message.getPartition(),
+              message.getOffset());
           Message convertedMessage =
               messageConverterResolver.converterFor(message, subscription).convert(message, topic);
           sendMessage(convertedMessage, profiler);
@@ -238,12 +235,8 @@ public class SerialConsumer implements Consumer {
 
   @Override
   public void updateTopic(Topic newTopic) {
-    if (this.topic.getContentType() != newTopic.getContentType()
-        || messageSizeChanged(newTopic)
-        || this.topic.isSchemaIdAwareSerializationEnabled()
-            != newTopic.isSchemaIdAwareSerializationEnabled()) {
-      logger.info(
-          "Reinitializing message receiver, contentType, messageSize or schemaIdAwareSerialization changed.");
+    if (this.topic.getContentType() != newTopic.getContentType() || messageSizeChanged(newTopic)) {
+      logger.info("Reinitializing message receiver, contentType or messageSize changed.");
       this.topic = newTopic;
 
       messageReceiver.stop();

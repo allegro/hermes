@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.frontend.publishing.handlers;
 
 import static java.lang.String.format;
+import static pl.allegro.tech.hermes.common.logging.LoggingFields.TOPIC_NAME;
 
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HeaderMap;
@@ -30,11 +31,14 @@ final class ContentLengthChecker {
       if (forceMaxMessageSizePerTopic) {
         throw new ContentTooLargeException(contentLength, max);
       } else {
-        logger.warn(
-            "Content-Length is larger than max on this topic [length:{}, max:{}, topic: {}]",
-            contentLength,
-            max,
-            attachment.getCachedTopic().getQualifiedName());
+        logger
+            .atInfo()
+            .addKeyValue(TOPIC_NAME, attachment.getCachedTopic().getQualifiedName())
+            .log(
+                "Content-Length is larger than max on this topic [length:{}, max:{}, topic: {}]",
+                contentLength,
+                max,
+                attachment.getCachedTopic().getQualifiedName());
       }
     }
   }

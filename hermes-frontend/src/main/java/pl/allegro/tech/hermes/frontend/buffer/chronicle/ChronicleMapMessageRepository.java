@@ -19,6 +19,10 @@ import pl.allegro.tech.hermes.frontend.buffer.MessageRepository;
 import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import pl.allegro.tech.hermes.frontend.publishing.message.MessageIdGenerator;
 
+/**
+ * @deprecated This feature is deprecated and will be removed in a future version.
+ */
+@Deprecated
 public class ChronicleMapMessageRepository implements MessageRepository {
 
   private static final Logger logger = LoggerFactory.getLogger(ChronicleMapMessageRepository.class);
