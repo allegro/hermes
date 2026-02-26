@@ -25,7 +25,7 @@ import pl.allegro.tech.hermes.test.helper.avro.AvroUser;
 @State(Scope.Thread)
 @Threads(1)
 @Fork(1)
-@Warmup(iterations = 6, time = 5, timeUnit = TimeUnit.SECONDS)
+@Warmup(iterations = 6, time = 7, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 6, time = 5, timeUnit = TimeUnit.SECONDS)
 public class HermesConsumerFilteringBenchmark {
 
