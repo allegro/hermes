@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.benchmark.environment;
+package pl.allegro.tech.hermes.benchmark.frontend;
 
 import com.codahale.metrics.MetricRegistry;
 import java.util.List;

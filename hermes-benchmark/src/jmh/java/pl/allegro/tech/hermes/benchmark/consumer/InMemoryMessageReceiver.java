@@ -18,13 +18,13 @@ public class InMemoryMessageReceiver implements MessageReceiver {
   private static final int PARTITION_ID = 1;
   private final ArrayBlockingQueue<Message> messages;
 
-  public InMemoryMessageReceiver(int messagesCount) {
+  public InMemoryMessageReceiver(UserAvroMessageProducer messageProducer, int messagesCount) {
     CompiledSchema<Schema> compiledSchema = new AvroUser("Bob", 50, "blue").getCompiledSchema();
     messages = new ArrayBlockingQueue<>(messagesCount);
     for (int i = 0; i < messagesCount; i++) {
       PartitionOffset partitionOffset =
           new PartitionOffset(KafkaTopicName.valueOf("test"), i, PARTITION_ID);
-      AvroUser user = new AvroUser("Bob", i, "blue");
+      AvroUser user = messageProducer.produceUser(i);
       Message message =
           Message.message()
               .withData(user.asBytes())
@@ -61,5 +61,9 @@ public class InMemoryMessageReceiver implements MessageReceiver {
   @Override
   public Set<Integer> getAssignedPartitions() {
     return Set.of(PARTITION_ID);
+  }
+
+  public int getQueuedMessagesCount() {
+    return messages.size();
   }
 }

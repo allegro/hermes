@@ -1,4 +1,4 @@
-package pl.allegro.tech.hermes.benchmark;
+package pl.allegro.tech.hermes.benchmark.frontend;
 
 import static java.util.Collections.emptyMap;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
