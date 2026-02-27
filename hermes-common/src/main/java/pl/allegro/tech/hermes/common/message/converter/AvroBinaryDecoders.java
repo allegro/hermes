@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.InputStream;
 import org.apache.avro.Schema;
+import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.BinaryDecoder;
@@ -24,7 +25,9 @@ public class AvroBinaryDecoders {
     try (FlushableBinaryDecoderHolder holder = new FlushableBinaryDecoderHolder()) {
       BinaryDecoder binaryDecoder =
           DecoderFactory.get().binaryDecoder(message, holder.getBinaryDecoder());
-      return new GenericDatumReader<GenericRecord>(schema).read(null, binaryDecoder);
+      GenericData genericData = new GenericData();
+      return new GenericDatumReader<GenericRecord>(schema, schema, genericData)
+              .read(null, binaryDecoder);
     } catch (Exception e) {
       String reason =
           e.getMessage() == null ? ExceptionUtils.getRootCauseMessage(e) : e.getMessage();
