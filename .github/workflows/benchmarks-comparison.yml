@@ -1,8 +1,6 @@
 name: Performance benchmarks comparison
 
-on:
-  pull_request:
-    branches: [ master ]
+on: [pull_request]
 
 env:
   diff-error-threshold-percent: '10'

@@ -35,7 +35,17 @@ public class FilteringMessageReceiver implements MessageReceiver {
 
   @Override
   public Optional<Message> next() {
-    return receiver.next().map(this::filter);
+    return receiver.next().map(message ->
+            allow(message) ? message : null
+    );
+  }
+
+
+  private boolean allow(Message message) {
+    FilterResult result = filterChain.apply(message);
+    filteredMessageHandler.handle(result, message, subscription);
+    message.setFiltered(result.isFiltered());
+    return !result.isFiltered();
   }
 
   private Message filter(Message message) {
