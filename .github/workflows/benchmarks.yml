@@ -48,7 +48,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
-      contents: write
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}-comparison
       cancel-in-progress: true
