@@ -1,6 +1,42 @@
 #!/usr/bin/env python3
 """
 Transforms JMH results.json into a simplified benchmark format.
+
+Sample input from JMH, some fields omitted for brevity:
+[
+  {
+    "benchmark": "pl.allegro.tech.hermes.benchmark.consumer.HermesConsumerBenchmark.benchmarkConsumingThroughput",
+    "mode": "thrpt",
+    "primaryMetric": {
+      "score": 7.306439127871667,
+      "scoreError": 0.4900441811959377,
+      "scoreUnit": "ops/s"
+    },
+    "secondaryMetrics": {
+      "gc.alloc.rate.norm": {
+        "score": 2.052619973484303E8,
+        "scoreError": 2.7390989910680626E7,
+        "scoreUnit": "B/op"
+      }
+    }
+  }
+]
+
+Output:
+[
+  {
+    "name": "pl.allegro.tech.hermes.benchmark.consumer.HermesConsumerBenchmark.benchmarkConsumingThroughput (thrpt)",
+    "unit": "ops/s",
+    "value": 7.306439127871667,
+    "range": "0.4900441811959377"
+  },
+  {
+    "name": "pl.allegro.tech.hermes.benchmark.consumer.HermesConsumerBenchmark.benchmarkConsumingThroughput (thrpt) - gc.alloc.rate.norm",
+    "unit": "B/op",
+    "value": 205261997.3484303
+  }
+]
+
 """
 
 import json

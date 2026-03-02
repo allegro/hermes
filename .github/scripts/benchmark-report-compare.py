@@ -1,3 +1,22 @@
+"""
+Compares two benchmark reports in a format produced by benchmark-report-transform.py and prints a summary of the comparison.
+
+Sample input file:
+[
+  {
+    "name": "pl.allegro.tech.hermes.benchmark.consumer.HermesConsumerBenchmark.benchmarkConsumingThroughput (thrpt)",
+    "unit": "ops/s",
+    "value": 7.306439127871667,
+    "range": "0.4900441811959377"
+  },
+  {
+    "name": "pl.allegro.tech.hermes.benchmark.consumer.HermesConsumerBenchmark.benchmarkConsumingThroughput (thrpt) - gc.alloc.rate.norm",
+    "unit": "B/op",
+    "value": 205261997.3484303
+  }
+]
+"""
+
 import json
 import sys
 from dataclasses import dataclass
