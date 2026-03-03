@@ -2,7 +2,7 @@ name: Performance benchmarks
 
 on:
   push:
-# todo branches: [ master ]
+    branches: [ master ]
 
 jobs:
   run-benchmarks:
