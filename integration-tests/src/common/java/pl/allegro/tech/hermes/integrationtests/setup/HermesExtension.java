@@ -149,12 +149,33 @@ public class HermesExtension
     TopicManagement topicManagement = management.topicManagement();
     List<Topic> topics = topicManagement.getAllTopics();
     for (Topic topic : topics) {
-      topicManagement.removeTopicWithSchema(topic, testUser);
+      retryOnFailure(() -> topicManagement.removeTopicWithSchema(topic, testUser));
     }
 
     waitAtMost(adjust(Duration.ofMinutes(1)))
         .untilAsserted(
             () -> Assertions.assertThat(topicManagement.getAllTopics().size()).isEqualTo(0));
+  }
+
+  private void retryOnFailure(Runnable action) {
+    int maxRetries = 5;
+    for (int attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        action.run();
+        return;
+      } catch (Exception e) {
+        if (attempt == maxRetries) {
+          throw e;
+        }
+        logger.warn("Action failed (attempt {}/{}), retrying...", attempt, maxRetries, e);
+        try {
+          Thread.sleep(500L * attempt);
+        } catch (InterruptedException ie) {
+          Thread.currentThread().interrupt();
+          throw new RuntimeException(ie);
+        }
+      }
+    }
   }
 
   private void removeGroups() {
