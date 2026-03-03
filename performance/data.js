@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1772531464084,
+  "lastUpdate": 1772534808560,
   "repoUrl": "https://github.com/allegro/hermes",
   "entries": {
     "Hermes Benchmark": [
@@ -89,6 +89,96 @@ window.BENCHMARK_DATA = {
           {
             "name": "pl.allegro.tech.hermes.benchmark.frontend.HermesServerBenchmark.benchmarkPublishingLatency (sample) - gc.alloc.rate.norm",
             "value": 68044.22662104869,
+            "unit": "B/op"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "maciej.sabat@allegro.com",
+            "name": "Maciej Sabat",
+            "username": "maciejsabat-allegro"
+          },
+          "committer": {
+            "email": "maciej.sabat@allegro.com",
+            "name": "Maciej Sabat",
+            "username": "maciejsabat-allegro"
+          },
+          "distinct": true,
+          "id": "5e6e9d4a1cfbc60e102d2e55c1d161a3dfc4da54",
+          "message": "Add performance tests charts",
+          "timestamp": "2026-03-03T11:38:19+01:00",
+          "tree_id": "21d66f8c73c1ce827362abaa99fda293daf051ec",
+          "url": "https://github.com/allegro/hermes/commit/5e6e9d4a1cfbc60e102d2e55c1d161a3dfc4da54"
+        },
+        "date": 1772534789446,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.consumer.HermesConsumerBenchmark.benchmarkConsumingThroughput (thrpt)",
+            "value": 7.30902575548106,
+            "range": "0.34171949757448095",
+            "unit": "ops/s"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.consumer.HermesConsumerBenchmark.benchmarkConsumingThroughput (thrpt) - gc.alloc.rate.norm",
+            "value": 205533479.4843305,
+            "unit": "B/op"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.consumer.HermesConsumerFilteringBenchmark.benchmarkConsumingThroughput (thrpt)",
+            "value": 8.074922544089363,
+            "range": "0.29215261711734924",
+            "unit": "ops/s"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.consumer.HermesConsumerFilteringBenchmark.benchmarkConsumingThroughput (thrpt) - gc.alloc.rate.norm",
+            "value": 152808341.49118775,
+            "unit": "B/op"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.frontend.HermesServerBenchmark.benchmarkPublishingThroughput (thrpt)",
+            "value": 7036.415433375386,
+            "range": "248.27681815335762",
+            "unit": "ops/s"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.frontend.HermesServerBenchmark.benchmarkPublishingThroughput (thrpt) - gc.alloc.rate.norm",
+            "value": 68171.16193346953,
+            "unit": "B/op"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.frontend.MessageRepositoryBenchmark.baselineSave (avgt)",
+            "value": 326455.88587644853,
+            "range": "18675.52502954533",
+            "unit": "ns/op"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.frontend.MessageRepositoryBenchmark.baselineSave (avgt) - gc.alloc.rate.norm",
+            "value": 9104.110292564199,
+            "unit": "B/op"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.frontend.MessageRepositoryBenchmark.hermesImplSave (avgt)",
+            "value": 327481.3793173984,
+            "range": "11534.517525095478",
+            "unit": "ns/op"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.frontend.MessageRepositoryBenchmark.hermesImplSave (avgt) - gc.alloc.rate.norm",
+            "value": 9160.10839280628,
+            "unit": "B/op"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.frontend.HermesServerBenchmark.benchmarkPublishingLatency (sample)",
+            "value": 0.28452846930159514,
+            "range": "0.00456218504603578",
+            "unit": "ms/op"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.frontend.HermesServerBenchmark.benchmarkPublishingLatency (sample) - gc.alloc.rate.norm",
+            "value": 68157.14713781976,
             "unit": "B/op"
           }
         ]
