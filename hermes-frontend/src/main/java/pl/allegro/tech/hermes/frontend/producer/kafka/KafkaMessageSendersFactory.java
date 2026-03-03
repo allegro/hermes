@@ -15,8 +15,10 @@ import static org.apache.kafka.clients.producer.ProducerConfig.MAX_IN_FLIGHT_REQ
 import static org.apache.kafka.clients.producer.ProducerConfig.MAX_REQUEST_SIZE_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.METADATA_MAX_AGE_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.METRICS_SAMPLE_WINDOW_MS_CONFIG;
+import static org.apache.kafka.clients.producer.ProducerConfig.PARTITIONER_CLASS_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.RETRIES_CONFIG;
+import static org.apache.kafka.clients.producer.ProducerConfig.RETRY_BACKOFF_MAX_MS_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.RETRY_BACKOFF_MS_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.SEND_BUFFER_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG;
@@ -125,6 +127,8 @@ public class KafkaMessageSendersFactory {
     props.put(RETRIES_CONFIG, kafkaProducerParameters.getRetries());
     props.put(RETRY_BACKOFF_MS_CONFIG, (int) kafkaProducerParameters.getRetryBackoff().toMillis());
     props.put(
+        RETRY_BACKOFF_MAX_MS_CONFIG, (int) kafkaProducerParameters.getRetryBackoffMax().toMillis());
+    props.put(
         METADATA_MAX_AGE_CONFIG, (int) kafkaProducerParameters.getMetadataMaxAge().toMillis());
     props.put(
         KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArraySerializer");
@@ -140,6 +144,11 @@ public class KafkaMessageSendersFactory {
         kafkaProducerParameters.getMaxInflightRequestsPerConnection());
     props.put(ENABLE_IDEMPOTENCE_CONFIG, kafkaProducerParameters.isIdempotenceEnabled());
     props.put(ACKS_CONFIG, acks);
+
+    String partitionerClass = kafkaProducerParameters.getPartitionerClass();
+    if (partitionerClass != null && !partitionerClass.isBlank()) {
+      props.put(PARTITIONER_CLASS_CONFIG, partitionerClass);
+    }
 
     if (kafkaParameters.isAuthenticationEnabled()) {
       props.put(SASL_MECHANISM, kafkaParameters.getAuthenticationMechanism());

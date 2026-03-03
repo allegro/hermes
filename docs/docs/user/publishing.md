@@ -213,3 +213,7 @@ Table below summarizes remote fallback configuration options:
 
 `Partition-Key` header can be used by publishers to specify Kafka `key` which will be used for partition assignment for a message. This will ensure 
 that all messages with given `Partition-Key` will be sent to the same Kafka partition. 
+
+Partition assignment is controlled by the Kafka producer's built-in partitioner. The default partitioner
+behavior can be overridden by setting `frontend.kafka.producer.partitionerClass` to a fully qualified class name (e.g.
+`org.apache.kafka.clients.producer.RoundRobinPartitioner`). See [frontend tuning](../configuration/frontend-tuning.md) for details.
