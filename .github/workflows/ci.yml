@@ -39,7 +39,6 @@ jobs:
           {alias: "unitTests", name: "check"},
           {alias: "integrationTests", name: "integrationTest"},
           {alias: "slowIntegrationTests", name: "slowIntegrationTest"},
-          {alias: "benchmark", name: "jmh"}
         ]
       fail-fast: false
     name: ${{ matrix.tasks.alias }}
@@ -60,7 +59,7 @@ jobs:
         run: ./gradlew ${{ matrix.tasks.name }}
       - name: Archive task results
         uses: actions/upload-artifact@v4
-        if: (success() || failure()) && matrix.tasks.alias != 'benchmark'
+        if: success() || failure()
         with:
           name: ${{ matrix.tasks.name }}-test-report
           path: '**/build/test-results/**/TEST-*.xml'
@@ -72,7 +71,7 @@ jobs:
           paths: '**/build/test-results/**/TEST-*.xml'
           show: fail, skip
       - name: Upload artifact
-        if: always() && github.ref == 'refs/heads/master' && matrix.tasks.alias != 'benchmark'
+        if: always() && github.ref == 'refs/heads/master'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.tasks.alias }}
