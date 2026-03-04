@@ -103,7 +103,7 @@ public class ConsumerMessageSenderFactoryTest {
   }
 
   @Test
-  public void shouldCreateConsumerMessageSenderWithFilteredHandlers() throws Exception {
+  public void shouldCreateConsumerMessageSenderWithFilteredHandlers() {
     // given
     ConsumerMessageSenderFactory factory =
         new ConsumerMessageSenderFactory(
