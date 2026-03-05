@@ -63,4 +63,5 @@ You can also run the following command to fix formatting for the whole project:
 ```
 
 ## Test reports
+
 Test reports are available at https://allegro.github.io/hermes/allure, and performance test results can be found at https://allegro.github.io/hermes/performance/.
