@@ -39,7 +39,6 @@ jobs:
           {alias: "unitTests", name: "check"},
           {alias: "integrationTests", name: "integrationTest"},
           {alias: "slowIntegrationTests", name: "slowIntegrationTest"},
-          {alias: "benchmark", name: "jmh"}
         ]
       fail-fast: false
     name: ${{ matrix.tasks.alias }}
@@ -47,11 +46,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          java-version: 21
-          distribution: 'temurin'
+      - name: Set up JDK
+        uses: ./.github/actions/setup-java
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
       - name: Build with Gradle
@@ -60,7 +56,7 @@ jobs:
         run: ./gradlew ${{ matrix.tasks.name }}
       - name: Archive task results
         uses: actions/upload-artifact@v4
-        if: (success() || failure()) && matrix.tasks.alias != 'benchmark'
+        if: success() || failure()
         with:
           name: ${{ matrix.tasks.name }}-test-report
           path: '**/build/test-results/**/TEST-*.xml'
@@ -72,7 +68,7 @@ jobs:
           paths: '**/build/test-results/**/TEST-*.xml'
           show: fail, skip
       - name: Upload artifact
-        if: always() && github.ref == 'refs/heads/master' && matrix.tasks.alias != 'benchmark'
+        if: always() && github.ref == 'refs/heads/master'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.tasks.alias }}
@@ -129,3 +125,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
           publish_dir: allure-history
+          destination_dir: allure

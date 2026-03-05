@@ -1,0 +1,48 @@
+name: 'JMH Benchmark'
+description: 'Build and run JMH benchmarks with Gradle'
+
+inputs:
+  directory:
+    description: 'Directory where benchmarks are located'
+    required: true
+  report-artifact-name:
+    description: 'Name of the artifact to upload with raw JMH results'
+    required: true
+
+outputs:
+  raw-report-path:
+    description: 'Path to the JMH report'
+    value: ${{inputs.directory}}/${{ steps.set-raw-report-path.outputs.raw_report_path }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set report path
+      shell: bash
+      run: echo "raw_report_path=$(echo ${{ inputs.directory }}/hermes-benchmark/build/results/jmh/results.json)" >> $GITHUB_OUTPUT
+      id: set-raw-report-path
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v4
+
+    - name: Build JMH JAR
+      shell: bash
+      run: ./gradlew --no-daemon jmhJar
+      working-directory: ${{ inputs.directory }}
+      env:
+        GRADLE_OPTS: '-Dorg.gradle.daemon=false'
+
+    - name: Run benchmarks
+      shell: bash
+      run: ./gradlew --no-daemon jmhCheck
+      working-directory: ${{ inputs.directory }}
+      env:
+        GRADLE_OPTS: '-Dorg.gradle.daemon=false'
+
+    - name: Upload raw JMH results
+      id: upload-results
+      uses: actions/upload-artifact@v4
+      with:
+        path: ${{ steps.set-raw-report-path.outputs.raw_report_path }}
+        name: ${{ inputs.report-artifact-name }}
+        retention-days: 7

@@ -1,0 +1,39 @@
+name: Performance benchmarks
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  run-benchmarks:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}-benchmarks
+      cancel-in-progress: true
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: ./.github/actions/setup-java
+
+      - name: Run JMH benchmarks for current commit
+        id: jmh
+        uses: ./.github/actions/run-jmh
+        with:
+          directory: .
+          report-artifact-name: jmh-raw-report
+
+      - name: Transform JMH output
+        shell: bash
+        run: python3 .github/scripts/benchmark-report-transform.py ${{ steps.jmh.outputs.raw-report-path }} &> report.json
+
+      - name: Store benchmark result
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: Hermes Benchmark
+          tool: 'customSmallerIsBetter'
+          output-file-path: report.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          benchmark-data-dir-path: performance
+          auto-push: true
