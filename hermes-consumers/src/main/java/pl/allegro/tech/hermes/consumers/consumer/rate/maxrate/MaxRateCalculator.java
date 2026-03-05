@@ -54,7 +54,7 @@ class MaxRateCalculator {
               (subscriptionName, consumerIds) -> {
                 try {
                   Subscription subscription = subscriptionsCache.getSubscription(subscriptionName);
-                  if (!subscription.isBatchSubscription()) {
+                  if (subscription != null && !subscription.isBatchSubscription()) {
 
                     Set<ConsumerRateInfo> rateInfos =
                         maxRateRegistry.ensureCorrectAssignments(
