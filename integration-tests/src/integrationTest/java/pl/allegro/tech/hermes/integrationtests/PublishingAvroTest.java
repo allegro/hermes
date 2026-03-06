@@ -576,6 +576,8 @@ public class PublishingAvroTest {
         .createSubscription(
             subscription(topic.getQualifiedName(), "subscription", subscriber.getEndpoint())
                 .build());
+    long committedMessagesBefore =
+        hermes.api().calculateCommittedMessages(topic.getQualifiedName(), "subscription");
 
     final TestMessage beforeMigrationMessage = new AvroUser("Bob", 50, "blue").asTestMessage();
     final AvroUser afterMigrationMessage = new AvroUser("Barney", 35, "yellow");
@@ -584,7 +586,10 @@ public class PublishingAvroTest {
     subscriber.waitUntilReceived(beforeMigrationMessage.body());
     subscriber.reset();
 
-    hermes.api().waitUntilConsumerCommitsOffset(topic.getQualifiedName(), "subscription");
+    hermes
+        .api()
+        .waitUntilConsumerCommitsOffset(
+            topic.getQualifiedName(), "subscription", committedMessagesBefore);
 
     PatchData patch =
         patchData()
