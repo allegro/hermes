@@ -159,7 +159,7 @@ public class TopicValidator {
     if (retentionSeconds
         > RetentionTime.MAX.getRetentionUnit().toSeconds(RetentionTime.MAX.getDuration())) {
       throw new TopicValidationException(
-          "Retention time larger than 7 days can't be configured by non admin users");
+          "Retention time larger than 2 days can't be configured by non admin users");
     }
   }
 
