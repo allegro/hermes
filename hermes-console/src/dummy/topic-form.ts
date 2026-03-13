@@ -44,7 +44,7 @@ export const dummyTopicFormValidator = {
   ownerSource: [required()],
   owner: [required()],
   contentType: [required()],
-  retentionTimeDurationDays: [required(), min(1), max(7)],
+  retentionTimeDurationDays: [required(), min(1), max(2)],
   retentionTimeDurationHours: [required(), min(1), max(24)],
   maxMessageSize: [required(), min(0)],
   offlineRetentionTime: [required(), min(0)],

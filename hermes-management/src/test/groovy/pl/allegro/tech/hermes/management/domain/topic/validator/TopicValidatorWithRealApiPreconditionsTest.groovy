@@ -31,7 +31,7 @@ class TopicValidatorWithRealApiPreconditionsTest extends Specification {
     def topicValidator = new TopicValidator(ownerDescriptorValidator, contentTypeWhitelistValidator, schemaRepository, new ApiPreconditions(), false)
 
     @Unroll
-    def "creating and updating topic with up to 7 days retention time should be valid"() {
+    def "creating and updating topic with up to 2 days retention time should be valid"() {
         given:
         def topic = topic('group.topic')
                 .withRetentionTime(retentionTime)
@@ -51,15 +51,15 @@ class TopicValidatorWithRealApiPreconditionsTest extends Specification {
         new RetentionTime(1337, MINUTES) | regularUser
         new RetentionTime(24, HOURS)     | admin
         new RetentionTime(24, HOURS)     | regularUser
-        new RetentionTime(72, HOURS)     | admin
-        new RetentionTime(72, HOURS)     | regularUser
+        new RetentionTime(48, HOURS)     | admin
+        new RetentionTime(48, HOURS)     | regularUser
         new RetentionTime(1, DAYS)       | admin
         new RetentionTime(1, DAYS)       | regularUser
-        new RetentionTime(7, DAYS)       | admin
-        new RetentionTime(7, DAYS)       | regularUser
+        new RetentionTime(2, DAYS)       | admin
+        new RetentionTime(2, DAYS)       | regularUser
     }
 
-    def "creating topic with over 7 days of retention time should be invalid for regular user"() {
+    def "creating topic with over 2 days of retention time should be invalid for regular user"() {
         given:
         def topic = topic('group.topic')
                 .withRetentionTime(retentionTime)
@@ -70,18 +70,18 @@ class TopicValidatorWithRealApiPreconditionsTest extends Specification {
 
         then:
         def exception = thrown(TopicValidationException)
-        exception.message == "Retention time larger than 7 days can't be configured by non admin users"
+        exception.message == "Retention time larger than 2 days can't be configured by non admin users"
 
         where:
         retentionTime << [
-                new RetentionTime(8, DAYS),
-                new RetentionTime(7 * 24 + 1, HOURS),
-                new RetentionTime(7 * 24 * 60 + 1, MINUTES),
-                new RetentionTime(7 * 24 * 60 * 60 + 1, SECONDS)
+                new RetentionTime(3, DAYS),
+                new RetentionTime(2 * 24 + 1, HOURS),
+                new RetentionTime(2 * 24 * 60 + 1, MINUTES),
+                new RetentionTime(2 * 24 * 60 * 60 + 1, SECONDS)
         ]
     }
 
-    def "creating topic with over 7 days retention time should be valid for admin"() {
+    def "creating topic with over 2 days retention time should be valid for admin"() {
         given:
         def topic = topic('group.topic')
                 .withRetentionTime(retentionTime)
@@ -95,15 +95,15 @@ class TopicValidatorWithRealApiPreconditionsTest extends Specification {
 
         where:
         retentionTime << [
-                new RetentionTime(8, DAYS),
-                new RetentionTime(7 * 24 + 1, HOURS),
-                new RetentionTime(7 * 24 * 60 + 1, MINUTES),
-                new RetentionTime(7 * 24 * 60 * 60 + 1, SECONDS)
+                new RetentionTime(3, DAYS),
+                new RetentionTime(2 * 24 + 1, HOURS),
+                new RetentionTime(2 * 24 * 60 + 1, MINUTES),
+                new RetentionTime(2 * 24 * 60 * 60 + 1, SECONDS)
         ]
     }
 
     @Unroll
-    def "updating topic with up to 7 days of retention time should be valid"() {
+    def "updating topic with up to 2 days of retention time should be valid"() {
         given:
         def existingTopic = topic('group.topic').build()
         def updatedTopic = topic('group.topic')
@@ -124,15 +124,15 @@ class TopicValidatorWithRealApiPreconditionsTest extends Specification {
         new RetentionTime(1337, MINUTES) | regularUser
         new RetentionTime(24, HOURS)     | admin
         new RetentionTime(24, HOURS)     | regularUser
-        new RetentionTime(72, HOURS)     | admin
-        new RetentionTime(72, HOURS)     | regularUser
+        new RetentionTime(48, HOURS)     | admin
+        new RetentionTime(48, HOURS)     | regularUser
         new RetentionTime(1, DAYS)       | admin
         new RetentionTime(1, DAYS)       | regularUser
-        new RetentionTime(7, DAYS)       | admin
-        new RetentionTime(7, DAYS)       | regularUser
+        new RetentionTime(2, DAYS)       | admin
+        new RetentionTime(2, DAYS)       | regularUser
     }
 
-    def "updating topic with over 7 days of retention time should be invalid for regular user"() {
+    def "updating topic with over 2 days of retention time should be invalid for regular user"() {
         given:
         def existingTopic = topic('group.topic').build()
         def updatedTopic = topic('group.topic')
@@ -144,18 +144,18 @@ class TopicValidatorWithRealApiPreconditionsTest extends Specification {
 
         then:
         def exception = thrown(TopicValidationException)
-        exception.message == "Retention time larger than 7 days can't be configured by non admin users"
+        exception.message == "Retention time larger than 2 days can't be configured by non admin users"
 
         where:
         retentionTime << [
-                new RetentionTime(8, DAYS),
-                new RetentionTime(7 * 24 + 1, HOURS),
-                new RetentionTime(7 * 24 * 60 + 1, MINUTES),
-                new RetentionTime(7 * 24 * 60 * 60 + 1, SECONDS)
+                new RetentionTime(3, DAYS),
+                new RetentionTime(2 * 24 + 1, HOURS),
+                new RetentionTime(2 * 24 * 60 + 1, MINUTES),
+                new RetentionTime(2 * 24 * 60 * 60 + 1, SECONDS)
         ]
     }
 
-    def "updating topic with 8 days retention time should be valid for admin"() {
+    def "updating topic with over 2 days days retention time should be valid for admin"() {
         given:
         def existingTopic = topic('group.topic').build()
         def updatedTopic = topic('group.topic')
@@ -170,10 +170,10 @@ class TopicValidatorWithRealApiPreconditionsTest extends Specification {
 
         where:
         retentionTime << [
-                new RetentionTime(8, DAYS),
-                new RetentionTime(7 * 24 + 1, HOURS),
-                new RetentionTime(7 * 24 * 60 + 1, MINUTES),
-                new RetentionTime(7 * 24 * 60 * 60 + 1, SECONDS)
+                new RetentionTime(3, DAYS),
+                new RetentionTime(2 * 24 + 1, HOURS),
+                new RetentionTime(2 * 24 * 60 + 1, MINUTES),
+                new RetentionTime(2 * 24 * 60 * 60 + 1, SECONDS)
         ]
     }
 
@@ -212,7 +212,7 @@ class TopicValidatorWithRealApiPreconditionsTest extends Specification {
 
         then:
         def exception = thrown(TopicValidationException)
-        exception.message == "Retention time larger than 7 days can't be configured by non admin users"
+        exception.message == "Retention time larger than 2 days can't be configured by non admin users"
     }
 
     def "updating topic with modifying retention time already exceeding maximum should be valid for admin"() {
