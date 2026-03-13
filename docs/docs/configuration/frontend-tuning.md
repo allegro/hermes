@@ -47,14 +47,16 @@ for ACK-all, there are also **two buffers** - keep this in mind when deciding on
 Kafka producer properties map 1:1 to Kafka producer configuration options. See Kafka documentation if you have any doubts
 or need an extended description.
 
-| Option                                   | Kafka config            | Description                            | Default value     |
-|------------------------------------------|-------------------------|----------------------------------------|-------------------|
-| frontend.kafka.producer.metadataMaxAge   | METADATA_MAX_AGE_CONFIG | how old can topic metadata be          | 5m                |
-| frontend.kafka.producer.compressionCodec | COMPRESSION_TYPE_CONFIG | compression algorithm                  | none              |
-| frontend.kafka.producer.retries          | RETRIES_CONFIG          | how many times should we retry sending | Integer.MAX_VALUE |
-| frontend.kafka.producer.retryBackoff     | RETRY_BACKOFF_MS_CONFIG | backoff between retries                | 256ms             |
-| frontend.kafka.producer.batchSize        | BATCH_SIZE_CONFIG       | size of sent message batch in bytes    | 16 kB             |
-| frontend.kafka.producer.tcpSendBuffer    | SEND_BUFFER_CONFIG      | size of TCP buffer                     | 128 kB            |
+| Option                                   | Kafka config                | Description                                                                        | Default value     |
+|------------------------------------------|-----------------------------|------------------------------------------------------------------------------------|-------------------|
+| frontend.kafka.producer.metadataMaxAge   | METADATA_MAX_AGE_CONFIG     | how old can topic metadata be                                                      | 5m                |
+| frontend.kafka.producer.compressionCodec | COMPRESSION_TYPE_CONFIG     | compression algorithm                                                              | none              |
+| frontend.kafka.producer.retries          | RETRIES_CONFIG              | how many times should we retry sending                                             | Integer.MAX_VALUE |
+| frontend.kafka.producer.retryBackoff     | RETRY_BACKOFF_MS_CONFIG     | backoff between retries                                                            | 256ms             |
+| frontend.kafka.producer.retryBackoffMax  | RETRY_BACKOFF_MAX_MS_CONFIG | upper bound on backoff between retries; set equal to retryBackoff for flat retries | 256ms             |
+| frontend.kafka.producer.batchSize        | BATCH_SIZE_CONFIG           | size of sent message batch in bytes                                                | 16 kB             |
+| frontend.kafka.producer.tcpSendBuffer    | SEND_BUFFER_CONFIG          | size of TCP buffer                                                                 | 128 kB            |
+| frontend.kafka.producer.partitionerClass | PARTITIONER_CLASS_CONFIG    | fully qualified partitioner class name; if empty, Kafka default is used            | (empty)           |
 
 ## Graceful startup
 
