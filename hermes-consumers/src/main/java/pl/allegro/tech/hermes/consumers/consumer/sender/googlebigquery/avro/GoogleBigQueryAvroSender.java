@@ -1,12 +1,12 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro;
 
 import com.google.cloud.bigquery.storage.v1.TableName;
+import com.google.protobuf.Descriptors;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import org.apache.avro.generic.GenericRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +15,6 @@ import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.CompletableFutureAwareMessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.FieldMissingInDescriptorException;
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.GoogleBigQueryFailedAppendException;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.GoogleBigQuerySenderTarget;
 
 public class GoogleBigQueryAvroSender implements CompletableFutureAwareMessageSender {
@@ -57,13 +56,12 @@ public class GoogleBigQueryAvroSender implements CompletableFutureAwareMessageSe
       avroDataWriterPool.acquire(target).publish(record, resultFuture);
     } catch (FieldMissingInDescriptorException e) {
       logger.warn("Release writer for target {} due to missing field in descriptor", target.getTableName(), e);
-      resultFuture.complete(
-          MessageSendingResult.failedResult(new GoogleBigQueryFailedAppendException(e)));
       avroDataWriterPool.restart(getGoogleBigQuerySenderTarget(message, wholeTableName));
-    } catch (IOException | ExecutionException | InterruptedException e) {
       resultFuture.complete(MessageSendingResult.failedResult(e));
-      resultFuture.complete(
-          MessageSendingResult.failedResult(new GoogleBigQueryFailedAppendException(e)));
+    } catch (IOException e) {
+      resultFuture.complete(MessageSendingResult.failedResult(e));
+    } catch (Descriptors.DescriptorValidationException e) {
+      resultFuture.complete(MessageSendingResult.failedResult(e));
     }
   }
 

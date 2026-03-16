@@ -1,8 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.json;
 
-import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
@@ -36,7 +34,10 @@ public class GoogleBigQueryJsonSender implements CompletableFutureAwareMessageSe
       jsondataWriterPool.acquire(senderTarget).publish(data, resultFuture);
     } catch (FieldMissingInDescriptorException e) {
       jsondataWriterPool.restart(senderTarget);
-    } catch (IOException | ExecutionException | InterruptedException e) {
+      resultFuture.complete(MessageSendingResult.failedResult(e));
+
+    } catch (Exception e) {
+      jsondataWriterPool.restart(senderTarget);
       resultFuture.complete(MessageSendingResult.failedResult(e));
     }
   }

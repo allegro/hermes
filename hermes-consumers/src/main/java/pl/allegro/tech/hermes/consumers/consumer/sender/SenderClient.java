@@ -3,6 +3,8 @@ package pl.allegro.tech.hermes.consumers.consumer.sender;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+
+import com.google.protobuf.Descriptors;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.FieldMissingInDescriptorException;
 
 public interface SenderClient<T> {
@@ -11,7 +13,7 @@ public interface SenderClient<T> {
       throws IOException,
           ExecutionException,
           InterruptedException,
-          FieldMissingInDescriptorException;
+          FieldMissingInDescriptorException, Descriptors.DescriptorValidationException;
 
   void shutdown();
 }
