@@ -57,8 +57,7 @@ public abstract class GoogleBigQueryDataWriter<
               .collect(Collectors.joining("\n")),
           e);
 
-      resultFuture.complete(
-          MessageSendingResult.failedResult(new GoogleBigQueryFailedAppendException(e)));
+      throw new FieldMissingInDescriptorException(e.getMessage(), e);
     } catch (Exception e) {
       logger.warn(
           "Writer {} has failed to append rows to stream {} because of {}",
@@ -71,6 +70,7 @@ public abstract class GoogleBigQueryDataWriter<
           getWriterId(),
           e.getMessage(),
           e);
+      throw new FieldMissingInDescriptorException(e.getMessage(), e);
     }
   }
 

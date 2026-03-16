@@ -4,6 +4,10 @@ import com.google.cloud.bigquery.storage.v1.Exceptions;
 import java.util.Map;
 
 public class GoogleBigQueryFailedAppendException extends RuntimeException {
+  public GoogleBigQueryFailedAppendException(Exception cause) {
+    super(cause.getMessage(), cause);
+  }
+
   @Override
   public String getMessage() {
     Exceptions.AppendSerializtionError cause =
@@ -22,9 +26,5 @@ public class GoogleBigQueryFailedAppendException extends RuntimeException {
       }
     }
     return message.toString();
-  }
-
-  public GoogleBigQueryFailedAppendException(Exceptions.AppendSerializtionError cause) {
-    super(cause.getMessage(), cause);
   }
 }
