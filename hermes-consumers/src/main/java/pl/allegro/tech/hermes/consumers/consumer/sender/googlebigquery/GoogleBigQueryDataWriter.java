@@ -36,7 +36,10 @@ public abstract class GoogleBigQueryDataWriter<
 
   @Override
   public void publish(T message, CompletableFuture<MessageSendingResult> resultFuture)
-      throws IOException, ExecutionException, InterruptedException {
+      throws IOException,
+          ExecutionException,
+          InterruptedException,
+          FieldMissingInDescriptorException {
     try {
       ApiFuture<AppendRowsResponse> appendFuture = append(message);
       ApiFutures.addCallback(
@@ -63,7 +66,9 @@ public abstract class GoogleBigQueryDataWriter<
           getStreamName(),
           e.getMessage(),
           e);
-      resultFuture.complete(MessageSendingResult.failedResult(e));
+      if (e.getMessage().contains("not found in descriptor")) {
+        throw new FieldMissingInDescriptorException(e.getMessage(), e);
+      }
     }
   }
 

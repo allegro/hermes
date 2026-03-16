@@ -8,6 +8,7 @@ import org.json.JSONObject;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.CompletableFutureAwareMessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
+import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.FieldMissingInDescriptorException;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.GoogleBigQuerySenderTarget;
 
 public class GoogleBigQueryJsonSender implements CompletableFutureAwareMessageSender {
@@ -33,6 +34,8 @@ public class GoogleBigQueryJsonSender implements CompletableFutureAwareMessageSe
 
     try {
       jsondataWriterPool.acquire(senderTarget).publish(data, resultFuture);
+    } catch (FieldMissingInDescriptorException e) {
+      jsondataWriterPool.release(senderTarget);
     } catch (IOException | ExecutionException | InterruptedException e) {
       resultFuture.complete(MessageSendingResult.failedResult(e));
     }
