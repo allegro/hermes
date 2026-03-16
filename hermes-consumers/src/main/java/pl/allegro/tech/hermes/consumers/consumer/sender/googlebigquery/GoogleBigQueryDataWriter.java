@@ -45,6 +45,7 @@ public abstract class GoogleBigQueryDataWriter<
           new GoogleBigQueryAppendCompleteCallback(resultFuture),
           MoreExecutors.directExecutor());
     } catch (Exceptions.AppendSerializationError e) {
+      logger.info("tango-2997 : The error message is -->{}<--", e.getMessage(), e);
       logger.warn(
           "Writer {} has failed because of errors: \n{}",
           getWriterId(),
@@ -54,11 +55,14 @@ public abstract class GoogleBigQueryDataWriter<
           e);
 
       if (e.getMessage().contains("not found in descriptor")) {
+        logger.info("tango-2997 : Throwing FieldMissingInDescriptorException {}",e, e);
         throw new FieldMissingInDescriptorException(e.getMessage(), e);
       } else {
+        logger.info("tango-2997 : Throwing {}", e, e);
         throw e;
       }
     } catch (Exception e) {
+      logger.info("tango-2997 : The error message is -->{}<--", e.getMessage(), e);
       logger.warn(
           "Writer {} has failed to append rows to stream {} because of {}",
           getWriterId(),
@@ -66,8 +70,10 @@ public abstract class GoogleBigQueryDataWriter<
           e.getMessage(),
           e);
       if (e.getMessage().contains("not found in descriptor")) {
+        logger.info("tango-2997 : Throwing FieldMissingInDescriptorException {}",e, e);
         throw new FieldMissingInDescriptorException(e.getMessage(), e);
       } else {
+        logger.info("tango-2997 : Throwing {}", e, e);
         throw e;
       }
     }

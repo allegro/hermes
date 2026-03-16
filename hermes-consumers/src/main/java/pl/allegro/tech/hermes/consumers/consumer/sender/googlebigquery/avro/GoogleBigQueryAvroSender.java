@@ -55,12 +55,15 @@ public class GoogleBigQueryAvroSender implements CompletableFutureAwareMessageSe
     try {
       avroDataWriterPool.acquire(target).publish(record, resultFuture);
     } catch (FieldMissingInDescriptorException e) {
+      logger.info("tango-2997 : Caught FieldMissingInDescriptorException. The error message is -->{}<--", e.getMessage(), e);
       logger.warn("Release writer for target {} due to missing field in descriptor", target.getTableName(), e);
       avroDataWriterPool.restart(getGoogleBigQuerySenderTarget(message, wholeTableName));
       resultFuture.complete(MessageSendingResult.failedResult(e));
     } catch (IOException e) {
+      logger.info("tango-2997 : Caught IOException. The error message is -->{}<--", e.getMessage(), e);
       resultFuture.complete(MessageSendingResult.failedResult(e));
     } catch (Descriptors.DescriptorValidationException e) {
+      logger.info("tango-2997 : Caught Descriptors.DescriptorValidationException. The error message is -->{}<--", e.getMessage(), e);
       resultFuture.complete(MessageSendingResult.failedResult(e));
     }
   }
