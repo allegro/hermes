@@ -65,7 +65,6 @@ public class GoogleBigQueryAvroStreamWriterFactory
 
       return SchemaAwareStreamWriter.newBuilder(
               streamName + "/_default", writeClient, avroToProtoConverter)
-              .set
           .setEnableConnectionPool(true)
           .setExecutorProvider(executorProvider)
           .setFlowControlSettings(flowControlSettings)
