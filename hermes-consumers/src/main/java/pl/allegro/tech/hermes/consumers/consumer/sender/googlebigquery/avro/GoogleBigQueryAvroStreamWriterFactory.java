@@ -62,8 +62,10 @@ public class GoogleBigQueryAvroStreamWriterFactory
                   ChannelPoolSettings.staticallySized(
                       avroStreamWriterProperties.getChannelPoolStaticSize()))
               .build();
+
       return SchemaAwareStreamWriter.newBuilder(
               streamName + "/_default", writeClient, avroToProtoConverter)
+              .set
           .setEnableConnectionPool(true)
           .setExecutorProvider(executorProvider)
           .setFlowControlSettings(flowControlSettings)

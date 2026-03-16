@@ -66,15 +66,18 @@ public abstract class GoogleBigQueryDataWriter<
           getStreamName(),
           e.getMessage(),
           e);
-      if (e.getMessage().contains("not found in descriptor")) {
-        throw new FieldMissingInDescriptorException(e.getMessage(), e);
-      }
+      logger.warn(
+          "Writer {} has failed because of missing fields in descriptor. Message: {}",
+          getWriterId(),
+          e.getMessage(),
+          e);
     }
   }
 
   @Override
   public void shutdown() {
     try {
+      logger.info("Closing stream writer of id {} and name {}", getWriterId(), getStreamName());
       streamWriter.close();
     } catch (Exception e) {
       logger.error(
