@@ -35,7 +35,7 @@ public class GoogleBigQueryJsonSender implements CompletableFutureAwareMessageSe
     try {
       jsondataWriterPool.acquire(senderTarget).publish(data, resultFuture);
     } catch (FieldMissingInDescriptorException e) {
-      jsondataWriterPool.release(senderTarget);
+      jsondataWriterPool.restart(senderTarget);
     } catch (IOException | ExecutionException | InterruptedException e) {
       resultFuture.complete(MessageSendingResult.failedResult(e));
     }

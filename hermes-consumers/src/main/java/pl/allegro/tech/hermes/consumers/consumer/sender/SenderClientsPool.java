@@ -11,7 +11,7 @@ public abstract class SenderClientsPool<T extends SenderTarget, C extends Sender
   private static final Logger logger = LoggerFactory.getLogger(SenderClientsPool.class);
 
   private final Map<T, C> clients = new HashMap<>();
-  private final Map<T, Integer> counters = new HashMap<>();
+  protected final Map<T, Integer> counters = new HashMap<>();
 
   public synchronized C acquire(T resolvedTarget) throws IOException {
     C client = clients.get(resolvedTarget);

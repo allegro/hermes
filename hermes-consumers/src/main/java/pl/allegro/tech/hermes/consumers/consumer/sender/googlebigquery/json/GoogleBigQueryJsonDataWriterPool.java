@@ -1,11 +1,16 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.json;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.SenderClientsPool;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.GoogleBigQuerySenderTarget;
+import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.GoogleBigQueryAvroDataWriter;
 
 public class GoogleBigQueryJsonDataWriterPool
     extends SenderClientsPool<GoogleBigQuerySenderTarget, GoogleBigQueryJsonDataWriter> {
 
+  private static final Logger logger =
+      LoggerFactory.getLogger(GoogleBigQueryJsonDataWriterPool.class);
   private final GoogleBigQueryJsonStreamWriterFactory streamWriterFactory;
 
   public GoogleBigQueryJsonDataWriterPool(
@@ -17,5 +22,15 @@ public class GoogleBigQueryJsonDataWriterPool
   protected GoogleBigQueryJsonDataWriter createClient(GoogleBigQuerySenderTarget resolvedTarget) {
     return new GoogleBigQueryJsonDataWriter(
         resolvedTarget.getTableName().toString(), streamWriterFactory);
+  }
+
+  public void restart(GoogleBigQuerySenderTarget target) {
+    while (counters.get(target) > 0) {
+      logger.info(
+          "Restarting BigQuery Avro Data Writer for table {}. Current counter: {}",
+          target.getTableName(),
+          counters.get(target));
+      release(target);
+    }
   }
 }
