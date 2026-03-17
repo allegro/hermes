@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.SenderClientsPool;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.GoogleBigQuerySenderTarget;
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro.GoogleBigQueryAvroDataWriter;
 
 public class GoogleBigQueryJsonDataWriterPool
     extends SenderClientsPool<GoogleBigQuerySenderTarget, GoogleBigQueryJsonDataWriter> {
@@ -23,5 +22,4 @@ public class GoogleBigQueryJsonDataWriterPool
     return new GoogleBigQueryJsonDataWriter(
         resolvedTarget.getTableName().toString(), streamWriterFactory);
   }
-
 }

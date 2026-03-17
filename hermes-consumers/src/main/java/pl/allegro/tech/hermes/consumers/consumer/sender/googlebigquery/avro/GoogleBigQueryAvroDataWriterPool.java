@@ -10,8 +10,10 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.GoogleBig
 public class GoogleBigQueryAvroDataWriterPool
     extends SenderClientsPool<GoogleBigQuerySenderTarget, GoogleBigQueryAvroDataWriter> {
 
-  private static final Logger logger = LoggerFactory.getLogger(GoogleBigQueryAvroDataWriterPool.class);
+  private static final Logger logger =
+      LoggerFactory.getLogger(GoogleBigQueryAvroDataWriterPool.class);
   private final GoogleBigQueryAvroStreamWriterFactory factory;
+
   public GoogleBigQueryAvroDataWriterPool(GoogleBigQueryAvroStreamWriterFactory factory) {
     this.factory = factory;
   }
@@ -19,8 +21,8 @@ public class GoogleBigQueryAvroDataWriterPool
   @Override
   protected GoogleBigQueryAvroDataWriter createClient(GoogleBigQuerySenderTarget resolvedTarget)
       throws IOException {
-    logger.info("Creating new BigQuery Avro Data Writer for table {}", resolvedTarget.getTableName());
+    logger.info(
+        "Creating new BigQuery Avro Data Writer for table {}", resolvedTarget.getTableName());
     return new GoogleBigQueryAvroDataWriter(resolvedTarget.getTableName().toString(), factory);
   }
-
 }
