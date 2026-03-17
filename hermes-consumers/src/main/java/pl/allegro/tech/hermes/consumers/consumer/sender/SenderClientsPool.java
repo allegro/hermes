@@ -48,7 +48,7 @@ public abstract class SenderClientsPool<T extends SenderTarget, C extends Sender
   public synchronized void remove(T resolvedTarget) {
     Integer counter = counters.getOrDefault(resolvedTarget, 0);
     LocalDateTime lastReleaseDate = lastReleaseAllDate.get(resolvedTarget);
-    if (lastReleaseDate != null && lastReleaseDate.plusSeconds(30).isBefore(LocalDateTime.now())) {
+    if (lastReleaseDate == null || lastReleaseDate.plusSeconds(30).isBefore(LocalDateTime.now())) {
       if (counter > 0) {
         logger.info(
             "Releasing all clients for target {}. Current counter: {}", resolvedTarget, counter);
