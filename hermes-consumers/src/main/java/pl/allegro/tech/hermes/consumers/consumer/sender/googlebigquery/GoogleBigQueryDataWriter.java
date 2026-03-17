@@ -59,6 +59,7 @@ public abstract class GoogleBigQueryDataWriter<
           getStreamName(),
           e.getMessage(),
           e);
+      throw e;
     }
   }
 
