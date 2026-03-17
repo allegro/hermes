@@ -1,8 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro;
 
+import com.google.cloud.bigquery.storage.v1.Exceptions;
 import com.google.cloud.bigquery.storage.v1.TableName;
-import com.google.protobuf.Descriptors;
-import java.io.IOException;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -14,7 +13,6 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.CompletableFutureAwareMessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
-import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.FieldMissingInDescriptorException;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.GoogleBigQuerySenderTarget;
 
 public class GoogleBigQueryAvroSender implements CompletableFutureAwareMessageSender {
@@ -54,13 +52,14 @@ public class GoogleBigQueryAvroSender implements CompletableFutureAwareMessageSe
 
     try {
       avroDataWriterPool.acquire(target).publish(record, resultFuture);
-    } catch (FieldMissingInDescriptorException e) {
-      logger.warn("Release writer for target {} due to missing field in descriptor", target.getTableName(), e);
-      avroDataWriterPool.releaseAll(getGoogleBigQuerySenderTarget(message, wholeTableName));
+    } catch (Exceptions.DataHasUnknownFieldException e) {
+      logger.warn(
+          "Release writer for target {} due to missing field in descriptor",
+          target.getTableName(),
+          e);
+      avroDataWriterPool.remove(getGoogleBigQuerySenderTarget(message, wholeTableName));
       resultFuture.complete(MessageSendingResult.failedResult(e));
-    } catch (IOException e) {
-      resultFuture.complete(MessageSendingResult.failedResult(e));
-    } catch (Descriptors.DescriptorValidationException e) {
+    } catch (Exception e) {
       resultFuture.complete(MessageSendingResult.failedResult(e));
     }
   }

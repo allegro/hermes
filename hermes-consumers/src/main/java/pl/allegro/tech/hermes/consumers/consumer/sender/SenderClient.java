@@ -13,7 +13,7 @@ public interface SenderClient<T> {
       throws IOException,
           ExecutionException,
           InterruptedException,
-          FieldMissingInDescriptorException, Descriptors.DescriptorValidationException;
+          Descriptors.DescriptorValidationException;
 
   void shutdown();
 }

@@ -35,9 +35,7 @@ public abstract class GoogleBigQueryDataWriter<
 
   @Override
   public void publish(T message, CompletableFuture<MessageSendingResult> resultFuture)
-      throws FieldMissingInDescriptorException,
-          Descriptors.DescriptorValidationException,
-          IOException {
+      throws Descriptors.DescriptorValidationException, IOException {
     try {
       ApiFuture<AppendRowsResponse> appendFuture = append(message);
       ApiFutures.addCallback(
@@ -53,11 +51,7 @@ public abstract class GoogleBigQueryDataWriter<
               .collect(Collectors.joining("\n")),
           e);
 
-      if (e.getMessage().contains("not found in descriptor")) {
-        throw new FieldMissingInDescriptorException(e.getMessage(), e);
-      } else {
-        throw e;
-      }
+      throw e;
     } catch (Exception e) {
       logger.warn(
           "Writer {} has failed to append rows to stream {} because of {}",
@@ -65,11 +59,6 @@ public abstract class GoogleBigQueryDataWriter<
           getStreamName(),
           e.getMessage(),
           e);
-      if (e.getMessage().contains("not found in descriptor")) {
-        throw new FieldMissingInDescriptorException(e.getMessage(), e);
-      } else {
-        throw e;
-      }
     }
   }
 
