@@ -24,13 +24,4 @@ public class GoogleBigQueryJsonDataWriterPool
         resolvedTarget.getTableName().toString(), streamWriterFactory);
   }
 
-  public void restart(GoogleBigQuerySenderTarget target) {
-    while (counters.get(target) > 0) {
-      logger.info(
-          "Restarting BigQuery Avro Data Writer for table {}. Current counter: {}",
-          target.getTableName(),
-          counters.get(target));
-      release(target);
-    }
-  }
 }

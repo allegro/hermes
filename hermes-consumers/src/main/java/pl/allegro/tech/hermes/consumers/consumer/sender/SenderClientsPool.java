@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -11,7 +12,8 @@ public abstract class SenderClientsPool<T extends SenderTarget, C extends Sender
   private static final Logger logger = LoggerFactory.getLogger(SenderClientsPool.class);
 
   private final Map<T, C> clients = new HashMap<>();
-  protected final Map<T, Integer> counters = new HashMap<>();
+  private final Map<T, Integer> counters = new HashMap<>();
+  private final Map<T, LocalDateTime> lastReleaseAllDate = new HashMap<>();
 
   public synchronized C acquire(T resolvedTarget) throws IOException {
     C client = clients.get(resolvedTarget);
@@ -41,6 +43,21 @@ public abstract class SenderClientsPool<T extends SenderTarget, C extends Sender
     clients.values().forEach(SenderClient::shutdown);
     clients.clear();
     counters.clear();
+  }
+
+
+  public synchronized void releaseAll(T resolvedTarget) {
+    Integer counter = counters.getOrDefault(resolvedTarget, 0);
+    LocalDateTime lastReleaseDate = lastReleaseAllDate.get(resolvedTarget);
+    if (lastReleaseDate != null && lastReleaseDate.plusSeconds(30).isBefore(LocalDateTime.now())) {
+      if (counter > 0) {
+        logger.info(
+                "Releasing all clients for target {}. Current counter: {}", resolvedTarget, counter);
+        clients.remove(resolvedTarget).shutdown();
+        counters.remove(resolvedTarget);
+        lastReleaseAllDate.put(resolvedTarget, LocalDateTime.now());
+      }
+    }
   }
 
   protected abstract C createClient(T resolvedTarget) throws IOException;
