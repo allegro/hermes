@@ -45,15 +45,19 @@ public abstract class SenderClientsPool<T extends SenderTarget, C extends Sender
     counters.clear();
   }
 
-  public synchronized void remove(T resolvedTarget) {
-    Integer counter = counters.getOrDefault(resolvedTarget, 0);
+  public synchronized void reset(T resolvedTarget) {
     LocalDateTime lastReleaseDate = lastReleaseAllDate.get(resolvedTarget);
     if (lastReleaseDate == null || lastReleaseDate.plusSeconds(30).isBefore(LocalDateTime.now())) {
-      if (counter > 0) {
-        logger.info(
-            "Releasing all clients for target {}. Current counter: {}", resolvedTarget, counter);
+      if (clients.get(resolvedTarget) != null) {
         clients.remove(resolvedTarget).shutdown();
-        counters.remove(resolvedTarget);
+        try {
+          C client = acquire(resolvedTarget);
+          if (client != null) {
+            clients.put(resolvedTarget, client);
+          }
+        } catch (IOException e) {
+          logger.error("Failed to create client for target {} after reset", resolvedTarget, e);
+        }
         lastReleaseAllDate.put(resolvedTarget, LocalDateTime.now());
       }
     }

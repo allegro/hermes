@@ -57,7 +57,7 @@ public class GoogleBigQueryAvroSender implements CompletableFutureAwareMessageSe
           "Release writer for target {} due to missing field in descriptor",
           target.getTableName(),
           e);
-      avroDataWriterPool.remove(getGoogleBigQuerySenderTarget(message, wholeTableName));
+      avroDataWriterPool.reset(getGoogleBigQuerySenderTarget(message, wholeTableName));
       resultFuture.complete(MessageSendingResult.failedResult(e));
     } catch (Exception e) {
       resultFuture.complete(MessageSendingResult.failedResult(e));

@@ -33,7 +33,7 @@ public class GoogleBigQueryJsonSender implements CompletableFutureAwareMessageSe
     try {
       jsondataWriterPool.acquire(senderTarget).publish(data, resultFuture);
     } catch (Exceptions.DataHasUnknownFieldException e) {
-      jsondataWriterPool.remove(senderTarget);
+      jsondataWriterPool.reset(senderTarget);
       resultFuture.complete(MessageSendingResult.failedResult(e));
     } catch (Exception e) {
       resultFuture.complete(MessageSendingResult.failedResult(e));
