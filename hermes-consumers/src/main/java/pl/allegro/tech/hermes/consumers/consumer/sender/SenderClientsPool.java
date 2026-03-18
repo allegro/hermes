@@ -1,7 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -13,7 +13,7 @@ public abstract class SenderClientsPool<T extends SenderTarget, C extends Sender
 
   private final Map<T, C> clients = new HashMap<>();
   private final Map<T, Integer> counters = new HashMap<>();
-  private final Map<T, LocalDateTime> lastReleaseAllDate = new HashMap<>();
+  private final Map<T, Instant> lastReleaseAllDate = new HashMap<>();
 
   public synchronized C acquire(T resolvedTarget) throws IOException {
     C client = clients.get(resolvedTarget);
@@ -46,8 +46,9 @@ public abstract class SenderClientsPool<T extends SenderTarget, C extends Sender
   }
 
   public synchronized void reset(T resolvedTarget) {
-    LocalDateTime lastReleaseDate = lastReleaseAllDate.get(resolvedTarget);
-    if (lastReleaseDate == null || lastReleaseDate.plusSeconds(30).isBefore(LocalDateTime.now())) {
+    Instant lastReleaseDate = lastReleaseAllDate.get(resolvedTarget);
+    Instant currentInstant = Instant.now();
+    if (lastReleaseDate == null || lastReleaseDate.plusSeconds(30).isBefore(currentInstant)) {
       if (clients.get(resolvedTarget) != null) {
         clients.remove(resolvedTarget).shutdown();
         try {
@@ -58,7 +59,7 @@ public abstract class SenderClientsPool<T extends SenderTarget, C extends Sender
         } catch (IOException e) {
           logger.error("Failed to create client for target {} after reset", resolvedTarget, e);
         }
-        lastReleaseAllDate.put(resolvedTarget, LocalDateTime.now());
+        lastReleaseAllDate.put(resolvedTarget, currentInstant);
       }
     }
   }

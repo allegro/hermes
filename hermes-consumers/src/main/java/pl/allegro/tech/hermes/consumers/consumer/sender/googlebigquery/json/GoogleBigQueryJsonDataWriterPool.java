@@ -8,8 +8,6 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.GoogleBig
 public class GoogleBigQueryJsonDataWriterPool
     extends SenderClientsPool<GoogleBigQuerySenderTarget, GoogleBigQueryJsonDataWriter> {
 
-  private static final Logger logger =
-      LoggerFactory.getLogger(GoogleBigQueryJsonDataWriterPool.class);
   private final GoogleBigQueryJsonStreamWriterFactory streamWriterFactory;
 
   public GoogleBigQueryJsonDataWriterPool(

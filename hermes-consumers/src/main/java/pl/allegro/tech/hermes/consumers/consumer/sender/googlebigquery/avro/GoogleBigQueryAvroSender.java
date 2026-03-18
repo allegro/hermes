@@ -35,6 +35,7 @@ public class GoogleBigQueryAvroSender implements CompletableFutureAwareMessageSe
         TableName.parse(subscription.getEndpoint().getEndpoint().replace("googlebigquery://", ""));
   }
 
+  /** Partition in BigQuery is in the format YYYYMMDD */
   public static String partitionFromTimestamp(long timestampMillis) {
     ZonedDateTime timestamp =
         Instant.ofEpochMilli(timestampMillis)
