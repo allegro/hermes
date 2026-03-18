@@ -45,6 +45,9 @@ public abstract class SenderClientsPool<T extends SenderTarget, C extends Sender
     counters.clear();
   }
 
+  /*
+   * Resets the client for the given target if it has not been reset in the last 30 seconds.
+   */
   public synchronized void reset(T resolvedTarget) {
     Instant lastReleaseDate = lastReleaseAllDate.get(resolvedTarget);
     Instant currentInstant = Instant.now();

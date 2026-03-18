@@ -1,7 +1,5 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.json;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.SenderClientsPool;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.GoogleBigQuerySenderTarget;
 
