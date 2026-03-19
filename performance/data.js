@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1773408064423,
+  "lastUpdate": 1773925964609,
   "repoUrl": "https://github.com/allegro/hermes",
   "entries": {
     "Hermes Benchmark": [
@@ -269,6 +269,96 @@ window.BENCHMARK_DATA = {
           {
             "name": "pl.allegro.tech.hermes.benchmark.frontend.HermesServerBenchmark.benchmarkPublishingLatency (sample) - gc.alloc.rate.norm",
             "value": 68197.28071859805,
+            "unit": "B/op"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "87751153+adamallegro@users.noreply.github.com",
+            "name": "Adam Szorcz",
+            "username": "adamallegro"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "fce73288ee3b409449fe79af05dc8d49b793c50a",
+          "message": "Recreate BigQuery SW API Writer every time when the schema of table changes (#2031)\n\n* TANGO-2997 : Basic functionality which should work\n\n* TANGO-2997 : Logging\n\n* TANGO-2997 : Fixed types\n\n* TANGO-2997 : Removed unnecessary buggy line\n\n* TANGO-2997 : Restarting the client - taking the counter into consideration\n\n* TANGO-2997 : Refactor and unique way of handling errors in all outs\n\n* TANGO-2997 : task related logging\n\n* TANGO-2997 : Removed task-related logging and method rename\n\n* TANGO-2997 : Time based decision if release all clients\n\n* TANGO-2997 : Added custom exception\n\n* TANGO-2997 : Added passing the exception\n\n* TANGO-2997 : Reformatted\n\n* TANGO-2997 : Reformatted\n\n* TANGO-2997 : Changed condition\n\n* TANGO-2997 : Reset instead of Remove\n\n* TANGO-2997 : Fixes after review\n\n* TANGO-2997 : Minor commontes and format changes\n\n* Potential fix for pull request finding\n\nCo-authored-by: Copilot Autofix powered by AI <175728472+Copilot@users.noreply.github.com>\n\n* Apply suggestions from code review\n\nCo-authored-by: Copilot Autofix powered by AI <175728472+Copilot@users.noreply.github.com>\n\n* Potential fix for pull request finding\n\nCo-authored-by: Copilot Autofix powered by AI <175728472+Copilot@users.noreply.github.com>\n\n* Potential fix for pull request finding\n\nCo-authored-by: Copilot Autofix powered by AI <175728472+Copilot@users.noreply.github.com>\n\n* Potential fix for pull request finding\n\nCo-authored-by: Copilot Autofix powered by AI <175728472+Copilot@users.noreply.github.com>\n\n* Potential fix for pull request finding\n\nCo-authored-by: Copilot Autofix powered by AI <175728472+Copilot@users.noreply.github.com>\n\n* TANGO-2997 : Removed unused class and its test\n\n* TANGO-2997 : Brought back Exception catching\n\n---------\n\nCo-authored-by: Copilot Autofix powered by AI <175728472+Copilot@users.noreply.github.com>",
+          "timestamp": "2026-03-19T14:04:10+01:00",
+          "tree_id": "f05ddedcb995e062b6c62edafc73c23d3b581917",
+          "url": "https://github.com/allegro/hermes/commit/fce73288ee3b409449fe79af05dc8d49b793c50a"
+        },
+        "date": 1773925910428,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.consumer.HermesConsumerBenchmark.benchmarkConsumingThroughput (thrpt)",
+            "value": 7.5057193077968085,
+            "range": "0.70379077876038",
+            "unit": "ops/s"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.consumer.HermesConsumerBenchmark.benchmarkConsumingThroughput (thrpt) - gc.alloc.rate.norm",
+            "value": 197337577.99782935,
+            "unit": "B/op"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.consumer.HermesConsumerFilteringBenchmark.benchmarkConsumingThroughput (thrpt)",
+            "value": 8.058996657214564,
+            "range": "0.019468239304703587",
+            "unit": "ops/s"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.consumer.HermesConsumerFilteringBenchmark.benchmarkConsumingThroughput (thrpt) - gc.alloc.rate.norm",
+            "value": 151598895.6888889,
+            "unit": "B/op"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.frontend.HermesServerBenchmark.benchmarkPublishingThroughput (thrpt)",
+            "value": 6869.890346850465,
+            "range": "213.0541221876069",
+            "unit": "ops/s"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.frontend.HermesServerBenchmark.benchmarkPublishingThroughput (thrpt) - gc.alloc.rate.norm",
+            "value": 68227.50407521785,
+            "unit": "B/op"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.frontend.MessageRepositoryBenchmark.baselineSave (avgt)",
+            "value": 317032.29718957475,
+            "range": "24038.30795625677",
+            "unit": "ns/op"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.frontend.MessageRepositoryBenchmark.baselineSave (avgt) - gc.alloc.rate.norm",
+            "value": 9104.10598783432,
+            "unit": "B/op"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.frontend.MessageRepositoryBenchmark.hermesImplSave (avgt)",
+            "value": 325061.55741757085,
+            "range": "20582.557790469335",
+            "unit": "ns/op"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.frontend.MessageRepositoryBenchmark.hermesImplSave (avgt) - gc.alloc.rate.norm",
+            "value": 9160.105198370848,
+            "unit": "B/op"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.frontend.HermesServerBenchmark.benchmarkPublishingLatency (sample)",
+            "value": 0.2928782918441651,
+            "range": "0.004647340008881686",
+            "unit": "ms/op"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.frontend.HermesServerBenchmark.benchmarkPublishingLatency (sample) - gc.alloc.rate.norm",
+            "value": 68141.80194818527,
             "unit": "B/op"
           }
         ]
