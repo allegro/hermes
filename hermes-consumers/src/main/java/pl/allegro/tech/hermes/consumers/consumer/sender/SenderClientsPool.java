@@ -13,7 +13,7 @@ public abstract class SenderClientsPool<T extends SenderTarget, C extends Sender
 
   private final Map<T, C> clients = new HashMap<>();
   private final Map<T, Integer> counters = new HashMap<>();
-  private final Map<T, Instant> lastReleaseAllDate = new HashMap<>();
+  private final Map<T, Instant> lastResetInstant = new HashMap<>();
 
   public synchronized C acquire(T resolvedTarget) throws IOException {
     C client = clients.get(resolvedTarget);
@@ -43,16 +43,17 @@ public abstract class SenderClientsPool<T extends SenderTarget, C extends Sender
     clients.values().forEach(SenderClient::shutdown);
     clients.clear();
     counters.clear();
-    lastReleaseAllDate.clear();
+    lastResetInstant.clear();
   }
 
   /*
    * Resets the client for the given target if it has not been reset in the last 30 seconds.
    */
   public synchronized void reset(T resolvedTarget) {
-    Instant lastReleaseDate = lastReleaseAllDate.get(resolvedTarget);
+    Instant lastResetInstantForTarget = lastResetInstant.get(resolvedTarget);
     Instant currentInstant = Instant.now();
-    if (lastReleaseDate == null || lastReleaseDate.plusSeconds(30).isBefore(currentInstant)) {
+    if (lastResetInstantForTarget == null
+        || lastResetInstantForTarget.plusSeconds(30).isBefore(currentInstant)) {
       C existingClient = clients.get(resolvedTarget);
       if (existingClient != null) {
         clients.remove(resolvedTarget).shutdown();
@@ -64,7 +65,7 @@ public abstract class SenderClientsPool<T extends SenderTarget, C extends Sender
         } catch (IOException e) {
           logger.error("Failed to create client for target {} after reset", resolvedTarget, e);
         }
-        lastReleaseAllDate.put(resolvedTarget, currentInstant);
+        lastResetInstant.put(resolvedTarget, currentInstant);
       }
     }
   }
