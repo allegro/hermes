@@ -1,13 +1,14 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.avro;
 
+import com.google.cloud.bigquery.storage.v1.Exceptions;
 import com.google.cloud.bigquery.storage.v1.TableName;
-import java.io.IOException;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import org.apache.avro.generic.GenericRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.sender.CompletableFutureAwareMessageSender;
@@ -15,6 +16,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery.GoogleBigQuerySenderTarget;
 
 public class GoogleBigQueryAvroSender implements CompletableFutureAwareMessageSender {
+  private static final Logger logger = LoggerFactory.getLogger(GoogleBigQueryAvroSender.class);
 
   private final GoogleBigQueryAvroMessageTransformer avroMessageTransformer;
   private final Subscription subscription;
@@ -33,19 +35,6 @@ public class GoogleBigQueryAvroSender implements CompletableFutureAwareMessageSe
         TableName.parse(subscription.getEndpoint().getEndpoint().replace("googlebigquery://", ""));
   }
 
-  @Override
-  public void send(Message message, CompletableFuture<MessageSendingResult> resultFuture) {
-    GenericRecord record = avroMessageTransformer.fromHermesMessage(message);
-
-    GoogleBigQuerySenderTarget target = getGoogleBigQuerySenderTarget(message);
-
-    try {
-      avroDataWriterPool.acquire(target).publish(record, resultFuture);
-    } catch (IOException | ExecutionException | InterruptedException e) {
-      resultFuture.complete(MessageSendingResult.failedResult(e));
-    }
-  }
-
   /** Partition in BigQuery is in the format YYYYMMDD */
   public static String partitionFromTimestamp(long timestampMillis) {
     ZonedDateTime timestamp =
@@ -56,7 +45,28 @@ public class GoogleBigQueryAvroSender implements CompletableFutureAwareMessageSe
         .formatted(timestamp.getYear(), timestamp.getMonthValue(), timestamp.getDayOfMonth());
   }
 
-  private GoogleBigQuerySenderTarget getGoogleBigQuerySenderTarget(Message message) {
+  @Override
+  public void send(Message message, CompletableFuture<MessageSendingResult> resultFuture) {
+    GenericRecord record = avroMessageTransformer.fromHermesMessage(message);
+
+    GoogleBigQuerySenderTarget target = getGoogleBigQuerySenderTarget(message, wholeTableName);
+
+    try {
+      avroDataWriterPool.acquire(target).publish(record, resultFuture);
+    } catch (Exceptions.DataHasUnknownFieldException e) {
+      logger.warn(
+          "Reset writer for target {} due to unknown field in data (schema mismatch with descriptor)",
+          target.getTableName(),
+          e);
+      avroDataWriterPool.reset(target);
+      resultFuture.complete(MessageSendingResult.failedResult(e));
+    } catch (Exception e) {
+      resultFuture.complete(MessageSendingResult.failedResult(e));
+    }
+  }
+
+  private GoogleBigQuerySenderTarget getGoogleBigQuerySenderTarget(
+      Message message, TableName wholeTableName) {
     String partition = partitionFromTimestamp(message.getPublishingTimestamp());
 
     return GoogleBigQuerySenderTarget.newBuilder()
