@@ -56,11 +56,15 @@ public abstract class SenderClientsPool<T extends SenderTarget, C extends Sender
         || lastResetInstantForTarget.plusSeconds(30).isBefore(currentInstant)) {
       C existingClient = clients.get(resolvedTarget);
       if (existingClient != null) {
-        clients.remove(resolvedTarget).shutdown();
         try {
-          C client = createClient(resolvedTarget);
-          if (client != null) {
-            clients.put(resolvedTarget, client);
+          C newClient = createClient(resolvedTarget);
+          if (newClient != null) {
+            clients.put(resolvedTarget, newClient);
+            existingClient.shutdown();
+          } else {
+            logger.error(
+                "Created client is null for target {} during reset, keeping existing client",
+                resolvedTarget);
           }
         } catch (IOException e) {
           logger.error("Failed to create client for target {} after reset", resolvedTarget, e);
