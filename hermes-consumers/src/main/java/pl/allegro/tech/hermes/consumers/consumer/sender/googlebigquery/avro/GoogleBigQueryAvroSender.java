@@ -55,10 +55,10 @@ public class GoogleBigQueryAvroSender implements CompletableFutureAwareMessageSe
       avroDataWriterPool.acquire(target).publish(record, resultFuture);
     } catch (Exceptions.DataHasUnknownFieldException e) {
       logger.warn(
-          "Release writer for target {} due to missing field in descriptor",
+          "Release writer for target {} due to unknown field in data (schema mismatch with descriptor)",
           target.getTableName(),
           e);
-      avroDataWriterPool.reset(getGoogleBigQuerySenderTarget(message, wholeTableName));
+      avroDataWriterPool.reset(target);
       resultFuture.complete(MessageSendingResult.failedResult(e));
     } catch (Exception e) {
       resultFuture.complete(MessageSendingResult.failedResult(e));

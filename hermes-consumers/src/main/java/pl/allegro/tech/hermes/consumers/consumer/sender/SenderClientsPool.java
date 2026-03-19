@@ -43,6 +43,7 @@ public abstract class SenderClientsPool<T extends SenderTarget, C extends Sender
     clients.values().forEach(SenderClient::shutdown);
     clients.clear();
     counters.clear();
+    lastReleaseAllDate.clear();
   }
 
   /*
@@ -52,10 +53,11 @@ public abstract class SenderClientsPool<T extends SenderTarget, C extends Sender
     Instant lastReleaseDate = lastReleaseAllDate.get(resolvedTarget);
     Instant currentInstant = Instant.now();
     if (lastReleaseDate == null || lastReleaseDate.plusSeconds(30).isBefore(currentInstant)) {
-      if (clients.get(resolvedTarget) != null) {
+      C existingClient = clients.get(resolvedTarget);
+      if (existingClient != null) {
         clients.remove(resolvedTarget).shutdown();
         try {
-          C client = acquire(resolvedTarget);
+          C client = createClient(resolvedTarget);
           if (client != null) {
             clients.put(resolvedTarget, client);
           }
