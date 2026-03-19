@@ -52,7 +52,7 @@ public abstract class GoogleBigQueryDataWriter<
           e);
 
       throw e;
-    } catch (RuntimeException e) {
+    } catch (Exception e) {
       logger.warn(
           "Writer {} has failed to append rows to stream {} because of {}",
           getWriterId(),
