@@ -18,6 +18,8 @@ public class FailFastRemoteKafkaProducerProperties implements KafkaProducerParam
 
   private Duration retryBackoff = Duration.ofMillis(50);
 
+  private Duration retryBackoffMax = Duration.ofMillis(50);
+
   private Duration requestTimeout = Duration.ofSeconds(30);
 
   private Duration deliveryTimeout = Duration.ofSeconds(30);
@@ -37,6 +39,8 @@ public class FailFastRemoteKafkaProducerProperties implements KafkaProducerParam
   private boolean reportNodeMetricsEnabled = false;
 
   private boolean idempotenceEnabled = false;
+
+  private String partitionerClass = "";
 
   @Override
   public Duration getMaxBlock() {
@@ -81,6 +85,15 @@ public class FailFastRemoteKafkaProducerProperties implements KafkaProducerParam
 
   public void setRetryBackoff(Duration retryBackoff) {
     this.retryBackoff = retryBackoff;
+  }
+
+  @Override
+  public Duration getRetryBackoffMax() {
+    return retryBackoffMax;
+  }
+
+  public void setRetryBackoffMax(Duration retryBackoffMax) {
+    this.retryBackoffMax = retryBackoffMax;
   }
 
   @Override
@@ -171,5 +184,14 @@ public class FailFastRemoteKafkaProducerProperties implements KafkaProducerParam
 
   public void setIdempotenceEnabled(boolean idempotenceEnabled) {
     this.idempotenceEnabled = idempotenceEnabled;
+  }
+
+  @Override
+  public String getPartitionerClass() {
+    return partitionerClass;
+  }
+
+  public void setPartitionerClass(String partitionerClass) {
+    this.partitionerClass = partitionerClass;
   }
 }
