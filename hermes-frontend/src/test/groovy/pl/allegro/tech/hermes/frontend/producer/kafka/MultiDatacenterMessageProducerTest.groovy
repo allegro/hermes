@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.frontend.producer.kafka
 import org.apache.kafka.clients.producer.Callback
 import org.apache.kafka.clients.producer.ProducerRecord
 import pl.allegro.tech.hermes.api.Topic
+import pl.allegro.tech.hermes.common.metric.MetricsFacade
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic
 import pl.allegro.tech.hermes.frontend.publishing.PublishingCallback
 import pl.allegro.tech.hermes.frontend.publishing.message.JsonMessage
@@ -266,10 +267,15 @@ class MultiDatacenterMessageProducerTest extends Specification {
         KafkaMessageSenders senders = new KafkaMessageSenders(
                 Mock(TopicMetadataLoadingExecutor),
                 Mock(MinInSyncReplicasLoader),
-                new KafkaMessageSenders.Tuple(
-                        localSender, localSender
+                Mock(MetricsFacade),
+                new KafkaMessageSenders.SenderPair(
+                        new KafkaMessageSenderPool([localSender]),
+                        new KafkaMessageSenderPool([localSender])
                 ),
-                [new KafkaMessageSenders.Tuple(remoteSender, remoteSender)]
+                [new KafkaMessageSenders.SenderPair(
+                        new KafkaMessageSenderPool([remoteSender]),
+                        new KafkaMessageSenderPool([remoteSender])
+                )]
         )
 
         return new MultiDatacenterMessageProducer(
