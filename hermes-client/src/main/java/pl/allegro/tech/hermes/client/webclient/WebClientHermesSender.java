@@ -28,10 +28,9 @@ public class WebClientHermesSender implements HermesSender, ReactiveHermesSender
     return webClient
         .post()
         .uri(uri)
-        .syncBody(message.getBody())
+        .bodyValue(message.getBody())
         .headers(httpHeaders -> httpHeaders.setAll(message.getHeaders()))
-        .exchange()
-        .flatMap(
+        .exchangeToMono(
             response ->
                 response
                     .bodyToMono(String.class)
