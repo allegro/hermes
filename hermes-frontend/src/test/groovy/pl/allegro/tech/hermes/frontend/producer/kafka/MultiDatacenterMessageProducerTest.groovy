@@ -269,12 +269,12 @@ class MultiDatacenterMessageProducerTest extends Specification {
                 Mock(MinInSyncReplicasLoader),
                 Mock(MetricsFacade),
                 new KafkaMessageSenders.SenderPair(
-                        new KafkaMessageSenderPool([localSender]),
-                        new KafkaMessageSenderPool([localSender])
+                        new KafkaMessageSenderPool("test-local-ackLeader", [localSender]),
+                        new KafkaMessageSenderPool("test-local-ackAll", [localSender])
                 ),
                 [new KafkaMessageSenders.SenderPair(
-                        new KafkaMessageSenderPool([remoteSender]),
-                        new KafkaMessageSenderPool([remoteSender])
+                        new KafkaMessageSenderPool("test-remote-ackLeader", [remoteSender]),
+                        new KafkaMessageSenderPool("test-remote-ackAll", [remoteSender])
                 )]
         )
 

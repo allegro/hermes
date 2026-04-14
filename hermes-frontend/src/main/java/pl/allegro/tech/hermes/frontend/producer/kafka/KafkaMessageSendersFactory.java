@@ -91,8 +91,9 @@ public class KafkaMessageSendersFactory {
       String senderName) {
     KafkaMessageSenders.SenderPair localProducers =
         new KafkaMessageSenders.SenderPair(
-            createProducerPool(kafkaParameters, localKafkaProducerParameters, ACK_LEADER),
-            createProducerPool(kafkaParameters, localKafkaProducerParameters, ACK_ALL));
+            createProducerPool(
+                kafkaParameters, localKafkaProducerParameters, ACK_LEADER, senderName),
+            createProducerPool(kafkaParameters, localKafkaProducerParameters, ACK_ALL, senderName));
 
     List<KafkaMessageSenders.SenderPair> remoteProducers =
         remoteKafkaParameters.stream()
@@ -100,9 +101,9 @@ public class KafkaMessageSendersFactory {
                 kafkaProperties ->
                     new KafkaMessageSenders.SenderPair(
                         createProducerPool(
-                            kafkaProperties, remoteKafkaProducerParameters, ACK_LEADER),
+                            kafkaProperties, remoteKafkaProducerParameters, ACK_LEADER, senderName),
                         createProducerPool(
-                            kafkaProperties, remoteKafkaProducerParameters, ACK_ALL)))
+                            kafkaProperties, remoteKafkaProducerParameters, ACK_ALL, senderName)))
             .toList();
     KafkaMessageSenders senders =
         new KafkaMessageSenders(
@@ -118,12 +119,22 @@ public class KafkaMessageSendersFactory {
   private KafkaMessageSenderPool createProducerPool(
       KafkaParameters kafkaParameters,
       KafkaProducerParameters kafkaProducerParameters,
-      String acks) {
+      String acks,
+      String senderName) {
+    String poolName = senderName + "-" + acksToLabel(acks);
     List<KafkaMessageSender<byte[], byte[]>> senders =
         IntStream.range(0, kafkaProducerParameters.getPoolSize())
             .mapToObj(i -> sender(kafkaParameters, kafkaProducerParameters, acks))
             .toList();
-    return new KafkaMessageSenderPool(senders);
+    return new KafkaMessageSenderPool(poolName, senders);
+  }
+
+  private static String acksToLabel(String acks) {
+    return switch (acks) {
+      case ACK_ALL -> "ackAll";
+      case ACK_LEADER -> "ackLeader";
+      default -> "ack" + acks;
+    };
   }
 
   private KafkaMessageSender<byte[], byte[]> sender(

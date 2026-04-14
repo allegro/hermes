@@ -19,15 +19,19 @@ import java.util.List;
  */
 class KafkaMessageSenderPool {
 
+  private final String name;
   private final List<KafkaMessageSender<byte[], byte[]>> senders;
   private final KafkaMessageSenderPoolRouter router;
+  private final KafkaMessageSenderPoolReporter reporter;
 
-  KafkaMessageSenderPool(List<KafkaMessageSender<byte[], byte[]>> senders) {
+  KafkaMessageSenderPool(String name, List<KafkaMessageSender<byte[], byte[]>> senders) {
     if (senders == null || senders.isEmpty()) {
       throw new IllegalArgumentException("Senders list must not be null or empty");
     }
+    this.name = name;
     this.senders = senders;
     this.router = new KafkaMessageSenderPoolRouter(senders.size());
+    this.reporter = new KafkaMessageSenderPoolReporter(name, router);
   }
 
   /**
@@ -54,8 +58,9 @@ class KafkaMessageSenderPool {
     return senders.get(0).getDatacenter();
   }
 
-  /** Closes all senders in the pool. */
+  /** Closes all senders in the pool and stops the periodic reporter. */
   void close() {
+    reporter.close();
     senders.forEach(KafkaMessageSender::close);
   }
 }

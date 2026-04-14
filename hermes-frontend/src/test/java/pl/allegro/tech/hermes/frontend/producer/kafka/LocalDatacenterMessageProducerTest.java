@@ -89,8 +89,8 @@ public class LocalDatacenterMessageProducerTest {
           localMinInSyncReplicasLoader,
           metricsFacade,
           new KafkaMessageSenders.SenderPair(
-              new KafkaMessageSenderPool(List.of(leaderConfirmsProduceWrapper)),
-              new KafkaMessageSenderPool(List.of(everyoneConfirmsProduceWrapper))),
+              new KafkaMessageSenderPool("test-ackLeader", List.of(leaderConfirmsProduceWrapper)),
+              new KafkaMessageSenderPool("test-ackAll", List.of(everyoneConfirmsProduceWrapper))),
           emptyList());
 
   private LocalDatacenterMessageProducer producer;

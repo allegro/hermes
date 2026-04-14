@@ -2,6 +2,10 @@ package pl.allegro.tech.hermes.frontend.producer.kafka
 
 import spock.lang.Specification
 
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+
 class KafkaMessageSenderPoolRouterTest extends Specification {
 
     def "should return zero for pool size one"() {
@@ -47,6 +51,36 @@ class KafkaMessageSenderPoolRouterTest extends Specification {
         ]
     }
 
+    def "should assign topics in round-robin order"() {
+        given:
+        int poolSize = 4
+        KafkaMessageSenderPoolRouter router = new KafkaMessageSenderPoolRouter(poolSize)
+
+        expect:
+        router.route("topic.a") == 0
+        router.route("topic.b") == 1
+        router.route("topic.c") == 2
+        router.route("topic.d") == 3
+        router.route("topic.e") == 0
+        router.route("topic.f") == 1
+    }
+
+    def "should not change assignment for already seen topic"() {
+        given:
+        int poolSize = 3
+        KafkaMessageSenderPoolRouter router = new KafkaMessageSenderPoolRouter(poolSize)
+
+        when:
+        int firstCall = router.route("topic.a")
+        router.route("topic.b")
+        router.route("topic.c")
+        int secondCall = router.route("topic.a")
+
+        then:
+        firstCall == 0
+        secondCall == 0
+    }
+
     def "should distribute topics across pool"() {
         given:
         int poolSize = 4
@@ -54,26 +88,14 @@ class KafkaMessageSenderPoolRouterTest extends Specification {
         Map<Integer, Integer> distribution = new HashMap<Integer, Integer>()
 
         when:
-        (0..<100).each { i ->
+        (0..<1000).each { i ->
             int index = router.route("group.topic" + i)
             distribution.merge(index, 1, Integer::sum)
         }
 
         then:
         distribution.keySet().size() == poolSize
-        (0..<poolSize).every { { distribution.containsKey(it) && distribution.get(it) > 0 } }
-    }
-
-    def "should return non-negative index even for negative hash codes"() {
-        given:
-        int poolSize = 3
-        KafkaMessageSenderPoolRouter router = new KafkaMessageSenderPoolRouter(poolSize)
-        String topicWithNegativeHash = findTopicWithNegativeHashCode()
-
-        expect:
-        topicWithNegativeHash.hashCode() < 0
-        router.route(topicWithNegativeHash) >= 0
-        router.route(topicWithNegativeHash) < poolSize
+        (0..<poolSize).every { distribution.containsKey(it) && distribution.get(it) == 250 }
     }
 
     def "should reject pool size less than one"() {
@@ -96,35 +118,97 @@ class KafkaMessageSenderPoolRouterTest extends Specification {
         router.poolSize() == 7
     }
 
-    def "should distribute topics roughly evenly across pool members"() {
+    def "should distribute topics perfectly evenly when topic count is divisible by pool size"() {
         given:
         int poolSize = 8
-        int topicCount = 10000
+        int topicCount = 800
         KafkaMessageSenderPoolRouter router = new KafkaMessageSenderPoolRouter(poolSize)
         int[] distribution = new int[poolSize]
 
         when:
         (0..<topicCount).each { i ->
-            int index = router.route("group${i % 50}.topic${i}")
+            int index = router.route("group.topic" + i)
             distribution[index]++
         }
 
-        then: "each pool index should get between 5% and 25% of topics (expected ~12.5% for 8 members)"
-        double expectedShare = topicCount / poolSize
-        double tolerance = 0.50 // allow 50% deviation from expected share
-        (0..<poolSize).every {
-            distribution[it] >= expectedShare * (1 - tolerance) &&
-                    distribution[it] <= expectedShare * (1 + tolerance)
-        }
+        then:
+        int expectedPerMember = topicCount / poolSize
+        (0..<poolSize).every { distribution[it] == expectedPerMember }
     }
 
-    private static String findTopicWithNegativeHashCode() {
-        for (int i = 0; i < 10000; i++) {
-            String candidate = "topic.negative." + i
-            if (candidate.hashCode() < 0) {
-                return candidate
+    def "should be thread-safe and assign each topic to exactly one index"() {
+        given:
+        int poolSize = 4
+        int topicCount = 1000
+        int threadCount = 8
+        KafkaMessageSenderPoolRouter router = new KafkaMessageSenderPoolRouter(poolSize)
+        ConcurrentHashMap<String, Set<Integer>> topicResults = new ConcurrentHashMap<>()
+        CountDownLatch startLatch = new CountDownLatch(1)
+        CountDownLatch doneLatch = new CountDownLatch(threadCount)
+        def executor = Executors.newFixedThreadPool(threadCount)
+
+        when:
+        (0..<threadCount).each { t ->
+            executor.submit {
+                startLatch.await()
+                (0..<topicCount).each { i ->
+                    String topic = "group.topic" + i
+                    int index = router.route(topic)
+                    topicResults.computeIfAbsent(topic, { new ConcurrentHashMap<>().newKeySet() }).add(index)
+                }
+                doneLatch.countDown()
             }
         }
-        return "AaAa"
+        startLatch.countDown()
+        doneLatch.await()
+        executor.shutdown()
+
+        then: "each topic should have been assigned to exactly one index"
+        topicResults.every { topic, indices -> indices.size() == 1 }
+
+        and: "all indices should be within bounds"
+        topicResults.every { topic, indices -> indices.first() >= 0 && indices.first() < poolSize }
+
+        and: "distribution should be even"
+        int[] distribution = new int[poolSize]
+        topicResults.each { topic, indices -> distribution[indices.first()]++ }
+        int expectedPerMember = topicCount / poolSize
+        (0..<poolSize).every { distribution[it] == expectedPerMember }
+    }
+
+    def "getDistribution should return all zeros for fresh router"() {
+        given:
+        KafkaMessageSenderPoolRouter router = new KafkaMessageSenderPoolRouter(3)
+
+        expect:
+        router.getDistribution() == [0, 0, 0] as int[]
+    }
+
+    def "getDistribution should reflect assigned topics"() {
+        given:
+        KafkaMessageSenderPoolRouter router = new KafkaMessageSenderPoolRouter(3)
+
+        when:
+        router.route("topic.a")
+        router.route("topic.b")
+        router.route("topic.c")
+        router.route("topic.d")
+        router.route("topic.e")
+
+        then:
+        router.getDistribution() == [2, 2, 1] as int[]
+    }
+
+    def "getDistribution should not change when same topic is routed again"() {
+        given:
+        KafkaMessageSenderPoolRouter router = new KafkaMessageSenderPoolRouter(2)
+
+        when:
+        router.route("topic.a")
+        router.route("topic.a")
+        router.route("topic.a")
+
+        then:
+        router.getDistribution() == [1, 0] as int[]
     }
 }
