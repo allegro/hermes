@@ -67,14 +67,10 @@ public class LocalDatacenterMessageProducerTest {
       new MockProducer<>(true, serializer, serializer);
   private final KafkaMessageSender<byte[], byte[]> leaderConfirmsProduceWrapper =
       new KafkaMessageSender<>(
-          leaderConfirmsProducer, brokerLatencyReporter, metricsFacade, datacenter, chaosScheduler);
+          leaderConfirmsProducer, brokerLatencyReporter, datacenter, chaosScheduler);
   private final KafkaMessageSender<byte[], byte[]> everyoneConfirmsProduceWrapper =
       new KafkaMessageSender<>(
-          everyoneConfirmProducer,
-          brokerLatencyReporter,
-          metricsFacade,
-          datacenter,
-          chaosScheduler);
+          everyoneConfirmProducer, brokerLatencyReporter, datacenter, chaosScheduler);
 
   private final KafkaHeaderNameProperties kafkaHeaderNameProperties =
       new KafkaHeaderNameProperties();
@@ -91,8 +87,10 @@ public class LocalDatacenterMessageProducerTest {
       new KafkaMessageSenders(
           topicMetadataLoadingExecutor,
           localMinInSyncReplicasLoader,
-          new KafkaMessageSenders.Tuple(
-              leaderConfirmsProduceWrapper, everyoneConfirmsProduceWrapper),
+          metricsFacade,
+          new KafkaMessageSenders.SenderPair(
+              new KafkaMessageSenderPool("test-ackLeader", List.of(leaderConfirmsProduceWrapper)),
+              new KafkaMessageSenderPool("test-ackAll", List.of(everyoneConfirmsProduceWrapper))),
           emptyList());
 
   private LocalDatacenterMessageProducer producer;

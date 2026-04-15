@@ -37,4 +37,6 @@ public interface KafkaProducerParameters {
   boolean isIdempotenceEnabled();
 
   String getPartitionerClass();
+
+  int getPoolSize();
 }
