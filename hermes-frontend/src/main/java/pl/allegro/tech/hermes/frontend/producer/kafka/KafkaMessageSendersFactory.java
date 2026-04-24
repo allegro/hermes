@@ -24,19 +24,24 @@ import static org.apache.kafka.clients.producer.ProducerConfig.SEND_BUFFER_CONFI
 import static org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG;
 import static org.apache.kafka.common.config.SaslConfigs.SASL_JAAS_CONFIG;
 import static org.apache.kafka.common.config.SaslConfigs.SASL_MECHANISM;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.stream.IntStream;
 import org.apache.kafka.clients.admin.AdminClient;
+import org.slf4j.Logger;
 import pl.allegro.tech.hermes.common.kafka.KafkaParameters;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.producer.BrokerLatencyReporter;
 
 public class KafkaMessageSendersFactory {
+
+  private static final Logger logger = getLogger(KafkaMessageSendersFactory.class);
 
   private static final String ACK_ALL = "-1";
   private static final String ACK_LEADER = "1";
@@ -84,27 +89,52 @@ public class KafkaMessageSendersFactory {
       KafkaProducerParameters localKafkaProducerParameters,
       KafkaProducerParameters remoteKafkaProducerParameters,
       String senderName) {
-    KafkaMessageSenders.Tuple localProducers =
-        new KafkaMessageSenders.Tuple(
-            sender(kafkaParameters, localKafkaProducerParameters, ACK_LEADER),
-            sender(kafkaParameters, localKafkaProducerParameters, ACK_ALL));
+    KafkaMessageSenders.SenderPair localProducers =
+        new KafkaMessageSenders.SenderPair(
+            createProducerPool(
+                kafkaParameters, localKafkaProducerParameters, ACK_LEADER, senderName),
+            createProducerPool(kafkaParameters, localKafkaProducerParameters, ACK_ALL, senderName));
 
-    List<KafkaMessageSenders.Tuple> remoteProducers =
+    List<KafkaMessageSenders.SenderPair> remoteProducers =
         remoteKafkaParameters.stream()
             .map(
                 kafkaProperties ->
-                    new KafkaMessageSenders.Tuple(
-                        sender(kafkaProperties, remoteKafkaProducerParameters, ACK_LEADER),
-                        sender(kafkaProperties, remoteKafkaProducerParameters, ACK_ALL)))
+                    new KafkaMessageSenders.SenderPair(
+                        createProducerPool(
+                            kafkaProperties, remoteKafkaProducerParameters, ACK_LEADER, senderName),
+                        createProducerPool(
+                            kafkaProperties, remoteKafkaProducerParameters, ACK_ALL, senderName)))
             .toList();
     KafkaMessageSenders senders =
         new KafkaMessageSenders(
             topicMetadataLoadingExecutor,
             localMinInSyncReplicasLoader,
+            metricsFacade,
             localProducers,
             remoteProducers);
     senders.registerSenderMetrics(senderName);
     return senders;
+  }
+
+  private KafkaMessageSenderPool createProducerPool(
+      KafkaParameters kafkaParameters,
+      KafkaProducerParameters kafkaProducerParameters,
+      String acks,
+      String senderName) {
+    String poolName = senderName + "-" + acksToLabel(acks);
+    List<KafkaMessageSender<byte[], byte[]>> senders =
+        IntStream.range(0, kafkaProducerParameters.getPoolSize())
+            .mapToObj(i -> sender(kafkaParameters, kafkaProducerParameters, acks))
+            .toList();
+    return new KafkaMessageSenderPool(poolName, senders);
+  }
+
+  private static String acksToLabel(String acks) {
+    return switch (acks) {
+      case ACK_ALL -> "ackAll";
+      case ACK_LEADER -> "ackLeader";
+      default -> "ack" + acks;
+    };
   }
 
   private KafkaMessageSender<byte[], byte[]> sender(
@@ -150,6 +180,8 @@ public class KafkaMessageSendersFactory {
       props.put(PARTITIONER_CLASS_CONFIG, partitionerClass);
     }
 
+    logger.info("Creating KafkaProducer with properties (excluding auth related): {}", props);
+
     if (kafkaParameters.isAuthenticationEnabled()) {
       props.put(SASL_MECHANISM, kafkaParameters.getAuthenticationMechanism());
       props.put(SECURITY_PROTOCOL_CONFIG, kafkaParameters.getAuthenticationProtocol());
@@ -159,7 +191,6 @@ public class KafkaMessageSendersFactory {
     return new KafkaMessageSender<>(
         new org.apache.kafka.clients.producer.KafkaProducer<>(props),
         brokerLatencyReporter,
-        metricsFacade,
         kafkaParameters.getDatacenter(),
         chaosScheduler);
   }

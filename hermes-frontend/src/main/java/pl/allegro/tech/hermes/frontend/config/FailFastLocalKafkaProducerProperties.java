@@ -74,6 +74,8 @@ public class FailFastLocalKafkaProducerProperties implements KafkaProducerParame
 
   private String partitionerClass = "";
 
+  private int poolSize = 1;
+
   @Override
   public Duration getMaxBlock() {
     return maxBlock;
@@ -224,5 +226,14 @@ public class FailFastLocalKafkaProducerProperties implements KafkaProducerParame
 
   public void setPartitionerClass(String partitionerClass) {
     this.partitionerClass = partitionerClass;
+  }
+
+  @Override
+  public int getPoolSize() {
+    return poolSize;
+  }
+
+  public void setPoolSize(int poolSize) {
+    this.poolSize = poolSize;
   }
 }

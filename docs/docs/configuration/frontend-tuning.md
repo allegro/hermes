@@ -47,16 +47,25 @@ for ACK-all, there are also **two buffers** - keep this in mind when deciding on
 Kafka producer properties map 1:1 to Kafka producer configuration options. See Kafka documentation if you have any doubts
 or need an extended description.
 
-| Option                                   | Kafka config                | Description                                                                        | Default value     |
-|------------------------------------------|-----------------------------|------------------------------------------------------------------------------------|-------------------|
-| frontend.kafka.producer.metadataMaxAge   | METADATA_MAX_AGE_CONFIG     | how old can topic metadata be                                                      | 5m                |
-| frontend.kafka.producer.compressionCodec | COMPRESSION_TYPE_CONFIG     | compression algorithm                                                              | none              |
-| frontend.kafka.producer.retries          | RETRIES_CONFIG              | how many times should we retry sending                                             | Integer.MAX_VALUE |
-| frontend.kafka.producer.retryBackoff     | RETRY_BACKOFF_MS_CONFIG     | backoff between retries                                                            | 256ms             |
-| frontend.kafka.producer.retryBackoffMax  | RETRY_BACKOFF_MAX_MS_CONFIG | upper bound on backoff between retries; set equal to retryBackoff for flat retries | 256ms             |
-| frontend.kafka.producer.batchSize        | BATCH_SIZE_CONFIG           | size of sent message batch in bytes                                                | 16 kB             |
-| frontend.kafka.producer.tcpSendBuffer    | SEND_BUFFER_CONFIG          | size of TCP buffer                                                                 | 128 kB            |
-| frontend.kafka.producer.partitionerClass | PARTITIONER_CLASS_CONFIG    | fully qualified partitioner class name; if empty, Kafka default is used            | (empty)           |
+| Option                                   | Kafka config                | Description                                                                                   | Default value     |
+|------------------------------------------|-----------------------------|-----------------------------------------------------------------------------------------------|-------------------|
+| frontend.kafka.producer.metadataMaxAge   | METADATA_MAX_AGE_CONFIG     | how old can topic metadata be                                                                 | 5m                |
+| frontend.kafka.producer.compressionCodec | COMPRESSION_TYPE_CONFIG     | compression algorithm                                                                         | none              |
+| frontend.kafka.producer.retries          | RETRIES_CONFIG              | how many times should we retry sending                                                        | Integer.MAX_VALUE |
+| frontend.kafka.producer.retryBackoff     | RETRY_BACKOFF_MS_CONFIG     | backoff between retries                                                                       | 256ms             |
+| frontend.kafka.producer.retryBackoffMax  | RETRY_BACKOFF_MAX_MS_CONFIG | upper bound on backoff between retries; set equal to retryBackoff for flat retries            | 256ms             |
+| frontend.kafka.producer.batchSize        | BATCH_SIZE_CONFIG           | size of sent message batch in bytes                                                           | 16 kB             |
+| frontend.kafka.producer.tcpSendBuffer    | SEND_BUFFER_CONFIG          | size of TCP buffer                                                                            | 128 kB            |
+| frontend.kafka.producer.partitionerClass | PARTITIONER_CLASS_CONFIG    | fully qualified partitioner class name; if empty, Kafka default is used                       | (empty)           |
+| frontend.kafka.producer.poolSize         | -                           | number of Kafka producer instances per ack level; used to reduce per-producer partition count | 1                 |
+
+The fail-fast producer (used for topics with [remote datacenter fallback](../user/publishing.md#remote-datacenter-fallback))
+has its own pool size settings for local and remote datacenter producers:
+
+| Option                                                | Description                                               | Default value |
+|-------------------------------------------------------|-----------------------------------------------------------|---------------|
+| frontend.kafka.fail-fast-producer.local.poolSize      | number of Kafka producer instances per ack level (local)  | 1             |
+| frontend.kafka.fail-fast-producer.remote.poolSize     | number of Kafka producer instances per ack level (remote) | 1             |
 
 ## Graceful startup
 
