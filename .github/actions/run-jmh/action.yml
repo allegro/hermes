@@ -23,7 +23,7 @@ runs:
       id: set-raw-report-path
 
     - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v4
+      uses: gradle/actions/setup-gradle@v5
 
     - name: Build JMH JAR
       shell: bash
