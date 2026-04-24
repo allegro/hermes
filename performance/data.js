@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1776254285241,
+  "lastUpdate": 1777019566815,
   "repoUrl": "https://github.com/allegro/hermes",
   "entries": {
     "Hermes Benchmark": [
@@ -629,6 +629,96 @@ window.BENCHMARK_DATA = {
           {
             "name": "pl.allegro.tech.hermes.benchmark.frontend.HermesServerBenchmark.benchmarkPublishingLatency (sample) - gc.alloc.rate.norm",
             "value": 68184.44432389725,
+            "unit": "B/op"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "76775507+szczygiel-m@users.noreply.github.com",
+            "name": "Mateusz",
+            "username": "szczygiel-m"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "6e52595d82e7788f25a2b95cccc05c18d0a6a830",
+          "message": "Java 25, gradle 9.2, spring, spock and groovy update (#2000)\n\n* Java 25, gradle 9.2, spring, spock and groovy update\n\n* Java 25, gradle 9.2, spring, spock and groovy update\n\n* Upgrade setup-gradle in run-jmh\n\n---------\n\nCo-authored-by: Michał Dąbrowski <michal.dabrowski@allegro.com>",
+          "timestamp": "2026-04-24T10:24:16+02:00",
+          "tree_id": "94b80d9a0235b72093909600ceb05aa53593aef5",
+          "url": "https://github.com/allegro/hermes/commit/6e52595d82e7788f25a2b95cccc05c18d0a6a830"
+        },
+        "date": 1777019540798,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.consumer.HermesConsumerBenchmark.benchmarkConsumingThroughput (thrpt)",
+            "value": 8.029889632015395,
+            "range": "0.33196113156857326",
+            "unit": "ops/s"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.consumer.HermesConsumerBenchmark.benchmarkConsumingThroughput (thrpt) - gc.alloc.rate.norm",
+            "value": 167470209.85984847,
+            "unit": "B/op"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.consumer.HermesConsumerFilteringBenchmark.benchmarkConsumingThroughput (thrpt)",
+            "value": 8.658114243827766,
+            "range": "0.2841639379902826",
+            "unit": "ops/s"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.consumer.HermesConsumerFilteringBenchmark.benchmarkConsumingThroughput (thrpt) - gc.alloc.rate.norm",
+            "value": 127795256.13221288,
+            "unit": "B/op"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.frontend.HermesServerBenchmark.benchmarkPublishingThroughput (thrpt)",
+            "value": 9800.917315652317,
+            "range": "138.54786660482094",
+            "unit": "ops/s"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.frontend.HermesServerBenchmark.benchmarkPublishingThroughput (thrpt) - gc.alloc.rate.norm",
+            "value": 67785.02801512492,
+            "unit": "B/op"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.frontend.MessageRepositoryBenchmark.baselineSave (avgt)",
+            "value": 216788.54025342563,
+            "range": "19415.976197878976",
+            "unit": "ns/op"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.frontend.MessageRepositoryBenchmark.baselineSave (avgt) - gc.alloc.rate.norm",
+            "value": 8592.072245265283,
+            "unit": "B/op"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.frontend.MessageRepositoryBenchmark.hermesImplSave (avgt)",
+            "value": 214397.31842218988,
+            "range": "19570.873027106336",
+            "unit": "ns/op"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.frontend.MessageRepositoryBenchmark.hermesImplSave (avgt) - gc.alloc.rate.norm",
+            "value": 8648.05280624754,
+            "unit": "B/op"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.frontend.HermesServerBenchmark.benchmarkPublishingLatency (sample)",
+            "value": 0.20632666519377565,
+            "range": "0.0034573306535963942",
+            "unit": "ms/op"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.frontend.HermesServerBenchmark.benchmarkPublishingLatency (sample) - gc.alloc.rate.norm",
+            "value": 67675.74998658926,
             "unit": "B/op"
           }
         ]
