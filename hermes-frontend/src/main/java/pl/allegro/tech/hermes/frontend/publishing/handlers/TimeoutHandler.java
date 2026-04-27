@@ -29,34 +29,14 @@ class TimeoutHandler implements HttpHandler {
   public void handleRequest(HttpServerExchange exchange) throws Exception {
     AttachmentContent attachment = exchange.getAttachment(AttachmentContent.KEY);
     MessageState state = attachment.getMessageState();
-    boolean buffersDisabled =
-        attachment.getCachedTopic().getTopic().isFallbackToRemoteDatacenterEnabled();
 
-    state.setTimeoutHasPassed();
     if (state.setReadingTimeout()) {
       readingTimeout(exchange, attachment);
-    } else if (buffersDisabled && state.setTimeoutSendingToKafka()) {
+    } else if (state.setTimeoutSendingToKafka()) {
       sendingToKafkaTimeout(exchange, attachment);
-    } else if (state.setDelayedSending()) {
-      delayedSending(exchange, attachment);
     } else {
       state.setPrematureTimeout();
     }
-  }
-
-  private void delayedSending(HttpServerExchange exchange, AttachmentContent attachment) {
-    exchange
-        .getConnection()
-        .getWorker()
-        .execute(
-            () -> {
-              try {
-                messageEndProcessor.bufferedButDelayed(exchange, attachment);
-              } catch (RuntimeException exception) {
-                messageErrorProcessor.sendAndLog(
-                    exchange, "Exception while handling delayed message sending.", exception);
-              }
-            });
   }
 
   private void readingTimeout(HttpServerExchange exchange, AttachmentContent attachment) {

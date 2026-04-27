@@ -36,7 +36,6 @@ import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider;
 
 @Configuration
 @EnableConfigurationProperties({
-  LocalMessageStorageProperties.class,
   SchemaProperties.class,
   KafkaHeaderNameProperties.class,
   KafkaProducerProperties.class,
@@ -127,7 +126,6 @@ public class FrontendProducerConfiguration {
       KafkaProducerProperties kafkaProducerProperties,
       TopicLoadingProperties topicLoadingProperties,
       TopicsCache topicsCache,
-      LocalMessageStorageProperties localMessageStorageProperties,
       DatacenterNameProvider datacenterNameProvider,
       BrokerLatencyReporter brokerLatencyReporter,
       MetricsFacade metricsFacade,
@@ -147,8 +145,6 @@ public class FrontendProducerConfiguration {
         topicLoadingProperties.getMetadata().getRetryCount(),
         topicLoadingProperties.getMetadata().getRetryInterval(),
         topicLoadingProperties.getMetadata().getThreadPoolSize(),
-        localMessageStorageProperties
-            .getBufferedSizeBytes(), // TODO deprecated feature and will be replaced
         kafkaProducerProperties.getMetadataMaxAge(),
         chaosScheduler);
   }

@@ -39,4 +39,6 @@ public interface KafkaProducerParameters {
   String getPartitionerClass();
 
   int getPoolSize();
+
+  long getBufferMemory();
 }

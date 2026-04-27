@@ -68,8 +68,6 @@ class PublishingHandler implements HttpHandler {
                       if (messageState.setSentToKafka()) {
                         attachment.removeTimeout();
                         messageEndProcessor.sent(exchange, attachment);
-                      } else if (messageState.setDelayedSentToKafka()) {
-                        messageEndProcessor.delayedSent(attachment.getCachedTopic(), message);
                       }
                     });
           }
@@ -101,11 +99,7 @@ class PublishingHandler implements HttpHandler {
           }
         });
 
-    if (messageState.setSendingToKafka()
-        && !attachment.getCachedTopic().getTopic().isFallbackToRemoteDatacenterEnabled()
-        && messageState.setDelayedProcessing()) {
-      messageEndProcessor.bufferedButDelayedProcessing(exchange, attachment);
-    }
+    messageState.setSendingToKafka();
   }
 
   private void handleNotPublishedMessage(
