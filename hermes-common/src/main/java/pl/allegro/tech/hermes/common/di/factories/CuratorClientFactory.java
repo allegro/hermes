@@ -61,7 +61,8 @@ public class CuratorClientFactory {
                 new ExponentialBackoffRetry(
                     (int) zookeeperParameters.getBaseSleepTime().toMillis(),
                     zookeeperParameters.getMaxRetries(),
-                    (int) zookeeperParameters.getMaxSleepTime().toMillis()));
+                    (int) zookeeperParameters.getMaxSleepTime().toMillis()))
+            .ensembleTracker(zookeeperParameters.isEnsembleTrackerEnabled());
 
     zookeeperAuthentication.ifPresent(
         it -> {

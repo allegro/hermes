@@ -29,4 +29,6 @@ public interface ZookeeperParameters {
   String getUser();
 
   String getPassword();
+
+  boolean isEnsembleTrackerEnabled();
 }

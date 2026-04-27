@@ -69,7 +69,8 @@ public class ZookeeperClientManager {
             .connectString(parameters.getConnectionString())
             .sessionTimeoutMs((int) parameters.getSessionTimeout().toMillis())
             .connectionTimeoutMs((int) parameters.getConnectionTimeout().toMillis())
-            .retryPolicy(retryPolicy);
+            .retryPolicy(retryPolicy)
+            .ensembleTracker(parameters.isEnsembleTrackerEnabled());
 
     if (parameters.isAuthenticationEnabled()) {
       builder.authorization(

@@ -9,7 +9,7 @@ public class ZookeeperProperties implements ZookeeperParameters {
 
   private String datacenter = "dc";
 
-  private Duration baseSleepTime = Duration.ofSeconds(1000);
+  private Duration baseSleepTime = Duration.ofSeconds(1);
 
   private Duration maxSleepTime = Duration.ofSeconds(30);
 
@@ -22,6 +22,8 @@ public class ZookeeperProperties implements ZookeeperParameters {
   private String root = "/hermes";
 
   private int processingThreadPoolSize = 5;
+
+  private boolean ensembleTracker = false;
 
   private ZookeeperAuthenticationProperties authentication =
       new ZookeeperAuthenticationProperties();
@@ -124,6 +126,15 @@ public class ZookeeperProperties implements ZookeeperParameters {
 
   public void setProcessingThreadPoolSize(int processingThreadPoolSize) {
     this.processingThreadPoolSize = processingThreadPoolSize;
+  }
+
+  @Override
+  public boolean isEnsembleTrackerEnabled() {
+    return ensembleTracker;
+  }
+
+  public void setEnsembleTrackerEnabled(boolean ensembleTrackerEnabled) {
+    this.ensembleTracker = ensembleTrackerEnabled;
   }
 
   public ZookeeperAuthenticationProperties getAuthentication() {
