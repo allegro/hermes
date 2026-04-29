@@ -8,7 +8,7 @@ import spock.lang.Specification
 
 import java.util.concurrent.LinkedBlockingQueue
 
-class HttpClientsWorkloadReporterTest extends Specification {
+class HttpClientsMetricsReporterTest extends Specification {
 
     def "should return sum of http/1 and http/2 clients destinations"() {
         given:
@@ -32,12 +32,13 @@ class HttpClientsWorkloadReporterTest extends Specification {
         def http2Client = Mock(HttpClient)
         http2Client.getDestinations() >> [http2Destination]
 
-        def reporter = new HttpClientsWorkloadReporter(
+        def reporter = new HttpClientsMetricsReporter(
                 Mock(MetricsFacade),
                 http1Client,
                 http1BatchClient,
                 new Http2ClientHolder(http2Client),
                 true,
+                false,
                 false)
 
         expect:
@@ -60,7 +61,7 @@ class HttpClientsWorkloadReporterTest extends Specification {
         def http1BatchClient = Mock(HttpClient)
         http1BatchClient.getDestinations() >> []
 
-        def reporter = new HttpClientsWorkloadReporter(Mock(MetricsFacade), http1Client, http1BatchClient, new Http2ClientHolder(null), true, false)
+        def reporter = new HttpClientsMetricsReporter(Mock(MetricsFacade), http1Client, http1BatchClient, new Http2ClientHolder(null), true, false, false)
 
         expect:
         reporter.queuesSize == 3
