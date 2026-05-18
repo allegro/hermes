@@ -54,14 +54,14 @@ Once created, you can start publishing messages. Hermes Client API is asynchrono
 JSON sender sets `application/json` content type.
 
 ```java
-hermesClient.publishJSON("com.group.json", "{hello: 1}");
+hermesClient.publishJSON("com.group.json","{hello: 1}");
 ```
 
 Avro sender sets `avro/binary` content type. It also requires to pass Avro schema version of this message, which is
 passed on to Hermes in `Schema-Version` header.
 
 ```java
-hermesClient.publishAvro("com.group.avro", 1, avroMessage.getBytes());
+hermesClient.publishAvro("com.group.avro",1,avroMessage.getBytes());
 ```
 
 You can also use `HermesMessage#Builder` to create HermesMessage object, to e.g. pass custom headers:
@@ -151,31 +151,31 @@ become underscores, counters get the `_total` suffix, timers get `_seconds` suff
 
 #### Counters
 
-| Micrometer name | Prometheus name | Tags | Description |
-|---|---|---|---|
-| `hermes-client.status` | `hermes_client_status_total` | `topic`, `code` | Total number of HTTP responses received from Hermes, partitioned by HTTP status code. |
-| `hermes-client.publish.attempt` | `hermes_client_publish_attempt_total` | `topic` | Total number of messages for which the publish process has completed (either successfully or after exhausting all retries). |
-| `hermes-client.publish.failure` | `hermes_client_publish_failure_total` | `topic` | Total number of individual publish attempts that received a failure (non-2xx) HTTP response. |
-| `hermes-client.publish.finally.success` | `hermes_client_publish_finally_success_total` | `topic` | Total number of messages that were ultimately published successfully (with or without retries). |
-| `hermes-client.publish.finally.failure` | `hermes_client_publish_finally_failure_total` | `topic` | Total number of messages that ultimately failed to be published (after all retries were exhausted or a non-2xx response was final). |
-| `hermes-client.publish.retry.attempt` | `hermes_client_publish_retry_attempt_total` | `topic` | Total number of messages for which at least one retry was attempted, regardless of the final outcome. |
-| `hermes-client.publish.retry.success` | `hermes_client_publish_retry_success_total` | `topic` | Total number of messages that were published successfully after at least one retry. |
-| `hermes-client.publish.retry.failure` | `hermes_client_publish_retry_failure_total` | `topic` | Total number of individual retry attempts that resulted in a failure response. |
-| `hermes-client.failure` | `hermes_client_failure_total` | `topic` | Total number of failed publish attempts (exceptions or non-2xx responses), including each failed retry. |
-| `hermes-client.retries.count` | `hermes_client_retries_count_total` | `topic` | Total number of retry attempts triggered by a failed previous attempt (exception or response matching retry condition). |
-| `hermes-client.retries.success` | `hermes_client_retries_success_total` | `topic` | Total number of messages for which the publish completed without exhausting all retries (including first-attempt successes). |
-| `hermes-client.retries.exhausted` | `hermes_client_retries_exhausted_total` | `topic` | Total number of messages for which all retry attempts were exhausted without success. |
+| Micrometer name                         | Prometheus name                               | Tags            | Description                                                                                                                         |
+|-----------------------------------------|-----------------------------------------------|-----------------|-------------------------------------------------------------------------------------------------------------------------------------|
+| `hermes-client.status`                  | `hermes_client_status_total`                  | `topic`, `code` | Total number of HTTP responses received from Hermes, partitioned by HTTP status code.                                               |
+| `hermes-client.publish.attempt`         | `hermes_client_publish_attempt_total`         | `topic`         | Total number of messages for which the publish process has completed (either successfully or after exhausting all retries).         |
+| `hermes-client.publish.failure`         | `hermes_client_publish_failure_total`         | `topic`         | Total number of individual publish attempts that received a failure (non-2xx) HTTP response.                                        |
+| `hermes-client.publish.finally.success` | `hermes_client_publish_finally_success_total` | `topic`         | Total number of messages that were ultimately published successfully (with or without retries).                                     |
+| `hermes-client.publish.finally.failure` | `hermes_client_publish_finally_failure_total` | `topic`         | Total number of messages that ultimately failed to be published (after all retries were exhausted or a non-2xx response was final). |
+| `hermes-client.publish.retry.attempt`   | `hermes_client_publish_retry_attempt_total`   | `topic`         | Total number of messages for which at least one retry was attempted, regardless of the final outcome.                               |
+| `hermes-client.publish.retry.success`   | `hermes_client_publish_retry_success_total`   | `topic`         | Total number of messages that were published successfully after at least one retry.                                                 |
+| `hermes-client.publish.retry.failure`   | `hermes_client_publish_retry_failure_total`   | `topic`         | Total number of individual retry attempts that resulted in a failure response.                                                      |
+| `hermes-client.failure`                 | `hermes_client_failure_total`                 | `topic`         | Total number of failed publish attempts (exceptions or non-2xx responses), including each failed retry.                             |
+| `hermes-client.retries.count`           | `hermes_client_retries_count_total`           | `topic`         | Total number of retry attempts triggered by a failed previous attempt (exception or response matching retry condition).             |
+| `hermes-client.retries.success`         | `hermes_client_retries_success_total`         | `topic`         | Total number of messages for which the publish completed without exhausting all retries (including first-attempt successes).        |
+| `hermes-client.retries.exhausted`       | `hermes_client_retries_exhausted_total`       | `topic`         | Total number of messages for which all retry attempts were exhausted without success.                                               |
 
 #### Timer
 
-| Micrometer name | Prometheus name | Tags | Description |
-|---|---|---|---|
+| Micrometer name         | Prometheus name                                                                                                   | Tags    | Description                                                                                   |
+|-------------------------|-------------------------------------------------------------------------------------------------------------------|---------|-----------------------------------------------------------------------------------------------|
 | `hermes-client.latency` | `hermes_client_latency_seconds_count` / `hermes_client_latency_seconds_sum` / `hermes_client_latency_seconds_max` | `topic` | Time spent sending a message to Hermes, recorded for every publish attempt including retries. |
 
 #### Distribution summary (histogram)
 
-| Micrometer name | Prometheus name | Tags | Description |
-|---|---|---|---|
+| Micrometer name                  | Prometheus name                                                                                                      | Tags    | Description                                                                                                                                                                                                         |
+|----------------------------------|----------------------------------------------------------------------------------------------------------------------|---------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `hermes-client.retries.attempts` | `hermes_client_retries_attempts_count` / `hermes_client_retries_attempts_sum` / `hermes_client_retries_attempts_max` | `topic` | Distribution of the number of retry attempts per message. Recorded when the publish completes without exhausting all retries — value is 0 when no retries were needed. Not recorded when all retries are exhausted. |
 
 ### Example dashboard queries
@@ -183,6 +183,7 @@ become underscores, counters get the `_total` suffix, timers get `_seconds` suff
 Below are example PromQL / MetricsQL queries that can be used to build a Hermes topic monitoring dashboard.
 
 **Publish success rate (%):**
+
 ```promql
 sum(rate(hermes_client_publish_finally_success_total{topic="com_group.topic"}[5m]))
 /
@@ -201,6 +202,7 @@ histogram_quantile(0.99, rate(hermes_client_latency_seconds_bucket{topic="com_gr
 ```
 
 **Retry rate (% of publishes that required retries):**
+
 ```promql
 sum(rate(hermes_client_publish_retry_attempt_total{topic="com_group.topic"}[5m]))
 /
@@ -209,6 +211,7 @@ sum(rate(hermes_client_publish_attempt_total{topic="com_group.topic"}[5m]))
 ```
 
 **Average number of retries per message:**
+
 ```promql
 sum(rate(hermes_client_retries_attempts_sum{topic="com_group.topic"}[5m]))
 /
@@ -216,6 +219,7 @@ sum(rate(hermes_client_retries_attempts_count{topic="com_group.topic"}[5m]))
 ```
 
 **Retries exhausted rate:**
+
 ```promql
 sum(rate(hermes_client_retries_exhausted_total{topic="com_group.topic"}[5m]))
 ```
