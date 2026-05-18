@@ -26,7 +26,7 @@ public class OfflineClientsEndpoint {
   private final Optional<OfflineClientsService> offlineClientsService;
 
   OfflineClientsEndpoint(Optional<OfflineClientsService> offlineClientsService) {
-    if (!offlineClientsService.isPresent()) {
+    if (offlineClientsService.isEmpty()) {
       logger.info("Offline clients bean is absent");
     }
     this.offlineClientsService = offlineClientsService;

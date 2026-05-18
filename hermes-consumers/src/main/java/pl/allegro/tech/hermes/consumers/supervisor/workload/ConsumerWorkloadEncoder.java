@@ -29,8 +29,7 @@ class ConsumerWorkloadEncoder {
     Set<SubscriptionId> ids =
         subscriptions.stream()
             .map(this.subscriptionIds::getSubscriptionId)
-            .filter(Optional::isPresent)
-            .map(Optional::get)
+            .flatMap(Optional::stream)
             .collect(Collectors.toSet());
 
     AssignmentsEncoder.SubscriptionsEncoder subscriptionsEncoder =

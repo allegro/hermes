@@ -86,7 +86,7 @@ public class ConsumerAssignmentCache implements NodeCacheListener {
 
     callbacks.forEach(
         callback -> {
-          if (!callback.watchedConsumerId().isPresent()
+          if (callback.watchedConsumerId().isEmpty()
               || callback.watchedConsumerId().get().equals(consumerId)) {
             assignmentDeletions.forEach(callback::onAssignmentRemoved);
             assignmentsAdditions.forEach(callback::onSubscriptionAssigned);

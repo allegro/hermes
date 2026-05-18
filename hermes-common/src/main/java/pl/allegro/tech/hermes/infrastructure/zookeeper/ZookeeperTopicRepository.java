@@ -56,8 +56,7 @@ public class ZookeeperTopicRepository extends ZookeeperBasedRepository implement
   public List<Topic> listTopics(String groupName) {
     return listTopicNames(groupName).stream()
         .map(name -> getTopicDetails(new TopicName(groupName, name), true))
-        .filter(Optional::isPresent)
-        .map(Optional::get)
+        .flatMap(Optional::stream)
         .collect(Collectors.toList());
   }
 
@@ -196,8 +195,7 @@ public class ZookeeperTopicRepository extends ZookeeperBasedRepository implement
   public List<Topic> getTopicsDetails(Collection<TopicName> topicNames) {
     return topicNames.stream()
         .map(topicName -> getTopicDetails(topicName, true))
-        .filter(Optional::isPresent)
-        .map(Optional::get)
+        .flatMap(Optional::stream)
         .collect(Collectors.toList());
   }
 
