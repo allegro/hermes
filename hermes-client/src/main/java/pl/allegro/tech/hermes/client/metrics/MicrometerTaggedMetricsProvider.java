@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 
 public class MicrometerTaggedMetricsProvider implements MetricsProvider {
 
-  static final Map<String, String> METRIC_DESCRIPTIONS =
+  private static final Map<String, String> METRIC_DESCRIPTIONS =
       Map.ofEntries(
           Map.entry(
               "latency",

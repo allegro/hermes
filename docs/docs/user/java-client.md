@@ -54,7 +54,7 @@ Once created, you can start publishing messages. Hermes Client API is asynchrono
 JSON sender sets `application/json` content type.
 
 ```java
-hermesClient.publishJSON("com.group.json","{hello: 1}");
+hermesClient.publishJSON("com.group.json", "{hello: 1}");
 ```
 
 Avro sender sets `avro/binary` content type. It also requires to pass Avro schema version of this message, which is
