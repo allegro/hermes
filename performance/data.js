@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1779279816614,
+  "lastUpdate": 1779283827911,
   "repoUrl": "https://github.com/allegro/hermes",
   "entries": {
     "Hermes Benchmark": [
@@ -1013,6 +1013,74 @@ window.BENCHMARK_DATA = {
           {
             "name": "pl.allegro.tech.hermes.benchmark.frontend.HermesServerBenchmark.benchmarkPublishingLatency (sample) - gc.alloc.rate.norm",
             "value": 67393.49831983664,
+            "unit": "B/op"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "76775507+szczygiel-m@users.noreply.github.com",
+            "name": "Mateusz",
+            "username": "szczygiel-m"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "bcb3ba4b9bdd50829fe240917fbb470b1ce82dde",
+          "message": "Clear error message for topic removal (#2039)\n\n* Clear error message for topic removal\n\n* Clear error message for topic removal",
+          "timestamp": "2026-05-20T15:24:01+02:00",
+          "tree_id": "56ad4179b4606203cc58f225c86c5131943682c6",
+          "url": "https://github.com/allegro/hermes/commit/bcb3ba4b9bdd50829fe240917fbb470b1ce82dde"
+        },
+        "date": 1779283799557,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.consumer.HermesConsumerBenchmark.benchmarkConsumingThroughput (thrpt)",
+            "value": 7.582157395057757,
+            "range": "0.2673123641491696",
+            "unit": "ops/s"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.consumer.HermesConsumerBenchmark.benchmarkConsumingThroughput (thrpt) - gc.alloc.rate.norm",
+            "value": 184365061.40689656,
+            "unit": "B/op"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.consumer.HermesConsumerFilteringBenchmark.benchmarkConsumingThroughput (thrpt)",
+            "value": 8.256676569078328,
+            "range": "0.3614395925998016",
+            "unit": "ops/s"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.consumer.HermesConsumerFilteringBenchmark.benchmarkConsumingThroughput (thrpt) - gc.alloc.rate.norm",
+            "value": 139672687.97580644,
+            "unit": "B/op"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.frontend.HermesServerBenchmark.benchmarkPublishingThroughput (thrpt)",
+            "value": 7153.008796751036,
+            "range": "342.7901708633789",
+            "unit": "ops/s"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.frontend.HermesServerBenchmark.benchmarkPublishingThroughput (thrpt) - gc.alloc.rate.norm",
+            "value": 67188.91245867113,
+            "unit": "B/op"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.frontend.HermesServerBenchmark.benchmarkPublishingLatency (sample)",
+            "value": 0.2754850968594513,
+            "range": "0.004600807033045305",
+            "unit": "ms/op"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.frontend.HermesServerBenchmark.benchmarkPublishingLatency (sample) - gc.alloc.rate.norm",
+            "value": 67540.60860097384,
             "unit": "B/op"
           }
         ]
