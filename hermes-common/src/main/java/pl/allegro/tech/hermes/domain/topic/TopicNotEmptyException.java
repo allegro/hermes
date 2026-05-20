@@ -10,7 +10,8 @@ public class TopicNotEmptyException extends HermesException {
     super(
         String.format(
             "Topic %s has subscriptions without autoDeleteWithTopic enabled."
-                + " Remove them or enable this flag before deleting the topic.",
+                + " Remove the remaining subscriptions or enable the autoDeleteWithTopic flag"
+                + " before deleting the topic.",
             topicName.qualifiedName()));
   }
 
