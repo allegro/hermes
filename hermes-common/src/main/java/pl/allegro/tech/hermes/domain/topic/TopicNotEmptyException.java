@@ -7,7 +7,12 @@ import pl.allegro.tech.hermes.common.exception.HermesException;
 public class TopicNotEmptyException extends HermesException {
 
   public TopicNotEmptyException(TopicName topicName) {
-    super(String.format("Topic %s is not empty", topicName.qualifiedName()));
+    super(
+        String.format(
+            "Topic %s has subscriptions without autoDeleteWithTopic enabled."
+                + " Remove the remaining subscriptions or enable the autoDeleteWithTopic flag"
+                + " before deleting the topic.",
+            topicName.qualifiedName()));
   }
 
   @Override
