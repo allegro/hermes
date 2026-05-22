@@ -95,7 +95,7 @@ class MessageCreateHandler implements HttpHandler {
   private static String buildDetailedMessage(Exception exception) {
     String message = exception.getMessage();
     Throwable cause = exception.getCause();
-    if (message == null) {
+    if (message == null || message.isEmpty()) {
       return cause != null && cause.getMessage() != null ? cause.getMessage() : "";
     }
     if (cause != null
