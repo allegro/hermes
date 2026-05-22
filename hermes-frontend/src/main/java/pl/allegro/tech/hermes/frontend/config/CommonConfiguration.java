@@ -30,7 +30,6 @@ import pl.allegro.tech.hermes.common.message.undelivered.ZookeeperUndeliveredMes
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageHeaderSchemaIdContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageHeaderSchemaVersionContentWrapper;
-import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageSchemaIdAwareContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.AvroMessageSchemaVersionTruncationContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.CompositeMessageContentWrapper;
 import pl.allegro.tech.hermes.common.message.wrapper.JsonMessageContentWrapper;
@@ -59,6 +58,9 @@ import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider;
 import pl.allegro.tech.hermes.infrastructure.dc.DcNameSource;
 import pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProvider;
 import pl.allegro.tech.hermes.infrastructure.dc.EnvironmentVariableDatacenterNameProvider;
+import pl.allegro.tech.hermes.infrastructure.logback.LoggingSubscriptionRepository;
+import pl.allegro.tech.hermes.infrastructure.logback.LoggingTopicRepository;
+import pl.allegro.tech.hermes.infrastructure.logback.LoggingWorkloadConstraintsRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperGroupRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperMessagePreviewRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperOAuthProviderRepository;
@@ -102,7 +104,9 @@ public class CommonConfiguration {
       ZookeeperPaths paths,
       ObjectMapper mapper,
       TopicRepository topicRepository) {
-    return new ZookeeperSubscriptionRepository(zookeeper, mapper, paths, topicRepository);
+    ZookeeperSubscriptionRepository zkRepository =
+        new ZookeeperSubscriptionRepository(zookeeper, mapper, paths, topicRepository);
+    return new LoggingSubscriptionRepository(zkRepository);
   }
 
   @Bean
@@ -117,7 +121,9 @@ public class CommonConfiguration {
       ZookeeperPaths paths,
       ObjectMapper mapper,
       GroupRepository groupRepository) {
-    return new ZookeeperTopicRepository(zookeeper, mapper, paths, groupRepository);
+    ZookeeperTopicRepository zkRepository =
+        new ZookeeperTopicRepository(zookeeper, mapper, paths, groupRepository);
+    return new LoggingTopicRepository(zkRepository);
   }
 
   @Bean
@@ -193,26 +199,20 @@ public class CommonConfiguration {
   }
 
   @Bean
-  public ObjectMapper objectMapper(
-      SchemaProperties schemaProperties, TopicDefaultsProperties topicDefaults) {
-    return new ObjectMapperFactory(
-            schemaProperties.isIdSerializationEnabled(),
-            topicDefaults.isFallbackToRemoteDatacenterEnabled())
-        .provide();
+  public ObjectMapper objectMapper(TopicDefaultsProperties topicDefaults) {
+    return new ObjectMapperFactory(topicDefaults.isFallbackToRemoteDatacenterEnabled()).provide();
   }
 
   @Bean
   public CompositeMessageContentWrapper messageContentWrapper(
       JsonMessageContentWrapper jsonMessageContentWrapper,
       AvroMessageContentWrapper avroMessageContentWrapper,
-      AvroMessageSchemaIdAwareContentWrapper schemaIdAwareContentWrapper,
       AvroMessageHeaderSchemaVersionContentWrapper headerSchemaVersionContentWrapper,
       AvroMessageHeaderSchemaIdContentWrapper headerSchemaIdContentWrapper,
       AvroMessageSchemaVersionTruncationContentWrapper schemaVersionTruncationContentWrapper) {
     return new CompositeMessageContentWrapper(
         jsonMessageContentWrapper,
         avroMessageContentWrapper,
-        schemaIdAwareContentWrapper,
         headerSchemaVersionContentWrapper,
         headerSchemaIdContentWrapper,
         schemaVersionTruncationContentWrapper);
@@ -267,15 +267,6 @@ public class CommonConfiguration {
   }
 
   @Bean
-  public AvroMessageSchemaIdAwareContentWrapper avroMessageSchemaIdAwareContentWrapper(
-      SchemaRepository schemaRepository,
-      AvroMessageContentWrapper avroMessageContentWrapper,
-      MetricsFacade metricsFacade) {
-    return new AvroMessageSchemaIdAwareContentWrapper(
-        schemaRepository, avroMessageContentWrapper, metricsFacade);
-  }
-
-  @Bean
   public KafkaNamesMapper prodKafkaNamesMapper(KafkaClustersProperties kafkaClustersProperties) {
     return new NamespaceKafkaNamesMapper(
         kafkaClustersProperties.getNamespace(), kafkaClustersProperties.getNamespaceSeparator());
@@ -298,7 +289,8 @@ public class CommonConfiguration {
   @Bean
   public WorkloadConstraintsRepository workloadConstraintsRepository(
       CuratorFramework curator, ObjectMapper mapper, ZookeeperPaths paths) {
-    return new ZookeeperWorkloadConstraintsRepository(curator, mapper, paths);
+    return new LoggingWorkloadConstraintsRepository(
+        new ZookeeperWorkloadConstraintsRepository(curator, mapper, paths));
   }
 
   @Bean

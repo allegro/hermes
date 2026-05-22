@@ -12,19 +12,19 @@ Each **topic** and **subscription** in Hermes is owned by an **owner**. Hermes i
 
 ## Group
 
-Operation             | Permissions
---------------------- | -----------
-Add new group         | **administrator**
-Remove existing group | **administrator**
-Modify group          | **administrator**
+| Operation             | Permissions       |
+|-----------------------|-------------------|
+| Add new group         | **administrator** |
+| Remove existing group | **administrator** |
+| Modify group          | **administrator** |
 
 ## Topics
 
-Operation             | Permissions
---------------------- | -----------
-Add new topic         | any logged in user
-Remove existing topic | **topic owner**
-Modify topic          | **topic owner**
+| Operation             | Permissions        |
+|-----------------------|--------------------|
+| Add new topic         | any logged in user |
+| Remove existing topic | **topic owner**    |
+| Modify topic          | **topic owner**    |
 
 ### Publishing permission
 
@@ -33,11 +33,11 @@ How publisher name is evaluated is deployment specific. It can be extracted from
 Worth noting is that for authorization features to work those have to be enabled on your hermes cluster by your administrator.
 
 
-Option                       | Description                                         | Options     | Default value
----------------------------- | --------------------------------------------------- | ----------- | -------------
-enabled                      | enable topic authorization                          | true, false | false
-unauthenticatedAccessEnabled | allow publishing for services without credentials   | true, false | false
-publishers                   | array of service names that are allowed to publish  | -           | []
+| Option                       | Description                                        | Options     | Default value |
+|------------------------------|----------------------------------------------------|-------------|---------------|
+| enabled                      | enable topic authorization                         | true, false | false         |
+| unauthenticatedAccessEnabled | allow publishing for services without credentials  | true, false | false         |
+| publishers                   | array of service names that are allowed to publish | -           | []            |
 
 Example:
 
@@ -63,9 +63,9 @@ Example:
 
 ## Subscriptions
 
-Operation                    | Permissions
----------------------------- | -----------
-Add new subscription         | any logged in user
-Remove existing subscription | **subscription owner** or **topic owner**
-Modify subscription          | **subscription owner** or **topic owner**
-Retransmit messages          | **subscription owner** or **topic owner**
+| Operation                    | Permissions                               |
+|------------------------------|-------------------------------------------|
+| Add new subscription         | any logged in user                        |
+| Remove existing subscription | **subscription owner** or **topic owner** |
+| Modify subscription          | **subscription owner** or **topic owner** |
+| Retransmit messages          | **subscription owner** or **topic owner** |

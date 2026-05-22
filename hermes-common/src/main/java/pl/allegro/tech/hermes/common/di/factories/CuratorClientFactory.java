@@ -16,12 +16,12 @@ import pl.allegro.tech.hermes.common.exception.InternalProcessingException;
 
 public class CuratorClientFactory {
 
-  public static class ZookeeperAuthorization {
+  public static class ZookeeperAuthentication {
     private final String scheme;
     private final String user;
     private final String password;
 
-    public ZookeeperAuthorization(String scheme, String user, String password) {
+    public ZookeeperAuthentication(String scheme, String user, String password) {
       this.scheme = scheme;
       this.user = user;
       this.password = password;
@@ -44,7 +44,7 @@ public class CuratorClientFactory {
   }
 
   public CuratorFramework provide(
-      String connectString, Optional<ZookeeperAuthorization> zookeeperAuthorization) {
+      String connectString, Optional<ZookeeperAuthentication> zookeeperAuthentication) {
     ThreadFactory threadFactory =
         new ThreadFactoryBuilder()
             .setNameFormat("hermes-curator-%d")
@@ -61,9 +61,10 @@ public class CuratorClientFactory {
                 new ExponentialBackoffRetry(
                     (int) zookeeperParameters.getBaseSleepTime().toMillis(),
                     zookeeperParameters.getMaxRetries(),
-                    (int) zookeeperParameters.getMaxSleepTime().toMillis()));
+                    (int) zookeeperParameters.getMaxSleepTime().toMillis()))
+            .ensembleTracker(zookeeperParameters.isEnsembleTrackerEnabled());
 
-    zookeeperAuthorization.ifPresent(
+    zookeeperAuthentication.ifPresent(
         it -> {
           builder.authorization(it.scheme, it.getAuth());
           builder.aclProvider(

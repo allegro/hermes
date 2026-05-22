@@ -28,7 +28,6 @@ export const dummyTopic: TopicWithSchema = {
   trackingEnabled: false,
   migratedFromJsonType: false,
   fallbackToRemoteDatacenterEnabled: false,
-  schemaIdAwareSerializationEnabled: false,
   contentType: ContentType.AVRO,
   maxMessageSize: defaultMaxMessageSize,
   auth: {
@@ -44,14 +43,6 @@ export const dummyTopic: TopicWithSchema = {
       infinite: false,
     },
   },
-  labels: [
-    {
-      value: 'internal',
-    },
-    {
-      value: 'analytics',
-    },
-  ],
   createdAt: 1634916242.877,
   modifiedAt: 1636451113.517,
 };

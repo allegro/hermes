@@ -1,7 +1,10 @@
 package pl.allegro.tech.hermes.consumers.supervisor.process;
 
+import static pl.allegro.tech.hermes.common.logging.LoggingFields.SUBSCRIPTION_NAME;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.spi.LoggingEventBuilder;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.common.exception.RetransmissionException;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
@@ -24,7 +27,9 @@ public class Retransmitter {
   }
 
   public void reloadOffsets(SubscriptionName subscriptionName, Consumer consumer) {
-    logger.info("Reloading offsets for {}", subscriptionName);
+    LoggingEventBuilder subscriptionLogger =
+        logger.atInfo().addKeyValue(SUBSCRIPTION_NAME, subscriptionName.getQualifiedName());
+    subscriptionLogger.log("Reloading offsets for {}", subscriptionName);
     try {
       PartitionOffsets offsets =
           subscriptionOffsetChangeIndicator.getSubscriptionOffsets(
@@ -42,7 +47,7 @@ public class Retransmitter {
             brokersClusterName,
             partitionOffset.getTopic(),
             partitionOffset.getPartition());
-        logger.info(
+        subscriptionLogger.log(
             "Removed offset indicator for subscription={} and partition={}",
             subscriptionName,
             partitionOffset.getPartition());

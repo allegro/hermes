@@ -1,13 +1,11 @@
 package pl.allegro.tech.hermes.management.infrastructure.metrics;
 
-import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.TopicMetrics;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.management.domain.topic.TopicMetricsRepository;
 
-@Component
 public class HybridTopicMetricsRepository implements TopicMetricsRepository {
 
   private final MonitoringTopicMetricsProvider monitoringTopicMetricsProvider;

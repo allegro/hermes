@@ -1,11 +1,10 @@
 package pl.allegro.tech.hermes.management.config.subscription.consumergroup;
 
 import java.time.Clock;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
+import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionManagement;
 import pl.allegro.tech.hermes.management.domain.subscription.consumergroup.ConsumerGroupCleanUpScheduler;
 import pl.allegro.tech.hermes.management.domain.subscription.consumergroup.ConsumerGroupToDeleteRepository;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
@@ -16,19 +15,18 @@ import pl.allegro.tech.hermes.management.infrastructure.zookeeper.ZookeeperRepos
 @EnableConfigurationProperties(ConsumerGroupCleanUpProperties.class)
 public class ConsumerGroupCleanUpConfig {
 
-  @Autowired ZookeeperRepositoryManager zookeeperRepositoryManager;
-
   @Bean
   ConsumerGroupCleanUpScheduler consumerGroupCleanUpScheduler(
       MultiDCAwareService multiDCAwareService,
-      SubscriptionService subscriptionService,
+      SubscriptionManagement subscriptionManagement,
       ConsumerGroupCleanUpProperties properties,
       ManagementLeadership managementLeadership,
+      ZookeeperRepositoryManager zookeeperRepositoryManager,
       Clock clock) {
     return new ConsumerGroupCleanUpScheduler(
         multiDCAwareService,
         zookeeperRepositoryManager.getRepositoriesByType(ConsumerGroupToDeleteRepository.class),
-        subscriptionService,
+        subscriptionManagement,
         properties,
         managementLeadership,
         clock);

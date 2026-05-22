@@ -20,6 +20,7 @@ import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreviewRepository;
 import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraintsRepository;
 import pl.allegro.tech.hermes.infrastructure.dc.DatacenterNameProvider;
+import pl.allegro.tech.hermes.infrastructure.logback.LoggingWorkloadConstraintsRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperCredentialsRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperMessagePreviewRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperOAuthProviderRepository;
@@ -28,7 +29,7 @@ import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperSubscriptionOffs
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperSubscriptionRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperTopicRepository;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperWorkloadConstraintsRepository;
-import pl.allegro.tech.hermes.management.config.storage.ZookeeperGroupRepositoryFactory;
+import pl.allegro.tech.hermes.management.config.zookeeper.ZookeeperGroupRepositoryFactory;
 import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryManager;
 import pl.allegro.tech.hermes.management.domain.detection.InactiveTopicsRepository;
@@ -120,7 +121,8 @@ public class ZookeeperRepositoryManager implements RepositoryManager {
       messagePreviewRepositoriesByDc.put(dcName, messagePreviewRepository);
 
       WorkloadConstraintsRepository workloadConstraintsRepository =
-          new ZookeeperWorkloadConstraintsRepository(zookeeper, mapper, paths);
+          new LoggingWorkloadConstraintsRepository(
+              new ZookeeperWorkloadConstraintsRepository(zookeeper, mapper, paths));
       workloadConstraintsRepositoriesByDc.put(dcName, workloadConstraintsRepository);
 
       LastUndeliveredMessageReader lastUndeliveredMessageReader =

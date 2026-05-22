@@ -25,7 +25,7 @@ public class Patch {
     checkNotNull(object);
     checkNotNull(patch);
     Map objectMap = MAPPER.convertValue(object, Map.class);
-    return (T) MAPPER.convertValue(merge(objectMap, patch.getPatch()), object.getClass());
+    return (T) MAPPER.convertValue(merge(objectMap, patch.patch()), object.getClass());
   }
 
   @SuppressWarnings("unchecked")

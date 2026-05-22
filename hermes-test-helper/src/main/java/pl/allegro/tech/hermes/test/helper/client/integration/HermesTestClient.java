@@ -178,13 +178,18 @@ public class HermesTestClient {
   }
 
   public void waitUntilConsumerCommitsOffset(String topicQualifiedName, String subscriptionName) {
-    long committedMessagesCount = calculateCommittedMessages(topicQualifiedName, subscriptionName);
+    long committedMessagesBefore = calculateCommittedMessages(topicQualifiedName, subscriptionName);
+    waitUntilConsumerCommitsOffset(topicQualifiedName, subscriptionName, committedMessagesBefore);
+  }
+
+  public void waitUntilConsumerCommitsOffset(
+      String topicQualifiedName, String subscriptionName, long committedMessagesBefore) {
     waitAtMost(adjust(Duration.ofMinutes(1)))
         .untilAsserted(
             () -> {
               long currentCommittedMessagesCount =
                   calculateCommittedMessages(topicQualifiedName, subscriptionName);
-              assertThat(currentCommittedMessagesCount).isGreaterThan(committedMessagesCount);
+              assertThat(currentCommittedMessagesCount).isGreaterThan(committedMessagesBefore);
             });
   }
 

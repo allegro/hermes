@@ -1,6 +1,6 @@
 package pl.allegro.tech.hermes.common.message.undelivered;
 
-import static java.lang.String.format;
+import static pl.allegro.tech.hermes.common.logging.LoggingFields.SUBSCRIPTION_NAME;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,7 +18,7 @@ import pl.allegro.tech.hermes.metrics.HermesHistogram;
 
 public class ZookeeperUndeliveredMessageLog implements UndeliveredMessageLog {
 
-  private static final Logger LOGGER =
+  private static final Logger logger =
       LoggerFactory.getLogger(ZookeeperUndeliveredMessageLog.class);
 
   private final CuratorFramework curator;
@@ -67,11 +67,16 @@ public class ZookeeperUndeliveredMessageLog implements UndeliveredMessageLog {
       persistedMessagesMeter.increment();
       persistedMessageSizeHistogram.record(bytesToPersist.length);
     } catch (Exception exception) {
-      LOGGER.warn(
-          format(
-              "Could not log undelivered message for topic: %s and subscription: %s",
-              messageTrace.getQualifiedTopicName(), messageTrace.getSubscription()),
-          exception);
+      SubscriptionName subscriptionName =
+          new SubscriptionName(messageTrace.getSubscription(), messageTrace.getTopicName());
+      logger
+          .atWarn()
+          .addKeyValue(SUBSCRIPTION_NAME, subscriptionName.getQualifiedName())
+          .setCause(exception)
+          .log(
+              "Could not log undelivered message for topic: {} and subscription: {}",
+              messageTrace.getQualifiedTopicName(),
+              messageTrace.getSubscription());
     }
   }
 

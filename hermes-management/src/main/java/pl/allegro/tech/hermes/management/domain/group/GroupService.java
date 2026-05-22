@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Query;
@@ -21,7 +19,6 @@ import pl.allegro.tech.hermes.management.domain.group.commands.CreateGroupReposi
 import pl.allegro.tech.hermes.management.domain.group.commands.RemoveGroupRepositoryCommand;
 import pl.allegro.tech.hermes.management.domain.group.commands.UpdateGroupRepositoryCommand;
 
-@Component
 public class GroupService {
 
   private static final Logger logger = LoggerFactory.getLogger(GroupService.class);
@@ -31,7 +28,6 @@ public class GroupService {
   private final MultiDatacenterRepositoryCommandExecutor multiDcExecutor;
   private final GroupValidator validator;
 
-  @Autowired
   public GroupService(
       GroupRepository groupRepository,
       Auditor auditor,

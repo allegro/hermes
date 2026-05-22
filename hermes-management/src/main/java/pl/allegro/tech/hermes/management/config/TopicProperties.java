@@ -4,13 +4,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import pl.allegro.tech.hermes.api.ContentType;
-import pl.allegro.tech.hermes.api.TopicLabel;
+import pl.allegro.tech.hermes.management.domain.topic.TopicParameters;
 
-@ConfigurationProperties(prefix = "topic")
-public class TopicProperties {
+@ConfigurationProperties(prefix = "management.topic")
+public class TopicProperties implements TopicParameters {
 
   private int replicationFactor = 1;
 
@@ -24,8 +23,6 @@ public class TopicProperties {
 
   private List<ContentType> allowedContentTypes = Arrays.asList(ContentType.AVRO, ContentType.JSON);
 
-  private Set<TopicLabel> allowedTopicLabels = Collections.emptySet();
-
   private boolean uncleanLeaderElectionEnabled = false;
 
   private int touchDelayInSeconds = 120;
@@ -33,8 +30,6 @@ public class TopicProperties {
   private boolean touchSchedulerEnabled = true;
 
   private int subscriptionsAssignmentsCompletedTimeoutSeconds = 30;
-
-  private boolean defaultSchemaIdAwareSerializationEnabled = false;
 
   private boolean defaultFallbackToRemoteDatacenterEnabled = false;
 
@@ -83,6 +78,7 @@ public class TopicProperties {
     this.partitionsPerDc = partitionsPerDc;
   }
 
+  @Override
   public boolean isAllowRemoval() {
     return allowRemoval;
   }
@@ -91,6 +87,7 @@ public class TopicProperties {
     this.allowRemoval = allowRemoval;
   }
 
+  @Override
   public boolean isRemoveSchema() {
     return removeSchema;
   }
@@ -107,14 +104,6 @@ public class TopicProperties {
     this.allowedContentTypes = allowedContentTypes;
   }
 
-  public Set<TopicLabel> getAllowedTopicLabels() {
-    return allowedTopicLabels;
-  }
-
-  public void setAllowedTopicLabels(Set<TopicLabel> allowedTopicLabels) {
-    this.allowedTopicLabels = allowedTopicLabels;
-  }
-
   public boolean isUncleanLeaderElectionEnabled() {
     return uncleanLeaderElectionEnabled;
   }
@@ -123,6 +112,7 @@ public class TopicProperties {
     this.uncleanLeaderElectionEnabled = uncleanLeaderElectionEnabled;
   }
 
+  @Override
   public int getTouchDelayInSeconds() {
     return touchDelayInSeconds;
   }
@@ -131,6 +121,7 @@ public class TopicProperties {
     this.touchDelayInSeconds = touchDelayInSeconds;
   }
 
+  @Override
   public boolean isTouchSchedulerEnabled() {
     return touchSchedulerEnabled;
   }
@@ -139,6 +130,7 @@ public class TopicProperties {
     this.touchSchedulerEnabled = touchSchedulerEnabled;
   }
 
+  @Override
   public int getSubscriptionsAssignmentsCompletedTimeoutSeconds() {
     return subscriptionsAssignmentsCompletedTimeoutSeconds;
   }
@@ -155,15 +147,6 @@ public class TopicProperties {
 
   public void setMaxMessageSize(int maxMessageSize) {
     this.maxMessageSize = maxMessageSize;
-  }
-
-  public boolean isDefaultSchemaIdAwareSerializationEnabled() {
-    return defaultSchemaIdAwareSerializationEnabled;
-  }
-
-  public void setDefaultSchemaIdAwareSerializationEnabled(
-      boolean defaultSchemaIdAwareSerializationEnabled) {
-    this.defaultSchemaIdAwareSerializationEnabled = defaultSchemaIdAwareSerializationEnabled;
   }
 
   public boolean isDefaultFallbackToRemoteDatacenterEnabled() {

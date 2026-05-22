@@ -14,7 +14,7 @@ import pl.allegro.tech.hermes.domain.workload.constraints.TopicConstraintsDoNotE
 import pl.allegro.tech.hermes.domain.workload.constraints.WorkloadConstraintsRepository
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperWorkloadConstraintsRepository
-import pl.allegro.tech.hermes.management.config.storage.DefaultZookeeperGroupRepositoryFactory
+import pl.allegro.tech.hermes.management.config.zookeeper.DefaultZookeeperGroupRepositoryFactory
 import pl.allegro.tech.hermes.management.domain.auth.TestRequestUser
 import pl.allegro.tech.hermes.management.domain.dc.MultiDatacenterRepositoryCommandExecutor
 import pl.allegro.tech.hermes.management.domain.mode.ModeService

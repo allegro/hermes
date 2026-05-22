@@ -70,7 +70,7 @@ class KafkaConsumerGroupManagerSpec extends Specification {
     }
 
     def setup() {
-        consumerGroupManager = new KafkaConsumerGroupManager(kafkaNamesMapper, "primary", kafkaContainer.bootstrapServers, new KafkaProperties(), adminClient)
+        consumerGroupManager = new KafkaConsumerGroupManager(kafkaNamesMapper, "primary-dc", kafkaContainer.bootstrapServers, new KafkaProperties(), adminClient)
     }
 
     def "should create consumer group with offset equal to last topic offset"() {

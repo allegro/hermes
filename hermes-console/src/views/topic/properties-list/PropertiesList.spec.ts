@@ -27,16 +27,6 @@ describe('PropertiesList', () => {
     },
     {
       topic: dummyTopic,
-      property: 'topicView.properties.labels',
-      value: 'internal, analytics',
-    },
-    {
-      topic: { ...dummyTopic, labels: [{ value: 'internal' }] },
-      property: 'topicView.properties.labels',
-      value: 'internal',
-    },
-    {
-      topic: dummyTopic,
       property: 'topicView.properties.acknowledgement',
       value: 'topicView.properties.ackText.leader',
     },
@@ -64,11 +54,6 @@ describe('PropertiesList', () => {
       topic: dummyTopic,
       property: 'topicView.properties.maxMessageSize',
       value: '10240',
-    },
-    {
-      topic: dummyTopic,
-      property: 'topicView.properties.schemaIdAwareSerializationEnabled',
-      value: 'false',
     },
     {
       topic: dummyTopic,

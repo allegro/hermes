@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.frontend.producer.kafka;
 
 import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCauseMessage;
+import static pl.allegro.tech.hermes.common.logging.LoggingFields.TOPIC_NAME;
 
 import java.time.Duration;
 import java.util.HashMap;
@@ -142,11 +143,14 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
           fallbackScheduler.schedule(
               fallback, speculativeSendDelay.toMillis(), TimeUnit.MILLISECONDS);
     } catch (RejectedExecutionException rejectedExecutionException) {
-      logger.warn(
-          "Failed to run schedule fallback for message: {}, topic: {}",
-          message,
-          cachedTopic.getQualifiedName(),
-          rejectedExecutionException);
+      logger
+          .atWarn()
+          .addKeyValue(TOPIC_NAME, cachedTopic.getQualifiedName())
+          .setCause(rejectedExecutionException)
+          .log(
+              "Failed to run schedule fallback for message: {}, topic: {}",
+              message,
+              cachedTopic.getQualifiedName());
       speculativeFallback = CompletableFuture.completedFuture(null);
     }
 
@@ -311,11 +315,14 @@ public class MultiDatacenterMessageProducer implements BrokerMessageProducer {
         speculativeFallback.cancel(false);
         fallbackScheduler.execute(fallback);
       } catch (RejectedExecutionException rejectedExecutionException) {
-        logger.warn(
-            "Failed to run immediate fallback for message: {}, topic: {}",
-            message,
-            cachedTopic.getQualifiedName(),
-            rejectedExecutionException);
+        logger
+            .atWarn()
+            .addKeyValue(TOPIC_NAME, cachedTopic.getQualifiedName())
+            .setCause(rejectedExecutionException)
+            .log(
+                "Failed to run immediate fallback for message: {}, topic: {}",
+                message,
+                cachedTopic.getQualifiedName());
       }
     }
 

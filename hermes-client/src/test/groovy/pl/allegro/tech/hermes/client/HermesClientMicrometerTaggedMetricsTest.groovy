@@ -88,11 +88,39 @@ class HermesClientMicrometerTaggedMetricsTest extends Specification {
         metrics.timer("hermes-client.latency", "topic", "com_group.topic").count() == 3
     }
 
-    private CompletableFuture<HermesResponse> successFuture(HermesMessage message) {
+    def "should set descriptions on all registered metrics"() {
+        given:
+        def retries = 3
+        HermesClient client = hermesClient(failingHermesSender(retries - 1))
+                .withRetrySleep(0)
+                .withRetries(retries)
+                .withMetrics(metricsProvider).build()
+
+        HermesClient alwaysFailingClient = hermesClient({uri, msg -> failingFuture(new RuntimeException())})
+                .withRetrySleep(0)
+                .withRetries(1)
+                .withMetrics(metricsProvider).build()
+
+        when:
+        silence({ client.publish("com.group.topic", "123").join() })
+        silence({ alwaysFailingClient.publish("com.group.topic2", "456").join() })
+
+        then:
+        def registeredMeters = metrics.getMeters()
+                .findAll { it.id.name.startsWith("hermes-client.") }
+
+        registeredMeters.size() > 0
+
+        registeredMeters.every { meter ->
+            meter.id.description != null && !meter.id.description.isEmpty()
+        }
+    }
+
+    private static CompletableFuture<HermesResponse> successFuture(HermesMessage message) {
         return completedFuture(HermesResponseBuilder.hermesResponse(message).withHttpStatus(201).build())
     }
 
-    private CompletableFuture<HermesResponse> failingFuture(Throwable throwable) {
+    private static CompletableFuture<HermesResponse> failingFuture(Throwable throwable) {
         CompletableFuture<HermesResponse> future = new CompletableFuture<>()
         future.completeExceptionally(throwable)
         return future
@@ -112,7 +140,7 @@ class HermesClientMicrometerTaggedMetricsTest extends Specification {
         }
     }
 
-    private HermesSender delayedHermesSender(Duration sendLatencyMs) {
+    private static HermesSender delayedHermesSender(Duration sendLatencyMs) {
         new HermesSender() {
             @Override
             CompletableFuture<HermesResponse> send(URI uri, HermesMessage message) {
@@ -122,10 +150,10 @@ class HermesClientMicrometerTaggedMetricsTest extends Specification {
         }
     }
 
-    private void silence(Runnable runnable) {
+    private static void silence(Runnable runnable) {
         try {
             runnable.run()
-        } catch (Exception ex) {
+        } catch (Exception ignored) {
             // do nothing
         }
     }

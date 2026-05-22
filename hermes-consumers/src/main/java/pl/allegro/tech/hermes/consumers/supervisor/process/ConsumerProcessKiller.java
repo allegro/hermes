@@ -1,5 +1,7 @@
 package pl.allegro.tech.hermes.consumers.supervisor.process;
 
+import static pl.allegro.tech.hermes.common.logging.LoggingFields.SUBSCRIPTION_NAME;
+
 import java.time.Clock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +39,10 @@ class ConsumerProcessKiller {
   }
 
   void cleanup(SubscriptionName subscriptionName) {
-    logger.info("Removing consumer process for subscription {}", subscriptionName);
+    logger
+        .atInfo()
+        .addKeyValue(SUBSCRIPTION_NAME, subscriptionName.getQualifiedName())
+        .log("Removing consumer process for subscription {}", subscriptionName);
     dyingConsumerProcesses.remove(subscriptionName);
   }
 

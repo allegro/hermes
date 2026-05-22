@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.management.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "message")
+@ConfigurationProperties(prefix = "management.message")
 public class MessageProperties {
 
   private String contentRoot = "message";

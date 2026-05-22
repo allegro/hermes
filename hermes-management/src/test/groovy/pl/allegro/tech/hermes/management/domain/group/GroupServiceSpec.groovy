@@ -5,7 +5,6 @@ import pl.allegro.tech.hermes.api.PatchData
 import pl.allegro.tech.hermes.api.helpers.Patch
 import pl.allegro.tech.hermes.domain.group.GroupRepository
 import pl.allegro.tech.hermes.management.api.auth.CreatorRights
-import pl.allegro.tech.hermes.management.config.GroupProperties
 import pl.allegro.tech.hermes.management.domain.Auditor
 import pl.allegro.tech.hermes.management.domain.GroupNameIsNotAllowedException
 import pl.allegro.tech.hermes.management.domain.PermissionDeniedException
@@ -25,8 +24,7 @@ class GroupServiceSpec extends Specification {
     GroupRepository groupRepository = Stub()
     Auditor auditor = Mock()
     MultiDatacenterRepositoryCommandExecutor executor = Stub()
-    GroupProperties groupProperties = new GroupProperties()
-    GroupValidator validator = new GroupValidator(groupRepository, groupProperties)
+    GroupValidator validator = new GroupValidator(groupRepository, "[a-zA-Z0-9._-]+")
     GroupService groupService = new GroupService(groupRepository, auditor, executor, validator)
 
     def "should audit group creation"() {

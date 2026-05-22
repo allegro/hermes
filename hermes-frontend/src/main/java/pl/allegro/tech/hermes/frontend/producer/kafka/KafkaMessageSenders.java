@@ -1,28 +1,43 @@
 package pl.allegro.tech.hermes.frontend.producer.kafka;
 
 import java.util.List;
+import java.util.function.ToDoubleFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.kafka.common.PartitionInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.api.Topic.Ack;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 
+/**
+ * Manages pools of Kafka message senders and routes topics to specific senders within each pool.
+ *
+ * <p>Each {@link KafkaMessageSenderPool} contains multiple {@link KafkaMessageSender} instances for
+ * a single ack configuration in a single datacenter. Topics are deterministically assigned to a
+ * specific sender within the pool, ensuring that all messages for a given topic are always sent
+ * through the same producer instance.
+ *
+ * @see KafkaMessageSenderPool
+ */
 // exposes kafka producer metrics, see:
 // https://docs.confluent.io/platform/current/kafka/monitoring.html#producer-metrics
 public class KafkaMessageSenders {
 
   private static final Logger logger = LoggerFactory.getLogger(KafkaMessageSenders.class);
 
-  private final KafkaMessageSender<byte[], byte[]> ackLeader;
-  private final KafkaMessageSender<byte[], byte[]> ackAll;
+  private static final String PRODUCER_METRICS_GROUP = "producer-metrics";
 
-  private final List<KafkaMessageSender<byte[], byte[]>> remoteAckLeader;
-  private final List<KafkaMessageSender<byte[], byte[]>> remoteAckAll;
+  private final KafkaMessageSenderPool localAckLeader;
+  private final KafkaMessageSenderPool localAckAll;
+  private final List<KafkaMessageSenderPool> remoteAckLeader;
+  private final List<KafkaMessageSenderPool> remoteAckAll;
 
   private final MinInSyncReplicasLoader localMinInSyncReplicasLoader;
   private final TopicMetadataLoadingExecutor topicMetadataLoadingExecutor;
+  private final MetricsFacade metricsFacade;
   private final List<TopicMetadataLoader> localDatacenterTopicMetadataLoaders;
   private final List<TopicMetadataLoader> kafkaProducerMetadataRefreshers;
   private final List<String> datacenters;
@@ -30,12 +45,14 @@ public class KafkaMessageSenders {
   KafkaMessageSenders(
       TopicMetadataLoadingExecutor topicMetadataLoadingExecutor,
       MinInSyncReplicasLoader localMinInSyncReplicasLoader,
-      Tuple localSenders,
-      List<Tuple> remoteSenders) {
+      MetricsFacade metricsFacade,
+      SenderPair localSenders,
+      List<SenderPair> remoteSenders) {
     this.topicMetadataLoadingExecutor = topicMetadataLoadingExecutor;
     this.localMinInSyncReplicasLoader = localMinInSyncReplicasLoader;
-    this.ackLeader = localSenders.ackLeader;
-    this.ackAll = localSenders.ackAll;
+    this.metricsFacade = metricsFacade;
+    this.localAckLeader = localSenders.ackLeader;
+    this.localAckAll = localSenders.ackAll;
     this.remoteAckLeader =
         remoteSenders.stream().map(it -> it.ackLeader).collect(Collectors.toList());
     this.remoteAckAll = remoteSenders.stream().map(it -> it.ackAll).collect(Collectors.toList());
@@ -47,17 +64,32 @@ public class KafkaMessageSenders {
             .collect(Collectors.toList());
     this.datacenters =
         Stream.concat(Stream.of(localSenders), remoteSenders.stream())
-            .map(tuple -> tuple.ackAll)
-            .map(KafkaMessageSender::getDatacenter)
+            .map(pair -> pair.ackAll.getDatacenter())
             .toList();
   }
 
+  /**
+   * Returns the sender assigned to the given topic based on its ack configuration and pool routing.
+   *
+   * @param topic the Hermes topic (used to determine ack=leader vs ack=all and routing)
+   * @return the assigned {@link KafkaMessageSender} from the pool
+   */
   KafkaMessageSender<byte[], byte[]> get(Topic topic) {
-    return topic.isReplicationConfirmRequired() ? ackAll : ackLeader;
+    KafkaMessageSenderPool pool =
+        topic.isReplicationConfirmRequired() ? localAckAll : localAckLeader;
+    return pool.get(topic.getQualifiedName());
   }
 
+  /**
+   * Returns the remote senders assigned to the given topic from each remote datacenter.
+   *
+   * @param topic the Hermes topic (used to determine ack=leader vs ack=all and routing)
+   * @return a list of remote senders (one per remote datacenter) for the topic
+   */
   List<KafkaMessageSender<byte[], byte[]>> getRemote(Topic topic) {
-    return topic.isReplicationConfirmRequired() ? remoteAckAll : remoteAckLeader;
+    List<KafkaMessageSenderPool> pools =
+        topic.isReplicationConfirmRequired() ? remoteAckAll : remoteAckLeader;
+    return pools.stream().map(pool -> pool.get(topic.getQualifiedName())).toList();
   }
 
   List<String> getDatacenters() {
@@ -111,36 +143,144 @@ public class KafkaMessageSenders {
     return partitionInfos.stream().anyMatch(p -> p.inSyncReplicas().length < minInSyncReplicas);
   }
 
+  /**
+   * Registers composite Kafka producer metrics that aggregate values across all pool members.
+   *
+   * <p>For gauge-type metrics (buffer bytes, compression rate, metadata age, queue time), values
+   * are aggregated using sum, average, or max as appropriate. For counter-type metrics (record send
+   * total, failed batches), values are summed. This produces identical metric names and tags
+   * regardless of pool size, making the pool transparent to monitoring dashboards.
+   */
   public void registerSenderMetrics(String name) {
-    ackLeader.registerGauges(Topic.Ack.LEADER, name);
-    ackAll.registerGauges(Topic.Ack.ALL, name);
-    remoteAckLeader.forEach(sender -> sender.registerGauges(Topic.Ack.LEADER, name));
-    remoteAckAll.forEach(sender -> sender.registerGauges(Topic.Ack.ALL, name));
+    registerPoolMetrics(localAckLeader, Ack.LEADER, name);
+    registerPoolMetrics(localAckAll, Ack.ALL, name);
+    remoteAckLeader.forEach(remotePool -> registerPoolMetrics(remotePool, Ack.LEADER, name));
+    remoteAckAll.forEach(remotePool -> registerPoolMetrics(remotePool, Ack.ALL, name));
   }
 
-  static class Tuple {
-    private final KafkaMessageSender<byte[], byte[]> ackLeader;
-    private final KafkaMessageSender<byte[], byte[]> ackAll;
+  private void registerPoolMetrics(KafkaMessageSenderPool pool, Ack ack, String sender) {
+    String datacenter = pool.getDatacenter();
+    List<KafkaMessageSender<byte[], byte[]>> senders = pool.allSenders();
 
-    Tuple(KafkaMessageSender<byte[], byte[]> ackLeader, KafkaMessageSender<byte[], byte[]> ackAll) {
+    // Sum metrics: total across all pool members
+    ToDoubleFunction<List<KafkaMessageSender<byte[], byte[]>>> bufferTotalBytes =
+        s -> sumMetric(s, "buffer-total-bytes");
+    ToDoubleFunction<List<KafkaMessageSender<byte[], byte[]>>> bufferAvailableBytes =
+        s -> sumMetric(s, "buffer-available-bytes");
+    ToDoubleFunction<List<KafkaMessageSender<byte[], byte[]>>> failedBatches =
+        s -> sumMetric(s, "record-error-total");
+    ToDoubleFunction<List<KafkaMessageSender<byte[], byte[]>>> recordSendTotal =
+        s -> sumMetric(s, "record-send-total");
+
+    // Average metrics: averaged across pool members
+    ToDoubleFunction<List<KafkaMessageSender<byte[], byte[]>>> compressionRate =
+        s -> avgMetric(s, "compression-rate-avg");
+
+    // Max metrics: worst case across pool members
+    ToDoubleFunction<List<KafkaMessageSender<byte[], byte[]>>> metadataAge =
+        s -> maxMetric(s, "metadata-age");
+    ToDoubleFunction<List<KafkaMessageSender<byte[], byte[]>>> queueTimeMax =
+        s -> maxMetric(s, "record-queue-time-max");
+
+    if (ack == Ack.ALL) {
+      metricsFacade
+          .producer()
+          .registerAckAllTotalBytesGauge(senders, bufferTotalBytes, sender, datacenter);
+      metricsFacade
+          .producer()
+          .registerAckAllAvailableBytesGauge(senders, bufferAvailableBytes, sender, datacenter);
+      metricsFacade
+          .producer()
+          .registerAckAllCompressionRateGauge(senders, compressionRate, sender, datacenter);
+      metricsFacade
+          .producer()
+          .registerAckAllFailedBatchesGauge(senders, failedBatches, sender, datacenter);
+      metricsFacade
+          .producer()
+          .registerAckAllMetadataAgeGauge(senders, metadataAge, sender, datacenter);
+      metricsFacade
+          .producer()
+          .registerAckAllRecordQueueTimeMaxGauge(senders, queueTimeMax, sender, datacenter);
+      metricsFacade
+          .producer()
+          .registerAckAllRecordSendCounter(senders, recordSendTotal, sender, datacenter);
+    } else if (ack == Ack.LEADER) {
+      metricsFacade
+          .producer()
+          .registerAckLeaderTotalBytesGauge(senders, bufferTotalBytes, sender, datacenter);
+      metricsFacade
+          .producer()
+          .registerAckLeaderAvailableBytesGauge(senders, bufferAvailableBytes, sender, datacenter);
+      metricsFacade
+          .producer()
+          .registerAckLeaderCompressionRateGauge(senders, compressionRate, sender, datacenter);
+      metricsFacade
+          .producer()
+          .registerAckLeaderFailedBatchesGauge(senders, failedBatches, sender, datacenter);
+      metricsFacade
+          .producer()
+          .registerAckLeaderMetadataAgeGauge(senders, metadataAge, sender, datacenter);
+      metricsFacade
+          .producer()
+          .registerAckLeaderRecordQueueTimeMaxGauge(senders, queueTimeMax, sender, datacenter);
+      metricsFacade
+          .producer()
+          .registerAckLeaderRecordSendCounter(senders, recordSendTotal, sender, datacenter);
+    }
+  }
+
+  private static double sumMetric(
+      List<KafkaMessageSender<byte[], byte[]>> senders, String metricName) {
+    return senders.stream()
+        .mapToDouble(s -> s.readProducerMetric(metricName, PRODUCER_METRICS_GROUP))
+        .sum();
+  }
+
+  private static double avgMetric(
+      List<KafkaMessageSender<byte[], byte[]>> senders, String metricName) {
+    return senders.stream()
+        .mapToDouble(s -> s.readProducerMetric(metricName, PRODUCER_METRICS_GROUP))
+        .average()
+        .orElse(0.0);
+  }
+
+  private static double maxMetric(
+      List<KafkaMessageSender<byte[], byte[]>> senders, String metricName) {
+    return senders.stream()
+        .mapToDouble(s -> s.readProducerMetric(metricName, PRODUCER_METRICS_GROUP))
+        .max()
+        .orElse(0.0);
+  }
+
+  /**
+   * A pair of {@link KafkaMessageSenderPool} instances for ack=leader and ack=all configurations in
+   * a single datacenter. Used during construction of {@link KafkaMessageSenders}.
+   */
+  static class SenderPair {
+    private final KafkaMessageSenderPool ackLeader;
+    private final KafkaMessageSenderPool ackAll;
+
+    SenderPair(KafkaMessageSenderPool ackLeader, KafkaMessageSenderPool ackAll) {
       this.ackLeader = ackLeader;
       this.ackAll = ackAll;
     }
   }
 
   public void close() {
-    ackAll.close();
-    ackLeader.close();
+    localAckAll.close();
+    localAckLeader.close();
+    remoteAckAll.forEach(KafkaMessageSenderPool::close);
+    remoteAckLeader.forEach(KafkaMessageSenderPool::close);
   }
 
   private class KafkaProducerMetadataRefresher implements TopicMetadataLoader {
 
-    private final KafkaMessageSender<byte[], byte[]> ackLeader;
-    private final KafkaMessageSender<byte[], byte[]> ackAll;
+    private final KafkaMessageSenderPool ackLeader;
+    private final KafkaMessageSenderPool ackAll;
 
-    KafkaProducerMetadataRefresher(Tuple tuple) {
-      this.ackLeader = tuple.ackLeader;
-      this.ackAll = tuple.ackAll;
+    KafkaProducerMetadataRefresher(SenderPair pair) {
+      this.ackLeader = pair.ackLeader;
+      this.ackAll = pair.ackAll;
     }
 
     @Override
@@ -160,7 +300,8 @@ public class KafkaMessageSenders {
     }
 
     private KafkaMessageSender<byte[], byte[]> getSender(Topic topic) {
-      return topic.isReplicationConfirmRequired() ? ackAll : ackLeader;
+      KafkaMessageSenderPool pool = topic.isReplicationConfirmRequired() ? ackAll : ackLeader;
+      return pool.get(topic.getQualifiedName());
     }
   }
 

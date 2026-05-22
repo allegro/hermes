@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties("subscription")
+@ConfigurationProperties("management.subscription")
 public class SubscriptionProperties {
 
   private List<String> additionalEndpointProtocols = new ArrayList<>();

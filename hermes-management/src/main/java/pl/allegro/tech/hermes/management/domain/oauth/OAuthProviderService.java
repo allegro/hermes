@@ -1,8 +1,6 @@
 package pl.allegro.tech.hermes.management.domain.oauth;
 
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.OAuthProvider;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.helpers.Patch;
@@ -15,7 +13,6 @@ import pl.allegro.tech.hermes.management.domain.oauth.commands.CreateOAuthProvid
 import pl.allegro.tech.hermes.management.domain.oauth.commands.RemoveOAuthProviderRepositoryCommand;
 import pl.allegro.tech.hermes.management.domain.oauth.commands.UpdateOAuthProviderRepositoryCommand;
 
-@Component
 public class OAuthProviderService {
 
   private final OAuthProviderRepository repository;
@@ -23,7 +20,6 @@ public class OAuthProviderService {
   private final Auditor auditor;
   private final MultiDatacenterRepositoryCommandExecutor multiDcExecutor;
 
-  @Autowired
   public OAuthProviderService(
       OAuthProviderRepository repository,
       ApiPreconditions preconditions,

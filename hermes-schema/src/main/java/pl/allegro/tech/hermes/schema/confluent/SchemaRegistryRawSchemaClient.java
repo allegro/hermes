@@ -140,7 +140,7 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
             response.readEntity(SchemaRegistryRequestResponse.class);
         return Optional.of(RawSchema.valueOf(schemaRegistryResponse.getSchema()));
       case CLIENT_ERROR:
-        logger.error(
+        logger.warn(
             "Could not find schema for subject {} and id {}, reason: {}",
             subject,
             schemaId.value(),
@@ -166,7 +166,7 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
             response.readEntity(SchemaRegistryResponse.class);
         return Optional.of(schemaRegistryResponse.toRawSchemaWithMetadata());
       case CLIENT_ERROR:
-        logger.error(
+        logger.warn(
             "Could not find schema metadata for subject {} at version {}, reason: {}",
             subject,
             version,
@@ -193,7 +193,7 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
             response.readEntity(SchemaRegistryResponse.class);
         return Optional.of(schemaRegistryResponse.toRawSchemaWithMetadata());
       case CLIENT_ERROR:
-        logger.error(
+        logger.warn(
             "Could not find schema metadata for subject {} and id {}, reason: {}",
             subject,
             id,
@@ -232,7 +232,7 @@ public class SchemaRegistryRawSchemaClient implements RawSchemaClient {
             .map(SchemaVersion::valueOf)
             .collect(Collectors.toList());
       case CLIENT_ERROR:
-        logger.error(
+        logger.warn(
             "Could not find schema versions for subject {}, reason: {} {}",
             subject,
             response.getStatus(),

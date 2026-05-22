@@ -1,5 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.sender.http;
 
+import static pl.allegro.tech.hermes.common.logging.LoggingFields.SUBSCRIPTION_NAME;
+
 import com.google.common.collect.ImmutableSet;
 import java.util.Collection;
 import java.util.Optional;
@@ -8,6 +10,7 @@ import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.spi.LoggingEventBuilder;
 import pl.allegro.tech.hermes.api.EndpointAddress;
 import pl.allegro.tech.hermes.api.EndpointAddressResolverMetadata;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -127,17 +130,24 @@ public class JettyHttpMessageSenderProvider implements ProtocolMessageSenderProv
     if (subscription.isHttp2Enabled()) {
       return tryToGetHttp2Client(subscription);
     } else {
-      logger.info("Using http/1.1 for {}.", subscription.getQualifiedName());
+      logger
+          .atInfo()
+          .addKeyValue(SUBSCRIPTION_NAME, subscription.getQualifiedName().getQualifiedName())
+          .log("Using http/1.1 for {}.", subscription.getQualifiedName());
       return httpClient;
     }
   }
 
   private HttpClient tryToGetHttp2Client(Subscription subscription) {
+    LoggingEventBuilder subscriptionLogger =
+        logger
+            .atInfo()
+            .addKeyValue(SUBSCRIPTION_NAME, subscription.getQualifiedName().getQualifiedName());
     if (http2ClientHolder.getHttp2Client().isPresent()) {
-      logger.info("Using http/2 for {}.", subscription.getQualifiedName());
+      subscriptionLogger.log("Using http/2 for {}.", subscription.getQualifiedName());
       return http2ClientHolder.getHttp2Client().get();
     } else {
-      logger.info(
+      subscriptionLogger.log(
           "Using http/1.1 for {}. Http/2 delivery is not enabled on this server.",
           subscription.getQualifiedName());
       return httpClient;

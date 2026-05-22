@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 public class RetentionTime {
   private static final TimeUnit DEFAULT_UNIT = TimeUnit.DAYS;
 
-  public static RetentionTime MAX = new RetentionTime(7, TimeUnit.DAYS);
+  public static RetentionTime MAX = new RetentionTime(2, TimeUnit.DAYS);
   public static Set<TimeUnit> allowedUnits =
       EnumSet.of(TimeUnit.SECONDS, TimeUnit.MINUTES, TimeUnit.HOURS, TimeUnit.DAYS);
 

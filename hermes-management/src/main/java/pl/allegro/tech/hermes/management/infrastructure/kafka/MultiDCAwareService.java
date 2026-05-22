@@ -195,8 +195,7 @@ public class MultiDCAwareService {
         .map(
             brokersClusterService ->
                 brokersClusterService.describeConsumerGroup(topic, subscriptionName))
-        .filter(Optional::isPresent)
-        .map(Optional::get)
+        .flatMap(Optional::stream)
         .collect(toList());
   }
 

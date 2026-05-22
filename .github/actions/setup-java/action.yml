@@ -1,0 +1,10 @@
+name: 'Setup java'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up JDK 25
+      uses: actions/setup-java@v5
+      with:
+        java-version: 25
+        distribution: 'temurin'

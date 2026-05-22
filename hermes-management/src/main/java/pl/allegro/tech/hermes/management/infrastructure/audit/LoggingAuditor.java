@@ -36,17 +36,23 @@ public class LoggingAuditor implements Auditor {
   @Override
   public void beforeObjectRemoval(
       String username, String removedObjectType, String removedObjectName) {
-    logger.info("User {} tries removing {} {}.", username, removedObjectType, removedObjectName);
+    ignoringExceptions(
+        () ->
+            logger.info(
+                "User {} tries removing {} {}.", username, removedObjectType, removedObjectName));
   }
 
   @Override
   public void beforeObjectUpdate(
       String username, String objectClassName, Object objectName, PatchData patchData) {
     ignoringExceptions(
-        () -> {
-          logger.info(
-              "User {} tries updating {} {}. {}", username, objectClassName, objectName, patchData);
-        });
+        () ->
+            logger.info(
+                "User {} tries updating {} {}. {}",
+                username,
+                objectClassName,
+                objectName,
+                patchData));
   }
 
   @Override
@@ -89,7 +95,7 @@ public class LoggingAuditor implements Auditor {
     try {
       wrapped.execute();
     } catch (Exception e) {
-      logger.info("Audit log failed {}.", e);
+      logger.info("Audit log failed", e);
     }
   }
 

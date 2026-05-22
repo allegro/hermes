@@ -1,5 +1,6 @@
 package pl.allegro.tech.hermes.consumers.consumer.filtering;
 
+import static pl.allegro.tech.hermes.common.logging.LoggingFields.SUBSCRIPTION_NAME;
 import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
 import static pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset.subscriptionPartitionOffset;
 
@@ -39,10 +40,10 @@ public class FilteredMessageHandler {
 
   public void handle(FilterResult result, Message message, Subscription subscription) {
     if (result.isFiltered()) {
-      if (logger.isDebugEnabled()) {
-        logger.debug(
-            "Message filtered for subscription {} {}", subscription.getQualifiedName(), result);
-      }
+      logger
+          .atDebug()
+          .addKeyValue(SUBSCRIPTION_NAME, subscription.getQualifiedName().getQualifiedName())
+          .log("Message filtered for subscription {} {}", subscription.getQualifiedName(), result);
 
       pendingOffsets.markAsProcessed(
           subscriptionPartitionOffset(

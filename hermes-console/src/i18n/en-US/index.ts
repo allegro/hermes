@@ -349,12 +349,10 @@ const en_US = {
     properties: {
       title: 'Properties',
       contentType: 'Content type',
-      labels: 'Labels',
       acknowledgement: 'Acknowledgement',
       retentionTime: 'Retention time',
       trackingEnabled: 'Tracking enabled',
       maxMessageSize: 'Max message size',
-      schemaIdAwareSerializationEnabled: 'SchemaId serialization enabled',
       authorizationEnabled: 'Authorization enabled',
       authorizedPublishers: 'Authorized publishers',
       allowUnauthenticatedAccess: 'Allow unauthenticated access',

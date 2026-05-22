@@ -1,6 +1,8 @@
 package pl.allegro.tech.hermes.frontend.server;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static pl.allegro.tech.hermes.common.logging.LoggingContext.withLogging;
+import static pl.allegro.tech.hermes.common.logging.LoggingFields.TOPIC_NAME;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import dev.failsafe.ExecutionContext;
@@ -44,7 +46,12 @@ class TopicSchemaLoader implements AutoCloseable {
   CompletableFuture<SchemaLoadingResult> loadTopicSchema(Topic topic) {
     return Failsafe.with(retryPolicy)
         .with(scheduler)
-        .getStageAsync((context) -> completedFuture(loadLatestSchema(topic, context)));
+        .getStageAsync((context) -> completedFuture(loadLatestSchemaWithLogging(topic, context)));
+  }
+
+  private SchemaLoadingResult loadLatestSchemaWithLogging(Topic topic, ExecutionContext context) {
+    return withLogging(
+        TOPIC_NAME, topic.getQualifiedName(), () -> loadLatestSchema(topic, context));
   }
 
   private SchemaLoadingResult loadLatestSchema(Topic topic, ExecutionContext context) {

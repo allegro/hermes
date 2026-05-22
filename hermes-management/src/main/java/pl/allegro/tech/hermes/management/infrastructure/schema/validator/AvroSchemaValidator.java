@@ -4,14 +4,12 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Strings.isNullOrEmpty;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import org.apache.avro.Schema;
 import org.apache.avro.SchemaParseException;
 import org.apache.commons.io.IOUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
 
-@Component
 public class AvroSchemaValidator implements SchemaValidator {
 
   private static final Schema HERMES_METADATA_SCHEMA =
@@ -22,7 +20,6 @@ public class AvroSchemaValidator implements SchemaValidator {
     this.metadataFieldIsRequired = metadataFieldIsRequired;
   }
 
-  @Autowired
   public AvroSchemaValidator(TopicProperties topicProperties) {
     this(topicProperties.isAvroContentTypeMetadataRequired());
   }
@@ -39,7 +36,8 @@ public class AvroSchemaValidator implements SchemaValidator {
     try {
       String schema =
           IOUtils.toString(
-              AvroSchemaValidator.class.getResourceAsStream(resourceFilePath), "UTF-8");
+              AvroSchemaValidator.class.getResourceAsStream(resourceFilePath),
+              StandardCharsets.UTF_8);
       return parseSchema(schema);
     } catch (IOException e) {
       throw new RuntimeException("Could not load schema with metadata");

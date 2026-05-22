@@ -17,17 +17,17 @@ public class HermesCuratorClientFactory {
   public CuratorFramework provide() {
     String connectString = zookeeperParameters.getConnectionString();
 
-    Optional<CuratorClientFactory.ZookeeperAuthorization> authorization = Optional.empty();
+    Optional<CuratorClientFactory.ZookeeperAuthentication> authentication = Optional.empty();
 
-    if (zookeeperParameters.isAuthorizationEnabled()) {
-      authorization =
+    if (zookeeperParameters.isAuthenticationEnabled()) {
+      authentication =
           Optional.of(
-              new CuratorClientFactory.ZookeeperAuthorization(
+              new CuratorClientFactory.ZookeeperAuthentication(
                   zookeeperParameters.getScheme(),
                   zookeeperParameters.getUser(),
                   zookeeperParameters.getPassword()));
     }
 
-    return curatorClientFactory.provide(connectString, authorization);
+    return curatorClientFactory.provide(connectString, authentication);
   }
 }

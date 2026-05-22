@@ -9,7 +9,7 @@ public class ZookeeperProperties implements ZookeeperParameters {
 
   private String datacenter = "dc";
 
-  private Duration baseSleepTime = Duration.ofSeconds(1000);
+  private Duration baseSleepTime = Duration.ofSeconds(1);
 
   private Duration maxSleepTime = Duration.ofSeconds(30);
 
@@ -23,7 +23,10 @@ public class ZookeeperProperties implements ZookeeperParameters {
 
   private int processingThreadPoolSize = 5;
 
-  private ZookeeperAuthorizationProperties authorization = new ZookeeperAuthorizationProperties();
+  private boolean ensembleTracker = false;
+
+  private ZookeeperAuthenticationProperties authentication =
+      new ZookeeperAuthenticationProperties();
 
   @Override
   public String getConnectionString() {
@@ -102,38 +105,47 @@ public class ZookeeperProperties implements ZookeeperParameters {
   }
 
   @Override
-  public boolean isAuthorizationEnabled() {
-    return authorization.enabled;
+  public boolean isAuthenticationEnabled() {
+    return authentication.enabled;
   }
 
   @Override
   public String getScheme() {
-    return authorization.scheme;
+    return authentication.scheme;
   }
 
   @Override
   public String getUser() {
-    return authorization.user;
+    return authentication.user;
   }
 
   @Override
   public String getPassword() {
-    return authorization.password;
+    return authentication.password;
   }
 
   public void setProcessingThreadPoolSize(int processingThreadPoolSize) {
     this.processingThreadPoolSize = processingThreadPoolSize;
   }
 
-  public ZookeeperAuthorizationProperties getAuthorization() {
-    return authorization;
+  @Override
+  public boolean isEnsembleTrackerEnabled() {
+    return ensembleTracker;
   }
 
-  public void setAuthorization(ZookeeperAuthorizationProperties authorization) {
-    this.authorization = authorization;
+  public void setEnsembleTrackerEnabled(boolean ensembleTrackerEnabled) {
+    this.ensembleTracker = ensembleTrackerEnabled;
   }
 
-  public static class ZookeeperAuthorizationProperties {
+  public ZookeeperAuthenticationProperties getAuthentication() {
+    return authentication;
+  }
+
+  public void setAuthentication(ZookeeperAuthenticationProperties authentication) {
+    this.authentication = authentication;
+  }
+
+  public static class ZookeeperAuthenticationProperties {
 
     private boolean enabled = false;
 

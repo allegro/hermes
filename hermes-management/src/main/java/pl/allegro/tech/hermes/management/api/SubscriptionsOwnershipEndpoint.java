@@ -13,19 +13,19 @@ import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.management.domain.owner.OwnerSource;
 import pl.allegro.tech.hermes.management.domain.owner.OwnerSourceNotFound;
 import pl.allegro.tech.hermes.management.domain.owner.OwnerSources;
-import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionService;
+import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionManagement;
 
 @Path("subscriptions/owner")
 public class SubscriptionsOwnershipEndpoint {
 
   private final OwnerSources ownerSources;
-  private final SubscriptionService subscriptionService;
+  private final SubscriptionManagement subscriptionManagement;
 
   @Autowired
   public SubscriptionsOwnershipEndpoint(
-      OwnerSources ownerSources, SubscriptionService subscriptionService) {
+      OwnerSources ownerSources, SubscriptionManagement subscriptionManagement) {
     this.ownerSources = ownerSources;
-    this.subscriptionService = subscriptionService;
+    this.subscriptionManagement = subscriptionManagement;
   }
 
   @GET
@@ -34,7 +34,7 @@ public class SubscriptionsOwnershipEndpoint {
   public List<Subscription> listForOwner(
       @PathParam("ownerSourceName") String ownerSourceName, @PathParam("ownerId") String id) {
     OwnerId ownerId = resolveOwnerId(ownerSourceName, id);
-    return subscriptionService.getForOwnerId(ownerId);
+    return subscriptionManagement.getForOwnerId(ownerId);
   }
 
   private OwnerId resolveOwnerId(String ownerSourceName, String id) {

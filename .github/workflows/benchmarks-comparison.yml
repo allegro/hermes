@@ -1,0 +1,111 @@
+name: Performance benchmarks comparison
+
+on:
+  pull_request:
+    branches: [ master ]
+
+env:
+  diff-error-threshold-percent: '10'
+  benchmark-comment-id: '<!-- benchmark-comment-id -->'
+
+jobs:
+  benchmark-base-and-current:
+    runs-on: ubuntu-latest
+    name: Create Performance report on base and current branch
+    outputs:
+      base-results-path: ${{ steps.jmh-base.outputs.results-path }}
+      current-results-path: ${{ steps.jmh-current.outputs.results-path }}
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}-base-and-current
+      cancel-in-progress: true
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: ./.github/actions/setup-java
+
+      - name: Run JMH benchmarks for current commit
+        id: jmh-current
+        uses: ./.github/actions/run-jmh
+        with:
+          directory: .
+          report-artifact-name: current-raw-report
+
+      - name: Checkout base branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.base_ref }}
+          path: base
+
+      - name: Run JMH benchmarks for base branch
+        id: jmh-base
+        uses: ./.github/actions/run-jmh
+        with:
+          directory: base
+          report-artifact-name: base-raw-report
+
+  comparision:
+    name: Compare performance reports from base and current branches
+    needs: [benchmark-base-and-current]
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}-comparison
+      cancel-in-progress: true
+    steps:
+      - name: Checkout single file
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github/scripts/benchmark-report-compare.py
+            .github/scripts/benchmark-report-transform.py
+          sparse-checkout-cone-mode: false
+
+      - uses: actions/download-artifact@v4
+
+      - name: Transform JMH output from base branch
+        shell: bash
+        run: python3 .github/scripts/benchmark-report-transform.py base-raw-report/results.json &> base-report.json
+
+      - name: Transform JMH output from current branch
+        shell: bash
+        run: python3 .github/scripts/benchmark-report-transform.py current-raw-report/results.json &> current-report.json
+
+      - name: Compare performance reports
+        id: comparison
+        run: |
+          python3 .github/scripts/benchmark-report-compare.py base-report.json current-report.json ${{ env.diff-error-threshold-percent }} comparison-result.txt | tee comparison-report.txt
+          {
+            echo "report<<EOF"
+            cat comparison-report.txt
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+          {
+            echo "result<<EOF"
+            cat comparison-result.txt
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Find previous comment with performance reports comparison result
+        uses: peter-evans/find-comment@v3
+        id: find-comment
+        with:
+          issue-number: ${{ github.event.number }}
+          comment-author: "github-actions[bot]"
+          body-includes: ${{ env.benchmark-comment-id }}
+
+      - name: Create or update comment with performance reports comparison result
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ github.event.number }}
+          body: '${{ steps.comparison.outputs.report}} ${{ env.benchmark-comment-id }}'
+          edit-mode: replace
+
+      - name: Check benchmark result
+        if: contains(steps.comparison.outputs.result, 'failed')
+        run: |
+          echo "::error::Benchmark comparison failed. Result: ${{ steps.comparison.outputs.result }}"
+          exit 1

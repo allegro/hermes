@@ -6,10 +6,8 @@ import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.groups.Default;
 import java.util.Set;
-import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.constraints.AdminPermitted;
 
-@Component
 public class ApiPreconditions {
 
   private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();

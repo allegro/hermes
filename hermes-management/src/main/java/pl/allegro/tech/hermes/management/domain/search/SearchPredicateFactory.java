@@ -3,12 +3,10 @@ package pl.allegro.tech.hermes.management.domain.search;
 import java.util.function.Predicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.management.domain.search.cache.CachedItem;
 import pl.allegro.tech.hermes.management.domain.search.cache.CachedSubscriptionItem;
 import pl.allegro.tech.hermes.management.domain.search.cache.CachedTopicItem;
 
-@Component
 public class SearchPredicateFactory {
   private static final Logger logger = LoggerFactory.getLogger(SearchPredicateFactory.class);
 

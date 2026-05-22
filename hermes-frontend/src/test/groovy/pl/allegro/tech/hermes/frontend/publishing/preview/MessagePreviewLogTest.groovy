@@ -49,25 +49,6 @@ class MessagePreviewLogTest extends Specification {
         previewString == """{"__metadata":null,"name":"defaultName","age":0,"favoriteColor":"defaultColor"}"""
     }
 
-    def "should persist Avro messages for schema aware topics"() {
-        given:
-        def avroUser = new AvroUser()
-        def message = new AvroMessage('message-id', SchemaAwareSerDe.serialize(avroUser.compiledSchema.id,
-                avroUser.asBytes()), 0L, avroUser.compiledSchema, null, emptyMap())
-
-        log.add(TopicBuilder.topic('group.topic-1').withSchemaIdAwareSerialization().build(), message)
-
-        when:
-        def messages = log.snapshotAndClean()
-
-        then:
-        messages.topics() as Set == [fromQualifiedName('group.topic-1')] as Set
-
-        def preview = messages.previewOf(fromQualifiedName('group.topic-1'))
-        def previewString = new String(preview.get(0).content)
-        previewString == """{"__metadata":null,"name":"defaultName","age":0,"favoriteColor":"defaultColor"}"""
-    }
-
     def "should persist no more than two messages for topic"() {
         given:
         log.add(TopicBuilder.topic('group.topic-1').build(), new JsonMessage('id', [1] as byte[], 0L, null, emptyMap()))

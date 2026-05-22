@@ -2,13 +2,11 @@ package pl.allegro.tech.hermes.management.infrastructure.detection;
 
 import java.time.Instant;
 import java.util.Optional;
-import org.springframework.stereotype.Component;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.infrastructure.zookeeper.ZookeeperPaths;
 import pl.allegro.tech.hermes.management.domain.detection.LastPublishedMessageMetricsRepository;
 import pl.allegro.tech.hermes.management.infrastructure.metrics.SummedSharedCounter;
 
-@Component
 public class ZookeeperLastPublishedMessageMetricsRepository
     implements LastPublishedMessageMetricsRepository {
   private final SummedSharedCounter summedSharedCounter;

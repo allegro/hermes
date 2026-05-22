@@ -1,5 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.oauth;
 
+import static pl.allegro.tech.hermes.common.logging.LoggingFields.SUBSCRIPTION_NAME;
+
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -59,7 +61,10 @@ public class OAuthSubscriptionHandler {
     SubscriptionName subscriptionName = subscription.getQualifiedName();
     if (shouldTryRefreshingToken(subscriptionName, result)) {
       if (rateLimiter.tryAcquire()) {
-        logger.info("Refreshing token for subscription {}", subscriptionName);
+        logger
+            .atInfo()
+            .addKeyValue(SUBSCRIPTION_NAME, subscriptionName.getQualifiedName())
+            .log("Refreshing token for subscription {}", subscriptionName);
         rateLimiter.reduceRate();
         executorService.schedule(
             () -> accessTokens.refreshToken(subscriptionName), 0, TimeUnit.MILLISECONDS);

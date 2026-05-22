@@ -143,6 +143,8 @@ public class BatchDeliveryTest {
                             .build())
                     .withFilter(MESSAGE_NAME_FILTER)
                     .build());
+    long committedMessagesBefore =
+        hermes.api().calculateCommittedMessages(topic.getQualifiedName(), subscription.getName());
 
     // when
     hermes.api().publishUntilSuccess(topic.getQualifiedName(), ALICE.asJson());
@@ -168,7 +170,10 @@ public class BatchDeliveryTest {
                                     "subscription", subscription.getName(),
                                     "topic", topic.getName().getName())
                                 .withValue(3.0)));
-    hermes.api().waitUntilConsumerCommitsOffset(topic.getQualifiedName(), subscription.getName());
+    hermes
+        .api()
+        .waitUntilConsumerCommitsOffset(
+            topic.getQualifiedName(), subscription.getName(), committedMessagesBefore);
   }
 
   @Test

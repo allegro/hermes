@@ -5,6 +5,7 @@ plugins {
 }
 
 dependencies {
+    implementation project(':hermes-api')
     implementation group: 'junit', name: 'junit', version: '4.13.2'
     api group: 'org.wiremock', name: 'wiremock-standalone', version: versions.wiremock
     implementation group: 'org.awaitility', name: 'awaitility', version: '4.2.1'

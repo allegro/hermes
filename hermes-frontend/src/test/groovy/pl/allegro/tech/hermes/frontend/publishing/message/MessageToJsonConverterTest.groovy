@@ -15,7 +15,7 @@ class MessageToJsonConverterTest extends Specification {
 
         when:
         def converted = new MessageToJsonConverter().convert(new AvroMessage(
-                'message-id', avroUser.asBytes(), 0L, avroUser.compiledSchema, "partition-key", emptyMap()), false)
+                'message-id', avroUser.asBytes(), 0L, avroUser.compiledSchema, "partition-key", emptyMap()))
 
         then:
         new String(converted) == JsonOutput.toJson(
@@ -28,7 +28,7 @@ class MessageToJsonConverterTest extends Specification {
 
         when:
         def converted = new MessageToJsonConverter().convert(new AvroMessage(
-                'message-id', 'unable-to-decode'.getBytes(), 0L, avroUser.compiledSchema, null, emptyMap()), false)
+                'message-id', 'unable-to-decode'.getBytes(), 0L, avroUser.compiledSchema, null, emptyMap()))
 
         then:
         new String(converted) == 'unable-to-decode'
@@ -37,7 +37,7 @@ class MessageToJsonConverterTest extends Specification {
     def 'should return the same when no avro provided'() {
         when:
         def converted = new MessageToJsonConverter().convert(new JsonMessage(
-                'message-id', 'given-message'.bytes, 0L, null, emptyMap()), false)
+                'message-id', 'given-message'.bytes, 0L, null, emptyMap()))
 
         then:
         new String(converted) == 'given-message'

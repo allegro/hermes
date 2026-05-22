@@ -2,31 +2,33 @@ package pl.allegro.tech.hermes.management.domain.subscription.commands;
 
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
-import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryCommand;
 
 public class RemoveSubscriptionRepositoryCommand extends RepositoryCommand<SubscriptionRepository> {
 
-  private final TopicName topicName;
-  private final String subscriptionName;
+  private final SubscriptionName subscriptionName;
 
   private Subscription backup;
 
-  public RemoveSubscriptionRepositoryCommand(TopicName topicName, String subscriptionName) {
-    this.topicName = topicName;
+  public RemoveSubscriptionRepositoryCommand(SubscriptionName subscriptionName) {
     this.subscriptionName = subscriptionName;
   }
 
   @Override
   public void backup(DatacenterBoundRepositoryHolder<SubscriptionRepository> holder) {
-    backup = holder.getRepository().getSubscriptionDetails(topicName, subscriptionName);
+    backup =
+        holder
+            .getRepository()
+            .getSubscriptionDetails(subscriptionName.getTopicName(), subscriptionName.getName());
   }
 
   @Override
   public void execute(DatacenterBoundRepositoryHolder<SubscriptionRepository> holder) {
-    holder.getRepository().removeSubscription(topicName, subscriptionName);
+    holder
+        .getRepository()
+        .removeSubscription(subscriptionName.getTopicName(), subscriptionName.getName());
   }
 
   @Override
@@ -42,8 +44,6 @@ public class RemoveSubscriptionRepositoryCommand extends RepositoryCommand<Subsc
 
   @Override
   public String toString() {
-    return "RemoveSubscription("
-        + new SubscriptionName(subscriptionName, topicName).getQualifiedName()
-        + ")";
+    return "RemoveSubscription(" + subscriptionName.getQualifiedName() + ")";
   }
 }

@@ -1,6 +1,7 @@
 package pl.allegro.tech.hermes.test.helper.containers;
 
 import static pl.allegro.tech.hermes.test.helper.containers.TestcontainersUtils.copyScriptToContainer;
+import static pl.allegro.tech.hermes.test.helper.containers.TestcontainersUtils.execInContainerWithRetry;
 import static pl.allegro.tech.hermes.test.helper.containers.TestcontainersUtils.readFileFromClasspath;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
@@ -59,7 +60,8 @@ class KafkaContainer extends GenericContainer<KafkaContainer> {
 
   void stopKafka() {
     try {
-      ExecResult execResult = execInContainer("sh", "-c", "touch /tmp/stop");
+      ExecResult execResult =
+          execInContainerWithRetry(this, 3, Duration.ofSeconds(2), "sh", "-c", "touch /tmp/stop");
       if (execResult.getExitCode() != 0) {
         throw new Exception(execResult.getStderr());
       }
@@ -73,7 +75,8 @@ class KafkaContainer extends GenericContainer<KafkaContainer> {
 
   void startKafka() {
     try {
-      ExecResult execResult = execInContainer("sh", "-c", "touch /tmp/start");
+      ExecResult execResult =
+          execInContainerWithRetry(this, 3, Duration.ofSeconds(2), "sh", "-c", "touch /tmp/start");
       if (execResult.getExitCode() != 0) {
         throw new Exception(execResult.getStderr());
       }
@@ -87,13 +90,20 @@ class KafkaContainer extends GenericContainer<KafkaContainer> {
 
   private boolean isStopped() throws IOException, InterruptedException {
     String command = "ps aux | grep kafka";
-    ExecResult result = execInContainer("sh", "-c", command);
+    ExecResult result =
+        execInContainerWithRetry(this, 3, Duration.ofSeconds(2), "sh", "-c", command);
     return result.getExitCode() == 0 && !result.getStdout().contains("java");
   }
 
   private boolean isStarted() throws IOException, InterruptedException {
     ExecResult result =
-        execInContainer("sh", "-c", "kafka-topics --bootstrap-server localhost:9092 --list");
+        execInContainerWithRetry(
+            this,
+            3,
+            Duration.ofSeconds(2),
+            "sh",
+            "-c",
+            "kafka-topics --bootstrap-server localhost:9092 --list");
     return result.getExitCode() == 0;
   }
 

@@ -1,9 +1,7 @@
 package pl.allegro.tech.hermes.test.helper.builder;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -15,7 +13,6 @@ import pl.allegro.tech.hermes.api.PublishingChaosPolicy;
 import pl.allegro.tech.hermes.api.RetentionTime;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicDataOfflineStorage;
-import pl.allegro.tech.hermes.api.TopicLabel;
 import pl.allegro.tech.hermes.api.TopicName;
 
 public class TopicBuilder {
@@ -44,8 +41,6 @@ public class TopicBuilder {
 
   private boolean migratedFromJsonType = false;
 
-  private boolean schemaIdAwareSerialization = false;
-
   private int maxMessageSize = 1024 * 1024;
 
   private final List<String> publishers = new ArrayList<>();
@@ -57,8 +52,6 @@ public class TopicBuilder {
   private boolean subscribingRestricted = false;
 
   private TopicDataOfflineStorage offlineStorage = TopicDataOfflineStorage.defaultOfflineStorage();
-
-  private Set<TopicLabel> labels = Collections.emptySet();
 
   private TopicBuilder(TopicName topicName) {
     this.name = topicName;
@@ -109,12 +102,10 @@ public class TopicBuilder {
         trackingEnabled,
         contentType,
         jsonToAvroDryRunEnabled,
-        schemaIdAwareSerialization,
         maxMessageSize,
         new PublishingAuth(publishers, authEnabled, unauthenticatedAccessEnabled),
         subscribingRestricted,
         offlineStorage,
-        labels,
         null,
         null);
   }
@@ -169,11 +160,6 @@ public class TopicBuilder {
     return this;
   }
 
-  public TopicBuilder withSchemaIdAwareSerialization() {
-    this.schemaIdAwareSerialization = true;
-    return this;
-  }
-
   public TopicBuilder withSubscribingRestricted() {
     this.subscribingRestricted = true;
     return this;
@@ -201,11 +187,6 @@ public class TopicBuilder {
 
   public TopicBuilder withOfflineStorage(int days) {
     this.offlineStorage = new TopicDataOfflineStorage(true, OfflineRetentionTime.of(days));
-    return this;
-  }
-
-  public TopicBuilder withLabels(Set<TopicLabel> labels) {
-    this.labels = labels;
     return this;
   }
 

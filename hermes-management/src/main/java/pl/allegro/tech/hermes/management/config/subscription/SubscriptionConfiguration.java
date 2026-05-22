@@ -8,24 +8,33 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.domain.subscription.SubscriptionRepository;
 import pl.allegro.tech.hermes.management.api.validator.ApiPreconditions;
+import pl.allegro.tech.hermes.management.config.CacheProperties;
 import pl.allegro.tech.hermes.management.domain.owner.validator.OwnerIdValidator;
+import pl.allegro.tech.hermes.management.domain.subscription.SubscriptionOwnerCache;
 import pl.allegro.tech.hermes.management.domain.subscription.validator.EndpointAddressFormatValidator;
 import pl.allegro.tech.hermes.management.domain.subscription.validator.EndpointAddressValidator;
 import pl.allegro.tech.hermes.management.domain.subscription.validator.EndpointOwnershipValidator;
 import pl.allegro.tech.hermes.management.domain.subscription.validator.NoOpEndpointOwnershipValidator;
 import pl.allegro.tech.hermes.management.domain.subscription.validator.SubscriberWithAccessToAnyTopic;
 import pl.allegro.tech.hermes.management.domain.subscription.validator.SubscriptionValidator;
-import pl.allegro.tech.hermes.management.domain.topic.TopicService;
+import pl.allegro.tech.hermes.management.domain.topic.TopicManagement;
 
 @Configuration
-@EnableConfigurationProperties(SubscriptionProperties.class)
+@EnableConfigurationProperties({SubscriptionProperties.class, CacheProperties.class})
 public class SubscriptionConfiguration {
+
+  @Bean
+  public SubscriptionOwnerCache subscriptionOwnerCache(
+      SubscriptionRepository subscriptionRepository, CacheProperties cacheProperties) {
+    return new SubscriptionOwnerCache(
+        subscriptionRepository, cacheProperties.getSubscriptionOwnerRefreshRateInSeconds());
+  }
 
   @Bean
   public SubscriptionValidator subscriptionValidator(
       OwnerIdValidator ownerIdValidator,
       ApiPreconditions apiPreconditions,
-      TopicService topicService,
+      TopicManagement topicManagement,
       SubscriptionRepository subscriptionRepository,
       List<EndpointAddressValidator> endpointAddressValidators,
       EndpointOwnershipValidator endpointOwnershipValidator,
@@ -33,7 +42,7 @@ public class SubscriptionConfiguration {
     return new SubscriptionValidator(
         ownerIdValidator,
         apiPreconditions,
-        topicService,
+        topicManagement,
         subscriptionRepository,
         endpointAddressValidators,
         endpointOwnershipValidator,
