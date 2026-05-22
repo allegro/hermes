@@ -47,8 +47,7 @@ public class MultiMessageSendingResult implements MessageSendingResult {
   public Optional<Long> getRetryAfterMillis() {
     return children.stream()
         .map(MessageSendingResult::getRetryAfterMillis)
-        .filter(Optional::isPresent)
-        .map(Optional::get)
+        .flatMap(Optional::stream)
         .min(Comparator.naturalOrder());
   }
 
@@ -60,7 +59,7 @@ public class MultiMessageSendingResult implements MessageSendingResult {
   @Override
   public boolean isClientError() {
     List<SingleMessageSendingResult> failed =
-        children.stream().filter(child -> !child.succeeded()).collect(Collectors.toList());
+        children.stream().filter(child -> !child.succeeded()).toList();
     return !failed.isEmpty() && failed.stream().allMatch(MessageSendingResult::isClientError);
   }
 
@@ -89,8 +88,7 @@ public class MultiMessageSendingResult implements MessageSendingResult {
     return children.stream()
         .filter(filter)
         .map(SingleMessageSendingResult::getRequestUri)
-        .filter(Optional::isPresent)
-        .map(Optional::get)
+        .flatMap(Optional::stream)
         .collect(Collectors.toList());
   }
 
