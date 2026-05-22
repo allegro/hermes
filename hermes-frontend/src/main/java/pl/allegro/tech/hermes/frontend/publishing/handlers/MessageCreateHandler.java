@@ -50,7 +50,7 @@ class MessageCreateHandler implements HttpHandler {
           exchange,
           attachment.getTopic(),
           attachment.getMessageId(),
-          error("Invalid message: " + exception.getMessage(), VALIDATION_ERROR),
+          error("Invalid message: " + buildDetailedMessage(exception), VALIDATION_ERROR),
           exception);
     } catch (CouldNotLoadSchemaException | SchemaNotFoundException exception) {
       attachment.removeTimeout();
@@ -90,5 +90,20 @@ class MessageCreateHandler implements HttpHandler {
           error("Exception caught while creating message", INTERNAL_ERROR),
           exception);
     }
+  }
+
+  private static String buildDetailedMessage(Exception exception) {
+    String message = exception.getMessage();
+    Throwable cause = exception.getCause();
+    if (message == null || message.isEmpty()) {
+      return cause != null && cause.getMessage() != null ? cause.getMessage() : "";
+    }
+    if (cause != null
+        && cause.getMessage() != null
+        && !cause.getMessage().isEmpty()
+        && !message.contains(cause.getMessage())) {
+      return message + ": " + cause.getMessage();
+    }
+    return message;
   }
 }
