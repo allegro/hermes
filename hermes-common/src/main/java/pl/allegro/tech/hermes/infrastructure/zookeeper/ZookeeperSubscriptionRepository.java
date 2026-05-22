@@ -148,8 +148,7 @@ public class ZookeeperSubscriptionRepository extends ZookeeperBasedRepository
   public List<Subscription> listSubscriptions(TopicName topicName) {
     return listSubscriptionNames(topicName).stream()
         .map(subscription -> getSubscriptionDetails(topicName, subscription, true))
-        .filter(Optional::isPresent)
-        .map(Optional::get)
+        .flatMap(Optional::stream)
         .collect(Collectors.toList());
   }
 

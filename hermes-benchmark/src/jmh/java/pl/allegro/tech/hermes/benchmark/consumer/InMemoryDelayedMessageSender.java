@@ -4,6 +4,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.LongAdder;
 import org.openjdk.jmh.infra.Blackhole;
@@ -30,7 +31,7 @@ public class InMemoryDelayedMessageSender implements MessageSender {
     return CompletableFuture.supplyAsync(
         () -> {
           longAdder.increment();
-          blackhole.consume(message.getOffset() * Math.random());
+          blackhole.consume(message.getOffset() * ThreadLocalRandom.current().nextDouble());
           return MessageSendingResult.succeededResult();
         },
         executor);

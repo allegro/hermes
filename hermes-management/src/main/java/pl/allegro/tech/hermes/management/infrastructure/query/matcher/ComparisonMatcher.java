@@ -27,10 +27,10 @@ public class ComparisonMatcher implements Matcher {
     Optional<Double> leftSideValueAsNumber = tryParseNumber(leftSideValue);
     Optional<Double> rightSideValueAsNumber = tryParseNumber(rightSideValue);
 
-    if (!leftSideValueAsNumber.isPresent()) {
+    if (leftSideValueAsNumber.isEmpty()) {
       return true;
     }
-    if (!rightSideValueAsNumber.isPresent()) {
+    if (rightSideValueAsNumber.isEmpty()) {
       throw new MatcherInputException("Comparison operator requires numerical data");
     }
     return makeComparison(leftSideValueAsNumber.get(), rightSideValueAsNumber.get());

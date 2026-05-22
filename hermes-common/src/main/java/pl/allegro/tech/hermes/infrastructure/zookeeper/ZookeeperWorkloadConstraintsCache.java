@@ -58,7 +58,7 @@ class ZookeeperWorkloadConstraintsCache extends PathChildrenCache
 
   private void updateCache(String path, byte[] bytes) {
     Optional<Constraints> constraints = bytesToConstraints(bytes, path);
-    if (!constraints.isPresent()) {
+    if (constraints.isEmpty()) {
       return;
     }
     if (isSubscription(path)) {
