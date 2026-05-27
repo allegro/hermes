@@ -124,7 +124,7 @@ public class KafkaMessageSender<K, V> {
         return partitionInfo
             .flatMap(partition -> Optional.ofNullable(partition.leader()))
             .map(Node::host)
-            .map(ProduceMetadata::new)
+            .map(host -> new ProduceMetadata(host, datacenter))
             .orElse(ProduceMetadata.empty());
       } catch (InterruptException e) {
         Thread.currentThread().interrupt();

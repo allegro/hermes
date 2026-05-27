@@ -266,14 +266,19 @@ public class RemoteDatacenterProduceFallbackTest {
         .isOk()
         .expectBody(String.class)
         .value(
-            (body) ->
-                assertThatMetrics(body)
-                    .contains("hermes_frontend_topic_published_total")
-                    .withLabels(
-                        "group", topic.getName().getGroupName(),
-                        "topic", topic.getName().getName(),
-                        "storageDc", REMOTE_DC2)
-                    .withValue(1.0));
+            (body) -> {
+              assertThatMetrics(body)
+                  .contains("hermes_frontend_topic_published_total")
+                  .withLabels(
+                      "group", topic.getName().getGroupName(),
+                      "topic", topic.getName().getName(),
+                      "storageDc", REMOTE_DC2)
+                  .withValue(1.0);
+              assertThatMetrics(body)
+                  .contains("hermes_frontend_broker_latency_seconds_count")
+                  .withLabels("ack", "LEADER", "broker_dc", REMOTE_DC2)
+                  .withValueGreaterThan(0.0);
+            });
   }
 
   @Test
