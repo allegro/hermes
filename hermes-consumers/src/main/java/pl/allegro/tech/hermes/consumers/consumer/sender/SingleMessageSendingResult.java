@@ -75,6 +75,12 @@ public class SingleMessageSendingResult implements MessageSendingResult {
     initializeForStatusCode(statusCode);
   }
 
+  SingleMessageSendingResult(int statusCode, Throwable failure) {
+    this.failure = failure;
+    initializeForStatusCode(statusCode);
+    this.loggable = true;
+  }
+
   SingleMessageSendingResult(int statusCode, URI requestURI) {
     this(statusCode);
     this.requestUri = Optional.of(requestURI);
