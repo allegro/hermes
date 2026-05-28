@@ -42,7 +42,7 @@ public class GoogleBigQueryAppendCompleteCallback implements ApiFutureCallback<A
     resultFuture.complete(MessageSendingResult.succeededResult());
   }
 
-  private static Integer mapToPermanentErrorHttpStatus(Throwable cause) {
+  public static Integer mapToPermanentErrorHttpStatus(Throwable cause) {
     Status.Code grpcCode = Status.fromThrowable(cause).getCode();
     Integer httpStatusCode = switch (grpcCode) {
       case NOT_FOUND -> 404; // Table does not exist

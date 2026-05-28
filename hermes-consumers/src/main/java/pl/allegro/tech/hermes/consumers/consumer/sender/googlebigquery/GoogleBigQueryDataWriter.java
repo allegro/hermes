@@ -53,9 +53,9 @@ public abstract class GoogleBigQueryDataWriter<
               .map(entry -> String.format("\t row %d: %s", entry.getKey(), entry.getValue()))
               .collect(Collectors.joining("\n")),
           e);
-
+      Integer statusCode = GoogleBigQueryAppendCompleteCallback.mapToPermanentErrorHttpStatus(e);
       resultFuture.complete(
-          MessageSendingResult.failedResult(new GoogleBigQueryFailedAppendException(e)));
+          MessageSendingResult.failedResult(statusCode, new GoogleBigQueryFailedAppendException(e)));
     } catch (Exception e) {
       logger.warn(
           "Writer {} has failed to append rows to stream {} because of {}",
@@ -63,7 +63,8 @@ public abstract class GoogleBigQueryDataWriter<
           getStreamName(),
           e.getMessage(),
           e);
-      resultFuture.complete(MessageSendingResult.failedResult(e));
+      Integer statusCode = GoogleBigQueryAppendCompleteCallback.mapToPermanentErrorHttpStatus(e);
+      resultFuture.complete(MessageSendingResult.failedResult(statusCode, e));
     }
   }
 
