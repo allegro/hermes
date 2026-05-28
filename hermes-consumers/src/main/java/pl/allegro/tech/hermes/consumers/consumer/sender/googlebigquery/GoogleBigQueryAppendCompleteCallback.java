@@ -28,6 +28,7 @@ public class GoogleBigQueryAppendCompleteCallback implements ApiFutureCallback<A
     Throwable cause = Objects.requireNonNullElse(storageException, t);
 
     Integer httpStatusCode = mapToPermanentErrorHttpStatus(cause);
+    logger.info("BigQuery append failed with with code {} and error: {}",httpStatusCode, cause.getMessage(), cause);
     if (httpStatusCode != null) {
       logger.warn("BigQuery permanent error mapped to HTTP {}: {}", httpStatusCode, cause.getMessage(), cause);
       resultFuture.complete(MessageSendingResult.failedResult(httpStatusCode, cause));
@@ -43,11 +44,13 @@ public class GoogleBigQueryAppendCompleteCallback implements ApiFutureCallback<A
 
   private static Integer mapToPermanentErrorHttpStatus(Throwable cause) {
     Status.Code grpcCode = Status.fromThrowable(cause).getCode();
-    return switch (grpcCode) {
+    Integer httpStatusCode = switch (grpcCode) {
       case NOT_FOUND -> 404; // Table does not exist
       case PERMISSION_DENIED -> 403; // Technical user does not have permissions to write to the table
       case INVALID_ARGUMENT -> 400; // Invalid message format i.e. microsecond timestamp value is sent to millisecond timestamp field
       default -> null;
     };
+    logger.info("Mapping gRPC code {} to HTTP status code {}", grpcCode, httpStatusCode);
+    return httpStatusCode;
   }
 }
