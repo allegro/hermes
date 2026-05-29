@@ -12,9 +12,11 @@ public class BrokerMetrics {
     this.meterRegistry = meterRegistry;
   }
 
-  public void recordBrokerLatency(String broker, Topic.Ack ack, Duration duration) {
+  public void recordBrokerLatency(
+      String broker, String brokerDc, Topic.Ack ack, Duration duration) {
     Timer.builder("broker.latency")
         .tag("broker", broker)
+        .tag("broker_dc", brokerDc)
         .tag("ack", ack.name())
         .publishPercentileHistogram()
         .maximumExpectedValue(Duration.ofSeconds(5))

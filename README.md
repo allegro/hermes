@@ -62,6 +62,34 @@ You can also run the following command to fix formatting for the whole project:
 ./.github/scripts/check-google-java-format.sh --fix
 ```
 
+### Running integration tests with Podman (macOS)
+
+Integration and slow integration tests use [Testcontainers](https://testcontainers.com/) and require a
+Docker-compatible runtime. On macOS with [Podman](https://podman.io/), export the following variables
+before running any test that requires containers:
+
+```shell
+export DOCKER_HOST="unix://$(podman machine inspect --format '{{.ConnectionInfo.PodmanSocket.Path}}')"
+export TESTCONTAINERS_RYUK_DISABLED=true
+```
+
+Then run tests as usual, e.g.:
+
+```shell
+./gradlew slowIntegrationTest
+./gradlew integrationTest
+```
+
+> **Podman VM resources**: `slowIntegrationTest` spawns many containers concurrently. Configure your
+> Podman VM with at least **8 CPUs** and **10 GB of memory** or container startup may fail
+> unexpectedly:
+>
+> ```shell
+> podman machine stop
+> podman machine set --cpus 8 --memory 10240
+> podman machine start
+> ```
+
 ## Test reports
 
 Test reports are available at https://allegro.github.io/hermes/allure, and performance test results can be found at https://allegro.github.io/hermes/performance/.

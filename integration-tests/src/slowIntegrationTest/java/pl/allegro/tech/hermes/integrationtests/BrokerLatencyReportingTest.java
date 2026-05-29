@@ -71,7 +71,8 @@ public class BrokerLatencyReportingTest {
                               .contains("hermes_frontend_broker_latency_seconds_count")
                               .withLabels(
                                   "ack", "LEADER",
-                                  "broker", "localhost")
+                                  "broker", "localhost",
+                                  "broker_dc", "dc")
                               .withValueGreaterThan(0.0d));
             });
   }
