@@ -8,7 +8,6 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.Descriptors;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +35,7 @@ public abstract class GoogleBigQueryDataWriter<
 
   @Override
   public void publish(T message, CompletableFuture<MessageSendingResult> resultFuture)
-      throws IOException, ExecutionException, InterruptedException {
+      throws Descriptors.DescriptorValidationException, IOException {
     try {
       ApiFuture<AppendRowsResponse> appendFuture = append(message);
       ApiFutures.addCallback(
@@ -45,8 +44,6 @@ public abstract class GoogleBigQueryDataWriter<
           MoreExecutors.directExecutor());
     } catch (Exceptions.AppendSerializationError e) {
       logger.warn(
-          "Writer {} has failed to append rows to stream {}", getWriterId(), getStreamName(), e);
-      logger.warn(
           "Writer {} has failed because of errors: \n{}",
           getWriterId(),
           e.getRowIndexToErrorMessage().entrySet().stream()
@@ -54,7 +51,7 @@ public abstract class GoogleBigQueryDataWriter<
               .collect(Collectors.joining("\n")),
           e);
       Integer statusCode = GoogleBigQueryAppendCompleteCallback.mapToPermanentErrorHttpStatus(e);
-      resultFuture.complete(
+      throw e;
           MessageSendingResult.failedResult(statusCode, new GoogleBigQueryFailedAppendException(e)));
     } catch (Exception e) {
       logger.warn(
@@ -71,6 +68,7 @@ public abstract class GoogleBigQueryDataWriter<
   @Override
   public void shutdown() {
     try {
+      logger.info("Closing stream writer of id {} and name {}", getWriterId(), getStreamName());
       streamWriter.close();
     } catch (Exception e) {
       logger.error(

@@ -9,11 +9,7 @@ import io.undertow.util.HttpString;
 import io.undertow.util.StatusCodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.allegro.tech.hermes.api.Topic;
-import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
-import pl.allegro.tech.hermes.frontend.metric.CachedTopic;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.AttachmentContent;
-import pl.allegro.tech.hermes.frontend.publishing.message.Message;
 import pl.allegro.tech.hermes.tracker.frontend.Trackers;
 
 public class MessageEndProcessor {
@@ -22,15 +18,10 @@ public class MessageEndProcessor {
   private static final HttpString messageIdHeader = new HttpString(MESSAGE_ID.getName());
 
   private final Trackers trackers;
-  private final BrokerListeners brokerListeners;
   private final TrackingHeadersExtractor trackingHeadersExtractor;
 
-  public MessageEndProcessor(
-      Trackers trackers,
-      BrokerListeners brokerListeners,
-      TrackingHeadersExtractor trackingHeadersExtractor) {
+  public MessageEndProcessor(Trackers trackers, TrackingHeadersExtractor trackingHeadersExtractor) {
     this.trackers = trackers;
-    this.brokerListeners = brokerListeners;
     this.trackingHeadersExtractor = trackingHeadersExtractor;
   }
 
@@ -48,48 +39,6 @@ public class MessageEndProcessor {
 
   public void sent(HttpServerExchange exchange, AttachmentContent attachment) {
     sendResponse(exchange, attachment, StatusCodes.CREATED);
-  }
-
-  /**
-   * @deprecated This feature is deprecated and will be removed in a future version.
-   */
-  @Deprecated
-  public void delayedSent(CachedTopic cachedTopic, Message message) {
-    brokerListeners.onAcknowledge(message, cachedTopic.getTopic());
-  }
-
-  /**
-   * @deprecated This feature is deprecated and will be removed in a future version.
-   */
-  @Deprecated
-  public void bufferedButDelayedProcessing(
-      HttpServerExchange exchange, AttachmentContent attachment) {
-    bufferedButDelayed(exchange, attachment);
-    attachment.getCachedTopic().markDelayedProcessing();
-  }
-
-  /**
-   * @deprecated This feature is deprecated and will be removed in a future version.
-   */
-  @Deprecated
-  public void bufferedButDelayed(HttpServerExchange exchange, AttachmentContent attachment) {
-    Topic topic = attachment.getTopic();
-    brokerListeners.onTimeout(attachment.getMessage(), topic);
-    trackers
-        .get(topic)
-        .logInflight(
-            attachment.getMessageId(),
-            topic.getName(),
-            readHostAndPort(exchange),
-            trackingHeadersExtractor.extractHeadersToLog(exchange.getRequestHeaders()));
-    handleRaceConditionBetweenAckAndTimeout(attachment, topic);
-    sendResponse(exchange, attachment, StatusCodes.ACCEPTED);
-  }
-
-  private void handleRaceConditionBetweenAckAndTimeout(AttachmentContent attachment, Topic topic) {
-    if (attachment.getMessageState().isDelayedSentToKafka()) {
-      brokerListeners.onAcknowledge(attachment.getMessage(), topic);
-    }
   }
 
   private void sendResponse(

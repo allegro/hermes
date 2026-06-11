@@ -87,7 +87,7 @@ class MaxRateBalancer {
   }
 
   private boolean isUnassigned(ConsumerRateInfo rateInfo) {
-    return !rateInfo.getMaxRate().isPresent();
+    return rateInfo.getMaxRate().isEmpty();
   }
 
   private Map<Boolean, List<ActiveConsumerInfo>> busyOrNot(List<ActiveConsumerInfo> infos) {
@@ -250,7 +250,7 @@ class MaxRateBalancer {
                     return new ConsumerRateChange(
                         share.getConsumerId(), share.currentMax, -toDistribute);
                   })
-              .collect(Collectors.toList());
+              .toList();
 
       double toDistribute =
           freedByNotBusy

@@ -53,3 +53,6 @@ scripts/pip-selfcheck.json
 bin
 
 .vscode
+
+# heap dumps
+*.hprof

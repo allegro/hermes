@@ -55,7 +55,9 @@ public class BrokerLatencyReporter {
       String messageId,
       Topic.Ack ack,
       Supplier<ProduceMetadata> produceMetadata) {
-    String broker = produceMetadata.get().getBroker().orElse("unknown");
+    ProduceMetadata metadata = produceMetadata.get();
+    String broker = metadata.getBroker().orElse("unknown");
+    String brokerDc = metadata.getDatacenter().orElse("unknown");
 
     if (duration.compareTo(slowResponseThreshold) > 0) {
       logger.debug(
@@ -66,6 +68,6 @@ public class BrokerLatencyReporter {
           broker);
     }
 
-    metricsFacade.broker().recordBrokerLatency(broker, ack, duration);
+    metricsFacade.broker().recordBrokerLatency(broker, brokerDc, ack, duration);
   }
 }

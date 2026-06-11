@@ -14,6 +14,8 @@ public interface KafkaProducerParameters {
 
   Duration getRetryBackoff();
 
+  Duration getRetryBackoffMax();
+
   Duration getRequestTimeout();
 
   int getBatchSize();
@@ -33,4 +35,10 @@ public interface KafkaProducerParameters {
   boolean isReportNodeMetricsEnabled();
 
   boolean isIdempotenceEnabled();
+
+  String getPartitionerClass();
+
+  int getPoolSize();
+
+  long getBufferMemory();
 }

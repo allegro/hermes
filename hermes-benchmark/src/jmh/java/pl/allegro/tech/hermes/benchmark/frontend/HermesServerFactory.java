@@ -20,7 +20,6 @@ import pl.allegro.tech.hermes.frontend.config.HandlersChainProperties;
 import pl.allegro.tech.hermes.frontend.config.HermesServerProperties;
 import pl.allegro.tech.hermes.frontend.config.SchemaProperties;
 import pl.allegro.tech.hermes.frontend.config.SslProperties;
-import pl.allegro.tech.hermes.frontend.listeners.BrokerListeners;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.HandlersChainFactory;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
@@ -96,7 +95,7 @@ class HermesServerFactory {
     return new HandlersChainFactory(
             topicsCache,
             new MessageErrorProcessor(new ObjectMapper(), trackers, trackingHeadersExtractor),
-            new MessageEndProcessor(trackers, new BrokerListeners(), trackingHeadersExtractor),
+            new MessageEndProcessor(trackers, trackingHeadersExtractor),
             new MessageFactory(
                 new MessageValidators(Collections.emptyList()),
                 new MessageContentTypeEnforcer(),

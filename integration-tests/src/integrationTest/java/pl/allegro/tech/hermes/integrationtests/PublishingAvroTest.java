@@ -296,6 +296,31 @@ public class PublishingAvroTest {
   }
 
   @Test
+  public void shouldGetBadRequestWithDetailedCauseForMissingRequiredAvroField() {
+    // given
+    TopicWithSchema topicWithSchema =
+        topicWithSchema(
+            topicWithRandomName().withContentType(AVRO).build(), user.getSchemaAsString());
+    Topic topic = hermes.initHelper().createTopicWithSchema(topicWithSchema);
+
+    // when - JSON message missing required "age" field (int type, no default)
+    String message = "{\"name\":\"john\",\"favoriteColor\":\"blue\"}";
+    WebTestClient.ResponseSpec response =
+        hermes.api().publishJSON(topic.getQualifiedName(), message);
+
+    // then - error response should contain the cause details about the missing field
+    response.expectStatus().isBadRequest();
+    response
+        .expectBody(String.class)
+        .value(
+            body -> {
+              assertThat(body).contains("VALIDATION_ERROR");
+              assertThat(body).contains("age");
+              assertThat(body).contains("not set and has no default value");
+            });
+  }
+
+  @Test
   public void shouldGetBadRequestForInvalidJsonWithAvroSchema() {
     // given
     TopicWithSchema topicWithSchema =

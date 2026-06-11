@@ -98,8 +98,7 @@ public class ZookeeperGroupRepository extends ZookeeperBasedRepository implement
   public List<Group> listGroups() {
     return listGroupNames().stream()
         .map(n -> getGroupDetails(n, true))
-        .filter(Optional::isPresent)
-        .map(Optional::get)
+        .flatMap(Optional::stream)
         .collect(Collectors.toList());
   }
 

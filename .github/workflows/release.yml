@@ -16,13 +16,13 @@ jobs:
     environment: ci
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Set up JDK
         uses: ./.github/actions/setup-java
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/actions/setup-gradle@v5
       - name: Release
         if: github.ref == 'refs/heads/master'
         run: ./gradlew release -Prelease.customPassword=${GITHUB_TOKEN} -Prelease.customUsername=${GITHUB_ACTOR} -Prelease.forceVersion=${FORCE_VERSION}

@@ -1,11 +1,11 @@
-FROM gradle:8.14.3-jdk21 AS builder
+FROM gradle:9.2.1-jdk25 AS builder
 ENV JAVA_TOOL_OPTIONS="-XX:UseSVE=0"
 
 COPY --chown=gradle:gradle . /home/gradle/src/
 WORKDIR /home/gradle/src/
 RUN gradle clean distZip -Pdistribution
 
-FROM eclipse-temurin:21.0.8_9-jre
+FROM eclipse-temurin:25.0.1_8-jre
 
 RUN apt-get update \
   && apt-get -y install unzip wget bash \

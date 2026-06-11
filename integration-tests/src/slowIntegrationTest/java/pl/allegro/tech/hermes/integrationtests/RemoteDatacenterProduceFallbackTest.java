@@ -20,6 +20,7 @@ import pl.allegro.tech.hermes.api.PublishingChaosPolicy;
 import pl.allegro.tech.hermes.api.PublishingChaosPolicy.ChaosMode;
 import pl.allegro.tech.hermes.api.PublishingChaosPolicy.ChaosPolicy;
 import pl.allegro.tech.hermes.api.Topic;
+import pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties;
 import pl.allegro.tech.hermes.integrationtests.assertions.PrometheusMetricsAssertion;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesConsumersTestApp;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesFrontendTestApp;
@@ -84,6 +85,7 @@ public class RemoteDatacenterProduceFallbackTest {
     management.start();
     frontendDC1 =
         new HermesFrontendTestApp(dc1.hermesZookeeper, kafkaConfiguration, schemaRegistry);
+    frontendDC1.withProperty(FrontendConfigurationProperties.BROKER_LATENCY_REPORTER_ENABLED, true);
     frontendDC1.start();
 
     frontendDC2 =
@@ -266,14 +268,31 @@ public class RemoteDatacenterProduceFallbackTest {
         .isOk()
         .expectBody(String.class)
         .value(
-            (body) ->
-                assertThatMetrics(body)
-                    .contains("hermes_frontend_topic_published_total")
-                    .withLabels(
-                        "group", topic.getName().getGroupName(),
-                        "topic", topic.getName().getName(),
-                        "storageDc", REMOTE_DC2)
-                    .withValue(1.0));
+            (body) -> {
+              assertThatMetrics(body)
+                  .contains("hermes_frontend_topic_published_total")
+                  .withLabels(
+                      "group", topic.getName().getGroupName(),
+                      "topic", topic.getName().getName(),
+                      "storageDc", REMOTE_DC2)
+                  .withValue(1.0);
+            });
+
+    // and broker latency metric is eventually emitted by the async reporter
+    await()
+        .atMost(Duration.ofSeconds(5))
+        .untilAsserted(
+            () ->
+                DC1.getFrontendMetrics()
+                    .expectStatus()
+                    .isOk()
+                    .expectBody(String.class)
+                    .value(
+                        (body) ->
+                            assertThatMetrics(body)
+                                .contains("hermes_frontend_broker_latency_seconds_count")
+                                .withLabels("ack", "LEADER", "broker_dc", REMOTE_DC2)
+                                .withValueGreaterThan(0.0)));
   }
 
   @Test

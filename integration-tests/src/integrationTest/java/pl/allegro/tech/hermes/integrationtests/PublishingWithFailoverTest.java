@@ -20,7 +20,7 @@ public class PublishingWithFailoverTest {
   public static final TestSubscribersExtension subscribers = new TestSubscribersExtension();
 
   @Test
-  public void shouldReturn202IfKafkaFailedToRespondButMessageCanBeBufferedInMemory() {
+  public void shouldReturn503IfKafkaFailedToRespond() {
     // given
     TestSubscriber subscriber = subscribers.createSubscriber();
     TestMessage message = TestMessage.of("hello", "world");
@@ -41,7 +41,6 @@ public class PublishingWithFailoverTest {
     hermes.restoreConnectionsBetweenBrokersAndClients();
 
     // then
-    response.expectStatus().isAccepted();
-    subscriber.waitUntilReceived(message.body());
+    response.expectStatus().isEqualTo(503);
   }
 }

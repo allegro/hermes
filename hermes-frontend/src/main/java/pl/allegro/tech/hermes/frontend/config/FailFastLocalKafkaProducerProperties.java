@@ -50,6 +50,8 @@ public class FailFastLocalKafkaProducerProperties implements KafkaProducerParame
 
   private Duration retryBackoff = Duration.ofMillis(50);
 
+  private Duration retryBackoffMax = Duration.ofMillis(50);
+
   private Duration requestTimeout = Duration.ofSeconds(30);
 
   private Duration deliveryTimeout = Duration.ofSeconds(30);
@@ -69,6 +71,12 @@ public class FailFastLocalKafkaProducerProperties implements KafkaProducerParame
   private boolean reportNodeMetricsEnabled = false;
 
   private boolean idempotenceEnabled = false;
+
+  private String partitionerClass = "";
+
+  private int poolSize = 1;
+
+  private long bufferMemory = 256 * 1024 * 1024;
 
   @Override
   public Duration getMaxBlock() {
@@ -113,6 +121,15 @@ public class FailFastLocalKafkaProducerProperties implements KafkaProducerParame
 
   public void setRetryBackoff(Duration retryBackoff) {
     this.retryBackoff = retryBackoff;
+  }
+
+  @Override
+  public Duration getRetryBackoffMax() {
+    return retryBackoffMax;
+  }
+
+  public void setRetryBackoffMax(Duration retryBackoffMax) {
+    this.retryBackoffMax = retryBackoffMax;
   }
 
   @Override
@@ -202,5 +219,32 @@ public class FailFastLocalKafkaProducerProperties implements KafkaProducerParame
 
   public void setIdempotenceEnabled(boolean idempotenceEnabled) {
     this.idempotenceEnabled = idempotenceEnabled;
+  }
+
+  @Override
+  public String getPartitionerClass() {
+    return partitionerClass;
+  }
+
+  public void setPartitionerClass(String partitionerClass) {
+    this.partitionerClass = partitionerClass;
+  }
+
+  @Override
+  public int getPoolSize() {
+    return poolSize;
+  }
+
+  public void setPoolSize(int poolSize) {
+    this.poolSize = poolSize;
+  }
+
+  @Override
+  public long getBufferMemory() {
+    return bufferMemory;
+  }
+
+  public void setBufferMemory(long bufferMemory) {
+    this.bufferMemory = bufferMemory;
   }
 }

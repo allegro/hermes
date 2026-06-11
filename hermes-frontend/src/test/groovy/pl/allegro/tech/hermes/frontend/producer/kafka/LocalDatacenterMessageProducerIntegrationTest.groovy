@@ -117,9 +117,10 @@ class LocalDatacenterMessageProducerIntegrationTest extends Specification {
         producers = new KafkaMessageSenders(
                 topicMetadataLoadingExecutor,
                 minInSyncReplicasLoader,
-                new KafkaMessageSenders.Tuple(
-                        new KafkaMessageSender<byte[], byte[]>(leaderConfirms, brokerLatencyReporter, metricsFacade, datacenter, chaosScheduler),
-                        new KafkaMessageSender<byte[], byte[]>(everyoneConfirms, brokerLatencyReporter, metricsFacade, datacenter, chaosScheduler)
+                metricsFacade,
+                new KafkaMessageSenders.SenderPair(
+                        new KafkaMessageSenderPool("test-ackLeader", [new KafkaMessageSender<byte[], byte[]>(leaderConfirms, brokerLatencyReporter, datacenter, chaosScheduler)]),
+                        new KafkaMessageSenderPool("test-ackAll", [new KafkaMessageSender<byte[], byte[]>(everyoneConfirms, brokerLatencyReporter, datacenter, chaosScheduler)])
                 ),
                 emptyList()
         )
