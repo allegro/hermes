@@ -51,8 +51,7 @@ public abstract class GoogleBigQueryDataWriter<
               .collect(Collectors.joining("\n")),
           e);
       Integer statusCode = GoogleBigQueryAppendCompleteCallback.mapToPermanentErrorHttpStatus(e);
-      throw e;
-          MessageSendingResult.failedResult(statusCode, new GoogleBigQueryFailedAppendException(e)));
+      MessageSendingResult.failedResult(statusCode, new GoogleBigQueryFailedAppendException(e));
     } catch (Exception e) {
       logger.warn(
           "Writer {} has failed to append rows to stream {} because of {}",
