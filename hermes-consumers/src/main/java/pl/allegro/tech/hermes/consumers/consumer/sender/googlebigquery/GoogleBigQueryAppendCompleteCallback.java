@@ -25,7 +25,7 @@ public class GoogleBigQueryAppendCompleteCallback implements ApiFutureCallback<A
           403; // Technical user does not have permissions to write to the table
       case INVALID_ARGUMENT ->
           400; // Invalid message format i.e. microsecond timestamp value is sent to millisecond
-               // timestamp field
+      // timestamp field
       default -> 500;
     };
   }
