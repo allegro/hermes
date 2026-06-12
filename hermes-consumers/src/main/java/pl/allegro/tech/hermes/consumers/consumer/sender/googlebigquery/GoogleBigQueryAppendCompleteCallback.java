@@ -6,8 +6,6 @@ import com.google.cloud.bigquery.storage.v1.Exceptions;
 import io.grpc.Status;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 
 public class GoogleBigQueryAppendCompleteCallback implements ApiFutureCallback<AppendRowsResponse> {
@@ -17,6 +15,16 @@ public class GoogleBigQueryAppendCompleteCallback implements ApiFutureCallback<A
   public GoogleBigQueryAppendCompleteCallback(
       CompletableFuture<MessageSendingResult> resultFuture) {
     this.resultFuture = resultFuture;
+  }
+
+  public static Integer mapToPermanentErrorHttpStatus(Throwable cause) {
+    Status.Code grpcCode = Status.fromThrowable(cause).getCode();
+    return switch (grpcCode) {
+        case NOT_FOUND -> 404; // Table does not exist
+        case PERMISSION_DENIED -> 403; // Technical user does not have permissions to write to the table
+        case INVALID_ARGUMENT -> 400; // Invalid message format i.e. microsecond timestamp value is sent to millisecond timestamp field
+        default -> 500;
+      };
   }
 
   @Override
@@ -31,15 +39,5 @@ public class GoogleBigQueryAppendCompleteCallback implements ApiFutureCallback<A
   @Override
   public void onSuccess(AppendRowsResponse result) {
     resultFuture.complete(MessageSendingResult.succeededResult());
-  }
-
-  public static Integer mapToPermanentErrorHttpStatus(Throwable cause) {
-    Status.Code grpcCode = Status.fromThrowable(cause).getCode();
-    return switch (grpcCode) {
-        case NOT_FOUND -> 404; // Table does not exist
-        case PERMISSION_DENIED -> 403; // Technical user does not have permissions to write to the table
-        case INVALID_ARGUMENT -> 400; // Invalid message format i.e. microsecond timestamp value is sent to millisecond timestamp field
-        default -> 500;
-      };
   }
 }
