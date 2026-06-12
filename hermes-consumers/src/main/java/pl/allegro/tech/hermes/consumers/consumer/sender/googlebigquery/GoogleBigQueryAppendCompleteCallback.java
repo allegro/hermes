@@ -28,13 +28,7 @@ public class GoogleBigQueryAppendCompleteCallback implements ApiFutureCallback<A
     Throwable cause = Objects.requireNonNullElse(storageException, t);
 
     Integer httpStatusCode = mapToPermanentErrorHttpStatus(cause);
-    logger.info("BigQuery append failed with with code {} and error: {}",httpStatusCode, cause.getMessage(), cause);
-    if (httpStatusCode != null) {
-      logger.warn("BigQuery permanent error mapped to HTTP {}: {}", httpStatusCode, cause.getMessage(), cause);
-      resultFuture.complete(MessageSendingResult.failedResult(httpStatusCode, cause));
-    } else {
-      resultFuture.complete(MessageSendingResult.failedResult(cause));
-    }
+    resultFuture.complete(MessageSendingResult.failedResult(httpStatusCode, cause));
   }
 
   @Override
@@ -44,13 +38,11 @@ public class GoogleBigQueryAppendCompleteCallback implements ApiFutureCallback<A
 
   public static Integer mapToPermanentErrorHttpStatus(Throwable cause) {
     Status.Code grpcCode = Status.fromThrowable(cause).getCode();
-    Integer httpStatusCode = switch (grpcCode) {
-      case NOT_FOUND -> 404; // Table does not exist
-      case PERMISSION_DENIED -> 403; // Technical user does not have permissions to write to the table
-      case INVALID_ARGUMENT -> 400; // Invalid message format i.e. microsecond timestamp value is sent to millisecond timestamp field
-      default -> 500;
-    };
-    logger.info("Mapping gRPC code {} to HTTP status code {}", grpcCode, httpStatusCode);
-    return httpStatusCode;
+    return switch (grpcCode) {
+        case NOT_FOUND -> 404; // Table does not exist
+        case PERMISSION_DENIED -> 403; // Technical user does not have permissions to write to the table
+        case INVALID_ARGUMENT -> 400; // Invalid message format i.e. microsecond timestamp value is sent to millisecond timestamp field
+        default -> 500;
+      };
   }
 }
