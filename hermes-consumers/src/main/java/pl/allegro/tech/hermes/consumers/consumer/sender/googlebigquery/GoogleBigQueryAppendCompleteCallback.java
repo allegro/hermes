@@ -20,11 +20,14 @@ public class GoogleBigQueryAppendCompleteCallback implements ApiFutureCallback<A
   public static Integer mapToPermanentErrorHttpStatus(Throwable cause) {
     Status.Code grpcCode = Status.fromThrowable(cause).getCode();
     return switch (grpcCode) {
-        case NOT_FOUND -> 404; // Table does not exist
-        case PERMISSION_DENIED -> 403; // Technical user does not have permissions to write to the table
-        case INVALID_ARGUMENT -> 400; // Invalid message format i.e. microsecond timestamp value is sent to millisecond timestamp field
-        default -> 500;
-      };
+      case NOT_FOUND -> 404; // Table does not exist
+      case PERMISSION_DENIED ->
+          403; // Technical user does not have permissions to write to the table
+      case INVALID_ARGUMENT ->
+          400; // Invalid message format i.e. microsecond timestamp value is sent to millisecond
+               // timestamp field
+      default -> 500;
+    };
   }
 
   @Override
