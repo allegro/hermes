@@ -12,9 +12,6 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 
 public class GoogleBigQueryAppendCompleteCallback implements ApiFutureCallback<AppendRowsResponse> {
 
-  private static final Logger logger =
-      LoggerFactory.getLogger(GoogleBigQueryAppendCompleteCallback.class);
-
   private final CompletableFuture<MessageSendingResult> resultFuture;
 
   public GoogleBigQueryAppendCompleteCallback(
