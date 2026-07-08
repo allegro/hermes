@@ -18,8 +18,6 @@ public class BrokerMetrics {
         .tag("broker", broker)
         .tag("broker_dc", brokerDc)
         .tag("ack", ack.name())
-        .publishPercentileHistogram()
-        .maximumExpectedValue(Duration.ofSeconds(5))
         .register(meterRegistry)
         .record(duration);
   }
