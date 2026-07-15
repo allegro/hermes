@@ -2,7 +2,7 @@
 
 Hermes gathers a big number of different metrics which are useful when trying to observe the current state of the system.
 
-Latencies are measured as: 50, 75, 95, 99 and 99.9 percentiles.
+Latencies are measured as: 50, 99 and 99.9 percentiles.
 Rates are measured and averaged in a time window. There are 3 time windows measured: 1, 5 and 15 minutes.
 
 ## Frontend
