@@ -12,7 +12,12 @@ export interface UseInconsistentTopics {
   topics: Ref<string[] | undefined>;
   loading: Ref<boolean>;
   error: Ref<UseInconsistentTopicsErrors>;
-  removeInconsistentTopic: (topic: string) => Promise<boolean>;
+  fetchInconsistentTopics: () => Promise<void>;
+  removeTopicsLocally: (topics: string[]) => void;
+  removeInconsistentTopic: (
+    topic: string,
+    notify?: boolean,
+  ) => Promise<boolean>;
 }
 
 export interface UseInconsistentTopicsErrors {
@@ -43,27 +48,40 @@ export function useInconsistentTopics(): UseInconsistentTopics {
     }
   };
 
-  const removeInconsistentTopic = async (topic: string): Promise<boolean> => {
+  const removeTopicsLocally = (topics: string[]) => {
+    topicNames.value = topicNames.value?.filter(
+      (topic) => !topics.includes(topic),
+    );
+  };
+
+  const removeInconsistentTopic = async (
+    topic: string,
+    notify = true,
+  ): Promise<boolean> => {
     try {
       await deleteInconsistentTopic(topic);
-      await notificationStore.dispatchNotification({
-        text: useGlobalI18n().t(
-          'notifications.inconsistentTopic.delete.success',
-          {
-            topic,
-          },
-        ),
-        type: 'success',
-      });
+      if (notify) {
+        await notificationStore.dispatchNotification({
+          text: useGlobalI18n().t(
+            'notifications.inconsistentTopic.delete.success',
+            {
+              topic,
+            },
+          ),
+          type: 'success',
+        });
+      }
       return true;
     } catch (e: any) {
-      await dispatchErrorNotification(
-        e,
-        notificationStore,
-        useGlobalI18n().t('notifications.inconsistentTopic.delete.failure', {
-          topic,
-        }),
-      );
+      if (notify) {
+        await dispatchErrorNotification(
+          e,
+          notificationStore,
+          useGlobalI18n().t('notifications.inconsistentTopic.delete.failure', {
+            topic,
+          }),
+        );
+      }
       return false;
     }
   };
@@ -74,6 +92,8 @@ export function useInconsistentTopics(): UseInconsistentTopics {
     topics,
     loading,
     error,
+    fetchInconsistentTopics,
+    removeTopicsLocally,
     removeInconsistentTopic,
   };
 }

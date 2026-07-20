@@ -5,7 +5,7 @@ import {
 import { createTestingPinia } from '@pinia/testing';
 import { dummyInconsistentTopics } from '@/dummy/inconsistentTopics';
 import { expect } from 'vitest';
-import { fireEvent } from '@testing-library/vue';
+import { fireEvent, waitFor } from '@testing-library/vue';
 import { ref } from 'vue';
 import { render } from '@/utils/test-utils';
 import { useInconsistentTopics } from '@/composables/inconsistent-topics/use-inconsistent-topics/useInconsistentTopics';
@@ -22,6 +22,8 @@ const useInconsistentTopicsStub: UseInconsistentTopics = {
     fetchInconsistentTopics: null,
   }),
   loading: ref(false),
+  fetchInconsistentTopics: () => Promise.resolve(),
+  removeTopicsLocally: () => undefined,
   removeInconsistentTopic: () => Promise.resolve(true),
 };
 
@@ -228,5 +230,65 @@ describe('ConsistencyView', () => {
         'consistency.inconsistentTopics.confirmationDialog.remove.text',
       ),
     ).toBeInTheDocument();
+  });
+
+  it('should show one confirmation dialog for selected inconsistent topics', async () => {
+    // given
+    vi.mocked(useInconsistentTopics).mockReturnValueOnce(
+      useInconsistentTopicsStub,
+    );
+    const { getByLabelText, getByText } = render(ConsistencyView, {
+      testPinia: createTestingPiniaWithState(),
+    });
+
+    // when
+    await fireEvent.click(getByLabelText(dummyInconsistentTopics[0]));
+    await fireEvent.click(
+      getByText('consistency.inconsistentTopics.actions.removeSelected'),
+    );
+
+    // then
+    expect(
+      getByText('consistency.inconsistentTopics.batch.confirmation.title'),
+    ).toBeInTheDocument();
+    expect(
+      getByText('consistency.inconsistentTopics.batch.confirmation.text'),
+    ).toBeInTheDocument();
+  });
+
+  it('should continue batch removal after a topic deletion fails', async () => {
+    // given
+    const removeInconsistentTopic = vi
+      .fn()
+      .mockResolvedValueOnce(true)
+      .mockResolvedValueOnce(false)
+      .mockResolvedValueOnce(true);
+    const removeTopicsLocally = vi.fn();
+    vi.mocked(useInconsistentTopics).mockReturnValueOnce({
+      ...useInconsistentTopicsStub,
+      removeInconsistentTopic,
+      removeTopicsLocally,
+    });
+    const { getByLabelText, getByText } = render(ConsistencyView, {
+      testPinia: createTestingPiniaWithState(),
+    });
+
+    // when
+    for (const topic of dummyInconsistentTopics) {
+      await fireEvent.click(getByLabelText(topic));
+    }
+    await fireEvent.click(
+      getByText('consistency.inconsistentTopics.actions.removeSelected'),
+    );
+    await fireEvent.click(getByText('confirmationDialog.confirm'));
+
+    // then
+    await waitFor(() => {
+      expect(removeInconsistentTopic).toHaveBeenCalledTimes(3);
+      expect(removeTopicsLocally).toHaveBeenCalledWith([
+        dummyInconsistentTopics[0],
+        dummyInconsistentTopics[2],
+      ]);
+    });
   });
 });

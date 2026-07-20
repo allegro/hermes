@@ -1,5 +1,5 @@
 import { dummyInconsistentTopics } from '@/dummy/inconsistentTopics';
-import { render } from '@/utils/test-utils';
+import { render, renderWithEmits } from '@/utils/test-utils';
 import { within } from '@testing-library/vue';
 import InconsistentTopicsListing from '@/views/admin/consistency/inconsistent-topics-listing/InconsistentTopicsListing.vue';
 
@@ -102,5 +102,26 @@ describe('ConstraintsListing', () => {
         'consistency.inconsistentTopics.appliedFilter',
       ),
     ).not.toBeInTheDocument();
+  });
+
+  it('should select all topics visible under the active filter', async () => {
+    // given
+    const wrapper = renderWithEmits(InconsistentTopicsListing, {
+      props: {
+        inconsistentTopics: dummyInconsistentTopics,
+        filter: 'Topic',
+        selectedTopics: [],
+      },
+    });
+
+    // when
+    await wrapper
+      .find('[data-testid="select-all-inconsistent-topics"] input')
+      .setValue(true);
+
+    // then
+    expect(wrapper.emitted('update:selectedTopics')).toEqual([
+      [['pl.allegro.group.Topic1_avro', 'pl.allegro.group.Topic2_avro']],
+    ]);
   });
 });

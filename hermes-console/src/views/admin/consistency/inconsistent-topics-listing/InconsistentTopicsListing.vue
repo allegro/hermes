@@ -3,10 +3,16 @@
   import { useI18n } from 'vue-i18n';
   const { t } = useI18n();
 
-  const props = defineProps<{
-    inconsistentTopics: string[];
-    filter?: string;
-  }>();
+  const props = withDefaults(
+    defineProps<{
+      inconsistentTopics: string[];
+      filter?: string;
+      selectedTopics?: string[];
+    }>(),
+    {
+      selectedTopics: () => [],
+    },
+  );
 
   const filteredTopics = computed(() => {
     return props.inconsistentTopics.filter(
@@ -18,7 +24,46 @@
 
   const emit = defineEmits<{
     remove: [topic: string];
+    'update:selectedTopics': [topics: string[]];
   }>();
+
+  const allVisibleTopicsSelected = computed(() => {
+    return (
+      filteredTopics.value.length > 0 &&
+      filteredTopics.value.every((topic) =>
+        props.selectedTopics.includes(topic),
+      )
+    );
+  });
+
+  const someVisibleTopicsSelected = computed(() => {
+    return (
+      !allVisibleTopicsSelected.value &&
+      filteredTopics.value.some((topic) => props.selectedTopics.includes(topic))
+    );
+  });
+
+  function updateSelection(topic: string, selected: boolean | null) {
+    const selectedTopics = new Set(props.selectedTopics);
+    if (selected) {
+      selectedTopics.add(topic);
+    } else {
+      selectedTopics.delete(topic);
+    }
+    emit('update:selectedTopics', [...selectedTopics]);
+  }
+
+  function updateVisibleTopicsSelection(selected: boolean | null) {
+    const selectedTopics = new Set(props.selectedTopics);
+    filteredTopics.value.forEach((topic) => {
+      if (selected) {
+        selectedTopics.add(topic);
+      } else {
+        selectedTopics.delete(topic);
+      }
+    });
+    emit('update:selectedTopics', [...selectedTopics]);
+  }
 </script>
 
 <template>
@@ -27,6 +72,17 @@
       <thead>
         <tr>
           <th>{{ $t('consistency.inconsistentTopics.listing.index') }}</th>
+          <th>
+            <v-checkbox-btn
+              data-testid="select-all-inconsistent-topics"
+              :model-value="allVisibleTopicsSelected"
+              :indeterminate="someVisibleTopicsSelected"
+              :aria-label="
+                $t('consistency.inconsistentTopics.actions.selectAll')
+              "
+              @update:model-value="updateVisibleTopicsSelection"
+            />
+          </th>
           <th>{{ $t('consistency.inconsistentTopics.listing.name') }}</th>
           <th></th>
         </tr>
@@ -35,6 +91,15 @@
         <tr v-for="(topic, index) in filteredTopics" :key="topic">
           <td class="text-medium-emphasis">
             {{ index + 1 }}
+          </td>
+          <td>
+            <v-checkbox-btn
+              :model-value="selectedTopics.includes(topic)"
+              :aria-label="topic"
+              @update:model-value="
+                (selected) => updateSelection(topic, selected)
+              "
+            />
           </td>
           <td class="font-weight-medium">
             {{ topic }}
@@ -53,7 +118,7 @@
       </tbody>
       <tbody v-else>
         <tr>
-          <th colspan="3" class="text-center text-medium-emphasis">
+          <th colspan="4" class="text-center text-medium-emphasis">
             {{ $t('consistency.inconsistentTopics.noTopics') }}
             <template v-if="filter">
               {{
