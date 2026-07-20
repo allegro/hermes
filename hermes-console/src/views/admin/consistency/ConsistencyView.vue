@@ -44,6 +44,7 @@
   const topicToDelete = ref();
   const selectedTopics = ref<string[]>([]);
   const batchProgress = ref<number>();
+  const batchTotal = ref(0);
   const isBatchDeletionInProgress = computed(
     () => batchProgress.value !== undefined,
   );
@@ -67,14 +68,17 @@
   } = useDialog();
 
   async function deleteInconsistentTopic() {
+    const topic = topicToDelete.value;
     disableRemoveActionButton();
-    const isTopicRemoved = await removeInconsistentTopic(topicToDelete.value);
+    const isTopicRemoved = await removeInconsistentTopic(topic);
     enableRemoveActionButton();
-    closeRemoveDialog();
+    if (topicToDelete.value === topic) {
+      closeRemoveDialog();
+    }
     if (isTopicRemoved) {
-      removeTopicsLocally([topicToDelete.value]);
+      removeTopicsLocally([topic]);
       selectedTopics.value = selectedTopics.value.filter(
-        (topic) => topic !== topicToDelete.value,
+        (selectedTopic) => selectedTopic !== topic,
       );
     }
   }
@@ -94,12 +98,14 @@
     disableBatchRemoveActionButton();
     closeBatchRemoveDialog();
     batchProgress.value = 0;
+    batchTotal.value = topicsToRemove.length;
 
     async function removeNextTopic() {
       while (nextTopicIndex < topicsToRemove.length) {
         const topic = topicsToRemove[nextTopicIndex++];
         if (await removeInconsistentTopic(topic, false)) {
           successfulTopics.push(topic);
+          removeTopicsLocally([topic]);
         } else {
           failedTopics.push(topic);
         }
@@ -113,11 +119,11 @@
       ),
     );
 
-    removeTopicsLocally(successfulTopics);
-    selectedTopics.value = failedTopics;
-    batchProgress.value = undefined;
-    enableBatchRemoveActionButton();
     await fetchInconsistentTopics();
+    removeTopicsLocally(successfulTopics);
+    selectedTopics.value = failedTopics.filter((topic) =>
+      topics.value?.includes(topic),
+    );
     await notificationStore.dispatchNotification({
       text: t('consistency.inconsistentTopics.batch.complete', {
         successful: successfulTopics.length,
@@ -125,6 +131,9 @@
       }),
       type: failedTopics.length === 0 ? 'success' : 'warning',
     });
+    batchProgress.value = undefined;
+    batchTotal.value = 0;
+    enableBatchRemoveActionButton();
   }
 </script>
 
@@ -242,6 +251,7 @@
           :label="$t('consistency.inconsistentTopics.actions.search')"
           density="compact"
           v-model="topicFilter"
+          :disabled="isBatchDeletionInProgress"
           prepend-inner-icon="mdi-magnify"
         />
       </v-col>
@@ -257,7 +267,7 @@
           {{
             t('consistency.inconsistentTopics.batch.progress', {
               completed: batchProgress,
-              total: selectedTopics.length,
+              total: batchTotal,
             })
           }}
         </v-alert>
@@ -266,6 +276,7 @@
           :inconsistentTopics="topics"
           :filter="topicFilter"
           v-model:selected-topics="selectedTopics"
+          :disabled="isBatchDeletionInProgress"
           @remove="openTopicRemoveDialog"
         />
       </v-col>

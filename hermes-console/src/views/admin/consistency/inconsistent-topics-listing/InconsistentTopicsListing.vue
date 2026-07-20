@@ -8,6 +8,7 @@
       inconsistentTopics: string[];
       filter?: string;
       selectedTopics?: string[];
+      disabled?: boolean;
     }>(),
     {
       selectedTopics: () => [],
@@ -71,35 +72,37 @@
     <v-table density="comfortable" hover>
       <thead>
         <tr>
-          <th>{{ $t('consistency.inconsistentTopics.listing.index') }}</th>
           <th>
             <v-checkbox-btn
               data-testid="select-all-inconsistent-topics"
               :model-value="allVisibleTopicsSelected"
               :indeterminate="someVisibleTopicsSelected"
+              :disabled="disabled"
               :aria-label="
                 $t('consistency.inconsistentTopics.actions.selectAll')
               "
               @update:model-value="updateVisibleTopicsSelection"
             />
           </th>
+          <th>{{ $t('consistency.inconsistentTopics.listing.index') }}</th>
           <th>{{ $t('consistency.inconsistentTopics.listing.name') }}</th>
           <th></th>
         </tr>
       </thead>
       <tbody v-if="filteredTopics.length > 0">
         <tr v-for="(topic, index) in filteredTopics" :key="topic">
-          <td class="text-medium-emphasis">
-            {{ index + 1 }}
-          </td>
           <td>
             <v-checkbox-btn
               :model-value="selectedTopics.includes(topic)"
+              :disabled="disabled"
               :aria-label="topic"
               @update:model-value="
                 (selected) => updateSelection(topic, selected)
               "
             />
+          </td>
+          <td class="text-medium-emphasis">
+            {{ index + 1 }}
           </td>
           <td class="font-weight-medium">
             {{ topic }}
@@ -109,6 +112,7 @@
               variant="text"
               prepend-icon="mdi-delete"
               color="red"
+              :disabled="disabled"
               @click="emit('remove', topic)"
             >
               {{ $t('consistency.inconsistentTopics.actions.delete') }}

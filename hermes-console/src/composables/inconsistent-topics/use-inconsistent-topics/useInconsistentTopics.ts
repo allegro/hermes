@@ -40,6 +40,7 @@ export function useInconsistentTopics(): UseInconsistentTopics {
   const fetchInconsistentTopics = async () => {
     try {
       loading.value = true;
+      error.value.fetchInconsistentTopics = null;
       topicNames.value = (await getInconsistentTopics()).data;
     } catch (e) {
       error.value.fetchInconsistentTopics = e as Error;
