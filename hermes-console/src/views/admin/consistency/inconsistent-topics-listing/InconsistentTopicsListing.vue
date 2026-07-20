@@ -72,7 +72,7 @@
     <v-table density="comfortable" hover>
       <thead>
         <tr>
-          <th>
+          <th class="selection-column">
             <v-checkbox-btn
               data-testid="select-all-inconsistent-topics"
               :model-value="allVisibleTopicsSelected"
@@ -84,14 +84,16 @@
               @update:model-value="updateVisibleTopicsSelection"
             />
           </th>
-          <th>{{ $t('consistency.inconsistentTopics.listing.index') }}</th>
+          <th class="index-column">
+            {{ $t('consistency.inconsistentTopics.listing.index') }}
+          </th>
           <th>{{ $t('consistency.inconsistentTopics.listing.name') }}</th>
           <th></th>
         </tr>
       </thead>
       <tbody v-if="filteredTopics.length > 0">
         <tr v-for="(topic, index) in filteredTopics" :key="topic">
-          <td>
+          <td class="selection-column">
             <v-checkbox-btn
               :model-value="selectedTopics.includes(topic)"
               :disabled="disabled"
@@ -101,7 +103,7 @@
               "
             />
           </td>
-          <td class="text-medium-emphasis">
+          <td class="index-column text-medium-emphasis">
             {{ index + 1 }}
           </td>
           <td class="font-weight-medium">
@@ -136,4 +138,12 @@
   </v-card>
 </template>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+  .selection-column {
+    width: 48px;
+  }
+
+  .index-column {
+    width: 56px;
+  }
+</style>
