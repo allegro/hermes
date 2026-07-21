@@ -85,7 +85,7 @@
           @click="onCreated"
           data-testid="createConstraintSave"
         >
-          {{ $t('constraints.createForm.save') }}
+          {{ $t('constraints.createForm.create') }}
         </v-btn>
         <v-btn
           color="orange"
