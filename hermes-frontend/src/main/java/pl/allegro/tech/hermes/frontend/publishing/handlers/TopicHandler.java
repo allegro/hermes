@@ -72,10 +72,9 @@ class TopicHandler implements HttpHandler {
 
     CachedTopic cachedTopic = maybeTopic.get();
     Topic topic = cachedTopic.getTopic();
-    boolean requestAllowed = !topic.isAuthEnabled() || hasPermission(exchange, topic);
-    exchange.addExchangeCompleteListener(new ExchangeMetrics(cachedTopic, requestAllowed));
+    exchange.addExchangeCompleteListener(new ExchangeMetrics(cachedTopic));
 
-    if (!requestAllowed) {
+    if (topic.isAuthEnabled() && !hasPermission(exchange, topic)) {
       requestForbidden(exchange, messageId, topicName);
       return;
     }
