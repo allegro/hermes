@@ -1,12 +1,12 @@
 package pl.allegro.tech.hermes.integrationtests;
 
 import static org.awaitility.Awaitility.waitAtMost;
-import static pl.allegro.tech.hermes.integrationtests.assertions.HermesAssertions.assertThatMetrics;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.AUTH_PASSWORD;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.AUTH_USERNAME;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_AUTHENTICATION_ENABLED;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_AUTHENTICATION_MODE;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_SSL_ENABLED;
+import static pl.allegro.tech.hermes.integrationtests.assertions.HermesAssertions.assertThatMetrics;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -210,7 +210,7 @@ public class TopicAuthorizationTest {
                       "group", topic.getName().getGroupName(),
                       "topic", topic.getName().getName(),
                       "status_code", "403")
-                  .withValueGreaterThan(0);
+                  .withValue(1);
               assertThatMetrics(metrics)
                   .contains("hermes_frontend_topic_global_http_status_codes_total")
                   .withLabels("status_code", "403")

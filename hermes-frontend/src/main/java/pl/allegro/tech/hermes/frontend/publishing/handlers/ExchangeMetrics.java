@@ -13,12 +13,13 @@ class ExchangeMetrics implements ExchangeCompletionListener {
 
   private static final Logger logger = LoggerFactory.getLogger(ExchangeMetrics.class);
 
-  private final StartedTimersPair producerLatencyTimers;
   private final CachedTopic cachedTopic;
+  private final StartedTimersPair producerLatencyTimers;
 
-  ExchangeMetrics(CachedTopic cachedTopic) {
+  ExchangeMetrics(CachedTopic cachedTopic, boolean measureProducerLatency) {
     this.cachedTopic = cachedTopic;
-    producerLatencyTimers = cachedTopic.startProducerLatencyTimers();
+    producerLatencyTimers =
+        measureProducerLatency ? cachedTopic.startProducerLatencyTimers() : null;
   }
 
   @Override
@@ -26,7 +27,9 @@ class ExchangeMetrics implements ExchangeCompletionListener {
     try {
       cachedTopic.markRequestMeter();
       cachedTopic.markStatusCodeMeter(exchange.getStatusCode());
-      producerLatencyTimers.close();
+      if (producerLatencyTimers != null) {
+        producerLatencyTimers.close();
+      }
     } catch (RuntimeException e) {
       logger
           .atError()
