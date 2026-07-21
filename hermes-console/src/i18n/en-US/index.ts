@@ -393,6 +393,8 @@ const en_US = {
     },
     messagesPreview: {
       title: 'Messages preview',
+      samplingNotice:
+        'This preview contains a limited sample of messages. It is not a complete message log.',
       tableHeaders: {
         messageId: 'Message ID',
         timestamp: 'Timestamp',
@@ -406,7 +408,7 @@ const en_US = {
         timestamp: 'Timestamp',
         content: 'Payload',
         notAvailable: 'Not available',
-        noMessages: 'There are no messages',
+        noMessages: 'No preview samples are available',
         disabled:
           "Messages preview feature is not available (they are either disabled or you don't have sufficient access).",
       },

@@ -18,6 +18,14 @@ describe('MessagesPreview', () => {
     expect(getByText('topicView.messagesPreview.title')).toBeVisible();
   });
 
+  it('should explain that the preview is a limited sample', () => {
+    // given
+    const { getByText } = render(MessagesPreview, { props });
+
+    // then
+    expect(getByText('topicView.messagesPreview.samplingNotice')).toBeVisible();
+  });
+
   it('should render all messages in the table', () => {
     // given
     const { getByText } = render(MessagesPreview, { props });
@@ -117,7 +125,7 @@ describe('MessagesPreview', () => {
 
   it('should show appropriate message when props enabled is false', () => {
     // given
-    const { getByText } = render(MessagesPreview, {
+    const { getByText, queryByText } = render(MessagesPreview, {
       props: { ...props, enabled: false },
     });
 
@@ -125,6 +133,9 @@ describe('MessagesPreview', () => {
     expect(
       getByText('topicView.messagesPreview.messageDetails.disabled'),
     ).toBeVisible();
+    expect(
+      queryByText('topicView.messagesPreview.samplingNotice'),
+    ).not.toBeInTheDocument();
   });
 
   it('should show appropriate message when messages table is empty', () => {
