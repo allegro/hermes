@@ -4,6 +4,20 @@ import { waitFor } from '@testing-library/vue';
 import CreateConstraintFormView from '@/views/admin/constraints/create-constraint-form/CreateConstraintFormView.vue';
 
 describe('CreateConstraintForm', () => {
+  it('should render the create label on the submit button', () => {
+    // when
+    const { getByTestId } = render(CreateConstraintFormView, {
+      props: {
+        isSubscription: false,
+      },
+    });
+
+    // then
+    expect(getByTestId('createConstraintSave')).toHaveTextContent(
+      'constraints.createForm.create',
+    );
+  });
+
   it('should emit a cancel event when user clicks cancel button', async () => {
     // given
     const wrapper = renderWithEmits(CreateConstraintFormView, {
