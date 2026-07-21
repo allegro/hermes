@@ -117,6 +117,17 @@ const en_US = {
       actions: {
         delete: 'Remove',
         search: 'Search inconsistent topics...',
+        selectAll: 'Select all visible topics',
+        removeSelected: 'Remove selected',
+      },
+      selected: '{count} selected',
+      batch: {
+        confirmation: {
+          title: 'Confirm topic deletion',
+          text: 'Are you sure you want to delete {count} selected topics?',
+        },
+        progress: 'Removing {completed} of {total} topics',
+        complete: 'Removed {successful} topics; {failed} failed',
       },
       listing: {
         index: '#',

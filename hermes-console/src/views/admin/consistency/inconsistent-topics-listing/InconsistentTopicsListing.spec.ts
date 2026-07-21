@@ -1,5 +1,5 @@
 import { dummyInconsistentTopics } from '@/dummy/inconsistentTopics';
-import { render } from '@/utils/test-utils';
+import { render, renderWithEmits } from '@/utils/test-utils';
 import { within } from '@testing-library/vue';
 import InconsistentTopicsListing from '@/views/admin/consistency/inconsistent-topics-listing/InconsistentTopicsListing.vue';
 
@@ -102,5 +102,65 @@ describe('ConstraintsListing', () => {
         'consistency.inconsistentTopics.appliedFilter',
       ),
     ).not.toBeInTheDocument();
+  });
+
+  it('should select all topics visible under the active filter', async () => {
+    // given
+    const wrapper = renderWithEmits(InconsistentTopicsListing, {
+      props: {
+        inconsistentTopics: dummyInconsistentTopics,
+        filter: 'Topic',
+        selectedTopics: [],
+      },
+    });
+
+    // when
+    await wrapper
+      .find('[data-testid="select-all-inconsistent-topics"] input')
+      .setValue(true);
+
+    // then
+    expect(wrapper.emitted('update:selectedTopics')).toEqual([
+      [['pl.allegro.group.Topic1_avro', 'pl.allegro.group.Topic2_avro']],
+    ]);
+  });
+
+  it('should allow opting out a selected topic', async () => {
+    // given
+    const wrapper = renderWithEmits(InconsistentTopicsListing, {
+      props: {
+        inconsistentTopics: dummyInconsistentTopics,
+        selectedTopics: dummyInconsistentTopics,
+      },
+    });
+
+    // when
+    await wrapper
+      .find(`input[aria-label="${dummyInconsistentTopics[2]}"]`)
+      .setValue(false);
+
+    // then
+    expect(wrapper.emitted('update:selectedTopics')).toEqual([
+      [[dummyInconsistentTopics[0], dummyInconsistentTopics[1]]],
+    ]);
+  });
+
+  it('should disable selection and removal while a batch is running', () => {
+    // given
+    const wrapper = renderWithEmits(InconsistentTopicsListing, {
+      props: {
+        inconsistentTopics: dummyInconsistentTopics,
+        selectedTopics: dummyInconsistentTopics,
+        disabled: true,
+      },
+    });
+
+    // then
+    wrapper.findAll('input[type="checkbox"]').forEach((checkbox) => {
+      expect(checkbox.attributes('disabled')).toBeDefined();
+    });
+    wrapper.findAll('button').forEach((button) => {
+      expect(button.attributes('disabled')).toBeDefined();
+    });
   });
 });
