@@ -6,6 +6,7 @@ import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.AU
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_AUTHENTICATION_ENABLED;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_AUTHENTICATION_MODE;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_SSL_ENABLED;
+import static pl.allegro.tech.hermes.integrationtests.assertions.HermesAssertions.assertThatMetrics;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -177,6 +178,55 @@ public class TopicAuthorizationTest {
             .withAuthEnabled()
             .withUnauthenticatedAccessDisabled()
             .build());
+  }
+
+  @ParameterizedTest
+  @MethodSource("notPublishWithoutPermissionWhenAuthenticatedTopics")
+  public void shouldMeterForbiddenPublishingAttempt(Topic topic) {
+    // given
+    hermes.initHelper().createTopic(topic);
+
+    // when
+    waitAtMost(Duration.ofSeconds(10))
+        .untilAsserted(
+            () ->
+                hermes
+                    .api()
+                    .publish(
+                        topic.getQualifiedName(),
+                        MESSAGE,
+                        createAuthorizationHeader(USERNAME, PASSWORD))
+                    .expectStatus()
+                    .isForbidden());
+
+    // then
+    waitAtMost(Duration.ofSeconds(10))
+        .untilAsserted(
+            () -> {
+              String metrics = frontendMetrics();
+              assertThatMetrics(metrics)
+                  .contains("hermes_frontend_topic_http_status_codes_total")
+                  .withLabels(
+                      "group", topic.getName().getGroupName(),
+                      "topic", topic.getName().getName(),
+                      "status_code", "403")
+                  .withValue(1);
+              assertThatMetrics(metrics)
+                  .contains("hermes_frontend_topic_global_http_status_codes_total")
+                  .withLabels("status_code", "403")
+                  .withValueGreaterThan(0);
+            });
+  }
+
+  private String frontendMetrics() {
+    return hermes
+        .api()
+        .getFrontendMetrics()
+        .expectStatus()
+        .isOk()
+        .expectBody(String.class)
+        .returnResult()
+        .getResponseBody();
   }
 
   private static HttpHeaders createAuthorizationHeader(String username, String password) {
