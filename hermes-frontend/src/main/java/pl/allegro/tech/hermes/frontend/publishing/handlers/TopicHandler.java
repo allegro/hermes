@@ -48,7 +48,6 @@ class TopicHandler implements HttpHandler {
         exchange,
         messageId,
         cachedTopic -> {
-          exchange.addExchangeCompleteListener(new ExchangeMetrics(cachedTopic));
           exchange.putAttachment(
               AttachmentContent.KEY,
               new AttachmentContent(cachedTopic, new MessageState(), messageId));
@@ -72,8 +71,9 @@ class TopicHandler implements HttpHandler {
     }
 
     CachedTopic cachedTopic = maybeTopic.get();
-
     Topic topic = cachedTopic.getTopic();
+    exchange.addExchangeCompleteListener(new ExchangeMetrics(cachedTopic));
+
     if (topic.isAuthEnabled() && !hasPermission(exchange, topic)) {
       requestForbidden(exchange, messageId, topicName);
       return;
