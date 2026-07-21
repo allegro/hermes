@@ -83,6 +83,9 @@
       </div>
     </template>
     <v-card-text>
+      <p v-if="enabled" class="text-medium-emphasis mb-4">
+        {{ $t('topicView.messagesPreview.samplingNotice') }}
+      </p>
       <v-data-table
         :items="enabled ? parsedMessages : []"
         :headers="messagesTableHeaders"
