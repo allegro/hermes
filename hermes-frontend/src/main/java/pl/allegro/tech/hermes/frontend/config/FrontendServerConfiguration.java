@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.ssl.SslContextFactory;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
-import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
 import pl.allegro.tech.hermes.frontend.publishing.preview.DefaultMessagePreviewPersister;
 import pl.allegro.tech.hermes.frontend.readiness.HealthCheckService;
 import pl.allegro.tech.hermes.frontend.readiness.ReadinessChecker;
@@ -36,7 +35,6 @@ public class FrontendServerConfiguration {
       HealthCheckService healthCheckService,
       ReadinessChecker readinessChecker,
       DefaultMessagePreviewPersister defaultMessagePreviewPersister,
-      ThroughputLimiter throughputLimiter,
       SslContextFactoryProvider sslContextFactoryProvider,
       PrometheusMeterRegistry prometheusMeterRegistry) {
     return new HermesServer(
@@ -47,7 +45,6 @@ public class FrontendServerConfiguration {
         healthCheckService,
         readinessChecker,
         defaultMessagePreviewPersister,
-        throughputLimiter,
         sslContextFactoryProvider,
         prometheusMeterRegistry);
   }
