@@ -58,7 +58,7 @@ function formValidators(form: Ref<SubscriptionForm>): FormValidators {
     contentType: [required()],
     deliveryType: [required()],
     mode: [required()],
-    rateLimit: [required(), min(0), max(5000)],
+    rateLimit: [required(), min(0), max(10000)],
     batchSize: [required(), min(1), max(1000000)],
     batchTime: [required(), min(1), max(1000000)],
     batchVolume: [required(), min(1), max(1000000)],
