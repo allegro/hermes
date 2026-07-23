@@ -52,23 +52,31 @@ public class ReadinessCheckTest {
   public void shouldRejectPublishingWhenFrontendIsNotReady() {
     Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
 
-    hermes.api().setReadiness(DEFAULT_DC_NAME, false).expectStatus().isAccepted();
+    try {
+      hermes.api().setReadiness(DEFAULT_DC_NAME, false).expectStatus().isAccepted();
 
-    waitAtMost(Duration.ofSeconds(5))
-        .untilAsserted(
-            () ->
-                hermes
-                    .api()
-                    .getFrontendReadiness()
-                    .expectStatus()
-                    .isEqualTo(SERVICE_UNAVAILABLE));
+      waitAtMost(Duration.ofSeconds(5))
+          .untilAsserted(
+              () ->
+                  hermes
+                      .api()
+                      .getFrontendReadiness()
+                      .expectStatus()
+                      .isEqualTo(SERVICE_UNAVAILABLE));
 
-    hermes
-        .api()
-        .publish(topic.getQualifiedName(), "message")
-        .expectStatus()
-        .isEqualTo(SERVICE_UNAVAILABLE);
+      hermes
+          .api()
+          .publish(topic.getQualifiedName(), "message")
+          .expectStatus()
+          .isEqualTo(SERVICE_UNAVAILABLE)
+          .expectBody(String.class)
+          .isEqualTo("NOT_READY");
+    } finally {
+      hermes.api().setReadiness(DEFAULT_DC_NAME, true).expectStatus().isAccepted();
 
-    hermes.api().setReadiness(DEFAULT_DC_NAME, true).expectStatus().isAccepted();
+      waitAtMost(Duration.ofSeconds(5))
+          .untilAsserted(
+              () -> hermes.api().getFrontendReadiness().expectStatus().is2xxSuccessful());
+    }
   }
 }
