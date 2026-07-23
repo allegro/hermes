@@ -1,11 +1,14 @@
 package pl.allegro.tech.hermes.integrationtests;
 
 import static org.awaitility.Awaitility.waitAtMost;
+import static org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE;
 import static pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProvider.DEFAULT_DC_NAME;
+import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topicWithRandomName;
 
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesExtension;
 
 public class ReadinessCheckTest {
@@ -43,5 +46,29 @@ public class ReadinessCheckTest {
                     .isOk()
                     .expectBody(String.class)
                     .isEqualTo("READY"));
+  }
+
+  @Test
+  public void shouldRejectPublishingWhenFrontendIsNotReady() {
+    Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
+
+    hermes.api().setReadiness(DEFAULT_DC_NAME, false).expectStatus().isAccepted();
+
+    waitAtMost(Duration.ofSeconds(5))
+        .untilAsserted(
+            () ->
+                hermes
+                    .api()
+                    .getFrontendReadiness()
+                    .expectStatus()
+                    .isEqualTo(SERVICE_UNAVAILABLE));
+
+    hermes
+        .api()
+        .publish(topic.getQualifiedName(), "message")
+        .expectStatus()
+        .isEqualTo(SERVICE_UNAVAILABLE);
+
+    hermes.api().setReadiness(DEFAULT_DC_NAME, true).expectStatus().isAccepted();
   }
 }

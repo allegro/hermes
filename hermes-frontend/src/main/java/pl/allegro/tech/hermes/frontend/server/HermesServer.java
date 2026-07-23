@@ -132,10 +132,12 @@ public class HermesServer {
     HttpHandler healthCheckHandler = new HealthCheckHandler(healthCheckService);
     HttpHandler readinessHandler = new ReadinessCheckHandler(readinessChecker, healthCheckService);
     HttpHandler prometheusHandler = new PrometheusMetricsHandler(prometheusMeterRegistry);
+    HttpHandler publishingReadinessHandler =
+        new PublishingReadinessHandler(publishingHandler, readinessChecker, healthCheckService);
 
     RoutingHandler routingHandler =
         new RoutingHandler()
-            .post("/topics/{qualifiedTopicName}", publishingHandler)
+            .post("/topics/{qualifiedTopicName}", publishingReadinessHandler)
             .get("/status/ping", healthCheckHandler)
             .get("/status/health", healthCheckHandler)
             .get("/status/ready", readinessHandler)
