@@ -202,6 +202,36 @@ Options for `subscriptionPolicy`:
 | batchTime               | maximum duration in millis for which messages can be aggregated | 30000         |
 | batchVolume             | maximum batch size in bytes                                     | 64000         |
 
+#### Retries and discards
+
+Batch delivery follows the same time-based retry policy as serial delivery (see [Retries](#retries)),
+with one important distinction: **the batch is the unit of retry**. A batch is either delivered or
+retried as a whole. Individual messages within a batch are never retried in isolation, which means
+that when a batch is redelivered, all of its messages are sent to the subscriber again.
+
+**HTTP 4xx handling.** By default, a batch that receives an **HTTP 4xx** response is **not** retried.
+This mirrors serial delivery: a *400 Bad Request* usually indicates that the payload is malformed and
+would never be accepted, regardless of how many times it is resent. The response is recorded as a
+failure in the subscription metrics, but the batch is **not** retried and is **not** marked as
+discarded — its offset is simply committed and delivery moves on. To retry batches on client errors
+instead, set the **retryClientErrors** flag to `true` on the subscription; the entire batch (not just
+individual messages) will then be retried on any **4xx** response, subject to the retry policy below.
+
+> Unlike serial delivery, batch delivery does **not** apply special handling to **429** or the
+> **Retry-After** header. A **429** is treated like any other **4xx** response, and **Retry-After** is
+> ignored; redelivery is always paced by the configured **messageBackoff**.
+
+**Retry behavior.** When a batch fails with a retriable result (a **5xx** response, a network error,
+or a **4xx** response while `retryClientErrors` is enabled), the whole batch is scheduled for
+redelivery after the configured **messageBackoff** interval. Retries continue until the batch is
+delivered or its **Inflight TTL** (`messageTtl`) is exhausted.
+
+**Discard conditions.** A batch is considered **discarded** only when it keeps failing with a retriable
+result until it exhausts its **Inflight TTL**. A batch is **not** discarded simply because it received
+an HTTP 4xx response: with the default configuration such a response stops delivery without a discard,
+and with `retryClientErrors` enabled the batch keeps being retried until the TTL runs out. Once the TTL
+is exceeded, the batch is dropped and every message in it is counted as discarded.
+
 #### Limitations
 Following subscription options are not available with batch delivery:   
 
