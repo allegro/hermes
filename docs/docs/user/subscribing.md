@@ -473,6 +473,51 @@ Example:
 curl  -H "Content-Type: application/json" -X PUT "http://{hermesManagementUrl}/topics/{topicName}/subscriptions/{subscriptionName}" -d '{"filters": [{"type": "avropath", "path": ".user.name", "matcher": "^abc.*"}]}'
 ```
 
+## HTTP header filtering
+
+Besides filtering on message content, each subscription can filter messages based on the HTTP headers that were sent
+along with the message when it was published to Hermes. This is done using the `header` filter type.
+
+Unlike `jsonpath` and `avropath` filters, the `header` filter is content-type agnostic — it can be used on both `avro`
+and `json` topics, because it inspects message metadata instead of the message payload.
+
+### How it works
+
+A `header` filter selects a single header by its exact name and matches its value against a regular expression.
+A message passes the filter only when:
+
+* the header with the given name is present, **and**
+* the whole header value matches the provided regexp (the pattern is matched against the entire value, not a substring).
+
+When a subscription declares multiple filters, they are all applied in order of their declaration, so a message must
+pass **every** filter to be delivered.
+
+### Configuration
+
+| Option  | Description                                             |
+|---------|---------------------------------------------------------|
+| type    | type of filter, must be `header`                        |
+| header  | exact name of the HTTP header to match                  |
+| matcher | regexp expression to match the header value against     |
+
+Example:
+```
+{"type": "header", "header": "Trace-Id", "matcher": "^vte.*"}
+```
+
+This filter passes the message only when it was published with a `Trace-Id` header whose value starts with `vte`.
+
+### Adding filters
+
+HTTP header filters are managed the same way as content filters. They can be edited via the UI (edit subscription and
+add or remove a filter in the *HTTP header filters* section) or added during subscription creation.
+
+They can also be managed via the api. Send a PUT request to the subscriptions endpoint.
+Example:
+```
+curl  -H "Content-Type: application/json" -X PUT "http://{hermesManagementUrl}/topics/{topicName}/subscriptions/{subscriptionName}" -d '{"filters": [{"type": "header", "header": "Trace-Id", "matcher": "^vte.*"}]}'
+```
+
 ## Authorization
 
 ### Basic Auth
