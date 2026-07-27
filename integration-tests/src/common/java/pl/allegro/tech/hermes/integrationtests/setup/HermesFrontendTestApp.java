@@ -13,8 +13,7 @@ import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FR
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_READINESS_CHECK_ENABLED;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_READINESS_CHECK_INTERVAL_SECONDS;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_READINESS_CHECK_KAFKA_CHECK_ENABLED;
-import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_THROUGHPUT_FIXED_MAX;
-import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_THROUGHPUT_TYPE;
+import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.FRONTEND_THROUGHPUT_MAX;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.KAFKA_NAMESPACE;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.KAFKA_PRODUCER_METADATA_MAX_AGE;
 import static pl.allegro.tech.hermes.frontend.FrontendConfigurationProperties.METRICS_MICROMETER_REPORT_PERIOD;
@@ -125,8 +124,7 @@ public class HermesFrontendTestApp implements HermesTestApp {
     args.put(FRONTEND_FORCE_TOPIC_MAX_MESSAGE_SIZE, true);
     args.put(FRONTEND_IDLE_TIMEOUT, Duration.ofSeconds(2));
 
-    args.put(FRONTEND_THROUGHPUT_TYPE, "fixed");
-    args.put(FRONTEND_THROUGHPUT_FIXED_MAX, 50 * 1024L);
+    args.put(FRONTEND_THROUGHPUT_MAX, 50 * 1024L);
 
     args.put(FRONTEND_GRACEFUL_SHUTDOWN_ENABLED, false);
 

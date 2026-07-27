@@ -19,7 +19,6 @@ import io.undertow.server.handlers.RequestDumpingHandler;
 import java.net.InetSocketAddress;
 import org.xnio.SslClientAuthMode;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
-import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
 import pl.allegro.tech.hermes.frontend.publishing.preview.MessagePreviewPersister;
 import pl.allegro.tech.hermes.frontend.readiness.HealthCheckService;
 import pl.allegro.tech.hermes.frontend.readiness.ReadinessChecker;
@@ -33,7 +32,6 @@ public class HermesServer {
   private final HealthCheckService healthCheckService;
   private final ReadinessChecker readinessChecker;
   private final MessagePreviewPersister messagePreviewPersister;
-  private final ThroughputLimiter throughputLimiter;
   private final SslContextFactoryProvider sslContextFactoryProvider;
   private final PrometheusMeterRegistry prometheusMeterRegistry;
   private Undertow undertow;
@@ -47,7 +45,6 @@ public class HermesServer {
       HealthCheckService healthCheckService,
       ReadinessChecker readinessChecker,
       MessagePreviewPersister messagePreviewPersister,
-      ThroughputLimiter throughputLimiter,
       SslContextFactoryProvider sslContextFactoryProvider,
       PrometheusMeterRegistry prometheusMeterRegistry) {
 
@@ -60,13 +57,11 @@ public class HermesServer {
     this.readinessChecker = readinessChecker;
     this.messagePreviewPersister = messagePreviewPersister;
     this.sslContextFactoryProvider = sslContextFactoryProvider;
-    this.throughputLimiter = throughputLimiter;
   }
 
   public void start() {
     configureServer().start();
     messagePreviewPersister.start();
-    throughputLimiter.start();
     healthCheckService.startup();
     readinessChecker.start();
   }
@@ -89,7 +84,6 @@ public class HermesServer {
   public void shutdown() throws InterruptedException {
     undertow.stop();
     messagePreviewPersister.shutdown();
-    throughputLimiter.stop();
     readinessChecker.stop();
   }
 

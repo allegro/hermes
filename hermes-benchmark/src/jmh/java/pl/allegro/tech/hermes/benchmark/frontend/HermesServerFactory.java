@@ -75,7 +75,6 @@ class HermesServerFactory {
         new HealthCheckService(),
         new DisabledReadinessChecker(false),
         new NoOpMessagePreviewPersister(),
-        throughputLimiter,
         null,
         null);
   }
