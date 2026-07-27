@@ -202,6 +202,36 @@ Options for `subscriptionPolicy`:
 | batchTime               | maximum duration in millis for which messages can be aggregated | 30000         |
 | batchVolume             | maximum batch size in bytes                                     | 64000         |
 
+#### Retries and discards
+
+Batch delivery follows the same time-based retry policy as serial delivery (see [Retries](#retries)),
+with one important distinction: **the batch is the unit of retry**. A batch is either delivered or
+retried as a whole. Individual messages within a batch are never retried in isolation, which means
+that when a batch is redelivered, all of its messages are sent to the subscriber again.
+
+**HTTP 4xx handling.** By default, a batch that receives an **HTTP 4xx** response is **not** retried.
+This mirrors serial delivery: a *400 Bad Request* usually indicates that the payload is malformed and
+would never be accepted, regardless of how many times it is resent. The response is recorded as a
+failure in the subscription metrics, but the batch is **not** retried and is **not** marked as
+discarded — its offset is simply committed and delivery moves on. To retry batches on client errors
+instead, set the **retryClientErrors** flag to `true` on the subscription; the entire batch (not just
+individual messages) will then be retried on any **4xx** response, subject to the retry policy below.
+
+> Unlike serial delivery, batch delivery does **not** apply special handling to **429** or the
+> **Retry-After** header. A **429** is treated like any other **4xx** response, and **Retry-After** is
+> ignored; redelivery is always paced by the configured **messageBackoff**.
+
+**Retry behavior.** When a batch fails with a retriable result (a **5xx** response, a network error,
+or a **4xx** response while `retryClientErrors` is enabled), the whole batch is scheduled for
+redelivery after the configured **messageBackoff** interval. Retries continue until the batch is
+delivered or its **Inflight TTL** (`messageTtl`) is exhausted.
+
+**Discard conditions.** A batch is considered **discarded** only when it keeps failing with a retriable
+result until it exhausts its **Inflight TTL**. A batch is **not** discarded simply because it received
+an HTTP 4xx response: with the default configuration such a response stops delivery without a discard,
+and with `retryClientErrors` enabled the batch keeps being retried until the TTL runs out. Once the TTL
+is exceeded, the batch is dropped and every message in it is counted as discarded.
+
 #### Limitations
 Following subscription options are not available with batch delivery:   
 
@@ -441,6 +471,51 @@ And it can be done by api also. Send PUT request for subscriptions endpoint.
 Example:
 ```
 curl  -H "Content-Type: application/json" -X PUT "http://{hermesManagementUrl}/topics/{topicName}/subscriptions/{subscriptionName}" -d '{"filters": [{"type": "avropath", "path": ".user.name", "matcher": "^abc.*"}]}'
+```
+
+## HTTP header filtering
+
+Besides filtering on message content, each subscription can filter messages based on the HTTP headers that were sent
+along with the message when it was published to Hermes. This is done using the `header` filter type.
+
+Unlike `jsonpath` and `avropath` filters, the `header` filter is content-type agnostic — it can be used on both `avro`
+and `json` topics, because it inspects message metadata instead of the message payload.
+
+### How it works
+
+A `header` filter selects a single header by its exact name and matches its value against a regular expression.
+A message passes the filter only when:
+
+* the header with the given name is present, **and**
+* the whole header value matches the provided regexp (the pattern is matched against the entire value, not a substring).
+
+When a subscription declares multiple filters, they are all applied in order of their declaration, so a message must
+pass **every** filter to be delivered.
+
+### Configuration
+
+| Option  | Description                                             |
+|---------|---------------------------------------------------------|
+| type    | type of filter, must be `header`                        |
+| header  | exact name of the HTTP header to match                  |
+| matcher | regexp expression to match the header value against     |
+
+Example:
+```
+{"type": "header", "header": "Trace-Id", "matcher": "^vte.*"}
+```
+
+This filter passes the message only when it was published with a `Trace-Id` header whose value starts with `vte`.
+
+### Adding filters
+
+HTTP header filters are managed the same way as content filters. They can be edited via the UI (edit subscription and
+add or remove a filter in the *HTTP header filters* section) or added during subscription creation.
+
+They can also be managed via the api. Send a PUT request to the subscriptions endpoint.
+Example:
+```
+curl  -H "Content-Type: application/json" -X PUT "http://{hermesManagementUrl}/topics/{topicName}/subscriptions/{subscriptionName}" -d '{"filters": [{"type": "header", "header": "Trace-Id", "matcher": "^vte.*"}]}'
 ```
 
 ## Authorization

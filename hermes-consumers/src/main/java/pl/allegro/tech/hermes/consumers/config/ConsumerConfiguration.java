@@ -17,8 +17,6 @@ import pl.allegro.tech.hermes.consumers.consumer.converter.AvroToJsonMessageConv
 import pl.allegro.tech.hermes.consumers.consumer.converter.DefaultMessageConverterResolver;
 import pl.allegro.tech.hermes.consumers.consumer.converter.MessageConverterResolver;
 import pl.allegro.tech.hermes.consumers.consumer.converter.NoOperationMessageConverter;
-import pl.allegro.tech.hermes.consumers.consumer.interpolation.MessageBodyInterpolator;
-import pl.allegro.tech.hermes.consumers.consumer.interpolation.UriInterpolator;
 import pl.allegro.tech.hermes.consumers.consumer.offset.ConsumerPartitionAssignmentState;
 import pl.allegro.tech.hermes.consumers.consumer.rate.ConsumerRateLimitSupervisor;
 import pl.allegro.tech.hermes.consumers.consumer.rate.calculator.OutputRateCalculatorFactory;
@@ -183,11 +181,6 @@ public class ConsumerConfiguration {
         senderAsyncTimeoutProperties.getMilliseconds(),
         rateProperties.getLimiterReportingThreadPoolSize(),
         rateProperties.isLimiterReportingThreadMonitoringEnabled());
-  }
-
-  @Bean
-  public UriInterpolator messageBodyInterpolator() {
-    return new MessageBodyInterpolator();
   }
 
   @Bean(destroyMethod = "close")
