@@ -81,32 +81,14 @@ public class KafkaTopicConfigConsistencyTest {
         .atMost(1, TimeUnit.MINUTES)
         .until(() -> !brokerOperations.topicExists(topic.getQualifiedName()));
 
-    hermes
-        .api()
-        .bootstrapKafkaCluster("primary-dc", true)
-        .expectStatus()
-        .isOk()
-        .expectBodyList(String.class)
-        .contains(kafkaTopicName);
+    assertThat(hermes.api().bootstrapKafkaCluster("primary-dc", true)).contains(kafkaTopicName);
     assertThat(brokerOperations.topicExists(topic.getQualifiedName())).isFalse();
 
-    hermes
-        .api()
-        .bootstrapKafkaCluster("primary-dc", false)
-        .expectStatus()
-        .isOk()
-        .expectBodyList(String.class)
-        .contains(kafkaTopicName);
+    assertThat(hermes.api().bootstrapKafkaCluster("primary-dc", false)).contains(kafkaTopicName);
     await()
         .atMost(1, TimeUnit.MINUTES)
         .until(() -> brokerOperations.topicExists(topic.getQualifiedName()));
 
-    hermes
-        .api()
-        .bootstrapKafkaCluster("primary-dc", false)
-        .expectStatus()
-        .isOk()
-        .expectBodyList(String.class)
-        .hasSize(0);
+    assertThat(hermes.api().bootstrapKafkaCluster("primary-dc", false)).isEmpty();
   }
 }

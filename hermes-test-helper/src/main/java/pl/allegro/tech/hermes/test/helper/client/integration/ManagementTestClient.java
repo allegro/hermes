@@ -213,27 +213,36 @@ public class ManagementTestClient {
         .exchange();
   }
 
-  public WebTestClient.ResponseSpec bootstrapKafkaCluster(String clusterName, boolean dryRun) {
-    return webTestClient
-        .post()
-        .uri(
-            UriBuilder.fromUri(managementContainerUrl)
-                .path(KAFKA_CLUSTER_BOOTSTRAP)
-                .queryParam("dryRun", dryRun)
-                .build(clusterName))
-        .exchange();
+  public List<String> bootstrapKafkaCluster(String clusterName, boolean dryRun) {
+    String jsonString =
+        webTestClient
+            .post()
+            .uri(
+                UriBuilder.fromUri(managementContainerUrl)
+                    .path(KAFKA_CLUSTER_BOOTSTRAP)
+                    .queryParam("dryRun", dryRun)
+                    .build(clusterName))
+            .exchange()
+            .expectStatus()
+            .isOk()
+            .expectBody(String.class)
+            .returnResult()
+            .getResponseBody();
+    return mapStringJsonToListOfString(jsonString);
   }
 
   public List<String> getKafkaClusters() {
-    return webTestClient
-        .get()
-        .uri(KAFKA_CLUSTERS)
-        .exchange()
-        .expectStatus()
-        .isOk()
-        .expectBodyList(String.class)
-        .returnResult()
-        .getResponseBody();
+    String jsonString =
+        webTestClient
+            .get()
+            .uri(KAFKA_CLUSTERS)
+            .exchange()
+            .expectStatus()
+            .isOk()
+            .expectBody(String.class)
+            .returnResult()
+            .getResponseBody();
+    return mapStringJsonToListOfString(jsonString);
   }
 
   public WebTestClient.ResponseSpec inspectKafkaTopicConfig(String topicName, String clusterName) {

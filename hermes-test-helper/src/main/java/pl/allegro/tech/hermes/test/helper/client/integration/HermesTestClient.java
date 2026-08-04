@@ -66,7 +66,7 @@ public class HermesTestClient {
     return managementTestClient.syncKafkaTopicConfigs(clusterName, dryRun);
   }
 
-  public WebTestClient.ResponseSpec bootstrapKafkaCluster(String clusterName, boolean dryRun) {
+  public List<String> bootstrapKafkaCluster(String clusterName, boolean dryRun) {
     return managementTestClient.bootstrapKafkaCluster(clusterName, dryRun);
   }
 
