@@ -136,7 +136,10 @@ const en_US = {
     },
     kafkaConfig: {
       heading: 'Kafka topic configuration',
+      scope: 'Scope',
+      search: 'Search topics',
       noTopics: 'No Kafka topic configuration inconsistencies found',
+      noSearchResults: 'No topics match the current search',
       dryRun: 'Dry run',
       cluster: {
         label: 'Kafka cluster',
@@ -151,6 +154,16 @@ const en_US = {
       status: {
         present: 'Present',
         missing: 'Missing',
+      },
+      summary: {
+        drifted: '{count} drifted',
+        missing: '{count} missing',
+      },
+      pagination: {
+        range: '{first}-{last} of {total}',
+      },
+      sync: {
+        heading: 'Synchronize configuration',
       },
       diffs: {
         key: 'Configuration key',
@@ -178,6 +191,7 @@ const en_US = {
         text: 'The requested dry run or apply operation could not be completed.',
       },
       bootstrap: {
+        heading: 'Bootstrap missing topics',
         warning:
           'Bootstrap creates missing topics only. Verify partitionsPerDc maps the target cluster datacenter before applying.',
         review: 'Review bootstrap',

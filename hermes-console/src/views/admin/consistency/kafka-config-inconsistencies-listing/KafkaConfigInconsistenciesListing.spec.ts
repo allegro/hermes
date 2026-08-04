@@ -12,8 +12,9 @@ vi.mock(
 );
 
 const reviewSync = vi.fn(() => Promise.resolve(true));
+const inconsistencies = ref(dummyKafkaConfigInconsistencies);
 const composableStub: UseKafkaConfigConsistency = {
-  inconsistencies: ref(dummyKafkaConfigInconsistencies),
+  inconsistencies,
   loading: ref(false),
   error: ref({ fetch: null, action: null }),
   batchProgress: ref(undefined),
@@ -32,7 +33,61 @@ const composableStub: UseKafkaConfigConsistency = {
 describe('KafkaConfigInconsistenciesListing', () => {
   beforeEach(() => {
     reviewSync.mockClear();
+    inconsistencies.value = dummyKafkaConfigInconsistencies;
     vi.mocked(useKafkaConfigConsistency).mockReturnValue(composableStub);
+  });
+
+  it('renders only one page for a large inconsistency set', () => {
+    inconsistencies.value = Array.from({ length: 3000 }, (_, index) => ({
+      ...dummyKafkaConfigInconsistencies[0],
+      qualifiedTopicName: `pl.allegro.topic${index}`,
+      kafkaTopicName: `pl.allegro.topic${index}_avro`,
+    }));
+
+    const { container } = render(KafkaConfigInconsistenciesListing, {
+      testPinia: createTestingPinia({
+        initialState: {
+          kafkaConfigConsistency: {
+            clusters: ['gcp'],
+            selectedCluster: 'gcp',
+            lastDryRun: null,
+          },
+        },
+      }),
+    });
+
+    expect(container.querySelectorAll('tbody > tr')).toHaveLength(50);
+  });
+
+  it('filters the large inconsistency set before pagination', async () => {
+    inconsistencies.value = Array.from({ length: 3000 }, (_, index) => ({
+      ...dummyKafkaConfigInconsistencies[0],
+      qualifiedTopicName: `pl.allegro.topic${index}`,
+      kafkaTopicName: `pl.allegro.topic${index}_avro`,
+    }));
+
+    const { container, getByLabelText, getByText } = render(
+      KafkaConfigInconsistenciesListing,
+      {
+        testPinia: createTestingPinia({
+          initialState: {
+            kafkaConfigConsistency: {
+              clusters: ['gcp'],
+              selectedCluster: 'gcp',
+              lastDryRun: null,
+            },
+          },
+        }),
+      },
+    );
+
+    await fireEvent.update(
+      getByLabelText('consistency.kafkaConfig.search'),
+      'topic2999',
+    );
+
+    expect(getByText('pl.allegro.topic2999')).toBeVisible();
+    expect(container.querySelectorAll('tbody > tr')).toHaveLength(1);
   });
 
   it('renders topics and expands per-key configuration diffs', async () => {
