@@ -12,6 +12,7 @@ import org.springframework.http.client.reactive.ClientHttpConnector;
 import org.springframework.http.client.reactive.JettyClientHttpConnector;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import pl.allegro.tech.hermes.api.Group;
+import pl.allegro.tech.hermes.api.InconsistentKafkaTopic;
 import pl.allegro.tech.hermes.api.MessageFiltersVerificationInput;
 import pl.allegro.tech.hermes.api.OAuthProvider;
 import pl.allegro.tech.hermes.api.OfflineRetransmissionRequest;
@@ -115,6 +116,21 @@ public class ManagementTestClient {
 
   private static final String OWNERS_SEARCH_PATH = "/owners/sources/{source}";
 
+  private static final String KAFKA_CONFIG_INCONSISTENCIES =
+      "/consistency/kafka/topics/config/inconsistencies";
+
+  private static final String KAFKA_CONFIG_SYNC = "/consistency/kafka/topics/config/sync";
+
+  private static final String KAFKA_CLUSTER_BOOTSTRAP =
+      "/consistency/kafka/clusters/{clusterName}/bootstrap";
+
+  private static final String KAFKA_CLUSTERS = "/consistency/kafka/clusters";
+
+  private static final String KAFKA_TOPIC_CONFIG = "/consistency/kafka/topics/{topicName}/config";
+
+  private static final String KAFKA_TOPIC_CONFIG_SYNC =
+      "/consistency/kafka/topics/{topicName}/config/sync";
+
   private final WebTestClient webTestClient;
 
   private final String managementContainerUrl;
@@ -167,6 +183,82 @@ public class ManagementTestClient {
 
   public WebTestClient.ResponseSpec createTopic(TopicWithSchema topicWithSchema) {
     return sendCreateTopicRequest(topicWithSchema);
+  }
+
+  public List<InconsistentKafkaTopic> getKafkaConfigInconsistencies(String clusterName) {
+    return webTestClient
+        .get()
+        .uri(
+            UriBuilder.fromUri(managementContainerUrl)
+                .path(KAFKA_CONFIG_INCONSISTENCIES)
+                .queryParam("clusterName", clusterName)
+                .build())
+        .exchange()
+        .expectStatus()
+        .isOk()
+        .expectBodyList(InconsistentKafkaTopic.class)
+        .returnResult()
+        .getResponseBody();
+  }
+
+  public WebTestClient.ResponseSpec syncKafkaTopicConfigs(String clusterName, boolean dryRun) {
+    return webTestClient
+        .post()
+        .uri(
+            UriBuilder.fromUri(managementContainerUrl)
+                .path(KAFKA_CONFIG_SYNC)
+                .queryParam("clusterName", clusterName)
+                .queryParam("dryRun", dryRun)
+                .build())
+        .exchange();
+  }
+
+  public WebTestClient.ResponseSpec bootstrapKafkaCluster(String clusterName, boolean dryRun) {
+    return webTestClient
+        .post()
+        .uri(
+            UriBuilder.fromUri(managementContainerUrl)
+                .path(KAFKA_CLUSTER_BOOTSTRAP)
+                .queryParam("dryRun", dryRun)
+                .build(clusterName))
+        .exchange();
+  }
+
+  public List<String> getKafkaClusters() {
+    return webTestClient
+        .get()
+        .uri(KAFKA_CLUSTERS)
+        .exchange()
+        .expectStatus()
+        .isOk()
+        .expectBodyList(String.class)
+        .returnResult()
+        .getResponseBody();
+  }
+
+  public WebTestClient.ResponseSpec inspectKafkaTopicConfig(String topicName, String clusterName) {
+    return webTestClient
+        .get()
+        .uri(
+            UriBuilder.fromUri(managementContainerUrl)
+                .path(KAFKA_TOPIC_CONFIG)
+                .queryParam("clusterName", clusterName)
+                .build(topicName))
+        .exchange();
+  }
+
+  public WebTestClient.ResponseSpec syncKafkaTopicConfig(
+      String topicName, String kafkaTopicName, String clusterName, boolean dryRun) {
+    return webTestClient
+        .post()
+        .uri(
+            UriBuilder.fromUri(managementContainerUrl)
+                .path(KAFKA_TOPIC_CONFIG_SYNC)
+                .queryParam("kafkaTopicName", kafkaTopicName)
+                .queryParam("clusterName", clusterName)
+                .queryParam("dryRun", dryRun)
+                .build(topicName))
+        .exchange();
   }
 
   public WebTestClient.ResponseSpec getTopic(String topicQualifiedName) {

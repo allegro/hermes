@@ -9,6 +9,7 @@
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import InconsistentGroupsListing from '@/views/admin/consistency/inconsistent-groups-listing/InconsistentGroupsListing.vue';
   import InconsistentTopicsListing from '@/views/admin/consistency/inconsistent-topics-listing/InconsistentTopicsListing.vue';
+  import KafkaConfigInconsistenciesListing from '@/views/admin/consistency/kafka-config-inconsistencies-listing/KafkaConfigInconsistenciesListing.vue';
   import LoadingSpinner from '@/components/loading-spinner/LoadingSpinner.vue';
 
   const { t } = useI18n();
@@ -279,6 +280,14 @@
           :disabled="isBatchDeletionInProgress"
           @remove="openTopicRemoveDialog"
         />
+      </v-col>
+    </v-row>
+    <v-row dense class="mt-6">
+      <v-col md="12">
+        <p class="text-h5 font-weight-bold mb-3">
+          {{ $t('consistency.kafkaConfig.heading') }}
+        </p>
+        <kafka-config-inconsistencies-listing />
       </v-col>
     </v-row>
   </v-container>

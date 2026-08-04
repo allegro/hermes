@@ -15,6 +15,14 @@ import type { UseInconsistentTopics } from '@/composables/inconsistent-topics/us
 vi.mock(
   '@/composables/inconsistent-topics/use-inconsistent-topics/useInconsistentTopics',
 );
+vi.mock(
+  '@/views/admin/consistency/kafka-config-inconsistencies-listing/KafkaConfigInconsistenciesListing.vue',
+  () => ({
+    default: {
+      template: '<div data-testid="kafka-config-listing" />',
+    },
+  }),
+);
 
 const useInconsistentTopicsStub: UseInconsistentTopics = {
   topics: ref(dummyInconsistentTopics),
@@ -40,6 +48,17 @@ describe('ConsistencyView', () => {
     // then
     expect(vi.mocked(useInconsistentTopics)).toHaveBeenCalledOnce();
     expect(getByText('consistency.inconsistentTopics.heading')).toBeVisible();
+  });
+
+  it('should render Kafka topic configuration as the third consistency section', () => {
+    vi.mocked(useInconsistentTopics).mockReturnValueOnce(
+      useInconsistentTopicsStub,
+    );
+
+    const { getByText, getByTestId } = render(ConsistencyView);
+
+    expect(getByText('consistency.kafkaConfig.heading')).toBeVisible();
+    expect(getByTestId('kafka-config-listing')).toBeVisible();
   });
 
   it('should show loading spinner when fetching Consistency data', () => {

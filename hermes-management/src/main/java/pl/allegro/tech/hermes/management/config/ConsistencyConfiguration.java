@@ -8,12 +8,17 @@ import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.management.config.kafka.KafkaClustersProperties;
 import pl.allegro.tech.hermes.management.domain.consistency.DcConsistencyService;
 import pl.allegro.tech.hermes.management.domain.consistency.KafkaHermesConsistencyService;
+import pl.allegro.tech.hermes.management.domain.consistency.KafkaTopicConfigConsistencyService;
+import pl.allegro.tech.hermes.management.domain.consistency.TopicConfigDiffer;
 import pl.allegro.tech.hermes.management.domain.dc.RepositoryManager;
 import pl.allegro.tech.hermes.management.domain.topic.TopicManagement;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
 
 @Configuration
-@EnableConfigurationProperties(ConsistencyCheckerProperties.class)
+@EnableConfigurationProperties({
+  ConsistencyCheckerProperties.class,
+  KafkaConsistencyProperties.class
+})
 public class ConsistencyConfiguration {
 
   @Bean
@@ -35,5 +40,15 @@ public class ConsistencyConfiguration {
       ConsistencyCheckerProperties properties,
       MetricsFacade metricsFacade) {
     return new DcConsistencyService(repositoryManager, objectMapper, properties, metricsFacade);
+  }
+
+  @Bean
+  public KafkaTopicConfigConsistencyService kafkaTopicConfigConsistencyService(
+      TopicManagement topicManagement,
+      MultiDCAwareService multiDCAwareService,
+      TopicProperties topicProperties,
+      KafkaConsistencyProperties properties) {
+    return new KafkaTopicConfigConsistencyService(
+        topicManagement, multiDCAwareService, topicProperties, new TopicConfigDiffer(), properties);
   }
 }

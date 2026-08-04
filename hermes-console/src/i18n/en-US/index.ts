@@ -134,6 +134,60 @@ const en_US = {
         name: 'Topic Name',
       },
     },
+    kafkaConfig: {
+      heading: 'Kafka topic configuration',
+      noTopics: 'No Kafka topic configuration inconsistencies found',
+      dryRun: 'Dry run',
+      cluster: {
+        label: 'Kafka cluster',
+        all: 'All clusters',
+      },
+      listing: {
+        topic: 'Hermes topic',
+        kafkaTopic: 'Kafka topic',
+        cluster: 'Cluster',
+        status: 'Broker status',
+      },
+      status: {
+        present: 'Present',
+        missing: 'Missing',
+      },
+      diffs: {
+        key: 'Configuration key',
+        expected: 'Expected',
+        actual: 'Actual',
+        unset: 'Not set',
+      },
+      actions: {
+        selectAll: 'Select all present topics',
+        diffs: 'Diffs',
+        sync: 'Review sync',
+        syncSelected: 'Review selected',
+        syncAll: 'Review all',
+        apply: 'Apply reviewed sync',
+      },
+      review: {
+        sync: 'Dry run found {count} Kafka topic configuration changes. Turn off Dry run to enable apply.',
+        bootstrap:
+          'Dry run found {count} missing topics on {cluster}. Review the count before applying.',
+      },
+      progress: 'Synchronizing {completed} of {total} topics',
+      complete: 'Synchronized {successful} topics; {failed} failed',
+      actionError: {
+        title: 'Kafka consistency action failed',
+        text: 'The requested dry run or apply operation could not be completed.',
+      },
+      bootstrap: {
+        warning:
+          'Bootstrap creates missing topics only. Verify partitionsPerDc maps the target cluster datacenter before applying.',
+        review: 'Review bootstrap',
+        apply: 'Apply bootstrap',
+        confirmation: {
+          title: 'Confirm cluster bootstrap',
+          text: 'Create {count} reviewed missing topics on {cluster}? This uses the cluster datacenter partition mapping.',
+        },
+      },
+    },
   },
   consumerGroups: {
     connectionError: {
@@ -815,6 +869,18 @@ const en_US = {
       delete: {
         success: 'Topic {topic} successfully deleted',
         failure: "Couldn't delete topic {topic}",
+      },
+    },
+    kafkaTopicConfig: {
+      sync: {
+        preview: 'Dry run for {topic} completed',
+        success: 'Kafka configuration for {topic} synchronized',
+        failure: 'Kafka topic configuration synchronization failed',
+        complete: 'Synchronized {successful} topics; {failed} failed',
+      },
+      bootstrap: {
+        success: 'Created {count} missing Kafka topics',
+        failure: 'Kafka cluster bootstrap failed',
       },
     },
     consistency: {

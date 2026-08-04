@@ -10,6 +10,7 @@ import static org.apache.kafka.clients.CommonClientConfigs.SECURITY_PROTOCOL_CON
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -18,11 +19,15 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.AlterConfigOp;
+import org.apache.kafka.clients.admin.Config;
+import org.apache.kafka.clients.admin.ConfigEntry;
 import org.apache.kafka.clients.admin.ListOffsetsResult;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.admin.OffsetSpec;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.config.ConfigResource;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId;
@@ -103,6 +108,62 @@ public class BrokerOperations {
   public boolean topicExists(String topicName) {
     Topic topic = topic(topicName).build();
     return kafkaNamesMapper.toKafkaTopics(topic).allMatch(this::topicExists);
+  }
+
+  public String kafkaTopicName(Topic topic) {
+    return kafkaNamesMapper.toKafkaTopics(topic).getPrimary().name().asString();
+  }
+
+  public void setTopicConfigs(String kafkaTopicName, Map<String, String> configs) {
+    ConfigResource resource = new ConfigResource(ConfigResource.Type.TOPIC, kafkaTopicName);
+    Collection<AlterConfigOp> operations =
+        configs.entrySet().stream()
+            .map(
+                entry ->
+                    new AlterConfigOp(
+                        new ConfigEntry(entry.getKey(), entry.getValue()),
+                        AlterConfigOp.OpType.SET))
+            .toList();
+    try {
+      adminClient.incrementalAlterConfigs(Map.of(resource, operations)).all().get(1, MINUTES);
+    } catch (ExecutionException | TimeoutException | InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public Map<String, String> readTopicConfigs(String kafkaTopicName) {
+    ConfigResource resource = new ConfigResource(ConfigResource.Type.TOPIC, kafkaTopicName);
+    try {
+      Config config =
+          adminClient.describeConfigs(List.of(resource)).all().get(1, MINUTES).get(resource);
+      return config.entries().stream()
+          .filter(entry -> entry.source() == ConfigEntry.ConfigSource.DYNAMIC_TOPIC_CONFIG)
+          .collect(toMap(ConfigEntry::name, ConfigEntry::value));
+    } catch (ExecutionException | TimeoutException | InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public int getPartitionCount(String kafkaTopicName) {
+    try {
+      return adminClient
+          .describeTopics(List.of(kafkaTopicName))
+          .allTopicNames()
+          .get(1, MINUTES)
+          .get(kafkaTopicName)
+          .partitions()
+          .size();
+    } catch (ExecutionException | TimeoutException | InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public void deleteTopic(String kafkaTopicName) {
+    try {
+      adminClient.deleteTopics(List.of(kafkaTopicName)).all().get(1, MINUTES);
+    } catch (ExecutionException | TimeoutException | InterruptedException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private boolean topicExists(KafkaTopic kafkaTopic) {
