@@ -12,6 +12,10 @@ vi.mock(
 );
 
 const reviewSync = vi.fn(() => Promise.resolve(true));
+const applyReviewedSync = vi.fn(() =>
+  Promise.resolve({ successful: 1, failed: 0 }),
+);
+const reviewBootstrap = vi.fn(() => Promise.resolve(true));
 const inconsistencies = ref(dummyKafkaConfigInconsistencies);
 const composableStub: UseKafkaConfigConsistency = {
   inconsistencies,
@@ -24,8 +28,8 @@ const composableStub: UseKafkaConfigConsistency = {
   fetchInconsistencies: () => Promise.resolve(),
   syncTopic: () => Promise.resolve(null),
   reviewSync,
-  applyReviewedSync: () => Promise.resolve({ successful: 0, failed: 0 }),
-  reviewBootstrap: () => Promise.resolve(true),
+  applyReviewedSync,
+  reviewBootstrap,
   applyReviewedBootstrap: () => Promise.resolve(true),
   removeTopicsLocally: () => undefined,
 };
@@ -33,6 +37,8 @@ const composableStub: UseKafkaConfigConsistency = {
 describe('KafkaConfigInconsistenciesListing', () => {
   beforeEach(() => {
     reviewSync.mockClear();
+    applyReviewedSync.mockClear();
+    reviewBootstrap.mockClear();
     inconsistencies.value = dummyKafkaConfigInconsistencies;
     vi.mocked(useKafkaConfigConsistency).mockReturnValue(composableStub);
   });
@@ -53,6 +59,7 @@ describe('KafkaConfigInconsistenciesListing', () => {
             lastDryRun: null,
           },
         },
+        stubActions: false,
       }),
     });
 
@@ -120,7 +127,7 @@ describe('KafkaConfigInconsistenciesListing', () => {
     ).toBeVisible();
   });
 
-  it('reviews selected present topics in dry-run mode', async () => {
+  it('prepares selected topics and opens a sync confirmation', async () => {
     const { getByLabelText, getByText } = render(
       KafkaConfigInconsistenciesListing,
       {
@@ -145,5 +152,48 @@ describe('KafkaConfigInconsistenciesListing', () => {
     );
 
     expect(reviewSync).toHaveBeenCalledWith([topic]);
+    expect(
+      getByText('consistency.kafkaConfig.sync.confirmation.title'),
+    ).toBeVisible();
+    expect(
+      getByText('consistency.kafkaConfig.sync.confirmation.text'),
+    ).toBeVisible();
+
+    await fireEvent.click(
+      getByText('consistency.kafkaConfig.sync.confirmation.action'),
+    );
+    expect(applyReviewedSync).toHaveBeenCalledOnce();
+  });
+
+  it('prepares missing topics before opening bootstrap confirmation', async () => {
+    const { getByText } = render(KafkaConfigInconsistenciesListing, {
+      testPinia: createTestingPinia({
+        initialState: {
+          kafkaConfigConsistency: {
+            clusters: ['gcp'],
+            selectedCluster: 'gcp',
+            lastDryRun: null,
+          },
+        },
+        stubActions: false,
+      }),
+    });
+    const { useKafkaConfigConsistencyStore } = await import(
+      '@/store/consistency/useKafkaConfigConsistencyStore'
+    );
+    useKafkaConfigConsistencyStore().saveDryRun({
+      operation: 'bootstrap',
+      clusterName: 'gcp',
+      topicNames: [dummyKafkaConfigInconsistencies[1].kafkaTopicName],
+    });
+
+    await fireEvent.click(
+      getByText('consistency.kafkaConfig.bootstrap.create'),
+    );
+
+    expect(reviewBootstrap).toHaveBeenCalledWith('gcp');
+    expect(
+      getByText('consistency.kafkaConfig.bootstrap.confirmation.title'),
+    ).toBeVisible();
   });
 });

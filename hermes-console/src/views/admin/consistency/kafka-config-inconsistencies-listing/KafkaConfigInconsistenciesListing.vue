@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { computed, ref } from 'vue';
+  import { computed, ref, watch } from 'vue';
   import { storeToRefs } from 'pinia';
   import { topicKey } from '@/api/kafka-inconsistency';
   import { useDialog } from '@/composables/dialog/use-dialog/useDialog';
@@ -32,10 +32,15 @@
   const expandedTopicKeys = ref<string[]>([]);
   const search = ref('');
   const page = ref(1);
-  const dryRun = ref(true);
   const reviewing = ref(false);
   const applying = ref(false);
+  const pendingSyncCount = ref(0);
+  const pendingSyncScope = ref('');
+  const pendingBootstrapCount = ref(0);
+  const pendingBootstrapCluster = ref('');
   const itemsPerPage = 50;
+
+  store.clearDryRun();
 
   const clusterItems = computed(() => [
     { title: t('consistency.kafkaConfig.cluster.all'), value: null },
@@ -67,9 +72,7 @@
   const bootstrapDryRun = computed(() =>
     lastDryRun.value?.operation === 'bootstrap' ? lastDryRun.value : null,
   );
-  const displayedInconsistencies = computed(
-    () => syncDryRun.value?.inconsistencies ?? inconsistencies.value,
-  );
+  const displayedInconsistencies = computed(() => inconsistencies.value);
   const filteredInconsistencies = computed(() => {
     const query = search.value.trim().toLowerCase();
     if (!query) return displayedInconsistencies.value;
@@ -98,12 +101,31 @@
   const lastVisibleItem = computed(() =>
     Math.min(page.value * itemsPerPage, filteredInconsistencies.value.length),
   );
-  const driftedCount = computed(
+  const totalDriftedCount = computed(
     () => inconsistencies.value.filter((topic) => topic.existsOnBroker).length,
   );
-  const missingCount = computed(
-    () => inconsistencies.value.length - driftedCount.value,
+  const totalMissingCount = computed(
+    () => inconsistencies.value.length - totalDriftedCount.value,
   );
+  const displayedDriftedCount = computed(
+    () =>
+      displayedInconsistencies.value.filter((topic) => topic.existsOnBroker)
+        .length,
+  );
+  const displayedMissingCount = computed(
+    () => displayedInconsistencies.value.length - displayedDriftedCount.value,
+  );
+  const bootstrapDisabledReason = computed(() => {
+    if (!selectedCluster.value) {
+      return t('consistency.kafkaConfig.bootstrap.selectCluster');
+    }
+    if (totalMissingCount.value === 0) {
+      return t('consistency.kafkaConfig.bootstrap.noneMissing');
+    }
+    return t('consistency.kafkaConfig.bootstrap.missingCount', {
+      count: totalMissingCount.value,
+    });
+  });
   const busy = computed(
     () =>
       loading.value ||
@@ -113,6 +135,15 @@
   );
 
   const {
+    isDialogOpened: isSyncDialogOpened,
+    actionButtonEnabled: syncActionButtonEnabled,
+    openDialog: openSyncDialog,
+    closeDialog: closeSyncDialog,
+    enableActionButton: enableSyncActionButton,
+    disableActionButton: disableSyncActionButton,
+  } = useDialog();
+
+  const {
     isDialogOpened: isBootstrapDialogOpened,
     actionButtonEnabled: bootstrapActionButtonEnabled,
     openDialog: openBootstrapDialog,
@@ -120,6 +151,10 @@
     enableActionButton: enableBootstrapActionButton,
     disableActionButton: disableBootstrapActionButton,
   } = useDialog();
+
+  watch(pageCount, (count) => {
+    if (page.value > count) page.value = count;
+  });
 
   async function onClusterChange(clusterName: string | null) {
     store.selectCluster(clusterName);
@@ -161,58 +196,129 @@
     expandedTopicKeys.value = [...keys];
   }
 
-  async function runReview(topics?: InconsistentKafkaTopic[]) {
+  async function prepareSync(topics?: InconsistentKafkaTopic[]) {
     reviewing.value = true;
-    const reviewed = await reviewSync(topics);
-    reviewing.value = false;
-    if (reviewed) {
-      dryRun.value = true;
-      page.value = 1;
+    try {
+      const reviewed = await reviewSync(topics);
+      if (reviewed) {
+        pendingSyncCount.value = syncDryRun.value?.inconsistencies.length ?? 0;
+        pendingSyncScope.value =
+          selectedCluster.value ?? t('consistency.kafkaConfig.cluster.all');
+        page.value = 1;
+        openSyncDialog();
+      }
+    } finally {
+      reviewing.value = false;
     }
   }
 
-  async function applySync() {
+  async function confirmSync() {
+    disableSyncActionButton();
     applying.value = true;
-    await applyReviewedSync();
-    applying.value = false;
-    selectedTopicKeys.value = [];
-    dryRun.value = true;
-    page.value = 1;
+    try {
+      const result = await applyReviewedSync();
+      if (result.failed > 0)
+        error.value.action = new Error('Some topics failed to synchronize');
+      selectedTopicKeys.value = [];
+      page.value = 1;
+    } finally {
+      applying.value = false;
+      enableSyncActionButton();
+      closeSyncDialog();
+      pendingSyncCount.value = 0;
+      pendingSyncScope.value = '';
+    }
   }
 
-  async function runBootstrapReview() {
-    if (!selectedCluster.value) return;
+  function cancelSync() {
+    store.clearDryRun();
+    pendingSyncCount.value = 0;
+    pendingSyncScope.value = '';
+    closeSyncDialog();
+  }
+
+  async function prepareBootstrap(clusterName?: string) {
+    const targetCluster = clusterName ?? selectedCluster.value;
+    if (!targetCluster) return;
+    if (selectedCluster.value !== targetCluster) {
+      store.selectCluster(targetCluster);
+      selectedTopicKeys.value = [];
+      page.value = 1;
+    }
     reviewing.value = true;
-    await reviewBootstrap(selectedCluster.value);
-    reviewing.value = false;
+    try {
+      const reviewed = await reviewBootstrap(targetCluster);
+      if (reviewed && bootstrapDryRun.value?.topicNames.length) {
+        pendingBootstrapCount.value = bootstrapDryRun.value.topicNames.length;
+        pendingBootstrapCluster.value = targetCluster;
+        openBootstrapDialog();
+      }
+    } finally {
+      reviewing.value = false;
+    }
   }
 
   async function applyBootstrap() {
     disableBootstrapActionButton();
     applying.value = true;
-    const applied = await applyReviewedBootstrap();
-    applying.value = false;
-    enableBootstrapActionButton();
-    if (applied) {
+    try {
+      const applied = await applyReviewedBootstrap();
+      if (!applied)
+        error.value.action = new Error('Creating missing topics failed');
       page.value = 1;
+    } finally {
+      applying.value = false;
+      enableBootstrapActionButton();
       closeBootstrapDialog();
+      pendingBootstrapCount.value = 0;
+      pendingBootstrapCluster.value = '';
     }
+  }
+
+  function cancelBootstrap() {
+    store.clearDryRun();
+    pendingBootstrapCount.value = 0;
+    pendingBootstrapCluster.value = '';
+    closeBootstrapDialog();
+  }
+
+  function clearSelection() {
+    selectedTopicKeys.value = [];
   }
 </script>
 
 <template>
   <confirmation-dialog
+    v-model="isSyncDialogOpened"
+    :actionButtonEnabled="syncActionButtonEnabled"
+    action-color="primary"
+    icon="mdi-sync"
+    :title="$t('consistency.kafkaConfig.sync.confirmation.title')"
+    :text="
+      t('consistency.kafkaConfig.sync.confirmation.text', {
+        count: pendingSyncCount,
+        scope: pendingSyncScope,
+      })
+    "
+    :action-text="$t('consistency.kafkaConfig.sync.confirmation.action')"
+    @action="confirmSync"
+    @cancel="cancelSync"
+  />
+  <confirmation-dialog
     v-model="isBootstrapDialogOpened"
     :actionButtonEnabled="bootstrapActionButtonEnabled"
+    action-color="warning"
+    icon="mdi-database-plus"
     :title="$t('consistency.kafkaConfig.bootstrap.confirmation.title')"
     :text="
       t('consistency.kafkaConfig.bootstrap.confirmation.text', {
-        cluster: bootstrapDryRun?.clusterName,
-        count: bootstrapDryRun?.topicNames.length,
+        cluster: pendingBootstrapCluster,
+        count: pendingBootstrapCount,
       })
     "
+    :action-text="$t('consistency.kafkaConfig.bootstrap.confirmation.action')"
     @action="applyBootstrap"
-    @cancel="closeBootstrapDialog"
+    @cancel="cancelBootstrap"
   />
 
   <v-card class="mb-4 control-card" variant="outlined">
@@ -241,8 +347,8 @@
           <div class="d-flex flex-wrap align-center ga-2">
             <v-btn
               variant="outlined"
-              :disabled="selectedTopics.length === 0 || busy || !dryRun"
-              @click="runReview(selectedTopics)"
+              :disabled="selectedTopics.length === 0 || busy"
+              @click="prepareSync(selectedTopics)"
             >
               {{ $t('consistency.kafkaConfig.actions.syncSelected') }}
               <span v-if="selectedTopics.length" class="ml-1">
@@ -251,33 +357,10 @@
             </v-btn>
             <v-btn
               variant="outlined"
-              :disabled="driftedCount === 0 || busy || !dryRun"
-              @click="runReview()"
+              :disabled="totalDriftedCount === 0 || busy"
+              @click="prepareSync()"
             >
               {{ $t('consistency.kafkaConfig.actions.syncAll') }}
-            </v-btn>
-            <v-switch
-              v-model="dryRun"
-              class="dry-run-switch"
-              :label="$t('consistency.kafkaConfig.dryRun')"
-              :disabled="
-                !syncDryRun || syncDryRun.inconsistencies.length === 0 || busy
-              "
-              color="primary"
-              density="compact"
-              hide-details
-            />
-            <v-btn
-              color="primary"
-              :disabled="
-                dryRun ||
-                !syncDryRun ||
-                syncDryRun.inconsistencies.length === 0 ||
-                busy
-              "
-              @click="applySync"
-            >
-              {{ $t('consistency.kafkaConfig.actions.apply') }}
             </v-btn>
           </div>
         </v-col>
@@ -296,24 +379,16 @@
         </div>
         <div class="d-flex flex-wrap ga-2">
           <v-btn
-            variant="outlined"
-            :disabled="!selectedCluster || busy"
-            @click="runBootstrapReview"
-          >
-            {{ $t('consistency.kafkaConfig.bootstrap.review') }}
-          </v-btn>
-          <v-btn
+            :disabled="!selectedCluster || totalMissingCount === 0 || busy"
             color="warning"
             variant="tonal"
-            :disabled="
-              !bootstrapDryRun ||
-              bootstrapDryRun.topicNames.length === 0 ||
-              busy
-            "
-            @click="openBootstrapDialog"
+            @click="prepareBootstrap()"
           >
-            {{ $t('consistency.kafkaConfig.bootstrap.apply') }}
+            {{ $t('consistency.kafkaConfig.bootstrap.create') }}
           </v-btn>
+          <span class="text-caption text-medium-emphasis align-self-center">
+            {{ bootstrapDisabledReason }}
+          </span>
         </div>
       </div>
     </v-card-text>
@@ -333,230 +408,231 @@
     type="error"
   />
 
-  <v-alert
-    v-if="syncDryRun"
-    class="mb-2"
-    type="info"
-    variant="tonal"
-    data-testid="kafka-config-sync-review"
-  >
-    {{
-      t('consistency.kafkaConfig.review.sync', {
-        count: syncDryRun.inconsistencies.length,
-      })
-    }}
-  </v-alert>
-  <v-alert
-    v-if="bootstrapDryRun"
-    class="mb-2"
-    type="info"
-    variant="tonal"
-    data-testid="kafka-config-bootstrap-review"
-  >
-    {{
-      t('consistency.kafkaConfig.review.bootstrap', {
-        cluster: bootstrapDryRun.clusterName,
-        count: bootstrapDryRun.topicNames.length,
-      })
-    }}
-  </v-alert>
-  <v-alert
-    v-if="batchProgress !== undefined"
-    class="mb-2"
-    type="info"
-    variant="tonal"
-    data-testid="kafka-config-sync-progress"
-  >
-    {{
-      t('consistency.kafkaConfig.progress', {
-        completed: batchProgress,
-        total: batchTotal,
-      })
-    }}
-  </v-alert>
-  <v-alert
-    v-if="batchResult"
-    class="mb-2"
-    :type="batchResult.failed === 0 ? 'success' : 'warning'"
-    variant="tonal"
-  >
-    {{ t('consistency.kafkaConfig.complete', batchResult) }}
-  </v-alert>
+  <template v-if="!loading">
+    <v-alert
+      v-if="batchProgress !== undefined"
+      class="mb-2"
+      type="info"
+      variant="tonal"
+      data-testid="kafka-config-sync-progress"
+    >
+      {{
+        t('consistency.kafkaConfig.progress', {
+          completed: batchProgress,
+          total: batchTotal,
+        })
+      }}
+    </v-alert>
+    <v-alert
+      v-if="batchResult"
+      class="mb-2"
+      :type="batchResult.failed === 0 ? 'success' : 'warning'"
+      variant="tonal"
+    >
+      {{ t('consistency.kafkaConfig.complete', batchResult) }}
+    </v-alert>
 
-  <v-card class="mb-2" variant="outlined">
-    <v-card-text class="table-toolbar">
-      <div class="d-flex flex-column flex-md-row align-md-center ga-3">
-        <v-text-field
-          :model-value="search"
-          class="search-field"
-          :label="$t('consistency.kafkaConfig.search')"
-          prepend-inner-icon="mdi-magnify"
-          density="compact"
-          hide-details
-          clearable
-          variant="outlined"
-          @update:model-value="onSearchChange"
-        />
-        <div class="d-flex align-center flex-wrap ga-2">
-          <v-chip color="warning" size="small" variant="tonal">
+    <v-card class="mb-2" variant="outlined">
+      <v-card-text class="table-toolbar">
+        <div class="d-flex flex-column flex-md-row align-md-center ga-3">
+          <v-text-field
+            :model-value="search"
+            class="search-field"
+            :label="$t('consistency.kafkaConfig.search')"
+            prepend-inner-icon="mdi-magnify"
+            density="compact"
+            hide-details
+            clearable
+            variant="outlined"
+            @update:model-value="onSearchChange"
+          />
+          <div class="d-flex align-center flex-wrap ga-2">
+            <v-chip color="warning" size="small" variant="tonal">
+              {{
+                t('consistency.kafkaConfig.summary.drifted', {
+                  count: displayedDriftedCount,
+                })
+              }}
+            </v-chip>
+            <v-chip color="error" size="small" variant="tonal">
+              {{
+                t('consistency.kafkaConfig.summary.missing', {
+                  count: displayedMissingCount,
+                })
+              }}
+            </v-chip>
+          </div>
+          <div class="ml-md-auto text-body-2 text-medium-emphasis text-no-wrap">
             {{
-              t('consistency.kafkaConfig.summary.drifted', {
-                count: driftedCount,
+              t('consistency.kafkaConfig.pagination.range', {
+                first: firstVisibleItem,
+                last: lastVisibleItem,
+                total: filteredInconsistencies.length,
               })
             }}
-          </v-chip>
-          <v-chip color="error" size="small" variant="tonal">
+          </div>
+          <div
+            v-if="selectedTopics.length"
+            class="d-flex align-center ga-1 text-body-2 text-no-wrap"
+          >
             {{
-              t('consistency.kafkaConfig.summary.missing', {
-                count: missingCount,
+              t('consistency.kafkaConfig.selection.count', {
+                count: selectedTopics.length,
               })
             }}
-          </v-chip>
+            <v-btn size="small" variant="text" @click="clearSelection">
+              {{ $t('consistency.kafkaConfig.selection.clear') }}
+            </v-btn>
+          </div>
         </div>
-        <div class="ml-md-auto text-body-2 text-medium-emphasis text-no-wrap">
-          {{
-            t('consistency.kafkaConfig.pagination.range', {
-              first: firstVisibleItem,
-              last: lastVisibleItem,
-              total: filteredInconsistencies.length,
-            })
-          }}
-        </div>
-      </div>
-    </v-card-text>
-    <v-divider />
-    <v-table class="topics-table" density="comfortable" hover fixed-header>
-      <thead>
-        <tr>
-          <th class="selection-column">
-            <v-checkbox-btn
-              :model-value="allPageTopicsSelected"
-              :indeterminate="somePageTopicsSelected"
-              :disabled="busy"
-              :aria-label="$t('consistency.kafkaConfig.actions.selectAll')"
-              data-testid="select-all-kafka-config-topics"
-              @update:model-value="updateAllSelection"
-            />
-          </th>
-          <th>{{ $t('consistency.kafkaConfig.listing.topic') }}</th>
-          <th>{{ $t('consistency.kafkaConfig.listing.kafkaTopic') }}</th>
-          <th>{{ $t('consistency.kafkaConfig.listing.cluster') }}</th>
-          <th>{{ $t('consistency.kafkaConfig.listing.status') }}</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody v-if="paginatedInconsistencies.length > 0">
-        <template
-          v-for="topic in paginatedInconsistencies"
-          :key="topicKey(topic)"
-        >
+      </v-card-text>
+      <v-divider />
+      <v-table class="topics-table" density="comfortable" hover fixed-header>
+        <thead>
           <tr>
-            <td class="selection-column">
+            <th class="selection-column">
               <v-checkbox-btn
-                :model-value="selectedTopicKeys.includes(topicKey(topic))"
-                :disabled="busy || !topic.existsOnBroker"
-                :aria-label="topicKey(topic)"
-                @update:model-value="
-                  (selected) => updateSelection(topic, selected)
-                "
+                :model-value="allPageTopicsSelected"
+                :indeterminate="somePageTopicsSelected"
+                :disabled="busy"
+                :aria-label="$t('consistency.kafkaConfig.actions.selectPage')"
+                data-testid="select-all-kafka-config-topics"
+                @update:model-value="updateAllSelection"
               />
-            </td>
-            <td class="topic-column font-weight-medium">
-              <span class="topic-name" :title="topic.qualifiedTopicName">
-                {{ topic.qualifiedTopicName }}
-              </span>
-            </td>
-            <td class="topic-column">
-              <span class="topic-name" :title="topic.kafkaTopicName">
-                {{ topic.kafkaTopicName }}
-              </span>
-            </td>
-            <td>{{ topic.clusterName }}</td>
-            <td>
-              <v-chip
-                :color="topic.existsOnBroker ? 'warning' : 'error'"
-                size="small"
-              >
-                {{
-                  $t(
-                    `consistency.kafkaConfig.status.${
-                      topic.existsOnBroker ? 'present' : 'missing'
-                    }`,
-                  )
-                }}
-              </v-chip>
-            </td>
-            <td class="text-right text-no-wrap">
-              <v-btn
-                variant="text"
-                :disabled="topic.configDiffs.length === 0"
-                @click="toggleExpanded(topic)"
-              >
-                {{ $t('consistency.kafkaConfig.actions.diffs') }}
-              </v-btn>
-              <v-btn
-                variant="text"
-                color="primary"
-                :disabled="busy || !dryRun || !topic.existsOnBroker"
-                @click="runReview([topic])"
-              >
-                {{ $t('consistency.kafkaConfig.actions.sync') }}
-              </v-btn>
-            </td>
+            </th>
+            <th>{{ $t('consistency.kafkaConfig.listing.topic') }}</th>
+            <th>{{ $t('consistency.kafkaConfig.listing.kafkaTopic') }}</th>
+            <th>{{ $t('consistency.kafkaConfig.listing.cluster') }}</th>
+            <th>{{ $t('consistency.kafkaConfig.listing.status') }}</th>
+            <th></th>
           </tr>
-          <tr v-if="expandedTopicKeys.includes(topicKey(topic))">
-            <td colspan="6" class="pa-4 bg-grey-lighten-5">
-              <v-table density="compact">
-                <thead>
-                  <tr>
-                    <th>{{ $t('consistency.kafkaConfig.diffs.key') }}</th>
-                    <th>{{ $t('consistency.kafkaConfig.diffs.expected') }}</th>
-                    <th>{{ $t('consistency.kafkaConfig.diffs.actual') }}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="diff in topic.configDiffs" :key="diff.key">
-                    <td>{{ diff.key }}</td>
-                    <td>
-                      {{
-                        diff.expected ??
-                        $t('consistency.kafkaConfig.diffs.unset')
-                      }}
-                    </td>
-                    <td>
-                      {{
-                        diff.actual ?? $t('consistency.kafkaConfig.diffs.unset')
-                      }}
-                    </td>
-                  </tr>
-                </tbody>
-              </v-table>
-            </td>
+        </thead>
+        <tbody v-if="paginatedInconsistencies.length > 0">
+          <template
+            v-for="topic in paginatedInconsistencies"
+            :key="topicKey(topic)"
+          >
+            <tr>
+              <td class="selection-column">
+                <v-checkbox-btn
+                  :model-value="selectedTopicKeySet.has(topicKey(topic))"
+                  :disabled="busy || !topic.existsOnBroker"
+                  :aria-label="topicKey(topic)"
+                  @update:model-value="
+                    (selected) => updateSelection(topic, selected)
+                  "
+                />
+              </td>
+              <td class="topic-column font-weight-medium">
+                <span class="topic-name" :title="topic.qualifiedTopicName">
+                  {{ topic.qualifiedTopicName }}
+                </span>
+              </td>
+              <td class="topic-column">
+                <span class="topic-name" :title="topic.kafkaTopicName">
+                  {{ topic.kafkaTopicName }}
+                </span>
+              </td>
+              <td>{{ topic.clusterName }}</td>
+              <td>
+                <v-chip
+                  :color="topic.existsOnBroker ? 'warning' : 'error'"
+                  size="small"
+                >
+                  {{
+                    $t(
+                      `consistency.kafkaConfig.status.${
+                        topic.existsOnBroker ? 'present' : 'missing'
+                      }`,
+                    )
+                  }}
+                </v-chip>
+              </td>
+              <td class="text-right text-no-wrap">
+                <v-btn
+                  variant="text"
+                  :disabled="topic.configDiffs.length === 0"
+                  @click="toggleExpanded(topic)"
+                >
+                  {{ $t('consistency.kafkaConfig.actions.diffs') }}
+                </v-btn>
+                <v-btn
+                  variant="text"
+                  :color="topic.existsOnBroker ? 'primary' : 'warning'"
+                  :disabled="busy"
+                  @click="
+                    topic.existsOnBroker
+                      ? prepareSync([topic])
+                      : prepareBootstrap(topic.clusterName)
+                  "
+                >
+                  {{
+                    $t(
+                      topic.existsOnBroker
+                        ? 'consistency.kafkaConfig.actions.sync'
+                        : 'consistency.kafkaConfig.actions.create',
+                    )
+                  }}
+                </v-btn>
+              </td>
+            </tr>
+            <tr v-if="expandedTopicKeys.includes(topicKey(topic))">
+              <td colspan="6" class="pa-4 bg-grey-lighten-5">
+                <v-table density="compact">
+                  <thead>
+                    <tr>
+                      <th>{{ $t('consistency.kafkaConfig.diffs.key') }}</th>
+                      <th>
+                        {{ $t('consistency.kafkaConfig.diffs.expected') }}
+                      </th>
+                      <th>{{ $t('consistency.kafkaConfig.diffs.actual') }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="diff in topic.configDiffs" :key="diff.key">
+                      <td>{{ diff.key }}</td>
+                      <td>
+                        {{
+                          diff.expected ??
+                          $t('consistency.kafkaConfig.diffs.unset')
+                        }}
+                      </td>
+                      <td>
+                        {{
+                          diff.actual ??
+                          $t('consistency.kafkaConfig.diffs.unset')
+                        }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </v-table>
+              </td>
+            </tr>
+          </template>
+        </tbody>
+        <tbody v-else-if="!loading">
+          <tr>
+            <th colspan="6" class="text-center text-medium-emphasis">
+              {{
+                search
+                  ? $t('consistency.kafkaConfig.noSearchResults')
+                  : $t('consistency.kafkaConfig.noTopics')
+              }}
+            </th>
           </tr>
-        </template>
-      </tbody>
-      <tbody v-else-if="!loading">
-        <tr>
-          <th colspan="6" class="text-center text-medium-emphasis">
-            {{
-              search
-                ? $t('consistency.kafkaConfig.noSearchResults')
-                : $t('consistency.kafkaConfig.noTopics')
-            }}
-          </th>
-        </tr>
-      </tbody>
-    </v-table>
-    <v-divider v-if="pageCount > 1" />
-    <v-card-actions v-if="pageCount > 1" class="justify-center pa-3">
-      <v-pagination
-        v-model="page"
-        :length="pageCount"
-        :total-visible="7"
-        density="comfortable"
-      />
-    </v-card-actions>
-  </v-card>
+        </tbody>
+      </v-table>
+      <v-divider v-if="pageCount > 1" />
+      <v-card-actions v-if="pageCount > 1" class="justify-center pa-3">
+        <v-pagination
+          v-model="page"
+          :length="pageCount"
+          :total-visible="7"
+          density="comfortable"
+        />
+      </v-card-actions>
+    </v-card>
+  </template>
 </template>
 
 <style scoped lang="scss">
@@ -567,11 +643,6 @@
   .control-card,
   .topics-table {
     overflow: hidden;
-  }
-
-  .dry-run-switch {
-    flex: 0 0 auto;
-    margin-inline: 4px;
   }
 
   .table-toolbar {

@@ -59,6 +59,7 @@ export function useKafkaConfigConsistency(): UseKafkaConfigConsistency {
   const batchProgress = ref<number>();
   const batchTotal = ref(0);
   const batchResult = ref<KafkaConfigBatchResult | null>(null);
+  let latestFetchId = 0;
 
   // The backend already returns rows ordered by cluster, topic and kafka topic name.
   const inconsistencies = computed(() => rawInconsistencies.value);
@@ -73,16 +74,16 @@ export function useKafkaConfigConsistency(): UseKafkaConfigConsistency {
   }
 
   async function fetchInconsistencies(clusterName?: string) {
+    const fetchId = ++latestFetchId;
     try {
       loading.value = true;
       error.value.fetch = null;
-      rawInconsistencies.value = (
-        await fetchKafkaConfigInconsistencies(clusterName)
-      ).data;
+      const result = await fetchKafkaConfigInconsistencies(clusterName);
+      if (fetchId === latestFetchId) rawInconsistencies.value = result.data;
     } catch (e) {
-      error.value.fetch = e as Error;
+      if (fetchId === latestFetchId) error.value.fetch = e as Error;
     } finally {
-      loading.value = false;
+      if (fetchId === latestFetchId) loading.value = false;
     }
   }
 

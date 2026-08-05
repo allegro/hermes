@@ -117,6 +117,7 @@ const en_US = {
       actions: {
         delete: 'Remove',
         search: 'Search inconsistent topics...',
+        retry: 'Retry',
         selectAll: 'Select all visible topics',
         removeSelected: 'Remove selected',
       },
@@ -140,7 +141,6 @@ const en_US = {
       search: 'Search topics',
       noTopics: 'No Kafka topic configuration inconsistencies found',
       noSearchResults: 'No topics match the current search',
-      dryRun: 'Dry run',
       cluster: {
         label: 'Kafka cluster',
         all: 'All clusters',
@@ -164,6 +164,11 @@ const en_US = {
       },
       sync: {
         heading: 'Synchronize configuration',
+        confirmation: {
+          title: 'Confirm topic configuration sync',
+          text: 'Dry run completed: {count} topics in {scope} require changes. No changes have been made yet.',
+          action: 'Sync topics',
+        },
       },
       diffs: {
         key: 'Configuration key',
@@ -172,17 +177,16 @@ const en_US = {
         unset: 'Not set',
       },
       actions: {
-        selectAll: 'Select all present topics',
+        selectPage: 'Select present topics on this page',
         diffs: 'Diffs',
-        sync: 'Review sync',
-        syncSelected: 'Review selected',
-        syncAll: 'Review all',
-        apply: 'Apply reviewed sync',
+        sync: 'Sync',
+        create: 'Create',
+        syncSelected: 'Sync selected',
+        syncAll: 'Sync all',
       },
-      review: {
-        sync: 'Dry run found {count} Kafka topic configuration changes. Turn off Dry run to enable apply.',
-        bootstrap:
-          'Dry run found {count} missing topics on {cluster}. Review the count before applying.',
+      selection: {
+        count: '{count} selected across pages',
+        clear: 'Clear',
       },
       progress: 'Synchronizing {completed} of {total} topics',
       complete: 'Synchronized {successful} topics; {failed} failed',
@@ -194,11 +198,14 @@ const en_US = {
         heading: 'Bootstrap missing topics',
         warning:
           'Bootstrap creates missing topics only. Verify partitionsPerDc maps the target cluster datacenter before applying.',
-        review: 'Review bootstrap',
-        apply: 'Apply bootstrap',
+        create: 'Create missing topics',
+        selectCluster: 'Select a cluster to create missing topics.',
+        noneMissing: 'No missing topics on this cluster.',
+        missingCount: '{count} missing topics will be checked before creation.',
         confirmation: {
           title: 'Confirm cluster bootstrap',
-          text: 'Create {count} reviewed missing topics on {cluster}? This uses the cluster datacenter partition mapping.',
+          text: 'Dry run completed: {count} topics are missing on {cluster}. No topics have been created yet.',
+          action: 'Create topics',
         },
       },
     },

@@ -1,26 +1,70 @@
 <script setup lang="ts">
-  import { ref } from 'vue';
+  import { ref, watch } from 'vue';
   import { useAppConfigStore } from '@/store/app-config/useAppConfigStore';
 
-  const props = defineProps<{
-    actionButtonEnabled: boolean;
-    title: string;
-    text: string;
-  }>();
+  const props = withDefaults(
+    defineProps<{
+      actionButtonEnabled: boolean;
+      title: string;
+      text: string;
+      actionColor?: string;
+      icon?: string;
+      actionText?: string;
+    }>(),
+    {
+      actionColor: 'error',
+      icon: 'mdi-alert',
+    },
+  );
 
   const configStore = useAppConfigStore();
+  const model = defineModel<boolean>({ default: false });
+  const emit = defineEmits<{
+    action: [];
+    cancel: [];
+  }>();
 
   const confirmationText = ref<string>();
+
+  watch(model, () => {
+    confirmationText.value = undefined;
+  });
+
+  function onDialogModelUpdate(value: boolean) {
+    if (!value && model.value) {
+      confirmationText.value = undefined;
+      emit('cancel');
+    }
+    model.value = value;
+  }
+
+  function confirm() {
+    confirmationText.value = undefined;
+    emit('action');
+  }
+
+  function cancel() {
+    confirmationText.value = undefined;
+    emit('cancel');
+  }
 </script>
 
 <template>
-  <v-dialog width="100%" min-width="30%">
+  <v-dialog
+    :model-value="model"
+    width="100%"
+    min-width="30%"
+    :persistent="!actionButtonEnabled"
+    @update:model-value="onDialogModelUpdate"
+  >
     <v-form @submit.prevent>
       <v-card>
         <v-card-item class="border-b">
           <v-card-title v-if="title" class="text-wrap">
-            <v-avatar variant="tonal" color="error" start>
-              <v-icon color="error" size="24">mdi-alert</v-icon>
+            <v-avatar variant="tonal" :color="props.actionColor" start>
+              <v-icon :color="props.actionColor" size="24">
+                {{ props.icon }}
+              </v-icon>
             </v-avatar>
             {{ props.title }}
           </v-card-title>
@@ -30,7 +74,7 @@
           <span class="text-body-1">{{ props.text }}</span>
         </v-card-text>
         <v-card-text
-          v-if="configStore.loadedConfig.console.criticalEnvironment"
+          v-if="configStore.loadedConfig?.console.criticalEnvironment"
         >
           <v-text-field
             :label="$t('confirmationDialog.confirmText')"
@@ -44,17 +88,21 @@
           <v-col class="d-flex column-gap-2 justify-end">
             <v-btn
               variant="flat"
-              color="error"
-              @click="$emit('action')"
+              :color="props.actionColor"
+              @click="confirm"
               :disabled="
-                (configStore.loadedConfig.console.criticalEnvironment &&
+                (configStore.loadedConfig?.console.criticalEnvironment &&
                   confirmationText !== 'prod') ||
                 !actionButtonEnabled
               "
             >
-              {{ $t('confirmationDialog.confirm') }}
+              {{ props.actionText ?? $t('confirmationDialog.confirm') }}
             </v-btn>
-            <v-btn variant="flat" @click="$emit('cancel')">
+            <v-btn
+              variant="flat"
+              :disabled="!actionButtonEnabled"
+              @click="cancel"
+            >
               {{ $t('confirmationDialog.cancel') }}
             </v-btn>
           </v-col>
