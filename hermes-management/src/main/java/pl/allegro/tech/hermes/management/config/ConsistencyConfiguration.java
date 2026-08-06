@@ -47,8 +47,14 @@ public class ConsistencyConfiguration {
       TopicManagement topicManagement,
       MultiDCAwareService multiDCAwareService,
       TopicProperties topicProperties,
-      KafkaConsistencyProperties properties) {
+      KafkaConsistencyProperties properties,
+      MetricsFacade metricsFacade) {
     return new KafkaTopicConfigConsistencyService(
-        topicManagement, multiDCAwareService, topicProperties, new TopicConfigDiffer(), properties);
+        topicManagement,
+        multiDCAwareService,
+        topicProperties,
+        new TopicConfigDiffer(),
+        properties,
+        metricsFacade);
   }
 }

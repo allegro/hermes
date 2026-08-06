@@ -98,11 +98,7 @@
             >
               {{ props.actionText ?? $t('confirmationDialog.confirm') }}
             </v-btn>
-            <v-btn
-              variant="flat"
-              :disabled="!actionButtonEnabled"
-              @click="cancel"
-            >
+            <v-btn variant="flat" @click="cancel">
               {{ $t('confirmationDialog.cancel') }}
             </v-btn>
           </v-col>

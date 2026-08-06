@@ -10,11 +10,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -24,6 +26,7 @@ import pl.allegro.tech.hermes.api.KafkaTopicConfigDiff;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
+import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.management.config.KafkaConsistencyProperties;
 import pl.allegro.tech.hermes.management.config.TopicProperties;
 import pl.allegro.tech.hermes.management.domain.topic.TopicManagement;
@@ -42,6 +45,8 @@ public class KafkaTopicConfigConsistencyService {
   private final TopicProperties topicProperties;
   private final TopicConfigDiffer differ;
   private final KafkaConsistencyProperties properties;
+  private final MetricsFacade metricsFacade;
+  private final Map<String, AtomicInteger> inconsistentTopicCounts = new ConcurrentHashMap<>();
   private final ExecutorService executor;
   private final ScheduledExecutorService scheduler;
 
@@ -50,12 +55,14 @@ public class KafkaTopicConfigConsistencyService {
       MultiDCAwareService multiDCAwareService,
       TopicProperties topicProperties,
       TopicConfigDiffer differ,
-      KafkaConsistencyProperties properties) {
+      KafkaConsistencyProperties properties,
+      MetricsFacade metricsFacade) {
     this.topicManagement = topicManagement;
     this.multiDCAwareService = multiDCAwareService;
     this.topicProperties = topicProperties;
     this.differ = differ;
     this.properties = properties;
+    this.metricsFacade = metricsFacade;
     this.executor =
         Executors.newFixedThreadPool(
             Math.max(1, properties.getThreadPoolSize()),
@@ -64,6 +71,7 @@ public class KafkaTopicConfigConsistencyService {
         Executors.newSingleThreadScheduledExecutor(
             new ThreadFactoryBuilder().setNameFormat("kafka-consistency-scheduler-%d").build());
     if (properties.isEnabled() && properties.isPeriodicCheckEnabled()) {
+      registerInconsistencyGauges();
       scheduler.scheduleAtFixedRate(
           this::reportConsistency,
           properties.getInitialRefreshDelay().toSeconds(),
@@ -151,7 +159,7 @@ public class KafkaTopicConfigConsistencyService {
         inconsistencies.addAll(clusterInconsistencies);
       } catch (Exception e) {
         failures.add(e);
-        logger.error("Syncing Kafka topic configs failed for {}", cluster.getClusterName(), e);
+        logger.warn("Syncing Kafka topic configs failed for {}", cluster.getClusterName(), e);
       }
     }
     if (!failures.isEmpty()) {
@@ -165,13 +173,16 @@ public class KafkaTopicConfigConsistencyService {
     BrokersClusterService cluster = multiDCAwareService.getCluster(clusterName);
     validatePartitions(cluster);
     Set<String> existingTopicNames = cluster.listTopicNames();
-    List<MissingTopic> missingTopics = new ArrayList<>();
-    for (Topic topic : topicManagement.getAllTopics()) {
-      cluster.toKafkaTopics(topic).stream()
-          .filter(kafkaTopic -> !existingTopicNames.contains(kafkaTopic.name().asString()))
-          .map(kafkaTopic -> new MissingTopic(topic, kafkaTopic))
-          .forEach(missingTopics::add);
-    }
+    List<MissingTopic> missingTopics =
+        topicManagement.getAllTopics().stream()
+            .flatMap(
+                topic ->
+                    cluster.toKafkaTopics(topic).stream()
+                        .filter(
+                            kafkaTopic ->
+                                !existingTopicNames.contains(kafkaTopic.name().asString()))
+                        .map(kafkaTopic -> new MissingTopic(topic, kafkaTopic)))
+            .toList();
     if (!dryRun) {
       applyInBatches(
           missingTopics,
@@ -181,14 +192,11 @@ public class KafkaTopicConfigConsistencyService {
     return missingTopics.stream().map(missing -> missing.kafkaTopic().name().asString()).toList();
   }
 
-  public InconsistentKafkaTopic inspectTopic(TopicName name, String clusterName) {
+  public Optional<InconsistentKafkaTopic> inspectTopic(TopicName name, String clusterName) {
     Topic topic = topicManagement.getTopicDetails(name);
     List<InconsistentKafkaTopic> inconsistencies =
         inspectCluster(multiDCAwareService.getCluster(clusterName), List.of(topic));
-    if (inconsistencies.isEmpty()) {
-      return null;
-    }
-    return inconsistencies.getFirst();
+    return inconsistencies.stream().findFirst();
   }
 
   public InconsistentKafkaTopic syncTopic(
@@ -352,11 +360,41 @@ public class KafkaTopicConfigConsistencyService {
   private void reportConsistency() {
     try {
       List<InconsistentKafkaTopic> inconsistencies = listInconsistencies(Optional.empty());
+      updateInconsistencyGauges(inconsistencies);
       logger.info(
           "Kafka topic config consistency check found {} inconsistencies", inconsistencies.size());
     } catch (Exception e) {
-      logger.error("Kafka topic config consistency check failed", e);
+      logger.warn("Kafka topic config consistency check failed", e);
     }
+  }
+
+  private void registerInconsistencyGauges() {
+    multiDCAwareService.getClusters().stream()
+        .map(BrokersClusterService::getClusterName)
+        .forEach(this::registerInconsistencyGauge);
+  }
+
+  private void registerInconsistencyGauge(String clusterName) {
+    inconsistentTopicCounts.computeIfAbsent(
+        clusterName,
+        name -> {
+          AtomicInteger count = new AtomicInteger();
+          metricsFacade
+              .consistency()
+              .registerKafkaTopicConfigInconsistenciesGauge(name, count, value -> value.get());
+          return count;
+        });
+  }
+
+  private void updateInconsistencyGauges(List<InconsistentKafkaTopic> inconsistencies) {
+    Map<String, Long> countsByCluster =
+        inconsistencies.stream()
+            .collect(
+                Collectors.groupingBy(InconsistentKafkaTopic::clusterName, Collectors.counting()));
+    countsByCluster.keySet().forEach(this::registerInconsistencyGauge);
+    inconsistentTopicCounts.forEach(
+        (clusterName, count) ->
+            count.set(countsByCluster.getOrDefault(clusterName, 0L).intValue()));
   }
 
   private ClusterInspectionResult resolve(ClusterInspection inspection) {

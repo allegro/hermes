@@ -28,6 +28,8 @@ import org.apache.kafka.clients.admin.OffsetSpec;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.config.ConfigResource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId;
@@ -37,6 +39,8 @@ import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName;
 
 public class BrokerOperations {
+
+  private static final Logger logger = LoggerFactory.getLogger(BrokerOperations.class);
 
   private static final int DEFAULT_PARTITIONS = 2;
   private static final int DEFAULT_REPLICATION_FACTOR = 1;
@@ -127,6 +131,7 @@ public class BrokerOperations {
     try {
       adminClient.incrementalAlterConfigs(Map.of(resource, operations)).all().get(1, MINUTES);
     } catch (ExecutionException | TimeoutException | InterruptedException e) {
+      logger.warn("Failed to set topic configs for topic {}: {}", kafkaTopicName, e.getMessage());
       throw new RuntimeException(e);
     }
   }

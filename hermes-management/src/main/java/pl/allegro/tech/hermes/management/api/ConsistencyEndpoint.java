@@ -145,12 +145,10 @@ public class ConsistencyEndpoint {
   @Path("/kafka/topics/{topicName}/config")
   public Response inspectKafkaTopicConfig(
       @PathParam("topicName") String topicName, @QueryParam("clusterName") String clusterName) {
-    InconsistentKafkaTopic inconsistency =
-        kafkaTopicConfigConsistencyService.inspectTopic(
-            TopicName.fromQualifiedName(topicName), required(clusterName, "clusterName"));
-    return inconsistency == null
-        ? Response.noContent().build()
-        : Response.ok(inconsistency).build();
+    return kafkaTopicConfigConsistencyService
+        .inspectTopic(TopicName.fromQualifiedName(topicName), required(clusterName, "clusterName"))
+        .map(inconsistency -> Response.ok(inconsistency).build())
+        .orElse(Response.noContent().build());
   }
 
   @POST

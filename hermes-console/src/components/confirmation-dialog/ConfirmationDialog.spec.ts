@@ -38,7 +38,7 @@ describe('ConfirmationDialog', () => {
     ).toBeEnabled();
   });
 
-  it('should disable action button', async () => {
+  it('should disable action button without disabling cancel', async () => {
     //given
     const props = {
       actionButtonEnabled: false,
@@ -59,7 +59,7 @@ describe('ConfirmationDialog', () => {
     ).toBeDisabled();
     expect(
       getByText('confirmationDialog.cancel').closest('button'),
-    ).toBeDisabled();
+    ).toBeEnabled();
   });
 
   it('should require confirmation text', () => {

@@ -1,11 +1,13 @@
 package pl.allegro.tech.hermes.management.domain.consistency
 
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import org.apache.kafka.common.config.TopicConfig
 import pl.allegro.tech.hermes.api.ContentType
 import pl.allegro.tech.hermes.api.RetentionTime
 import pl.allegro.tech.hermes.common.kafka.KafkaTopic
 import pl.allegro.tech.hermes.common.kafka.KafkaTopicName
 import pl.allegro.tech.hermes.common.kafka.KafkaTopics
+import pl.allegro.tech.hermes.common.metric.MetricsFacade
 import pl.allegro.tech.hermes.management.config.KafkaConsistencyProperties
 import pl.allegro.tech.hermes.management.config.TopicProperties
 import pl.allegro.tech.hermes.management.domain.topic.TopicManagement
@@ -14,7 +16,10 @@ import pl.allegro.tech.hermes.management.infrastructure.kafka.service.BrokersClu
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder
 import spock.lang.Specification
 
+import java.time.Duration
 import java.util.concurrent.TimeUnit
+
+import spock.util.concurrent.PollingConditions
 
 class KafkaTopicConfigConsistencyServiceSpec extends Specification {
 
@@ -23,6 +28,8 @@ class KafkaTopicConfigConsistencyServiceSpec extends Specification {
     BrokersClusterService cluster = Mock()
     TopicProperties topicProperties = new TopicProperties()
     KafkaConsistencyProperties properties = new KafkaConsistencyProperties()
+    def meterRegistry = new SimpleMeterRegistry()
+    def metricsFacade = new MetricsFacade(meterRegistry)
     KafkaTopicConfigConsistencyService service
 
     def setup() {
@@ -33,7 +40,7 @@ class KafkaTopicConfigConsistencyServiceSpec extends Specification {
         cluster.getDatacenter() >> "dc"
         service = new KafkaTopicConfigConsistencyService(
                 topicManagement, multiDCAwareService, topicProperties,
-                new TopicConfigDiffer(), properties)
+                new TopicConfigDiffer(), properties, metricsFacade)
     }
 
     def cleanup() {
@@ -142,6 +149,34 @@ class KafkaTopicConfigConsistencyServiceSpec extends Specification {
         0 * cluster.listTopicNames()
     }
 
+    def "should report Kafka topic config inconsistencies per cluster with periodic check"() {
+        given:
+        def topic = topic("group.topic", 1)
+        def kafkaTopic = kafkaTopic("group.topic")
+        topicManagement.getAllTopics() >> [topic]
+        cluster.toKafkaTopics(topic) >> new KafkaTopics(kafkaTopic)
+        cluster.listTopicNames() >> (["group.topic"] as Set)
+        cluster.readTopicConfigs([kafkaTopic]) >> [(kafkaTopic): desired(topic) + [
+                (TopicConfig.RETENTION_MS_CONFIG): "2"
+        ]]
+        service.stop()
+        properties.setEnabled(true)
+        properties.setPeriodicCheckEnabled(true)
+        properties.setInitialRefreshDelay(Duration.ZERO)
+        properties.setRefreshInterval(Duration.ofDays(1))
+        service = new KafkaTopicConfigConsistencyService(
+                topicManagement, multiDCAwareService, topicProperties,
+                new TopicConfigDiffer(), properties, metricsFacade)
+
+        expect:
+        new PollingConditions(timeout: 10).eventually {
+            meterRegistry.get("kafka-topic-config.inconsistencies")
+                    .tag("cluster", "cluster")
+                    .gauge()
+                    .value() == 1.0d
+        }
+    }
+
     private def topic(String name, int retentionDays) {
         TopicBuilder.topic(name)
                 .withRetentionTime(new RetentionTime(retentionDays, TimeUnit.DAYS))
@@ -153,11 +188,10 @@ class KafkaTopicConfigConsistencyServiceSpec extends Specification {
     }
 
     private Map<String, String> desired(def topic) {
-        [
-                (TopicConfig.RETENTION_MS_CONFIG):
-                        String.valueOf(topic.retentionTime.durationInMillis),
-                (TopicConfig.UNCLEAN_LEADER_ELECTION_ENABLE_CONFIG): "false",
-                (TopicConfig.MAX_MESSAGE_BYTES_CONFIG): "1048576"
-        ]
+        Map<String, String> config = [:]
+        config[TopicConfig.RETENTION_MS_CONFIG] = String.valueOf(topic.retentionTime.durationInMillis)
+        config[TopicConfig.UNCLEAN_LEADER_ELECTION_ENABLE_CONFIG] = "false"
+        config[TopicConfig.MAX_MESSAGE_BYTES_CONFIG] = "1048576"
+        config
     }
 }
