@@ -56,3 +56,12 @@ management:
   consumer-group:
     clean-up:
       enabled: true
+  consistency:
+    kafka:
+      enabled: false
+      periodicCheckEnabled: false
+      initialRefreshDelay: 2m
+      refreshInterval: 24h
+      threadPoolSize: 4
+      syncBatchSize: 100
+      bootstrapStrictPartitions: true

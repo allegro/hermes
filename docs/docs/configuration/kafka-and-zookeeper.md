@@ -130,3 +130,42 @@ To do this, on each Hermes cluster you have to provide different value for:
 
 `{modulePrefix}.kafka.namespace` property also can be used to distinguish Hermes-managed topics on multi-purpose Kafka cluster.
 
+### Kafka topic configuration consistency
+
+Hermes Management can compare Kafka topic configuration with Hermes topic metadata. The comparison and reconciliation cover only the configs owned by Hermes: `retention.ms`, `unclean.leader.election.enable`, and `max.message.bytes`. Existing partition counts, replication factors, and all other Kafka configs are left unchanged.
+
+The admin-only endpoints are:
+
+| Method | Path                                                                                               | Purpose                                                        |
+|--------|----------------------------------------------------------------------------------------------------|----------------------------------------------------------------|
+| `GET`  | `/consistency/kafka/clusters`                                                                      | List configured Kafka cluster names                            |
+| `GET`  | `/consistency/kafka/topics/config/inconsistencies?clusterName=...`                                 | Report missing topics and config drift for one or all clusters |
+| `POST` | `/consistency/kafka/topics/config/sync?clusterName=...&dryRun=true`                                | Preview or reconcile drifted configs                           |
+| `GET`  | `/consistency/kafka/topics/{topicName}/config?clusterName=...`                                     | Inspect one Hermes topic                                       |
+| `POST` | `/consistency/kafka/topics/{topicName}/config/sync?kafkaTopicName=...&clusterName=...&dryRun=true` | Preview or reconcile one mapped Kafka topic                    |
+| `POST` | `/consistency/kafka/clusters/{clusterName}/bootstrap?dryRun=true`                                  | Preview or create broker topics missing from a cluster         |
+
+All mutating endpoints default to `dryRun=true`. Run a dry-run, review the returned changes in the response or the Console Consistency page, and then repeat with `dryRun=false` to apply them. Bootstrap creates only missing Kafka topics and is safe to repeat. It does not create subscriptions, schemas, or consumer groups.
+
+These endpoints reconcile Hermes topics toward broker state. The existing `/consistency/inconsistencies/topics` endpoint covers the reverse direction, namely broker topics that are unknown to Hermes, and can remove those orphans.
+
+Bootstrap uses `management.topic.partitionsPerDc` for the target cluster's datacenter. With the default `management.consistency.kafka.bootstrapStrictPartitions=true`, the operation fails unless that datacenter has an explicit mapping, preventing accidental use of the global partition default.
+
+```yaml
+management:
+  topic:
+    partitionsPerDc:
+      dc1: 10
+      dc2: 2
+  consistency:
+    kafka:
+      enabled: false
+      periodicCheckEnabled: false
+      initialRefreshDelay: 2m
+      refreshInterval: 15m
+      threadPoolSize: 4
+      syncBatchSize: 100
+      bootstrapStrictPartitions: true
+```
+
+Setting both `enabled` and `periodicCheckEnabled` enables a scheduled report-only consistency scan. It never applies changes automatically.

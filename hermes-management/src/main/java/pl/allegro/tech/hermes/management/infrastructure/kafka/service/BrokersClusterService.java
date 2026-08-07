@@ -31,6 +31,8 @@ import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.common.kafka.ConsumerGroupId;
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopic;
+import pl.allegro.tech.hermes.common.kafka.KafkaTopics;
 import pl.allegro.tech.hermes.common.kafka.offset.PartitionOffset;
 import pl.allegro.tech.hermes.management.domain.message.RetransmissionService;
 import pl.allegro.tech.hermes.management.domain.subscription.consumergroup.ConsumerGroupManager;
@@ -113,6 +115,30 @@ public class BrokersClusterService {
 
   public boolean topicExists(Topic topic) {
     return brokerTopicManagement.topicExists(topic);
+  }
+
+  public KafkaTopics toKafkaTopics(Topic topic) {
+    return kafkaNamesMapper.toKafkaTopics(topic);
+  }
+
+  public boolean topicExists(KafkaTopic kafkaTopic) {
+    return brokerTopicManagement.topicExists(kafkaTopic);
+  }
+
+  public Set<String> listTopicNames() {
+    return brokerTopicManagement.listTopicNames();
+  }
+
+  public Map<KafkaTopic, Map<String, String>> readTopicConfigs(Collection<KafkaTopic> kafkaTopics) {
+    return brokerTopicManagement.readTopicConfigs(kafkaTopics);
+  }
+
+  public void updateTopicConfig(KafkaTopic kafkaTopic, Map<String, String> config) {
+    brokerTopicManagement.updateTopicConfig(kafkaTopic, config);
+  }
+
+  public void createTopic(Topic topic, KafkaTopic kafkaTopic) {
+    brokerTopicManagement.createTopic(topic, kafkaTopic);
   }
 
   public List<String> listTopicsFromCluster() {

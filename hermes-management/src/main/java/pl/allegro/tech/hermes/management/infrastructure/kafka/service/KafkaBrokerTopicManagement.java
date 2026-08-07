@@ -4,9 +4,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.AlterConfigOp;
 import org.apache.kafka.clients.admin.Config;
 import org.apache.kafka.clients.admin.ConfigEntry;
 import org.apache.kafka.clients.admin.CreateTopicsResult;
@@ -14,7 +17,6 @@ import org.apache.kafka.clients.admin.DeleteTopicsResult;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.common.KafkaFuture;
 import org.apache.kafka.common.config.ConfigResource;
-import org.apache.kafka.common.config.TopicConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Topic;
@@ -51,20 +53,19 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
   @Override
   public void createTopic(Topic topic) {
     Map<String, String> config =
-        createTopicConfig(topic.getRetentionTime().getDurationInMillis(), topicProperties);
+        OwnedTopicConfig.desiredConfig(
+            topic.getRetentionTime().getDurationInMillis(), topicProperties);
 
     kafkaNamesMapper.toKafkaTopics(topic).stream()
-        .map(
-            k ->
-                kafkaAdminClient.createTopics(
-                    Collections.singletonList(
-                        new NewTopic(
-                                k.name().asString(),
-                                getPartitionsForDatacenter(datacenterName),
-                                (short) topicProperties.getReplicationFactor())
-                            .configs(config))))
-        .map(CreateTopicsResult::all)
-        .forEach(this::waitForKafkaFuture);
+        .forEach(kafkaTopic -> createTopic(kafkaTopic, config));
+  }
+
+  @Override
+  public void createTopic(Topic topic, KafkaTopic kafkaTopic) {
+    createTopic(
+        kafkaTopic,
+        OwnedTopicConfig.desiredConfig(
+            topic.getRetentionTime().getDurationInMillis(), topicProperties));
   }
 
   @Override
@@ -88,7 +89,8 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
   @Override
   public void updateTopic(Topic topic) {
     Map<String, String> config =
-        createTopicConfig(topic.getRetentionTime().getDurationInMillis(), topicProperties);
+        OwnedTopicConfig.desiredConfig(
+            topic.getRetentionTime().getDurationInMillis(), topicProperties);
     KafkaTopics kafkaTopics = kafkaNamesMapper.toKafkaTopics(topic);
 
     if (isMigrationToNewKafkaTopic(kafkaTopics)) {
@@ -112,14 +114,11 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
 
   @Override
   public boolean topicExists(Topic topic) {
-    return kafkaNamesMapper.toKafkaTopics(topic).allMatch(this::doesTopicExist);
+    return kafkaNamesMapper.toKafkaTopics(topic).allMatch(this::topicExists);
   }
 
-  private boolean isMigrationToNewKafkaTopic(KafkaTopics kafkaTopics) {
-    return kafkaTopics.getSecondary().isPresent() && !doesTopicExist(kafkaTopics.getPrimary());
-  }
-
-  private boolean doesTopicExist(KafkaTopic topic) {
+  @Override
+  public boolean topicExists(KafkaTopic topic) {
     KafkaFuture<Boolean> topicExistsFuture =
         kafkaAdminClient
             .listTopics()
@@ -128,33 +127,78 @@ public class KafkaBrokerTopicManagement implements BrokerTopicManagement {
     return waitForKafkaFuture(topicExistsFuture);
   }
 
+  @Override
+  public Set<String> listTopicNames() {
+    return waitForKafkaFuture(kafkaAdminClient.listTopics().names());
+  }
+
+  @Override
+  public Map<KafkaTopic, Map<String, String>> readTopicConfigs(Collection<KafkaTopic> kafkaTopics) {
+    Map<ConfigResource, KafkaTopic> topicsByResource =
+        kafkaTopics.stream()
+            .collect(
+                Collectors.toMap(
+                    topic -> new ConfigResource(ConfigResource.Type.TOPIC, topic.name().asString()),
+                    Function.identity()));
+    Map<ConfigResource, Config> configs =
+        waitForKafkaFuture(kafkaAdminClient.describeConfigs(topicsByResource.keySet()).all());
+
+    return configs.entrySet().stream()
+        .collect(
+            Collectors.toMap(
+                entry -> topicsByResource.get(entry.getKey()),
+                entry -> readOwnedDynamicConfig(entry.getValue())));
+  }
+
+  private boolean isMigrationToNewKafkaTopic(KafkaTopics kafkaTopics) {
+    return kafkaTopics.getSecondary().isPresent() && !topicExists(kafkaTopics.getPrimary());
+  }
+
+  private void createTopic(KafkaTopic kafkaTopic, Map<String, String> config) {
+    CreateTopicsResult result =
+        kafkaAdminClient.createTopics(
+            Collections.singletonList(
+                new NewTopic(
+                        kafkaTopic.name().asString(),
+                        getPartitionsForDatacenter(datacenterName),
+                        (short) topicProperties.getReplicationFactor())
+                    .configs(config)));
+    waitForKafkaFuture(result.all());
+  }
+
+  @Override
+  public void updateTopicConfig(KafkaTopic topic, Map<String, String> configMap) {
+    doUpdateTopic(topic, configMap);
+  }
+
   private void doUpdateTopic(KafkaTopic topic, Map<String, String> configMap) {
     ConfigResource topicConfigResource =
         new ConfigResource(ConfigResource.Type.TOPIC, topic.name().asString());
 
-    Collection<ConfigEntry> configEntries =
+    Collection<AlterConfigOp> configEntries =
         configMap.entrySet().stream()
-            .map(entry -> new ConfigEntry(entry.getKey(), entry.getValue()))
+            .map(
+                entry ->
+                    new AlterConfigOp(
+                        new ConfigEntry(entry.getKey(), entry.getValue()),
+                        AlterConfigOp.OpType.SET))
             .collect(Collectors.toList());
 
-    Map<ConfigResource, Config> configUpdates = new HashMap<>();
-    configUpdates.put(topicConfigResource, new Config(configEntries));
+    Map<ConfigResource, Collection<AlterConfigOp>> configUpdates = new HashMap<>();
+    configUpdates.put(topicConfigResource, configEntries);
 
-    KafkaFuture<Void> updateTopicFuture = kafkaAdminClient.alterConfigs(configUpdates).all();
+    KafkaFuture<Void> updateTopicFuture =
+        kafkaAdminClient.incrementalAlterConfigs(configUpdates).all();
     waitForKafkaFuture(updateTopicFuture);
   }
 
-  private Map<String, String> createTopicConfig(
-      long retentionPolicy, TopicProperties topicProperties) {
-    Map<String, String> props = new HashMap<>();
-    props.put(TopicConfig.RETENTION_MS_CONFIG, String.valueOf(retentionPolicy));
-    props.put(
-        TopicConfig.UNCLEAN_LEADER_ELECTION_ENABLE_CONFIG,
-        Boolean.toString(topicProperties.isUncleanLeaderElectionEnabled()));
-    props.put(
-        TopicConfig.MAX_MESSAGE_BYTES_CONFIG, String.valueOf(topicProperties.getMaxMessageSize()));
-
-    return props;
+  private Map<String, String> readOwnedDynamicConfig(Config config) {
+    return OwnedTopicConfig.KEYS.stream()
+        .map(config::get)
+        .filter(
+            entry ->
+                entry != null && entry.source() == ConfigEntry.ConfigSource.DYNAMIC_TOPIC_CONFIG)
+        .collect(Collectors.toMap(ConfigEntry::name, ConfigEntry::value));
   }
 
   private <T> T waitForKafkaFuture(KafkaFuture<T> future) {

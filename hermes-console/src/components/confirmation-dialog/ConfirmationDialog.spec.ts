@@ -38,7 +38,7 @@ describe('ConfirmationDialog', () => {
     ).toBeEnabled();
   });
 
-  it('should disable action button', async () => {
+  it('should disable action button without disabling cancel', async () => {
     //given
     const props = {
       actionButtonEnabled: false,
@@ -57,6 +57,9 @@ describe('ConfirmationDialog', () => {
     expect(
       getByText('confirmationDialog.confirm').closest('button'),
     ).toBeDisabled();
+    expect(
+      getByText('confirmationDialog.cancel').closest('button'),
+    ).toBeEnabled();
   });
 
   it('should require confirmation text', () => {
@@ -75,6 +78,7 @@ describe('ConfirmationDialog', () => {
             },
           },
         },
+        stubActions: false,
       }),
       props,
     });
@@ -143,5 +147,37 @@ describe('ConfirmationDialog', () => {
     expect(
       getByText('confirmationDialog.confirm').closest('button'),
     ).toBeEnabled();
+  });
+
+  it('resets critical environment confirmation text after cancellation', async () => {
+    const { getByText, getAllByRole } = render(ConfirmationDialog, {
+      testPinia: createTestingPinia({
+        initialState: {
+          appConfig: {
+            ...appConfigStoreState,
+            appConfig: {
+              ...dummyAppConfig,
+              console: {
+                ...dummyAppConfig.console,
+                criticalEnvironment: true,
+              },
+            },
+          },
+        },
+      }),
+      props,
+    });
+
+    await userEvent.type(getAllByRole('textbox')[0], 'prod');
+    expect(
+      getByText('confirmationDialog.confirm').closest('button'),
+    ).toBeEnabled();
+
+    await userEvent.click(getByText('confirmationDialog.cancel'));
+
+    expect(getAllByRole('textbox')[0]).toHaveValue('');
+    expect(
+      getByText('confirmationDialog.confirm').closest('button'),
+    ).toBeDisabled();
   });
 });

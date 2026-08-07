@@ -62,6 +62,27 @@ server.delete('/consistency/inconsistencies/topics', (req, res) => {
   res.sendStatus(200);
 });
 
+server.post('/consistency/kafka/topics/config/sync', (req, res) => {
+  res.jsonp(require('./db.json').kafkaConfigInconsistencies);
+});
+
+server.post('/consistency/kafka/topics/:topic/config/sync', (req, res) => {
+  const inconsistency = require('./db.json').kafkaConfigInconsistencies.find(
+    (topic) => topic.qualifiedTopicName === req.params.topic,
+  );
+  res.status(inconsistency ? 200 : 204).jsonp(inconsistency);
+});
+
+server.post('/consistency/kafka/clusters/:cluster/bootstrap', (req, res) => {
+  const topicNames = require('./db.json')
+    .kafkaConfigInconsistencies.filter(
+      (topic) =>
+        topic.clusterName === req.params.cluster && !topic.existsOnBroker,
+    )
+    .map((topic) => topic.qualifiedTopicName);
+  res.jsonp(topicNames);
+});
+
 server.post('/readiness/datacenters/:dc', (req, res) => {
   res.sendStatus(200);
 });

@@ -1,5 +1,7 @@
 {
   "/consistency/inconsistencies/topics": "/inconsistentTopics",
+  "/consistency/kafka/clusters": "/kafkaClusters",
+  "/consistency/kafka/topics/config/inconsistencies": "/kafkaConfigInconsistencies",
   "/consistency/groups": "/consistencyGroups",
   "/consistency/inconsistencies/groups?groupNames=pl.allegro.public.offer*": "/inconsistentGroups",
   "/consistency/inconsistencies/groups?groupNames=pl.allegro.public.group2*": "/inconsistentGroups2",

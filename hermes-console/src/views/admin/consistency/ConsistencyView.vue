@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { computed, ref } from 'vue';
+  import { computed, ref, watch } from 'vue';
   import { useConsistencyStore } from '@/store/consistency/useConsistencyStore';
   import { useDialog } from '@/composables/dialog/use-dialog/useDialog';
   import { useI18n } from 'vue-i18n';
@@ -9,11 +9,15 @@
   import ConsoleAlert from '@/components/console-alert/ConsoleAlert.vue';
   import InconsistentGroupsListing from '@/views/admin/consistency/inconsistent-groups-listing/InconsistentGroupsListing.vue';
   import InconsistentTopicsListing from '@/views/admin/consistency/inconsistent-topics-listing/InconsistentTopicsListing.vue';
+  import KafkaConfigInconsistenciesListing from '@/views/admin/consistency/kafka-config-inconsistencies-listing/KafkaConfigInconsistenciesListing.vue';
   import LoadingSpinner from '@/components/loading-spinner/LoadingSpinner.vue';
 
   const { t } = useI18n();
   const topicFilter = ref<string>();
   const groupFilter = ref<string>();
+  const expandedSections = ref<string[]>([]);
+  const orphanTopicsLoaded = ref(false);
+  const kafkaSectionLoaded = ref(false);
 
   const {
     topics,
@@ -22,7 +26,7 @@
     fetchInconsistentTopics,
     removeTopicsLocally,
     removeInconsistentTopic,
-  } = useInconsistentTopics();
+  } = useInconsistentTopics(false);
   const notificationStore = useNotificationsStore();
 
   const consistencyStore = useConsistencyStore();
@@ -30,6 +34,22 @@
   function checkConsistency() {
     consistencyStore.fetch();
   }
+
+  async function loadOrphanTopics() {
+    await fetchInconsistentTopics();
+    orphanTopicsLoaded.value = error.value.fetchInconsistentTopics === null;
+  }
+
+  watch(expandedSections, (sections) => {
+    if (
+      sections.includes('orphan-topics') &&
+      !orphanTopicsLoaded.value &&
+      !loading.value
+    ) {
+      void loadOrphanTopics();
+    }
+    if (sections.includes('kafka-config')) kafkaSectionLoaded.value = true;
+  });
 
   const breadcrumbsItems = [
     {
@@ -168,11 +188,8 @@
     <v-row dense>
       <v-col md="12">
         <v-breadcrumbs :items="breadcrumbsItems" density="compact" />
-        <loading-spinner v-if="loading" />
         <console-alert
-          v-if="
-            error.fetchInconsistentTopics || consistencyStore.error.fetchError
-          "
+          v-if="consistencyStore.error.fetchError"
           :title="$t('consistency.connectionError.title')"
           :text="$t('consistency.connectionError.text')"
           type="error"
@@ -221,64 +238,102 @@
         />
       </v-col>
     </v-row>
-    <v-row dense>
-      <v-col md="8">
-        <p class="text-h5 font-weight-bold mb-3">
-          {{ $t('consistency.inconsistentTopics.heading') }}
-        </p>
-      </v-col>
-      <v-col class="text-right">
-        <span class="mr-4" data-testid="selected-inconsistent-topics-count">
-          {{
-            t('consistency.inconsistentTopics.selected', {
-              count: selectedTopics.length,
-            })
-          }}
-        </span>
-        <v-btn
-          color="red"
-          :disabled="selectedTopics.length === 0 || isBatchDeletionInProgress"
-          @click="openBatchRemoveDialog"
-        >
-          {{ $t('consistency.inconsistentTopics.actions.removeSelected') }}
-        </v-btn>
-      </v-col>
-    </v-row>
-    <v-row dense>
-      <v-col md="12">
-        <v-text-field
-          single-line
-          :label="$t('consistency.inconsistentTopics.actions.search')"
-          density="compact"
-          v-model="topicFilter"
-          :disabled="isBatchDeletionInProgress"
-          prepend-inner-icon="mdi-magnify"
-        />
-      </v-col>
-    </v-row>
-    <v-row dense>
-      <v-col md="12">
-        <v-alert
-          v-if="isBatchDeletionInProgress"
-          type="info"
-          variant="tonal"
-          data-testid="inconsistent-topics-batch-progress"
-        >
-          {{
-            t('consistency.inconsistentTopics.batch.progress', {
-              completed: batchProgress,
-              total: batchTotal,
-            })
-          }}
-        </v-alert>
-        <inconsistent-topics-listing
-          v-if="topics"
-          :inconsistentTopics="topics"
-          :filter="topicFilter"
-          v-model:selected-topics="selectedTopics"
-          :disabled="isBatchDeletionInProgress"
-          @remove="openTopicRemoveDialog"
-        />
+    <v-row dense class="mt-6">
+      <v-col cols="12">
+        <v-expansion-panels v-model="expandedSections" multiple>
+          <v-expansion-panel value="orphan-topics">
+            <v-expansion-panel-title>
+              <span class="text-h6 font-weight-bold">
+                {{ $t('consistency.inconsistentTopics.heading') }}
+              </span>
+            </v-expansion-panel-title>
+            <v-expansion-panel-text>
+              <template v-if="expandedSections.includes('orphan-topics')">
+                <loading-spinner v-if="loading" />
+                <console-alert
+                  v-if="error.fetchInconsistentTopics"
+                  :title="$t('consistency.connectionError.title')"
+                  :text="$t('consistency.connectionError.text')"
+                  type="error"
+                />
+                <v-btn
+                  v-if="error.fetchInconsistentTopics"
+                  class="mb-3"
+                  variant="outlined"
+                  @click="loadOrphanTopics"
+                >
+                  {{ $t('consistency.inconsistentTopics.actions.retry') }}
+                </v-btn>
+                <div
+                  class="d-flex flex-column flex-md-row align-md-center mb-3 ga-3"
+                >
+                  <v-text-field
+                    v-model="topicFilter"
+                    class="flex-grow-1"
+                    single-line
+                    :label="$t('consistency.inconsistentTopics.actions.search')"
+                    density="compact"
+                    :disabled="isBatchDeletionInProgress"
+                    prepend-inner-icon="mdi-magnify"
+                    hide-details
+                  />
+                  <span data-testid="selected-inconsistent-topics-count">
+                    {{
+                      t('consistency.inconsistentTopics.selected', {
+                        count: selectedTopics.length,
+                      })
+                    }}
+                  </span>
+                  <v-btn
+                    color="red"
+                    :disabled="
+                      selectedTopics.length === 0 || isBatchDeletionInProgress
+                    "
+                    @click="openBatchRemoveDialog"
+                  >
+                    {{
+                      $t(
+                        'consistency.inconsistentTopics.actions.removeSelected',
+                      )
+                    }}
+                  </v-btn>
+                </div>
+                <v-alert
+                  v-if="isBatchDeletionInProgress"
+                  type="info"
+                  variant="tonal"
+                  data-testid="inconsistent-topics-batch-progress"
+                >
+                  {{
+                    t('consistency.inconsistentTopics.batch.progress', {
+                      completed: batchProgress,
+                      total: batchTotal,
+                    })
+                  }}
+                </v-alert>
+                <inconsistent-topics-listing
+                  v-if="topics"
+                  :inconsistentTopics="topics"
+                  :filter="topicFilter"
+                  v-model:selected-topics="selectedTopics"
+                  :disabled="isBatchDeletionInProgress"
+                  @remove="openTopicRemoveDialog"
+                />
+              </template>
+            </v-expansion-panel-text>
+          </v-expansion-panel>
+
+          <v-expansion-panel value="kafka-config">
+            <v-expansion-panel-title>
+              <span class="text-h6 font-weight-bold">
+                {{ $t('consistency.kafkaConfig.heading') }}
+              </span>
+            </v-expansion-panel-title>
+            <v-expansion-panel-text>
+              <kafka-config-inconsistencies-listing v-if="kafkaSectionLoaded" />
+            </v-expansion-panel-text>
+          </v-expansion-panel>
+        </v-expansion-panels>
       </v-col>
     </v-row>
   </v-container>

@@ -24,7 +24,9 @@ export interface UseInconsistentTopicsErrors {
   fetchInconsistentTopics: Error | null;
 }
 
-export function useInconsistentTopics(): UseInconsistentTopics {
+export function useInconsistentTopics(
+  fetchOnInitialize: boolean = true,
+): UseInconsistentTopics {
   const notificationStore = useNotificationsStore();
 
   const topicNames = ref<string[]>();
@@ -87,7 +89,7 @@ export function useInconsistentTopics(): UseInconsistentTopics {
     }
   };
 
-  fetchInconsistentTopics();
+  if (fetchOnInitialize) void fetchInconsistentTopics();
 
   return {
     topics,
