@@ -2,6 +2,8 @@ package pl.allegro.tech.hermes.management.config.console;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -16,6 +18,7 @@ import pl.allegro.tech.hermes.management.infrastructure.console.SpringConfigCons
 @Configuration
 @EnableConfigurationProperties(ConsoleProperties.class)
 public class ConsoleConfiguration {
+  private static final Logger logger = LoggerFactory.getLogger(ConsoleConfiguration.class);
 
   @Bean
   FilterRegistrationBean<FrontendRoutesFilter> frontendRoutesFilter() {
@@ -30,6 +33,12 @@ public class ConsoleConfiguration {
       ConsoleProperties consoleProperties,
       GroupProperties groupProperties,
       TopicProperties topicProperties) {
+
+    if (consoleProperties.getTopic().getSchemaRegistryUrl() == null
+        || consoleProperties.getTopic().getSchemaRegistryUrl().isBlank()) {
+      logger.warn(
+          "Console topic schemaRegistryUrl is not configured. Schema versions will not link to Schema Registry.");
+    }
 
     // Override group settings from GroupProperties (source of truth)
     // Note: console.group.nonAdminCreationEnabled is IGNORED if configured in application.yaml

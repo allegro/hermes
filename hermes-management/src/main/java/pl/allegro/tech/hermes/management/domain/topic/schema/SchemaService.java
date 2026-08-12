@@ -4,6 +4,7 @@ import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
 import static pl.allegro.tech.hermes.common.logging.LoggingFields.TOPIC_NAME;
 
+import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,9 +35,22 @@ public class SchemaService {
   }
 
   public Optional<RawSchema> getSchema(String qualifiedTopicName) {
-    return rawSchemaClient
-        .getLatestRawSchemaWithMetadata(fromQualifiedName(qualifiedTopicName))
-        .map(RawSchemaWithMetadata::getSchema);
+    return getLatestSchema(qualifiedTopicName).map(RawSchemaWithMetadata::getSchema);
+  }
+
+  public Optional<RawSchemaWithMetadata> getLatestSchema(String qualifiedTopicName) {
+    return rawSchemaClient.getLatestRawSchemaWithMetadata(fromQualifiedName(qualifiedTopicName));
+  }
+
+  public List<Integer> getVersions(String qualifiedTopicName) {
+    try {
+      return rawSchemaClient.getVersions(fromQualifiedName(qualifiedTopicName)).stream()
+          .map(SchemaVersion::value)
+          .toList();
+    } catch (Exception exception) {
+      logger.error("Could not retrieve schema versions for topic: {}", qualifiedTopicName, exception);
+      return List.of();
+    }
   }
 
   public Optional<RawSchema> getSchema(String qualifiedTopicName, SchemaVersion version) {

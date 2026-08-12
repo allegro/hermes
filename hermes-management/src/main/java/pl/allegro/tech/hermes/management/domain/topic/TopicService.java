@@ -24,6 +24,7 @@ import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Query;
 import pl.allegro.tech.hermes.api.RawSchema;
+import pl.allegro.tech.hermes.api.RawSchemaWithMetadata;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicMetrics;
 import pl.allegro.tech.hermes.api.TopicName;
@@ -243,13 +244,21 @@ public class TopicService implements TopicManagement {
   @Override
   public TopicWithSchema getTopicWithSchema(TopicName topicName) {
     Topic topic = getTopicDetails(topicName);
-    Optional<RawSchema> schema = Optional.empty();
-    if (AVRO.equals(topic.getContentType())) {
-      schema = schemaService.getSchema(topicName.qualifiedName());
+    if (!AVRO.equals(topic.getContentType())) {
+      return topicWithSchema(topic);
     }
+
+    Optional<RawSchemaWithMetadata> schema = schemaService.getLatestSchema(topicName.qualifiedName());
+    List<Integer> availableSchemaVersions = schemaService.getVersions(topicName.qualifiedName());
     return schema
-        .map(s -> topicWithSchema(topic, s.value()))
-        .orElseGet(() -> topicWithSchema(topic));
+        .map(
+            metadata ->
+                topicWithSchema(
+                    topic,
+                    metadata.getSchemaString(),
+                    metadata.getVersion(),
+                    availableSchemaVersions))
+        .orElseGet(() -> topicWithSchema(topic, null, null, availableSchemaVersions));
   }
 
   @Override

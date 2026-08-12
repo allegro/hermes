@@ -295,6 +295,7 @@ public class ConsoleProperties {
   public static final class TopicView {
     private boolean messagePreviewEnabled = true;
     private boolean offlineClientsEnabled = false;
+    private String schemaRegistryUrl;
     private DefaultTopicView defaults = new DefaultTopicView();
     private List<TopicContentType> contentTypes =
         Lists.newArrayList(
@@ -318,6 +319,14 @@ public class ConsoleProperties {
 
     public void setOfflineClientsEnabled(boolean offlineClientsEnabled) {
       this.offlineClientsEnabled = offlineClientsEnabled;
+    }
+
+    public String getSchemaRegistryUrl() {
+      return schemaRegistryUrl;
+    }
+
+    public void setSchemaRegistryUrl(String schemaRegistryUrl) {
+      this.schemaRegistryUrl = schemaRegistryUrl;
     }
 
     public DefaultTopicView getDefaults() {

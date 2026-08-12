@@ -45,6 +45,8 @@ export const dummyTopic: TopicWithSchema = {
   },
   createdAt: 1634916242.877,
   modifiedAt: 1636451113.517,
+  schemaVersion: 2,
+  availableSchemaVersions: [2, 1],
 };
 
 export const dummyOwner: Owner = {

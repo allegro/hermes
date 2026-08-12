@@ -115,6 +115,45 @@ public class TopicManagementTest {
   }
 
   @Test
+  public void shouldReturnActiveAndAvailableSchemaVersionsForAvroTopic() {
+    TopicWithSchema topicWithSchema =
+        topicWithSchema(topicWithRandomName().withContentType(AVRO).build(), SCHEMA);
+    Topic topic = hermes.initHelper().createTopicWithSchema(topicWithSchema);
+    hermes.api().saveSchema(topic.getQualifiedName(), AvroUserSchemaLoader.load("/schema/user_v2.avsc").toString());
+
+    TopicWithSchema response =
+        hermes
+            .api()
+            .getTopicResponse(topic.getQualifiedName())
+            .expectStatus()
+            .isOk()
+            .expectBody(TopicWithSchema.class)
+            .returnResult()
+            .getResponseBody();
+
+    assertThat(response.getSchemaVersion()).isEqualTo(2);
+    assertThat(response.getAvailableSchemaVersions()).containsExactly(2, 1);
+  }
+
+  @Test
+  public void shouldOmitSchemaVersionMetadataForJsonTopic() {
+    Topic topic = hermes.initHelper().createTopic(topicWithRandomName().withContentType(JSON).build());
+
+    TopicWithSchema response =
+        hermes
+            .api()
+            .getTopicResponse(topic.getQualifiedName())
+            .expectStatus()
+            .isOk()
+            .expectBody(TopicWithSchema.class)
+            .returnResult()
+            .getResponseBody();
+
+    assertThat(response.getSchemaVersion()).isNull();
+    assertThat(response.getAvailableSchemaVersions()).isNull();
+  }
+
+  @Test
   public void shouldListTopics() {
     // given
     hermes.initHelper().createTopic(topic("listTopicsGroup.topic1").build());

@@ -58,6 +58,7 @@ export interface OwnerSourceConfiguration {
 export interface TopicViewConfiguration {
   messagePreviewEnabled: boolean;
   offlineClientsEnabled: boolean;
+  schemaRegistryUrl?: string;
   defaults: DefaultTopicViewConfiguration;
   contentTypes: TopicContentType[];
   readOnlyModeEnabled: boolean;

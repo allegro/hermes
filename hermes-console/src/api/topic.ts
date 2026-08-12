@@ -4,6 +4,8 @@ import type { OwnerId } from '@/api/owner-id';
 
 export interface TopicWithSchema extends Topic {
   schema: string;
+  schemaVersion?: number;
+  availableSchemaVersions?: number[];
 }
 
 export interface Topic {

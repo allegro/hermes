@@ -3,9 +3,11 @@ package pl.allegro.tech.hermes.api;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import java.time.Instant;
+import java.util.List;
 import java.util.Objects;
 
 public class TopicWithSchema extends Topic {
@@ -13,6 +15,10 @@ public class TopicWithSchema extends Topic {
   private final Topic topic;
 
   private final String schema;
+
+  private final Integer schemaVersion;
+
+  private final List<Integer> availableSchemaVersions;
 
   public TopicWithSchema(Topic topic, String schema) {
     this(
@@ -33,7 +39,37 @@ public class TopicWithSchema extends Topic {
         topic.isSubscribingRestricted(),
         topic.getOfflineStorage(),
         topic.getCreatedAt(),
-        topic.getModifiedAt());
+        topic.getModifiedAt(),
+        null,
+        null);
+  }
+
+  public TopicWithSchema(
+      Topic topic,
+      String schema,
+      Integer schemaVersion,
+      List<Integer> availableSchemaVersions) {
+    this(
+        schema,
+        topic.getQualifiedName(),
+        topic.getDescription(),
+        topic.getOwner(),
+        topic.getRetentionTime(),
+        topic.isJsonToAvroDryRunEnabled(),
+        topic.getAck(),
+        topic.isFallbackToRemoteDatacenterEnabled(),
+        topic.getChaos(),
+        topic.isTrackingEnabled(),
+        topic.wasMigratedFromJsonType(),
+        topic.getContentType(),
+        topic.getMaxMessageSize(),
+        topic.getPublishingAuth(),
+        topic.isSubscribingRestricted(),
+        topic.getOfflineStorage(),
+        topic.getCreatedAt(),
+        topic.getModifiedAt(),
+        schemaVersion,
+        availableSchemaVersions);
   }
 
   @JsonCreator
@@ -59,7 +95,9 @@ public class TopicWithSchema extends Topic {
       @JsonProperty("subscribingRestricted") boolean subscribingRestricted,
       @JsonProperty("offlineStorage") TopicDataOfflineStorage offlineStorage,
       @JsonProperty("createdAt") Instant createdAt,
-      @JsonProperty("modifiedAt") Instant modifiedAt) {
+      @JsonProperty("modifiedAt") Instant modifiedAt,
+      @JsonProperty("schemaVersion") Integer schemaVersion,
+      @JsonProperty("availableSchemaVersions") List<Integer> availableSchemaVersions) {
     super(
         qualifiedName,
         description,
@@ -80,10 +118,17 @@ public class TopicWithSchema extends Topic {
         modifiedAt);
     this.topic = convertToTopic();
     this.schema = schema;
+    this.schemaVersion = schemaVersion;
+    this.availableSchemaVersions = availableSchemaVersions;
   }
 
   public static TopicWithSchema topicWithSchema(Topic topic, String schema) {
     return new TopicWithSchema(topic, schema);
+  }
+
+  public static TopicWithSchema topicWithSchema(
+      Topic topic, String schema, Integer schemaVersion, List<Integer> availableSchemaVersions) {
+    return new TopicWithSchema(topic, schema, schemaVersion, availableSchemaVersions);
   }
 
   public static TopicWithSchema topicWithSchema(Topic topic) {
@@ -115,6 +160,16 @@ public class TopicWithSchema extends Topic {
     return schema;
   }
 
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  public Integer getSchemaVersion() {
+    return schemaVersion;
+  }
+
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
+  public List<Integer> getAvailableSchemaVersions() {
+    return availableSchemaVersions;
+  }
+
   @JsonIgnore
   public Topic getTopic() {
     return topic;
@@ -132,11 +187,14 @@ public class TopicWithSchema extends Topic {
       return false;
     }
     TopicWithSchema that = (TopicWithSchema) o;
-    return Objects.equals(topic, that.topic) && Objects.equals(schema, that.schema);
+    return Objects.equals(topic, that.topic)
+        && Objects.equals(schema, that.schema)
+        && Objects.equals(schemaVersion, that.schemaVersion)
+        && Objects.equals(availableSchemaVersions, that.availableSchemaVersions);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), topic, schema);
+    return Objects.hash(super.hashCode(), topic, schema, schemaVersion, availableSchemaVersions);
   }
 }

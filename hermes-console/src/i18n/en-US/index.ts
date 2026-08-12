@@ -503,9 +503,13 @@ const en_US = {
       title: 'Offline clients',
     },
     schema: {
+      activeVersion: 'Active version: {version}',
+      allVersions: 'All versions ({count})',
       copy: 'Copy to clipboard',
+      current: 'Current',
       default: 'Default',
       rawSchema: 'Raw schema',
+      notApplicable: 'N/A (JSON topic)',
       structure: 'Structure',
       showRawSchema: 'Show raw schema',
       title: 'Message schema',
