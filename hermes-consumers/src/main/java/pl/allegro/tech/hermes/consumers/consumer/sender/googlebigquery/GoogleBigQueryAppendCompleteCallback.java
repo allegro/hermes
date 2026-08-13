@@ -17,7 +17,7 @@ public class GoogleBigQueryAppendCompleteCallback implements ApiFutureCallback<A
     this.resultFuture = resultFuture;
   }
 
-  public static Integer mapToPermanentErrorHttpStatus(Throwable cause) {
+  public static int mapToErrorHttpStatus(Throwable cause) {
     Status.Code grpcCode = Status.fromThrowable(cause).getCode();
     return switch (grpcCode) {
       case NOT_FOUND -> 404; // Table does not exist
@@ -35,7 +35,7 @@ public class GoogleBigQueryAppendCompleteCallback implements ApiFutureCallback<A
     Exceptions.StorageException storageException = Exceptions.toStorageException(t);
     Throwable cause = Objects.requireNonNullElse(storageException, t);
 
-    Integer httpStatusCode = mapToPermanentErrorHttpStatus(cause);
+    Integer httpStatusCode = mapToErrorHttpStatus(cause);
     resultFuture.complete(MessageSendingResult.failedResult(httpStatusCode, cause));
   }
 

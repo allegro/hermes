@@ -50,7 +50,7 @@ public abstract class GoogleBigQueryDataWriter<
               .map(entry -> String.format("\t row %d: %s", entry.getKey(), entry.getValue()))
               .collect(Collectors.joining("\n")),
           e);
-      int statusCode = GoogleBigQueryAppendCompleteCallback.mapToPermanentErrorHttpStatus(e);
+      int statusCode = GoogleBigQueryAppendCompleteCallback.mapToErrorHttpStatus(e);
       resultFuture.complete(
           MessageSendingResult.failedResult(statusCode, new GoogleBigQueryFailedAppendException(e)));
     } catch (Exception e) {
@@ -60,7 +60,7 @@ public abstract class GoogleBigQueryDataWriter<
           getStreamName(),
           e.getMessage(),
           e);
-      Integer statusCode = GoogleBigQueryAppendCompleteCallback.mapToPermanentErrorHttpStatus(e);
+      Integer statusCode = GoogleBigQueryAppendCompleteCallback.mapToErrorHttpStatus(e);
       resultFuture.complete(MessageSendingResult.failedResult(statusCode, e));
     }
   }
