@@ -21,39 +21,13 @@ public class TopicWithSchema extends Topic {
 
   private final String schemaSubject;
 
-  public TopicWithSchema(Topic topic, String schema) {
-    this(
-        schema,
-        topic.getQualifiedName(),
-        topic.getDescription(),
-        topic.getOwner(),
-        topic.getRetentionTime(),
-        topic.isJsonToAvroDryRunEnabled(),
-        topic.getAck(),
-        topic.isFallbackToRemoteDatacenterEnabled(),
-        topic.getChaos(),
-        topic.isTrackingEnabled(),
-        topic.wasMigratedFromJsonType(),
-        topic.getContentType(),
-        topic.getMaxMessageSize(),
-        topic.getPublishingAuth(),
-        topic.isSubscribingRestricted(),
-        topic.getOfflineStorage(),
-        topic.getCreatedAt(),
-        topic.getModifiedAt(),
-        null,
-        null,
-        null);
-  }
-
-  public TopicWithSchema(
+  private TopicWithSchema(
       Topic topic,
       String schema,
       Integer schemaVersion,
       List<Integer> availableSchemaVersions,
       String schemaSubject) {
-    this(
-        schema,
+    super(
         topic.getQualifiedName(),
         topic.getDescription(),
         topic.getOwner(),
@@ -70,10 +44,12 @@ public class TopicWithSchema extends Topic {
         topic.isSubscribingRestricted(),
         topic.getOfflineStorage(),
         topic.getCreatedAt(),
-        topic.getModifiedAt(),
-        schemaVersion,
-        availableSchemaVersions,
-        schemaSubject);
+        topic.getModifiedAt());
+    this.topic = convertToTopic();
+    this.schema = schema;
+    this.schemaVersion = schemaVersion;
+    this.availableSchemaVersions = availableSchemaVersions;
+    this.schemaSubject = schemaSubject;
   }
 
   @JsonCreator
@@ -100,52 +76,6 @@ public class TopicWithSchema extends Topic {
       @JsonProperty("offlineStorage") TopicDataOfflineStorage offlineStorage,
       @JsonProperty("createdAt") Instant createdAt,
       @JsonProperty("modifiedAt") Instant modifiedAt) {
-    this(
-        schema,
-        qualifiedName,
-        description,
-        owner,
-        retentionTime,
-        jsonToAvroDryRunEnabled,
-        ack,
-        fallbackToRemoteDatacenterEnabled,
-        chaos,
-        trackingEnabled,
-        migratedFromJsonType,
-        contentType,
-        maxMessageSize,
-        publishingAuth,
-        subscribingRestricted,
-        offlineStorage,
-        createdAt,
-        modifiedAt,
-        null,
-        null,
-        null);
-  }
-
-  private TopicWithSchema(
-      String schema,
-      String qualifiedName,
-      String description,
-      OwnerId owner,
-      RetentionTime retentionTime,
-      boolean jsonToAvroDryRunEnabled,
-      Ack ack,
-      boolean fallbackToRemoteDatacenterEnabled,
-      PublishingChaosPolicy chaos,
-      boolean trackingEnabled,
-      boolean migratedFromJsonType,
-      ContentType contentType,
-      Integer maxMessageSize,
-      PublishingAuth publishingAuth,
-      boolean subscribingRestricted,
-      TopicDataOfflineStorage offlineStorage,
-      Instant createdAt,
-      Instant modifiedAt,
-      Integer schemaVersion,
-      List<Integer> availableSchemaVersions,
-      String schemaSubject) {
     super(
         qualifiedName,
         description,
@@ -166,13 +96,14 @@ public class TopicWithSchema extends Topic {
         modifiedAt);
     this.topic = convertToTopic();
     this.schema = schema;
-    this.schemaVersion = schemaVersion;
-    this.availableSchemaVersions = availableSchemaVersions;
-    this.schemaSubject = schemaSubject;
+    // During topic creation/edit these fields are not yet available.
+    this.schemaVersion = null;
+    this.availableSchemaVersions = null;
+    this.schemaSubject = null;
   }
 
   public static TopicWithSchema topicWithSchema(Topic topic, String schema) {
-    return new TopicWithSchema(topic, schema);
+    return new TopicWithSchema(topic, schema, null, List.of(), null);
   }
 
   public static TopicWithSchema topicWithSchema(
@@ -186,7 +117,7 @@ public class TopicWithSchema extends Topic {
   }
 
   public static TopicWithSchema topicWithEmptySchema(Topic topic) {
-    return new TopicWithSchema(topic, null);
+    return new TopicWithSchema(topic, null, null, List.of(), null);
   }
 
   private Topic convertToTopic() {
