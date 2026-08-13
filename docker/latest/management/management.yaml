@@ -8,9 +8,6 @@ server:
   port: 8090
 
 management:
-  console:
-    topic:
-      schemaRegistryUrl: http://localhost:8081
   zookeeper:
     clusters:
       - datacenter: dc
