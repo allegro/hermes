@@ -47,6 +47,8 @@ export const dummyTopic: TopicWithSchema = {
   modifiedAt: 1636451113.517,
   schemaVersion: 2,
   availableSchemaVersions: [2, 1],
+  schemaSubject: 'pl.allegro.public.group.DummyEvent-value',
+  schemaRegistryUrl: 'https://schema-registry.example.com',
 };
 
 export const dummyOwner: Owner = {

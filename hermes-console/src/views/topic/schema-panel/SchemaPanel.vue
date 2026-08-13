@@ -11,30 +11,23 @@
     topicName: string;
     schemaVersion?: number;
     availableSchemaVersions?: number[];
-    schemaSubject?: string;
-    schemaRegistryUrl?: string;
+    schemaSubject: string;
+    schemaRegistryUrl: string;
   }>();
   const showRawSchema = ref(false);
 
-  const hasSchemaRegistryUrl = computed(
-    () => !!props.schemaRegistryUrl?.trim(),
-  );
   const sortedSchemaVersions = computed(() =>
     [...(props.availableSchemaVersions ?? [])].sort(
       (first, second) => second - first,
     ),
   );
   const shouldShowVersionHistory = computed(
-    () =>
-      props.contentType === 'AVRO' &&
-      hasSchemaRegistryUrl.value &&
-      !!props.schemaSubject &&
-      sortedSchemaVersions.value.length > 0,
+    () => props.contentType === 'AVRO' && sortedSchemaVersions.value.length > 0,
   );
 
   function schemaRegistryVersionUrl(version: number): string {
-    const baseUrl = props.schemaRegistryUrl!.trim().replace(/\/+$/, '');
-    return `${baseUrl}/subjects/${encodeURIComponent(props.schemaSubject!)}/versions/${version}`;
+    const baseUrl = props.schemaRegistryUrl.trim().replace(/\/+$/, '');
+    return `${baseUrl}/subjects/${encodeURIComponent(props.schemaSubject)}/versions/${version}`;
   }
 </script>
 

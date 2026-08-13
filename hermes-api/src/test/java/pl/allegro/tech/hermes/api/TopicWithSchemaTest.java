@@ -30,12 +30,13 @@ public class TopicWithSchemaTest {
   public void shouldOmitAbsentOrEmptySchemaVersionMetadata() throws Exception {
     Topic topic = TopicBuilder.topic("group.topic").build();
 
-    String absent = objectMapper.writeValueAsString(TopicWithSchema.topicWithSchema(topic, "schema"));
     String empty =
         objectMapper.writeValueAsString(
-            TopicWithSchema.topicWithSchema(topic, "schema", null, List.of(), null));
+            TopicWithSchema.topicWithSchema(
+                topic, "schema", null, List.of(), "namespace_group.topic-value"));
 
-    assertThat(absent).doesNotContain("schemaVersion", "availableSchemaVersions", "schemaSubject");
-    assertThat(empty).doesNotContain("schemaVersion", "availableSchemaVersions", "schemaSubject");
+    assertThat(empty)
+        .doesNotContain("schemaVersion", "availableSchemaVersions")
+        .contains("\"schemaSubject\":\"namespace_group.topic-value\"");
   }
 }

@@ -37,10 +37,11 @@ class TopicServiceSpec extends Specification {
         result.schemaSubject == "namespace_group.topic-value"
     }
 
-    def "should omit schema metadata for a json topic without calling schema service"() {
+    def "should include schema subject for a json topic without calling schema service"() {
         given:
         def topic = TopicBuilder.topic("group.topic").withContentType(ContentType.JSON).build()
         topicRepository.getTopicDetails(topic.name) >> topic
+        subjectNamingStrategy.apply(topic.name) >> "namespace_group.topic-value"
 
         when:
         def result = topicService.getTopicWithSchema(topic.name)
@@ -49,7 +50,7 @@ class TopicServiceSpec extends Specification {
         result.schema == null
         result.schemaVersion == null
         result.availableSchemaVersions == null
-        result.schemaSubject == null
+        result.schemaSubject == "namespace_group.topic-value"
         0 * schemaService._
     }
 

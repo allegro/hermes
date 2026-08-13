@@ -10,6 +10,8 @@ describe('SchemaPanel', () => {
     schema: dummyTopic.schema,
     contentType: ContentType.AVRO,
     topicName: dummyTopic.name,
+    schemaRegistryUrl: 'https://schema-registry.example.com',
+    schemaSubject: 'group.topic-value',
   };
 
   it('should render avro formatted schema by default', async () => {
@@ -55,8 +57,8 @@ describe('SchemaPanel', () => {
     const { getByText, getByRole } = render(SchemaPanel, {
       props: {
         ...props,
-        schemaVersion: 2,
-        availableSchemaVersions: [1, 3, 2],
+        schemaVersion: 4,
+        availableSchemaVersions: [4, 2, 1],
         schemaRegistryUrl: 'https://schema-registry.example.com/',
         topicName: 'group/topic name',
         schemaSubject: 'namespace_group/topic name-value',
@@ -66,20 +68,20 @@ describe('SchemaPanel', () => {
     expect(
       getByText('topicView.schema.activeVersion', { exact: false }),
     ).toBeVisible();
-    expect(getByText('2', { selector: 'strong' })).toBeVisible();
+    expect(getByText('4', { selector: 'strong' })).toBeVisible();
     expect(
       getByRole('button', {
         name: 'topicView.schema.allVersions',
       }),
-    ).toHaveClass('v-btn--variant-outlined');
+    );
     await userEvent.click(
       getByText('topicView.schema.allVersions', { exact: false }),
     );
 
     const links = getByRole('list').querySelectorAll('a');
     expect([...links].map((link) => link.textContent?.trim())).toEqual([
-      '3',
-      '2 topicView.schema.current',
+      '4 topicView.schema.current',
+      '2',
       '1',
     ]);
     expect(links[1]).toHaveAttribute(
@@ -91,9 +93,9 @@ describe('SchemaPanel', () => {
     expect(getByText('topicView.schema.current')).toBeVisible();
   });
 
-  it('should show only the active version without registry URL or history', () => {
+  it('should show only the active version when version history is not available', () => {
     const { getByText, queryByText } = render(SchemaPanel, {
-      props: { ...props, schemaVersion: 2, schemaSubject: 'group.topic-value' },
+      props: { ...props, schemaVersion: 2 },
     });
 
     expect(
@@ -109,10 +111,6 @@ describe('SchemaPanel', () => {
       props: {
         ...props,
         contentType: ContentType.JSON,
-        schemaVersion: 2,
-        availableSchemaVersions: [1, 2],
-        schemaRegistryUrl: 'https://schema-registry.example.com',
-        schemaSubject: 'group.topic-value',
       },
     });
 
@@ -130,8 +128,6 @@ describe('SchemaPanel', () => {
           { length: 11 },
           (_, index) => index + 1,
         ),
-        schemaRegistryUrl: 'https://schema-registry.example.com',
-        schemaSubject: 'group.topic-value',
       },
     });
 

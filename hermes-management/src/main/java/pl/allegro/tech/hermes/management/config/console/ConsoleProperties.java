@@ -295,7 +295,7 @@ public class ConsoleProperties {
   public static final class TopicView {
     private boolean messagePreviewEnabled = true;
     private boolean offlineClientsEnabled = false;
-    private String schemaRegistryUrl;
+    private String schemaRegistryUrl = "http://localhost:8081";
     private DefaultTopicView defaults = new DefaultTopicView();
     private List<TopicContentType> contentTypes =
         Lists.newArrayList(

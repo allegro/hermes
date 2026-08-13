@@ -1,10 +1,6 @@
 package pl.allegro.tech.hermes.management.config.console
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import ch.qos.logback.classic.Logger
-import ch.qos.logback.classic.spi.ILoggingEvent
-import ch.qos.logback.core.read.ListAppender
-import org.slf4j.LoggerFactory
 import pl.allegro.tech.hermes.api.ContentType
 import pl.allegro.tech.hermes.management.config.GroupProperties
 import pl.allegro.tech.hermes.management.config.TopicProperties
@@ -147,22 +143,4 @@ class ConsoleConfigurationSpec extends Specification {
         repository.configuration.contains('"schemaRegistryUrl":"https://schema-registry.example.com/"')
     }
 
-    def "should warn once when schema registry URL is absent"() {
-        given:
-        def logger = LoggerFactory.getLogger(ConsoleConfiguration) as Logger
-        def appender = new ListAppender<ILoggingEvent>()
-        appender.start()
-        logger.addAppender(appender)
-
-        when:
-        consoleConfiguration.consoleConfigurationRepository(
-                objectMapper, new ConsoleProperties(), new GroupProperties(), new TopicProperties())
-
-        then:
-        appender.list.count { it.formattedMessage.contains('schemaRegistryUrl is not configured') } == 1
-
-        cleanup:
-        logger.detachAppender(appender)
-        appender.stop()
-    }
 }

@@ -249,7 +249,7 @@ public class TopicService implements TopicManagement {
   public TopicWithSchema getTopicWithSchema(TopicName topicName) {
     Topic topic = getTopicDetails(topicName);
     if (!AVRO.equals(topic.getContentType())) {
-      return topicWithSchema(topic);
+      return topicWithSchema(topic, null, null, null, subjectNamingStrategy.apply(topicName));
     }
 
     Optional<RawSchemaWithMetadata> schema = schemaService.getLatestSchema(topicName.qualifiedName());

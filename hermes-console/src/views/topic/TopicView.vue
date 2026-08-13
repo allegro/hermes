@@ -220,7 +220,7 @@
         <v-tabs-window-item :value="Tab.Schema">
           <v-container class="py-0">
             <schema-panel
-              v-if="topic"
+              v-if="topic && configStore.appConfig"
               :schema="topic.schema"
               :content-type="topic.contentType"
               :topic-name="topic.name"
@@ -228,7 +228,7 @@
               :available-schema-versions="topic.availableSchemaVersions"
               :schema-subject="topic.schemaSubject"
               :schema-registry-url="
-                configStore.appConfig?.topic.schemaRegistryUrl
+                configStore.appConfig.topic.schemaRegistryUrl
               "
             />
           </v-container>
