@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.management.domain.topic;
 import static java.util.stream.Collectors.toList;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithEmptySchema;
-import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
 import static pl.allegro.tech.hermes.common.logging.LoggingFields.TOPIC_NAME;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -259,7 +258,7 @@ public class TopicService implements TopicManagement {
     return schema
         .map(
             metadata ->
-                topicWithSchema(
+                TopicWithSchema.topicWithSchemaAndVersions(
                     topic,
                     metadata.getSchemaString(),
                     metadata.getVersion(),

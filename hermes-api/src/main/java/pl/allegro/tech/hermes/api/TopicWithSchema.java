@@ -96,7 +96,7 @@ public class TopicWithSchema extends Topic {
         modifiedAt);
     this.topic = convertToTopic();
     this.schema = schema;
-    // During topic creation/edit these fields are not yet available.
+    // During topic creation these fields are not yet available.
     this.schemaVersion = null;
     this.availableSchemaVersions = null;
     this.schemaSubject = null;
@@ -106,7 +106,7 @@ public class TopicWithSchema extends Topic {
     return new TopicWithSchema(topic, schema, null, List.of(), null);
   }
 
-  public static TopicWithSchema topicWithSchema(
+  public static TopicWithSchema topicWithSchemaAndVersions(
       Topic topic,
       String schema,
       Integer schemaVersion,

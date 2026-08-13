@@ -48,7 +48,7 @@ class TopicServiceSpec extends Specification {
         then:
         result.schema == null
         result.schemaVersion == null
-        result.availableSchemaVersions == null
+        result.availableSchemaVersions.empty
         result.schemaSubject == null
         0 * schemaService._
     }

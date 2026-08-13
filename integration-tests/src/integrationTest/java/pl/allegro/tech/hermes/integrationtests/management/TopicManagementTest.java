@@ -155,7 +155,7 @@ public class TopicManagementTest {
             .getResponseBody();
 
     assertThat(response.getSchemaVersion()).isNull();
-    assertThat(response.getAvailableSchemaVersions()).isNull();
+    assertThat(response.getAvailableSchemaVersions()).isEmpty();
     assertThat(response.getSchemaSubject()).isNull();
   }
 

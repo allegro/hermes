@@ -15,7 +15,8 @@ public class TopicWithSchemaTest {
   public void shouldSerializeSchemaVersionMetadataWhenPresent() throws Exception {
     Topic topic = TopicBuilder.topic("group.topic").build();
     TopicWithSchema topicWithSchema =
-        TopicWithSchema.topicWithSchema(topic, "schema", 3, List.of(1, 2, 3), "namespace_group.topic-value");
+        TopicWithSchema.topicWithSchemaAndVersions(
+            topic, "schema", 3, List.of(1, 2, 3), "namespace_group.topic-value");
 
     String serialized = objectMapper.writeValueAsString(topicWithSchema);
 
@@ -32,12 +33,10 @@ public class TopicWithSchemaTest {
 
     String serialized =
         objectMapper.writeValueAsString(
-            TopicWithSchema.topicWithSchema(topic, "schema", null, null, null));
+            TopicWithSchema.topicWithSchemaAndVersions(topic, "schema", null, null, null));
 
     assertThat(serialized)
         .contains(
-            "\"schemaVersion\":null",
-            "\"availableSchemaVersions\":null",
-            "\"schemaSubject\":null");
+            "\"schemaVersion\":null", "\"availableSchemaVersions\":null", "\"schemaSubject\":null");
   }
 }
