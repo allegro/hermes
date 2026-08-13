@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.management.domain.topic;
 
 import static java.util.stream.Collectors.toList;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
+import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithEmptySchema;
 import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
 import static pl.allegro.tech.hermes.common.logging.LoggingFields.TOPIC_NAME;
 
@@ -23,7 +24,6 @@ import pl.allegro.tech.hermes.api.MessageTextPreview;
 import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Query;
-import pl.allegro.tech.hermes.api.RawSchema;
 import pl.allegro.tech.hermes.api.RawSchemaWithMetadata;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicMetrics;
@@ -249,28 +249,23 @@ public class TopicService implements TopicManagement {
   public TopicWithSchema getTopicWithSchema(TopicName topicName) {
     Topic topic = getTopicDetails(topicName);
     if (!AVRO.equals(topic.getContentType())) {
-      return topicWithSchema(topic, null, null, null, subjectNamingStrategy.apply(topicName));
+      return TopicWithSchema.topicWithEmptySchema(topic);
     }
 
-    Optional<RawSchemaWithMetadata> schema = schemaService.getLatestSchema(topicName.qualifiedName());
-    List<Integer> availableSchemaVersions = schemaService.getVersions(topicName.qualifiedName());
+    Optional<RawSchemaWithMetadata> schema =
+        schemaService.getLatestSchema(topicName.qualifiedName());
+    List<Integer> availableSchemaVersions =
+        schemaService.getVersionsOrEmptyOnError(topicName.qualifiedName());
     return schema
         .map(
             metadata ->
                 topicWithSchema(
                     topic,
-                     metadata.getSchemaString(),
-                     metadata.getVersion(),
-                     availableSchemaVersions,
-                     subjectNamingStrategy.apply(topicName)))
-        .orElseGet(
-            () ->
-                topicWithSchema(
-                    topic,
-                    null,
-                    null,
+                    metadata.getSchemaString(),
+                    metadata.getVersion(),
                     availableSchemaVersions,
-                    subjectNamingStrategy.apply(topicName)));
+                    subjectNamingStrategy.apply(topicName)))
+        .orElseGet(() -> topicWithEmptySchema(topic));
   }
 
   @Override

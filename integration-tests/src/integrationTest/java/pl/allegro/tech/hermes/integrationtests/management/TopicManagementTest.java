@@ -103,7 +103,7 @@ public class TopicManagementTest {
   @Test
   public void shouldCreateTopic() {
     // given
-    TopicWithSchema topic = TopicWithSchema.topicWithSchema(topicWithRandomName().build());
+    TopicWithSchema topic = TopicWithSchema.topicWithEmptySchema(topicWithRandomName().build());
     hermes.initHelper().createGroup(Group.from(topic.getName().getGroupName()));
 
     // when
@@ -119,7 +119,10 @@ public class TopicManagementTest {
     TopicWithSchema topicWithSchema =
         topicWithSchema(topicWithRandomName().withContentType(AVRO).build(), SCHEMA);
     Topic topic = hermes.initHelper().createTopicWithSchema(topicWithSchema);
-    hermes.api().saveSchema(topic.getQualifiedName(), AvroUserSchemaLoader.load("/schema/user_v2.avsc").toString());
+    hermes
+        .api()
+        .saveSchema(
+            topic.getQualifiedName(), AvroUserSchemaLoader.load("/schema/user_v2.avsc").toString());
 
     TopicWithSchema response =
         hermes
@@ -138,7 +141,8 @@ public class TopicManagementTest {
 
   @Test
   public void shouldOmitSchemaVersionMetadataForJsonTopic() {
-    Topic topic = hermes.initHelper().createTopic(topicWithRandomName().withContentType(JSON).build());
+    Topic topic =
+        hermes.initHelper().createTopic(topicWithRandomName().withContentType(JSON).build());
 
     TopicWithSchema response =
         hermes
@@ -232,7 +236,7 @@ public class TopicManagementTest {
         hermes
             .api()
             .createTopic(
-                topicWithSchema(
+                TopicWithSchema.topicWithEmptySchema(
                     topic(groupName, "shouldNotCreateInvalidTopic")
                         .withMaxMessageSize(Topic.MAX_MESSAGE_SIZE + 1)
                         .build()));
@@ -669,7 +673,10 @@ public class TopicManagementTest {
 
     // when
     WebTestClient.ResponseSpec response =
-        hermes.api().createTopic((topicWithSchema(topic(groupName, topicName).build())));
+        hermes
+            .api()
+            .createTopic(
+                (TopicWithSchema.topicWithEmptySchema(topic(groupName, topicName).build())));
 
     // then
     response.expectStatus().isCreated();
@@ -681,7 +688,8 @@ public class TopicManagementTest {
     // given
     TestSecurityProvider.setUserIsAdmin(false);
     TopicWithSchema topic =
-        topicWithSchema(topicWithRandomName().withFallbackToRemoteDatacenterEnabled().build());
+        TopicWithSchema.topicWithEmptySchema(
+            topicWithRandomName().withFallbackToRemoteDatacenterEnabled().build());
     hermes.initHelper().createGroup(Group.from(topic.getName().getGroupName()));
 
     // when
@@ -698,7 +706,8 @@ public class TopicManagementTest {
     // given
     TestSecurityProvider.setUserIsAdmin(true);
     TopicWithSchema topic =
-        topicWithSchema(topicWithRandomName().withFallbackToRemoteDatacenterEnabled().build());
+        TopicWithSchema.topicWithEmptySchema(
+            topicWithRandomName().withFallbackToRemoteDatacenterEnabled().build());
     hermes.initHelper().createGroup(Group.from(topic.getName().getGroupName()));
 
     // when
@@ -788,7 +797,7 @@ public class TopicManagementTest {
     // given
     TestSecurityProvider.setUserIsAdmin(false);
     TopicWithSchema topic =
-        topicWithSchema(
+        TopicWithSchema.topicWithEmptySchema(
             topicWithRandomName()
                 .withPublishingChaosPolicy(new PublishingChaosPolicy(DATACENTER, null, Map.of()))
                 .build());
@@ -808,7 +817,7 @@ public class TopicManagementTest {
     // given
     TestSecurityProvider.setUserIsAdmin(true);
     TopicWithSchema topic =
-        topicWithSchema(
+        TopicWithSchema.topicWithEmptySchema(
             topicWithRandomName()
                 .withPublishingChaosPolicy(new PublishingChaosPolicy(DATACENTER, null, Map.of()))
                 .build());
@@ -826,7 +835,7 @@ public class TopicManagementTest {
     // given
     TestSecurityProvider.setUserIsAdmin(true);
     TopicWithSchema topic =
-        topicWithSchema(
+        TopicWithSchema.topicWithEmptySchema(
             topicWithRandomName()
                 .withPublishingChaosPolicy(
                     new PublishingChaosPolicy(

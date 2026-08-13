@@ -36,7 +36,6 @@ management:
     subscriptionOwnerRefreshRateInSeconds: 300
   console:
     topic:
-      schemaRegistryUrl: http://localhost:8081
       retentionUnits:
         - value: TimeUnit.HOURS
           label: Hours

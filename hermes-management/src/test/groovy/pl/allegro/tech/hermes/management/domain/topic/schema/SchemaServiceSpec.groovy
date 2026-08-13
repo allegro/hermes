@@ -15,7 +15,7 @@ class SchemaServiceSpec extends Specification {
         rawSchemaClient.getVersions(_) >> [SchemaVersion.valueOf(1), SchemaVersion.valueOf(3)]
 
         expect:
-        schemaService.getVersions("group.topic") == [1, 3]
+        schemaService.getVersionsOrEmptyOnError("group.topic") == [1, 3]
     }
 
     def "should return empty versions when registry lookup fails"() {
@@ -23,6 +23,6 @@ class SchemaServiceSpec extends Specification {
         rawSchemaClient.getVersions(_) >> { throw new RuntimeException("unavailable") }
 
         expect:
-        schemaService.getVersions("group.topic").empty
+        schemaService.getVersionsOrEmptyOnError("group.topic").empty
     }
 }

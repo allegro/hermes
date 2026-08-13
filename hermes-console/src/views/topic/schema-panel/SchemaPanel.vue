@@ -11,7 +11,7 @@
     topicName: string;
     schemaVersion?: number;
     availableSchemaVersions?: number[];
-    schemaSubject: string;
+    schemaSubject?: string;
     schemaRegistryUrl: string;
   }>();
   const showRawSchema = ref(false);
@@ -22,12 +22,15 @@
     ),
   );
   const shouldShowVersionHistory = computed(
-    () => props.contentType === 'AVRO' && sortedSchemaVersions.value.length > 0,
+    () =>
+      props.contentType === 'AVRO' &&
+      props.schemaSubject !== undefined &&
+      sortedSchemaVersions.value.length > 0,
   );
 
   function schemaRegistryVersionUrl(version: number): string {
     const baseUrl = props.schemaRegistryUrl.trim().replace(/\/+$/, '');
-    return `${baseUrl}/subjects/${encodeURIComponent(props.schemaSubject)}/versions/${version}`;
+    return `${baseUrl}/subjects/${encodeURIComponent(props.schemaSubject!)}/versions/${version}`;
   }
 </script>
 

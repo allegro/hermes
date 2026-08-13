@@ -3,7 +3,6 @@ package pl.allegro.tech.hermes.api;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import java.time.Instant;
@@ -45,14 +44,6 @@ public class TopicWithSchema extends Topic {
         null,
         null,
         null);
-  }
-
-  public TopicWithSchema(
-      Topic topic,
-      String schema,
-      Integer schemaVersion,
-      List<Integer> availableSchemaVersions) {
-    this(topic, schema, schemaVersion, availableSchemaVersions, null);
   }
 
   public TopicWithSchema(
@@ -108,10 +99,53 @@ public class TopicWithSchema extends Topic {
       @JsonProperty("subscribingRestricted") boolean subscribingRestricted,
       @JsonProperty("offlineStorage") TopicDataOfflineStorage offlineStorage,
       @JsonProperty("createdAt") Instant createdAt,
-      @JsonProperty("modifiedAt") Instant modifiedAt,
-      @JsonProperty("schemaVersion") Integer schemaVersion,
-      @JsonProperty("availableSchemaVersions") List<Integer> availableSchemaVersions,
-      @JsonProperty("schemaSubject") String schemaSubject) {
+      @JsonProperty("modifiedAt") Instant modifiedAt) {
+    this(
+        schema,
+        qualifiedName,
+        description,
+        owner,
+        retentionTime,
+        jsonToAvroDryRunEnabled,
+        ack,
+        fallbackToRemoteDatacenterEnabled,
+        chaos,
+        trackingEnabled,
+        migratedFromJsonType,
+        contentType,
+        maxMessageSize,
+        publishingAuth,
+        subscribingRestricted,
+        offlineStorage,
+        createdAt,
+        modifiedAt,
+        null,
+        null,
+        null);
+  }
+
+  private TopicWithSchema(
+      String schema,
+      String qualifiedName,
+      String description,
+      OwnerId owner,
+      RetentionTime retentionTime,
+      boolean jsonToAvroDryRunEnabled,
+      Ack ack,
+      boolean fallbackToRemoteDatacenterEnabled,
+      PublishingChaosPolicy chaos,
+      boolean trackingEnabled,
+      boolean migratedFromJsonType,
+      ContentType contentType,
+      Integer maxMessageSize,
+      PublishingAuth publishingAuth,
+      boolean subscribingRestricted,
+      TopicDataOfflineStorage offlineStorage,
+      Instant createdAt,
+      Instant modifiedAt,
+      Integer schemaVersion,
+      List<Integer> availableSchemaVersions,
+      String schemaSubject) {
     super(
         qualifiedName,
         description,
@@ -142,20 +176,16 @@ public class TopicWithSchema extends Topic {
   }
 
   public static TopicWithSchema topicWithSchema(
-      Topic topic, String schema, Integer schemaVersion, List<Integer> availableSchemaVersions) {
-    return new TopicWithSchema(topic, schema, schemaVersion, availableSchemaVersions);
-  }
-
-  public static TopicWithSchema topicWithSchema(
       Topic topic,
       String schema,
       Integer schemaVersion,
       List<Integer> availableSchemaVersions,
       String schemaSubject) {
-    return new TopicWithSchema(topic, schema, schemaVersion, availableSchemaVersions, schemaSubject);
+    return new TopicWithSchema(
+        topic, schema, schemaVersion, availableSchemaVersions, schemaSubject);
   }
 
-  public static TopicWithSchema topicWithSchema(Topic topic) {
+  public static TopicWithSchema topicWithEmptySchema(Topic topic) {
     return new TopicWithSchema(topic, null);
   }
 
@@ -184,17 +214,14 @@ public class TopicWithSchema extends Topic {
     return schema;
   }
 
-  @JsonInclude(JsonInclude.Include.NON_NULL)
   public Integer getSchemaVersion() {
     return schemaVersion;
   }
 
-  @JsonInclude(JsonInclude.Include.NON_EMPTY)
   public List<Integer> getAvailableSchemaVersions() {
     return availableSchemaVersions;
   }
 
-  @JsonInclude(JsonInclude.Include.NON_NULL)
   public String getSchemaSubject() {
     return schemaSubject;
   }

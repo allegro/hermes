@@ -27,16 +27,17 @@ public class TopicWithSchemaTest {
   }
 
   @Test
-  public void shouldOmitAbsentOrEmptySchemaVersionMetadata() throws Exception {
+  public void shouldSerializeNullSchemaMetadata() throws Exception {
     Topic topic = TopicBuilder.topic("group.topic").build();
 
-    String empty =
+    String serialized =
         objectMapper.writeValueAsString(
-            TopicWithSchema.topicWithSchema(
-                topic, "schema", null, List.of(), "namespace_group.topic-value"));
+            TopicWithSchema.topicWithSchema(topic, "schema", null, null, null));
 
-    assertThat(empty)
-        .doesNotContain("schemaVersion", "availableSchemaVersions")
-        .contains("\"schemaSubject\":\"namespace_group.topic-value\"");
+    assertThat(serialized)
+        .contains(
+            "\"schemaVersion\":null",
+            "\"availableSchemaVersions\":null",
+            "\"schemaSubject\":null");
   }
 }

@@ -7,7 +7,7 @@ export interface TopicWithSchema extends Topic {
   // for JSON topic these values are null, for AVRO they are present
   schemaVersion?: number;
   availableSchemaVersions?: number[];
-  schemaSubject: string;
+  schemaSubject?: string;
 }
 
 export interface Topic {

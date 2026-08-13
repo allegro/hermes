@@ -24,7 +24,7 @@ class TopicServiceSpec extends Specification {
         def topic = TopicBuilder.topic("group.topic").withContentType(ContentType.AVRO).build()
         topicRepository.getTopicDetails(topic.name) >> topic
         schemaService.getLatestSchema(topic.qualifiedName) >> Optional.of(RawSchemaWithMetadata.of("schema", 101, 3))
-        schemaService.getVersions(topic.qualifiedName) >> [1, 2, 3]
+        schemaService.getVersionsOrEmptyOnError(topic.qualifiedName) >> [1, 2, 3]
         subjectNamingStrategy.apply(topic.name) >> "namespace_group.topic-value"
 
         when:
@@ -37,11 +37,10 @@ class TopicServiceSpec extends Specification {
         result.schemaSubject == "namespace_group.topic-value"
     }
 
-    def "should include schema subject for a json topic without calling schema service"() {
+    def "should return null schema metadata for a json topic without calling schema service"() {
         given:
         def topic = TopicBuilder.topic("group.topic").withContentType(ContentType.JSON).build()
         topicRepository.getTopicDetails(topic.name) >> topic
-        subjectNamingStrategy.apply(topic.name) >> "namespace_group.topic-value"
 
         when:
         def result = topicService.getTopicWithSchema(topic.name)
@@ -50,7 +49,7 @@ class TopicServiceSpec extends Specification {
         result.schema == null
         result.schemaVersion == null
         result.availableSchemaVersions == null
-        result.schemaSubject == "namespace_group.topic-value"
+        result.schemaSubject == null
         0 * schemaService._
     }
 
@@ -59,7 +58,7 @@ class TopicServiceSpec extends Specification {
         def topic = TopicBuilder.topic("group.topic").withContentType(ContentType.AVRO).build()
         topicRepository.getTopicDetails(topic.name) >> topic
         schemaService.getLatestSchema(topic.qualifiedName) >> Optional.of(RawSchemaWithMetadata.of("schema", 101, 3))
-        schemaService.getVersions(topic.qualifiedName) >> []
+        schemaService.getVersionsOrEmptyOnError(topic.qualifiedName) >> []
         subjectNamingStrategy.apply(topic.name) >> "namespace_group.topic-value"
 
         when:

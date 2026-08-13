@@ -2,7 +2,6 @@ package pl.allegro.tech.hermes.integrationtests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.waitAtMost;
-import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
 import static pl.allegro.tech.hermes.infrastructure.dc.DefaultDatacenterNameProvider.DEFAULT_DC_NAME;
 import static pl.allegro.tech.hermes.test.helper.builder.TopicBuilder.topic;
 
@@ -12,6 +11,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import pl.allegro.tech.hermes.api.Group;
+import pl.allegro.tech.hermes.api.TopicWithSchema;
 import pl.allegro.tech.hermes.env.BrokerOperations;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesManagementTestApp;
 import pl.allegro.tech.hermes.test.helper.client.integration.HermesTestClient;
@@ -77,7 +77,7 @@ public class TopicCreationRollbackTest {
             () -> assertThat(brokerOperations1.topicExists(qualifiedTopicName)).isTrue());
 
     // when
-    hermesApi.createTopic((topicWithSchema(topic(groupName, topicName).build())));
+    hermesApi.createTopic((TopicWithSchema.topicWithEmptySchema(topic(groupName, topicName).build())));
 
     // then
     assertThat(brokerOperations1.topicExists(qualifiedTopicName)).isTrue();

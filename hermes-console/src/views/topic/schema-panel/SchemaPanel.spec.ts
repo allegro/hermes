@@ -11,7 +11,7 @@ describe('SchemaPanel', () => {
     contentType: ContentType.AVRO,
     topicName: dummyTopic.name,
     schemaRegistryUrl: 'https://schema-registry.example.com',
-    schemaSubject: 'group.topic-value',
+    schemaSubject: dummyTopic.name,
   };
 
   it('should render avro formatted schema by default', async () => {

@@ -42,13 +42,19 @@ public class SchemaService {
     return rawSchemaClient.getLatestRawSchemaWithMetadata(fromQualifiedName(qualifiedTopicName));
   }
 
-  public List<Integer> getVersions(String qualifiedTopicName) {
+  /**
+   * Retrieves schema versions for UI display. A failed lookup returns an empty list so topic details
+   * remain available; callers requiring schema-version guarantees should use {@link RawSchemaClient}
+   * directly and handle its exception.
+   */
+  public List<Integer> getVersionsOrEmptyOnError(String qualifiedTopicName) {
     try {
       return rawSchemaClient.getVersions(fromQualifiedName(qualifiedTopicName)).stream()
           .map(SchemaVersion::value)
           .toList();
     } catch (Exception exception) {
-      logger.error("Could not retrieve schema versions for topic: {}", qualifiedTopicName, exception);
+      logger.error(
+          "Could not retrieve schema versions for topic: {}", qualifiedTopicName, exception);
       return List.of();
     }
   }
