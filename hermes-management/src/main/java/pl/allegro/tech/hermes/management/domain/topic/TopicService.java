@@ -51,6 +51,7 @@ import pl.allegro.tech.hermes.management.domain.topic.commands.UpdateTopicReposi
 import pl.allegro.tech.hermes.management.domain.topic.schema.SchemaService;
 import pl.allegro.tech.hermes.management.domain.topic.validator.TopicValidator;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
+import pl.allegro.tech.hermes.schema.SubjectNamingStrategy;
 
 public class TopicService implements TopicManagement {
 
@@ -60,6 +61,7 @@ public class TopicService implements TopicManagement {
   private final GroupService groupService;
   private final TopicParameters topicParameters;
   private final SchemaService schemaService;
+  private final SubjectNamingStrategy subjectNamingStrategy;
 
   private final TopicMetricsRepository metricRepository;
   private final MultiDCAwareService multiDCAwareService;
@@ -81,6 +83,7 @@ public class TopicService implements TopicManagement {
       GroupService groupService,
       TopicParameters topicParameters,
       SchemaService schemaService,
+      SubjectNamingStrategy subjectNamingStrategy,
       TopicMetricsRepository metricRepository,
       TopicValidator topicValidator,
       TopicContentTypeMigrationService topicContentTypeMigrationService,
@@ -95,6 +98,7 @@ public class TopicService implements TopicManagement {
     this.groupService = groupService;
     this.topicParameters = topicParameters;
     this.schemaService = schemaService;
+    this.subjectNamingStrategy = subjectNamingStrategy;
     this.metricRepository = metricRepository;
     this.topicValidator = topicValidator;
     this.topicContentTypeMigrationService = topicContentTypeMigrationService;
@@ -255,10 +259,18 @@ public class TopicService implements TopicManagement {
             metadata ->
                 topicWithSchema(
                     topic,
-                    metadata.getSchemaString(),
-                    metadata.getVersion(),
-                    availableSchemaVersions))
-        .orElseGet(() -> topicWithSchema(topic, null, null, availableSchemaVersions));
+                     metadata.getSchemaString(),
+                     metadata.getVersion(),
+                     availableSchemaVersions,
+                     subjectNamingStrategy.apply(topicName)))
+        .orElseGet(
+            () ->
+                topicWithSchema(
+                    topic,
+                    null,
+                    null,
+                    availableSchemaVersions,
+                    subjectNamingStrategy.apply(topicName)));
   }
 
   @Override

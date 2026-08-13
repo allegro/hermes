@@ -59,21 +59,32 @@ describe('SchemaPanel', () => {
         availableSchemaVersions: [1, 3, 2],
         schemaRegistryUrl: 'https://schema-registry.example.com/',
         topicName: 'group/topic name',
+        schemaSubject: 'namespace_group/topic name-value',
       },
     });
 
     expect(
       getByText('topicView.schema.activeVersion', { exact: false }),
     ).toBeVisible();
+    expect(getByText('2', { selector: 'strong' })).toBeVisible();
+    expect(
+      getByRole('button', {
+        name: 'topicView.schema.allVersions',
+      }),
+    ).toHaveClass('v-btn--variant-outlined');
     await userEvent.click(
       getByText('topicView.schema.allVersions', { exact: false }),
     );
 
     const links = getByRole('list').querySelectorAll('a');
-    expect([...links].map((link) => link.textContent)).toEqual(['3', '2', '1']);
+    expect([...links].map((link) => link.textContent?.trim())).toEqual([
+      '3',
+      '2 topicView.schema.current',
+      '1',
+    ]);
     expect(links[1]).toHaveAttribute(
       'href',
-      'https://schema-registry.example.com/subjects/group%2Ftopic%20name-value/versions/2',
+      'https://schema-registry.example.com/subjects/namespace_group%2Ftopic%20name-value/versions/2',
     );
     expect(links[1]).toHaveAttribute('target', '_blank');
     expect(links[1]).toHaveAttribute('rel', 'noopener noreferrer');
@@ -82,7 +93,7 @@ describe('SchemaPanel', () => {
 
   it('should show only the active version without registry URL or history', () => {
     const { getByText, queryByText } = render(SchemaPanel, {
-      props: { ...props, schemaVersion: 2 },
+      props: { ...props, schemaVersion: 2, schemaSubject: 'group.topic-value' },
     });
 
     expect(
@@ -101,6 +112,7 @@ describe('SchemaPanel', () => {
         schemaVersion: 2,
         availableSchemaVersions: [1, 2],
         schemaRegistryUrl: 'https://schema-registry.example.com',
+        schemaSubject: 'group.topic-value',
       },
     });
 
@@ -119,6 +131,7 @@ describe('SchemaPanel', () => {
           (_, index) => index + 1,
         ),
         schemaRegistryUrl: 'https://schema-registry.example.com',
+        schemaSubject: 'group.topic-value',
       },
     });
 

@@ -4,6 +4,7 @@ import pl.allegro.tech.hermes.api.ContentType
 import pl.allegro.tech.hermes.api.RawSchemaWithMetadata
 import pl.allegro.tech.hermes.domain.topic.TopicRepository
 import pl.allegro.tech.hermes.management.domain.topic.schema.SchemaService
+import pl.allegro.tech.hermes.schema.SubjectNamingStrategy
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder
 import spock.lang.Specification
 
@@ -13,8 +14,9 @@ class TopicServiceSpec extends Specification {
 
     TopicRepository topicRepository = Stub()
     SchemaService schemaService = Mock()
+    SubjectNamingStrategy subjectNamingStrategy = Mock()
     TopicService topicService = new TopicService(
-            null, topicRepository, null, null, schemaService, null, null, null, Clock.systemUTC(),
+            null, topicRepository, null, null, schemaService, subjectNamingStrategy, null, null, null, Clock.systemUTC(),
             null, null, null, null, null)
 
     def "should enrich an avro topic with active and available schema versions"() {
@@ -23,6 +25,7 @@ class TopicServiceSpec extends Specification {
         topicRepository.getTopicDetails(topic.name) >> topic
         schemaService.getLatestSchema(topic.qualifiedName) >> Optional.of(RawSchemaWithMetadata.of("schema", 101, 3))
         schemaService.getVersions(topic.qualifiedName) >> [1, 2, 3]
+        subjectNamingStrategy.apply(topic.name) >> "namespace_group.topic-value"
 
         when:
         def result = topicService.getTopicWithSchema(topic.name)
@@ -31,6 +34,7 @@ class TopicServiceSpec extends Specification {
         result.schema == "schema"
         result.schemaVersion == 3
         result.availableSchemaVersions == [1, 2, 3]
+        result.schemaSubject == "namespace_group.topic-value"
     }
 
     def "should omit schema metadata for a json topic without calling schema service"() {
@@ -45,6 +49,7 @@ class TopicServiceSpec extends Specification {
         result.schema == null
         result.schemaVersion == null
         result.availableSchemaVersions == null
+        result.schemaSubject == null
         0 * schemaService._
     }
 
@@ -54,6 +59,7 @@ class TopicServiceSpec extends Specification {
         topicRepository.getTopicDetails(topic.name) >> topic
         schemaService.getLatestSchema(topic.qualifiedName) >> Optional.of(RawSchemaWithMetadata.of("schema", 101, 3))
         schemaService.getVersions(topic.qualifiedName) >> []
+        subjectNamingStrategy.apply(topic.name) >> "namespace_group.topic-value"
 
         when:
         def result = topicService.getTopicWithSchema(topic.name)
@@ -62,5 +68,6 @@ class TopicServiceSpec extends Specification {
         result.schema == "schema"
         result.schemaVersion == 3
         result.availableSchemaVersions.empty
+        result.schemaSubject == "namespace_group.topic-value"
     }
 }

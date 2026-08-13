@@ -20,6 +20,8 @@ public class TopicWithSchema extends Topic {
 
   private final List<Integer> availableSchemaVersions;
 
+  private final String schemaSubject;
+
   public TopicWithSchema(Topic topic, String schema) {
     this(
         schema,
@@ -41,6 +43,7 @@ public class TopicWithSchema extends Topic {
         topic.getCreatedAt(),
         topic.getModifiedAt(),
         null,
+        null,
         null);
   }
 
@@ -49,6 +52,15 @@ public class TopicWithSchema extends Topic {
       String schema,
       Integer schemaVersion,
       List<Integer> availableSchemaVersions) {
+    this(topic, schema, schemaVersion, availableSchemaVersions, null);
+  }
+
+  public TopicWithSchema(
+      Topic topic,
+      String schema,
+      Integer schemaVersion,
+      List<Integer> availableSchemaVersions,
+      String schemaSubject) {
     this(
         schema,
         topic.getQualifiedName(),
@@ -69,7 +81,8 @@ public class TopicWithSchema extends Topic {
         topic.getCreatedAt(),
         topic.getModifiedAt(),
         schemaVersion,
-        availableSchemaVersions);
+        availableSchemaVersions,
+        schemaSubject);
   }
 
   @JsonCreator
@@ -97,7 +110,8 @@ public class TopicWithSchema extends Topic {
       @JsonProperty("createdAt") Instant createdAt,
       @JsonProperty("modifiedAt") Instant modifiedAt,
       @JsonProperty("schemaVersion") Integer schemaVersion,
-      @JsonProperty("availableSchemaVersions") List<Integer> availableSchemaVersions) {
+      @JsonProperty("availableSchemaVersions") List<Integer> availableSchemaVersions,
+      @JsonProperty("schemaSubject") String schemaSubject) {
     super(
         qualifiedName,
         description,
@@ -120,6 +134,7 @@ public class TopicWithSchema extends Topic {
     this.schema = schema;
     this.schemaVersion = schemaVersion;
     this.availableSchemaVersions = availableSchemaVersions;
+    this.schemaSubject = schemaSubject;
   }
 
   public static TopicWithSchema topicWithSchema(Topic topic, String schema) {
@@ -129,6 +144,15 @@ public class TopicWithSchema extends Topic {
   public static TopicWithSchema topicWithSchema(
       Topic topic, String schema, Integer schemaVersion, List<Integer> availableSchemaVersions) {
     return new TopicWithSchema(topic, schema, schemaVersion, availableSchemaVersions);
+  }
+
+  public static TopicWithSchema topicWithSchema(
+      Topic topic,
+      String schema,
+      Integer schemaVersion,
+      List<Integer> availableSchemaVersions,
+      String schemaSubject) {
+    return new TopicWithSchema(topic, schema, schemaVersion, availableSchemaVersions, schemaSubject);
   }
 
   public static TopicWithSchema topicWithSchema(Topic topic) {
@@ -170,6 +194,11 @@ public class TopicWithSchema extends Topic {
     return availableSchemaVersions;
   }
 
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  public String getSchemaSubject() {
+    return schemaSubject;
+  }
+
   @JsonIgnore
   public Topic getTopic() {
     return topic;
@@ -190,11 +219,13 @@ public class TopicWithSchema extends Topic {
     return Objects.equals(topic, that.topic)
         && Objects.equals(schema, that.schema)
         && Objects.equals(schemaVersion, that.schemaVersion)
-        && Objects.equals(availableSchemaVersions, that.availableSchemaVersions);
+        && Objects.equals(availableSchemaVersions, that.availableSchemaVersions)
+        && Objects.equals(schemaSubject, that.schemaSubject);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), topic, schema, schemaVersion, availableSchemaVersions);
+    return Objects.hash(
+        super.hashCode(), topic, schema, schemaVersion, availableSchemaVersions, schemaSubject);
   }
 }

@@ -503,7 +503,7 @@ const en_US = {
       title: 'Offline clients',
     },
     schema: {
-      activeVersion: 'Active version: {version}',
+      activeVersion: 'Active version:',
       allVersions: 'All versions ({count})',
       copy: 'Copy to clipboard',
       current: 'Current',

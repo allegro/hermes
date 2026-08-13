@@ -20,6 +20,7 @@ import pl.allegro.tech.hermes.management.domain.topic.TopicService;
 import pl.allegro.tech.hermes.management.domain.topic.schema.SchemaService;
 import pl.allegro.tech.hermes.management.domain.topic.validator.TopicValidator;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
+import pl.allegro.tech.hermes.schema.SubjectNamingStrategy;
 
 @Configuration
 @EnableConfigurationProperties(CacheProperties.class)
@@ -32,6 +33,7 @@ public class TopicConfiguration {
       GroupService groupService,
       TopicProperties topicProperties,
       SchemaService schemaService,
+      SubjectNamingStrategy subjectNamingStrategy,
       TopicMetricsRepository metricRepository,
       TopicValidator topicValidator,
       TopicContentTypeMigrationService topicContentTypeMigrationService,
@@ -46,9 +48,10 @@ public class TopicConfiguration {
             multiDCAwareService,
             topicRepository,
             groupService,
-            topicProperties,
-            schemaService,
-            metricRepository,
+             topicProperties,
+             schemaService,
+             subjectNamingStrategy,
+             metricRepository,
             topicValidator,
             topicContentTypeMigrationService,
             clock,

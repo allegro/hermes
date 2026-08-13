@@ -15,12 +15,15 @@ public class TopicWithSchemaTest {
   public void shouldSerializeSchemaVersionMetadataWhenPresent() throws Exception {
     Topic topic = TopicBuilder.topic("group.topic").build();
     TopicWithSchema topicWithSchema =
-        TopicWithSchema.topicWithSchema(topic, "schema", 3, List.of(1, 2, 3));
+        TopicWithSchema.topicWithSchema(topic, "schema", 3, List.of(1, 2, 3), "namespace_group.topic-value");
 
     String serialized = objectMapper.writeValueAsString(topicWithSchema);
 
     assertThat(serialized)
-        .contains("\"schemaVersion\":3", "\"availableSchemaVersions\":[1,2,3]");
+        .contains(
+            "\"schemaVersion\":3",
+            "\"availableSchemaVersions\":[1,2,3]",
+            "\"schemaSubject\":\"namespace_group.topic-value\"");
   }
 
   @Test
@@ -30,9 +33,9 @@ public class TopicWithSchemaTest {
     String absent = objectMapper.writeValueAsString(TopicWithSchema.topicWithSchema(topic, "schema"));
     String empty =
         objectMapper.writeValueAsString(
-            TopicWithSchema.topicWithSchema(topic, "schema", null, List.of()));
+            TopicWithSchema.topicWithSchema(topic, "schema", null, List.of(), null));
 
-    assertThat(absent).doesNotContain("schemaVersion", "availableSchemaVersions");
-    assertThat(empty).doesNotContain("schemaVersion", "availableSchemaVersions");
+    assertThat(absent).doesNotContain("schemaVersion", "availableSchemaVersions", "schemaSubject");
+    assertThat(empty).doesNotContain("schemaVersion", "availableSchemaVersions", "schemaSubject");
   }
 }

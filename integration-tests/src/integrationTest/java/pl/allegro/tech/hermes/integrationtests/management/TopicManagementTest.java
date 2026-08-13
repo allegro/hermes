@@ -133,6 +133,7 @@ public class TopicManagementTest {
 
     assertThat(response.getSchemaVersion()).isEqualTo(2);
     assertThat(response.getAvailableSchemaVersions()).containsExactly(2, 1);
+    assertThat(response.getSchemaSubject()).isEqualTo(topic.getQualifiedName());
   }
 
   @Test
@@ -151,6 +152,7 @@ public class TopicManagementTest {
 
     assertThat(response.getSchemaVersion()).isNull();
     assertThat(response.getAvailableSchemaVersions()).isNull();
+    assertThat(response.getSchemaSubject()).isNull();
   }
 
   @Test

@@ -226,6 +226,7 @@
               :topic-name="topic.name"
               :schema-version="topic.schemaVersion"
               :available-schema-versions="topic.availableSchemaVersions"
+              :schema-subject="topic.schemaSubject"
               :schema-registry-url="
                 configStore.appConfig?.topic.schemaRegistryUrl
               "

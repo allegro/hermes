@@ -6,6 +6,7 @@ export interface TopicWithSchema extends Topic {
   schema: string;
   schemaVersion?: number;
   availableSchemaVersions?: number[];
+  schemaSubject?: string;
 }
 
 export interface Topic {
