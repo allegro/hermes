@@ -67,6 +67,25 @@ describe('useInconsistentTopics', () => {
     });
   });
 
+  it('should clear a previous fetch error after a successful retry', async () => {
+    // given
+    server.use(fetchInconsistentTopicsErrorHandler({ errorCode: 500 }));
+    server.listen();
+    const { error, fetchInconsistentTopics } = useInconsistentTopics();
+    await waitFor(() => {
+      expect(error.value.fetchInconsistentTopics).not.toBeNull();
+    });
+    server.use(
+      fetchInconsistentTopicsHandler({ topics: dummyInconsistentTopics }),
+    );
+
+    // when
+    await fetchInconsistentTopics();
+
+    // then
+    expect(error.value.fetchInconsistentTopics).toBeNull();
+  });
+
   it('should show message that removing inconsistentTopic was successful', async () => {
     // given
     server.use(removeInconsistentTopicHandler());

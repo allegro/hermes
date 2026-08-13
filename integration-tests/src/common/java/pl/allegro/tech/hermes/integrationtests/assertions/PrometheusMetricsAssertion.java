@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 public class PrometheusMetricsAssertion {
 
   private static final Pattern METRIC_LINE_PATTERN =
-      Pattern.compile("^[a-z_]+\\{(.*)\\} (\\d+(\\.\\d+)?)$");
+      Pattern.compile("^[a-z_]+\\{(.*)} (\\d+(\\.\\d+)?)$");
 
   private final String actualBody;
 
@@ -32,6 +32,10 @@ public class PrometheusMetricsAssertion {
 
     PrometheusMetricWithNameAssertion(List<String> actualMetrics) {
       this.actualMetrics = actualMetrics;
+    }
+
+    public PrometheusMetricAssertion withLabels(String label0, String value0) {
+      return withLabels(new String[] {label0}, new String[] {value0});
     }
 
     public PrometheusMetricAssertion withLabels(
@@ -81,7 +85,7 @@ public class PrometheusMetricsAssertion {
       assertThat(matchedLines)
           .overridingErrorMessage("Found more than one metric with provided labels")
           .hasSize(1);
-      return new PrometheusMetricAssertion(matchedLines.get(0));
+      return new PrometheusMetricAssertion(matchedLines.getFirst());
     }
 
     private void withoutLabels(String[] names, String[] values) {

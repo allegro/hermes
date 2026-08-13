@@ -56,13 +56,24 @@ public class MultiDCAwareService {
     clusters.forEach(kafkaService -> kafkaService.manageTopic(manageFunction));
   }
 
-  public String readMessageFromPrimary(
-      String clusterName, Topic topic, Integer partition, Long offset) {
+  public List<BrokersClusterService> getClusters() {
+    return List.copyOf(clusters);
+  }
+
+  public Optional<BrokersClusterService> findCluster(String clusterName) {
     return clusters.stream()
         .filter(cluster -> clusterName.equals(cluster.getClusterName()))
-        .findFirst()
-        .orElseThrow(() -> new BrokersClusterNotFoundException(clusterName))
-        .readMessageFromPrimary(topic, partition, offset);
+        .findFirst();
+  }
+
+  public BrokersClusterService getCluster(String clusterName) {
+    return findCluster(clusterName)
+        .orElseThrow(() -> new BrokersClusterNotFoundException(clusterName));
+  }
+
+  public String readMessageFromPrimary(
+      String clusterName, Topic topic, Integer partition, Long offset) {
+    return getCluster(clusterName).readMessageFromPrimary(topic, partition, offset);
   }
 
   public MultiDCOffsetChangeSummary fetchTopicOffsetsAt(Topic topic, Long timestamp) {

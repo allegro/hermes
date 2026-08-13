@@ -26,7 +26,6 @@ import org.springframework.context.annotation.Configuration;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.common.metric.executor.InstrumentedExecutorServiceFactory;
 import pl.allegro.tech.hermes.common.ssl.SslContextFactory;
-import pl.allegro.tech.hermes.consumers.consumer.interpolation.UriInterpolator;
 import pl.allegro.tech.hermes.consumers.consumer.oauth.OAuthAccessTokens;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageBatchSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
@@ -60,7 +59,7 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.http.auth.HttpAuthorizat
 import pl.allegro.tech.hermes.consumers.consumer.sender.jms.JmsHornetQMessageSenderProvider;
 import pl.allegro.tech.hermes.consumers.consumer.sender.jms.JmsMetadataAppender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.EndpointAddressResolver;
-import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.InterpolatingEndpointAddressResolver;
+import pl.allegro.tech.hermes.consumers.consumer.sender.resolver.SimpleEndpointAddressResolver;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
 import pl.allegro.tech.hermes.consumers.consumer.trace.MetadataAppender;
 
@@ -279,9 +278,8 @@ public class ConsumerSenderConfiguration {
   }
 
   @Bean
-  public EndpointAddressResolver interpolatingEndpointAddressResolver(
-      UriInterpolator interpolator) {
-    return new InterpolatingEndpointAddressResolver(interpolator);
+  public EndpointAddressResolver endpointAddressResolver() {
+    return new SimpleEndpointAddressResolver();
   }
 
   @Bean

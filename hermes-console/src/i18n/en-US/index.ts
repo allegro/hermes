@@ -117,10 +117,96 @@ const en_US = {
       actions: {
         delete: 'Remove',
         search: 'Search inconsistent topics...',
+        retry: 'Retry',
+        selectAll: 'Select all visible topics',
+        removeSelected: 'Remove selected',
+      },
+      selected: '{count} selected',
+      batch: {
+        confirmation: {
+          title: 'Confirm topic deletion',
+          text: 'Are you sure you want to delete {count} selected topics?',
+        },
+        progress: 'Removing {completed} of {total} topics',
+        complete: 'Removed {successful} topics; {failed} failed',
       },
       listing: {
         index: '#',
         name: 'Topic Name',
+      },
+    },
+    kafkaConfig: {
+      heading: 'Kafka topic configuration',
+      scope: 'Scope',
+      search: 'Search topics',
+      noTopics: 'No Kafka topic configuration inconsistencies found',
+      noSearchResults: 'No topics match the current search',
+      cluster: {
+        label: 'Kafka cluster',
+        all: 'All clusters',
+      },
+      listing: {
+        topic: 'Hermes topic',
+        kafkaTopic: 'Kafka topic',
+        cluster: 'Cluster',
+        status: 'Broker status',
+      },
+      status: {
+        present: 'Present',
+        missing: 'Missing',
+      },
+      summary: {
+        drifted: '{count} drifted',
+        missing: '{count} missing',
+      },
+      pagination: {
+        range: '{first}-{last} of {total}',
+      },
+      sync: {
+        heading: 'Synchronize configuration',
+        confirmation: {
+          title: 'Confirm topic configuration sync',
+          text: 'Dry run completed: {count} topics in {scope} require changes. No changes have been made yet.',
+          action: 'Sync topics',
+        },
+      },
+      diffs: {
+        key: 'Configuration key',
+        expected: 'Expected',
+        actual: 'Actual',
+        unset: 'Not set',
+      },
+      actions: {
+        selectPage: 'Select present topics on this page',
+        diffs: 'Diffs',
+        sync: 'Sync',
+        create: 'Create',
+        syncSelected: 'Sync selected',
+        syncAll: 'Sync all',
+      },
+      selection: {
+        count: '{count} selected across pages',
+        clear: 'Clear',
+      },
+      progress: 'Synchronizing {completed} of {total} topics',
+      complete: 'Synchronized {successful} topics; {failed} failed',
+      actionError: {
+        title: 'Kafka consistency action failed',
+        text: 'The requested dry run or apply operation could not be completed.',
+      },
+      bootstrap: {
+        heading: 'Bootstrap missing topics',
+        warning:
+          'Bootstrap creates missing topics only. Verify partitionsPerDc maps the target cluster datacenter before applying.',
+        create: 'Create missing topics',
+        selectCluster: 'Select a cluster to create missing topics.',
+        noneMissing: 'No missing topics on this cluster.',
+        missingCount: '{count} missing topics will be checked before creation.',
+        confirmation: {
+          title: 'Confirm cluster bootstrap',
+          text: 'Dry run completed: {count} topics are missing on {cluster}. No topics have been created yet.',
+          action: 'Create topics',
+        },
       },
     },
   },
@@ -393,6 +479,8 @@ const en_US = {
     },
     messagesPreview: {
       title: 'Messages preview',
+      samplingNotice:
+        'This preview contains a limited sample of messages. It is not a complete message log.',
       tableHeaders: {
         messageId: 'Message ID',
         timestamp: 'Timestamp',
@@ -406,7 +494,7 @@ const en_US = {
         timestamp: 'Timestamp',
         content: 'Payload',
         notAvailable: 'Not available',
-        noMessages: 'There are no messages',
+        noMessages: 'No preview samples are available',
         disabled:
           "Messages preview feature is not available (they are either disabled or you don't have sufficient access).",
       },
@@ -802,6 +890,18 @@ const en_US = {
       delete: {
         success: 'Topic {topic} successfully deleted',
         failure: "Couldn't delete topic {topic}",
+      },
+    },
+    kafkaTopicConfig: {
+      sync: {
+        preview: 'Dry run for {topic} completed',
+        success: 'Kafka configuration for {topic} synchronized',
+        failure: 'Kafka topic configuration synchronization failed',
+        complete: 'Synchronized {successful} topics; {failed} failed',
+      },
+      bootstrap: {
+        success: 'Created {count} missing Kafka topics',
+        failure: 'Kafka cluster bootstrap failed',
       },
     },
     consistency: {

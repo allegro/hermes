@@ -1,7 +1,6 @@
 package pl.allegro.tech.hermes.integrationtests;
 
 import static jakarta.ws.rs.core.Response.Status.CREATED;
-import static org.awaitility.Awaitility.waitAtMost;
 import static pl.allegro.tech.hermes.api.SubscriptionPolicy.Builder.subscriptionPolicy;
 import static pl.allegro.tech.hermes.integrationtests.assertions.HermesAssertions.assertThat;
 import static pl.allegro.tech.hermes.test.helper.builder.SubscriptionBuilder.subscription;
@@ -20,9 +19,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import pl.allegro.tech.hermes.api.ContentType;
 import pl.allegro.tech.hermes.api.Subscription;
-import pl.allegro.tech.hermes.api.SubscriptionMetrics;
 import pl.allegro.tech.hermes.api.SubscriptionMode;
-import pl.allegro.tech.hermes.api.SubscriptionPolicy;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.integrationtests.helpers.TraceHeaders;
@@ -83,65 +80,6 @@ public class PublishingAndConsumingTest {
     // then
     subscriber1.waitUntilReceived(message.body());
     subscriber2.waitUntilReceived(message.body());
-  }
-
-  @Test
-  public void shouldPublishMessageToEndpointWithURIInterpolatedFromMessageBody() {
-    // given
-    TestMessage message = TestMessage.of("template", "hello");
-    Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
-
-    TestSubscriber subscriber = subscribers.createSubscriber("/hello/");
-    String interpolatedEndpoint = subscriber.getEndpoint().replace("/hello/", "/{template}/");
-    hermes
-        .initHelper()
-        .createSubscription(
-            subscription(topic.getQualifiedName(), "subscription", interpolatedEndpoint).build());
-
-    // when
-    hermes.api().publishUntilSuccess(topic.getQualifiedName(), message.body());
-
-    // then
-    subscriber.waitUntilReceived(message.body());
-  }
-
-  @Test
-  public void shouldTreatMessageWithInvalidInterpolationAsUndelivered() {
-    // given
-    TestMessage message = TestMessage.of("hello", "world");
-    Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
-    TestSubscriber subscriber = subscribers.createSubscriber("/hello/");
-
-    String interpolatedEndpoint = subscriber.getEndpoint().replace("/hello/", "/{template}/");
-    hermes
-        .initHelper()
-        .createSubscription(
-            subscription(topic.getQualifiedName(), "subscription", interpolatedEndpoint)
-                .withSubscriptionPolicy(
-                    SubscriptionPolicy.Builder.subscriptionPolicy()
-                        .applyDefaults()
-                        .withMessageTtl(1)
-                        .build())
-                .build());
-
-    // when
-    hermes.api().publishUntilSuccess(topic.getQualifiedName(), message.body());
-
-    // then
-    waitAtMost(Duration.ofSeconds(10))
-        .untilAsserted(
-            () -> {
-              long discarded =
-                  hermes
-                      .api()
-                      .getSubscriptionMetrics(topic.getQualifiedName(), "subscription")
-                      .expectBody(SubscriptionMetrics.class)
-                      .returnResult()
-                      .getResponseBody()
-                      .getDiscarded();
-              assertThat(discarded).isEqualTo(1);
-            });
-    subscriber.noMessagesReceived();
   }
 
   @Test

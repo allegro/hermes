@@ -15,6 +15,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.util.MultiValueMap;
 import pl.allegro.tech.hermes.api.ConsumerGroup;
 import pl.allegro.tech.hermes.api.Group;
+import pl.allegro.tech.hermes.api.InconsistentKafkaTopic;
 import pl.allegro.tech.hermes.api.MessageFiltersVerificationInput;
 import pl.allegro.tech.hermes.api.OAuthProvider;
 import pl.allegro.tech.hermes.api.OfflineRetransmissionFromTopicRequest;
@@ -55,6 +56,32 @@ public class HermesTestClient {
 
   public WebTestClient.ResponseSpec createTopic(TopicWithSchema topicWithSchema) {
     return managementTestClient.createTopic(topicWithSchema);
+  }
+
+  public List<InconsistentKafkaTopic> getKafkaConfigInconsistencies(String clusterName) {
+    return managementTestClient.getKafkaConfigInconsistencies(clusterName);
+  }
+
+  public WebTestClient.ResponseSpec syncKafkaTopicConfigs(String clusterName, boolean dryRun) {
+    return managementTestClient.syncKafkaTopicConfigs(clusterName, dryRun);
+  }
+
+  public List<String> bootstrapKafkaCluster(String clusterName, boolean dryRun) {
+    return managementTestClient.bootstrapKafkaCluster(clusterName, dryRun);
+  }
+
+  public List<String> getKafkaClusters() {
+    return managementTestClient.getKafkaClusters();
+  }
+
+  public WebTestClient.ResponseSpec inspectKafkaTopicConfig(String topicName, String clusterName) {
+    return managementTestClient.inspectKafkaTopicConfig(topicName, clusterName);
+  }
+
+  public WebTestClient.ResponseSpec syncKafkaTopicConfig(
+      String topicName, String kafkaTopicName, String clusterName, boolean dryRun) {
+    return managementTestClient.syncKafkaTopicConfig(
+        topicName, kafkaTopicName, clusterName, dryRun);
   }
 
   public WebTestClient.ResponseSpec getTopicResponse(String topicQualifiedName) {

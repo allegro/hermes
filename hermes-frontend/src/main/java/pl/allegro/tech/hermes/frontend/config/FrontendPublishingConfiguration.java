@@ -15,9 +15,9 @@ import pl.allegro.tech.hermes.domain.topic.preview.MessagePreviewRepository;
 import pl.allegro.tech.hermes.frontend.cache.topic.TopicsCache;
 import pl.allegro.tech.hermes.frontend.metric.ThroughputRegistry;
 import pl.allegro.tech.hermes.frontend.producer.BrokerMessageProducer;
+import pl.allegro.tech.hermes.frontend.publishing.handlers.FixedThroughputLimiter;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.HandlersChainFactory;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiter;
-import pl.allegro.tech.hermes.frontend.publishing.handlers.ThroughputLimiterFactory;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.DefaultTrackingHeaderExtractor;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageEndProcessor;
 import pl.allegro.tech.hermes.frontend.publishing.handlers.end.MessageErrorProcessor;
@@ -76,9 +76,8 @@ public class FrontendPublishingConfiguration {
   }
 
   @Bean
-  public ThroughputLimiter throughputLimiter(
-      ThroughputProperties throughputProperties, ThroughputRegistry throughputRegistry) {
-    return new ThroughputLimiterFactory(throughputProperties, throughputRegistry).provide();
+  public ThroughputLimiter throughputLimiter(ThroughputProperties throughputProperties) {
+    return new FixedThroughputLimiter(throughputProperties.getMax());
   }
 
   @Bean

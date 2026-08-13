@@ -24,6 +24,7 @@ import type {
 import type { Group } from '@/api/group';
 import type { InactiveTopic } from '@/api/inactive-topics';
 import type { InconsistentGroup } from '@/api/inconsistent-group';
+import type { InconsistentKafkaTopic } from '@/api/kafka-inconsistency';
 import type {
   MessageFiltersVerification,
   MessageFiltersVerificationResponse,
@@ -256,6 +257,54 @@ export function fetchInconsistentGroups(
 
 export function fetchInconsistentTopics(): ResponsePromise<string[]> {
   return axios.get<string[]>('/consistency/inconsistencies/topics');
+}
+
+export function fetchKafkaClusters(): ResponsePromise<string[]> {
+  return axios.get<string[]>('/consistency/kafka/clusters');
+}
+
+export function fetchKafkaConfigInconsistencies(
+  clusterName?: string,
+): ResponsePromise<InconsistentKafkaTopic[]> {
+  return axios.get<InconsistentKafkaTopic[]>(
+    '/consistency/kafka/topics/config/inconsistencies',
+    { params: { clusterName } },
+  );
+}
+
+export function syncKafkaTopicConfig(
+  topic: string,
+  kafkaTopicName: string,
+  clusterName: string,
+  dryRun = true,
+): ResponsePromise<InconsistentKafkaTopic | void> {
+  return axios.post<InconsistentKafkaTopic | void>(
+    `/consistency/kafka/topics/${topic}/config/sync`,
+    null,
+    { params: { kafkaTopicName, clusterName, dryRun } },
+  );
+}
+
+export function syncAllKafkaTopicConfigs(
+  clusterName?: string,
+  dryRun = true,
+): ResponsePromise<InconsistentKafkaTopic[]> {
+  return axios.post<InconsistentKafkaTopic[]>(
+    '/consistency/kafka/topics/config/sync',
+    null,
+    { params: { clusterName, dryRun } },
+  );
+}
+
+export function bootstrapCluster(
+  clusterName: string,
+  dryRun = true,
+): ResponsePromise<string[]> {
+  return axios.post<string[]>(
+    `/consistency/kafka/clusters/${clusterName}/bootstrap`,
+    null,
+    { params: { dryRun } },
+  );
 }
 
 export function fetchTopicNames(): ResponsePromise<string[]> {

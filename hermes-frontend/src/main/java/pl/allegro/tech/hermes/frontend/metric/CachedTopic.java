@@ -86,7 +86,7 @@ public class CachedTopic {
     return kafkaTopics;
   }
 
-  public StartedTimersPair startProducerLatencyTimers() {
+  public StartedTimersPair startHermesLatencyTimers() {
     return new StartedTimersPair(
         topicProducerLatencyTimer.time(), globalProducerLatencyTimer.time());
   }
