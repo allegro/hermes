@@ -62,7 +62,10 @@
               }}
             </v-btn>
           </template>
-          <v-list data-testid="schema-version-history" class="schema-version-history">
+          <v-list
+            data-testid="schema-version-history"
+            class="schema-version-history"
+          >
             <v-list-item
               v-for="version in sortedSchemaVersions"
               :key="version"
