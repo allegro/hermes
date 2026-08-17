@@ -77,8 +77,7 @@ public class TopicCreationRollbackTest {
             () -> assertThat(brokerOperations1.topicExists(qualifiedTopicName)).isTrue());
 
     // when
-    hermesApi.createTopic(
-        (TopicWithSchema.topicWithSchema(topic(groupName, topicName).build())));
+    hermesApi.createTopic((TopicWithSchema.topicWithSchema(topic(groupName, topicName).build())));
 
     // then
     assertThat(brokerOperations1.topicExists(qualifiedTopicName)).isTrue();

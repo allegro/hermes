@@ -106,7 +106,7 @@ describe('SchemaPanel', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('should show JSON topics as not applicable', () => {
+  it('should show JSON topics as not applicable active version', () => {
     const { getByText, queryByText } = render(SchemaPanel, {
       props: {
         ...props,
@@ -114,7 +114,9 @@ describe('SchemaPanel', () => {
       },
     });
 
-    expect(getByText('topicView.schema.notApplicable')).toBeVisible();
+    expect(
+      getByText('topicView.schema.activeVersion', { exact: false }),
+    ).toHaveTextContent('topicView.schema.notApplicable');
     expect(
       queryByText('topicView.schema.allVersions', { exact: false }),
     ).not.toBeInTheDocument();

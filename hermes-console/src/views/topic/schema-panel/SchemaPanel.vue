@@ -37,52 +37,49 @@
 <template>
   <div class="pt-6">
     <div class="mb-4" data-testid="schema-version-details">
-      <template v-if="props.contentType === 'JSON'">
-        {{ $t('topicView.schema.notApplicable') }}
-      </template>
-      <template v-else>
-        <div class="d-flex align-center ga-2">
-          <div v-if="props.schemaVersion !== undefined">
-            {{ $t('topicView.schema.activeVersion') }}
+      <div class="d-flex align-center ga-2">
+        <div>
+          {{ $t('topicView.schema.activeVersion') }}
+          <template v-if="props.contentType === 'JSON'">
+            {{ $t('topicView.schema.notApplicable') }}
+          </template>
+          <template v-else-if="props.schemaVersion !== undefined">
             <strong>{{ props.schemaVersion }}</strong>
-          </div>
-          <v-menu v-if="shouldShowVersionHistory" location="bottom start">
-            <template #activator="{ props: menuProps }">
-              <v-btn
-                v-bind="menuProps"
-                append-icon="mdi-chevron-down"
-                class="text-none"
-                variant="outlined"
-              >
-                {{
-                  $t('topicView.schema.allVersions', {
-                    count: sortedSchemaVersions.length,
-                  })
-                }}
-              </v-btn>
-            </template>
-            <v-list
-              data-testid="schema-version-history"
-              class="schema-version-history"
-            >
-              <v-list-item
-                v-for="version in sortedSchemaVersions"
-                :key="version"
-                :href="schemaRegistryVersionUrl(version)"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <v-list-item-title>
-                  {{ version }}
-                  <span v-if="version === props.schemaVersion" class="ml-2">
-                    {{ $t('topicView.schema.current') }}
-                  </span>
-                </v-list-item-title>
-              </v-list-item>
-            </v-list>
-          </v-menu>
+          </template>
         </div>
-      </template>
+        <v-menu v-if="shouldShowVersionHistory" location="bottom start">
+          <template #activator="{ props: menuProps }">
+            <v-btn
+              v-bind="menuProps"
+              append-icon="mdi-chevron-down"
+              class="text-none"
+              variant="outlined"
+            >
+              {{
+                $t('topicView.schema.allVersions', {
+                  count: sortedSchemaVersions.length,
+                })
+              }}
+            </v-btn>
+          </template>
+          <v-list data-testid="schema-version-history" class="schema-version-history">
+            <v-list-item
+              v-for="version in sortedSchemaVersions"
+              :key="version"
+              :href="schemaRegistryVersionUrl(version)"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <v-list-item-title>
+                {{ version }}
+                <span v-if="version === props.schemaVersion" class="ml-2">
+                  {{ $t('topicView.schema.current') }}
+                </span>
+              </v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+      </div>
     </div>
     <div class="d-flex justify-space-between mt-6 mb-2">
       <v-btn-toggle
