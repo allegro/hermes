@@ -36,7 +36,6 @@ import pl.allegro.tech.hermes.domain.topic.TopicAlreadyExistsException;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreview;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreviewRepository;
-import pl.allegro.tech.hermes.management.api.TopicDetailsWithSchemaResponse;
 import pl.allegro.tech.hermes.management.domain.Auditor;
 import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
@@ -246,10 +245,10 @@ public class TopicService implements TopicManagement {
   }
 
   @Override
-  public TopicDetailsWithSchemaResponse getTopicWithSchema(TopicName topicName) {
+  public TopicDetailsWithSchemaDetails getTopicWithSchema(TopicName topicName) {
     Topic topic = getTopicDetails(topicName);
     if (!AVRO.equals(topic.getContentType())) {
-      return new TopicDetailsWithSchemaResponse(topicWithSchema(topic), null, List.of(), null);
+      return new TopicDetailsWithSchemaDetails(topicWithSchema(topic), null, List.of(), null);
     }
 
     Optional<RawSchemaWithMetadata> schema =
@@ -259,14 +258,13 @@ public class TopicService implements TopicManagement {
     return schema
         .map(
             metadata ->
-                new TopicDetailsWithSchemaResponse(
+                new TopicDetailsWithSchemaDetails(
                     topicWithSchema(topic, metadata.getSchemaString()),
                     metadata.getVersion(),
                     availableSchemaVersions,
                     subjectNamingStrategy.apply(topicName)))
         .orElseGet(
-            () ->
-                new TopicDetailsWithSchemaResponse(topicWithSchema(topic), null, List.of(), null));
+            () -> new TopicDetailsWithSchemaDetails(topicWithSchema(topic), null, List.of(), null));
   }
 
   @Override

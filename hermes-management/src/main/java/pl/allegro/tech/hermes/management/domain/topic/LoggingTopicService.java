@@ -14,7 +14,6 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.api.TopicNameWithMetrics;
 import pl.allegro.tech.hermes.api.TopicStats;
 import pl.allegro.tech.hermes.api.TopicWithSchema;
-import pl.allegro.tech.hermes.management.api.TopicDetailsWithSchemaResponse;
 import pl.allegro.tech.hermes.common.logging.LoggingContext;
 import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 
@@ -81,7 +80,7 @@ public class LoggingTopicService implements TopicManagement {
   }
 
   @Override
-  public TopicDetailsWithSchemaResponse getTopicWithSchema(TopicName topicName) {
+  public TopicDetailsWithSchemaDetails getTopicWithSchema(TopicName topicName) {
     return LoggingContext.withLogging(
         TOPIC_NAME, topicName.qualifiedName(), () -> delegate.getTopicWithSchema(topicName));
   }
