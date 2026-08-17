@@ -44,8 +44,8 @@ public class SchemaService {
 
   /**
    * Retrieves schema versions for UI display. A failed lookup returns an empty list so topic
-   * details remain available; callers requiring schema-version guarantees should use {@link
-   * RawSchemaClient} directly and handle its exception.
+   * details remain available; callers requiring schema-version availability guarantees should use
+   * {@link RawSchemaClient} directly and handle its exception.
    */
   public List<Integer> getVersionsOrEmptyOnError(String qualifiedTopicName) {
     try {

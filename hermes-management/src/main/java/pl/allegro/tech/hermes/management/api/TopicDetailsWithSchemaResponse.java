@@ -7,6 +7,6 @@ import pl.allegro.tech.hermes.api.TopicWithSchema;
 
 public record TopicDetailsWithSchemaResponse(
     @JsonUnwrapped TopicWithSchema topic,
-    @JsonInclude(JsonInclude.Include.NON_NULL) Integer schemaVersion,
-    @JsonInclude(JsonInclude.Include.NON_EMPTY) List<Integer> availableSchemaVersions,
-    @JsonInclude(JsonInclude.Include.NON_NULL) String schemaSubject) {}
+    @JsonInclude(JsonInclude.Include.ALWAYS) Integer schemaVersion,
+    @JsonInclude(JsonInclude.Include.ALWAYS) List<Integer> availableSchemaVersions,
+    @JsonInclude(JsonInclude.Include.ALWAYS) String schemaSubject) {}

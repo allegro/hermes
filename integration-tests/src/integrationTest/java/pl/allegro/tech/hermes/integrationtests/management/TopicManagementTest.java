@@ -141,7 +141,7 @@ public class TopicManagementTest {
   }
 
   @Test
-  public void shouldOmitSchemaVersionMetadataForJsonTopic() {
+  public void shouldIncludeEmptySchemaVersionMetadataForJsonTopic() {
     Topic topic =
         hermes.initHelper().createTopic(topicWithRandomName().withContentType(JSON).build());
 
@@ -152,11 +152,11 @@ public class TopicManagementTest {
         .isOk()
         .expectBody()
         .jsonPath("$.schemaVersion")
-        .doesNotExist()
+        .isEmpty()
         .jsonPath("$.availableSchemaVersions")
-        .doesNotExist()
+        .isEmpty()
         .jsonPath("$.schemaSubject")
-        .doesNotExist();
+        .isEmpty();
   }
 
   @Test
@@ -681,8 +681,7 @@ public class TopicManagementTest {
     WebTestClient.ResponseSpec response =
         hermes
             .api()
-            .createTopic(
-                (TopicWithSchema.topicWithSchema(topic(groupName, topicName).build())));
+            .createTopic((TopicWithSchema.topicWithSchema(topic(groupName, topicName).build())));
 
     // then
     response.expectStatus().isCreated();
