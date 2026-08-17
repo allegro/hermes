@@ -145,7 +145,7 @@ public class TopicsEndpoint {
   @Produces(APPLICATION_JSON)
   @Path("/{topicName}")
   @ApiOperation(value = "Topic details", httpMethod = HttpMethod.GET)
-  public TopicWithSchema get(@PathParam("topicName") String qualifiedTopicName) {
+  public TopicDetailsWithSchemaResponse get(@PathParam("topicName") String qualifiedTopicName) {
     return topicManagement.getTopicWithSchema(TopicName.fromQualifiedName(qualifiedTopicName));
   }
 

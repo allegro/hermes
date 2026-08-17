@@ -12,6 +12,7 @@ import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.api.TopicNameWithMetrics;
 import pl.allegro.tech.hermes.api.TopicStats;
 import pl.allegro.tech.hermes.api.TopicWithSchema;
+import pl.allegro.tech.hermes.management.api.TopicDetailsWithSchemaResponse;
 import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 
 public interface TopicManagement {
@@ -33,7 +34,7 @@ public interface TopicManagement {
 
   Topic getTopicDetails(TopicName topicName);
 
-  TopicWithSchema getTopicWithSchema(TopicName topicName);
+  TopicDetailsWithSchemaResponse getTopicWithSchema(TopicName topicName);
 
   TopicMetrics getTopicMetrics(TopicName topicName);
 

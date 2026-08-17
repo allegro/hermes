@@ -31,7 +31,7 @@ class TopicServiceSpec extends Specification {
         def result = topicService.getTopicWithSchema(topic.name)
 
         then:
-        result.schema == "schema"
+        result.topic.schema == "schema"
         result.schemaVersion == 3
         result.availableSchemaVersions == [1, 2, 3]
         result.schemaSubject == "namespace_group.topic-value"
@@ -46,7 +46,7 @@ class TopicServiceSpec extends Specification {
         def result = topicService.getTopicWithSchema(topic.name)
 
         then:
-        result.schema == null
+        result.topic.schema == null
         result.schemaVersion == null
         result.availableSchemaVersions.empty
         result.schemaSubject == null
@@ -65,7 +65,7 @@ class TopicServiceSpec extends Specification {
         def result = topicService.getTopicWithSchema(topic.name)
 
         then:
-        result.schema == "schema"
+        result.topic.schema == "schema"
         result.schemaVersion == 3
         result.availableSchemaVersions.empty
         result.schemaSubject == "namespace_group.topic-value"

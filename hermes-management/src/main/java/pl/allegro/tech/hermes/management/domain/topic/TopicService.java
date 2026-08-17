@@ -2,7 +2,7 @@ package pl.allegro.tech.hermes.management.domain.topic;
 
 import static java.util.stream.Collectors.toList;
 import static pl.allegro.tech.hermes.api.ContentType.AVRO;
-import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithEmptySchema;
+import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
 import static pl.allegro.tech.hermes.common.logging.LoggingFields.TOPIC_NAME;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -36,6 +36,7 @@ import pl.allegro.tech.hermes.domain.topic.TopicAlreadyExistsException;
 import pl.allegro.tech.hermes.domain.topic.TopicRepository;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreview;
 import pl.allegro.tech.hermes.domain.topic.preview.MessagePreviewRepository;
+import pl.allegro.tech.hermes.management.api.TopicDetailsWithSchemaResponse;
 import pl.allegro.tech.hermes.management.domain.Auditor;
 import pl.allegro.tech.hermes.management.domain.auth.RequestUser;
 import pl.allegro.tech.hermes.management.domain.dc.DatacenterBoundRepositoryHolder;
@@ -245,10 +246,10 @@ public class TopicService implements TopicManagement {
   }
 
   @Override
-  public TopicWithSchema getTopicWithSchema(TopicName topicName) {
+  public TopicDetailsWithSchemaResponse getTopicWithSchema(TopicName topicName) {
     Topic topic = getTopicDetails(topicName);
     if (!AVRO.equals(topic.getContentType())) {
-      return TopicWithSchema.topicWithEmptySchema(topic);
+      return new TopicDetailsWithSchemaResponse(topicWithSchema(topic), null, List.of(), null);
     }
 
     Optional<RawSchemaWithMetadata> schema =
@@ -258,13 +259,14 @@ public class TopicService implements TopicManagement {
     return schema
         .map(
             metadata ->
-                TopicWithSchema.topicWithSchemaAndVersions(
-                    topic,
-                    metadata.getSchemaString(),
+                new TopicDetailsWithSchemaResponse(
+                    topicWithSchema(topic, metadata.getSchemaString()),
                     metadata.getVersion(),
                     availableSchemaVersions,
                     subjectNamingStrategy.apply(topicName)))
-        .orElseGet(() -> topicWithEmptySchema(topic));
+        .orElseGet(
+            () ->
+                new TopicDetailsWithSchemaResponse(topicWithSchema(topic), null, List.of(), null));
   }
 
   @Override

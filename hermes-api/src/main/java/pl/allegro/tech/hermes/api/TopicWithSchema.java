@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import java.time.Instant;
-import java.util.List;
 import java.util.Objects;
 
 public class TopicWithSchema extends Topic {
@@ -15,19 +14,9 @@ public class TopicWithSchema extends Topic {
 
   private final String schema;
 
-  private final Integer schemaVersion;
-
-  private final List<Integer> availableSchemaVersions;
-
-  private final String schemaSubject;
-
-  private TopicWithSchema(
-      Topic topic,
-      String schema,
-      Integer schemaVersion,
-      List<Integer> availableSchemaVersions,
-      String schemaSubject) {
-    super(
+  public TopicWithSchema(Topic topic, String schema) {
+    this(
+        schema,
         topic.getQualifiedName(),
         topic.getDescription(),
         topic.getOwner(),
@@ -45,11 +34,6 @@ public class TopicWithSchema extends Topic {
         topic.getOfflineStorage(),
         topic.getCreatedAt(),
         topic.getModifiedAt());
-    this.topic = convertToTopic();
-    this.schema = schema;
-    this.schemaVersion = schemaVersion;
-    this.availableSchemaVersions = availableSchemaVersions;
-    this.schemaSubject = schemaSubject;
   }
 
   @JsonCreator
@@ -96,28 +80,14 @@ public class TopicWithSchema extends Topic {
         modifiedAt);
     this.topic = convertToTopic();
     this.schema = schema;
-    // During topic creation these fields are not yet available.
-    this.schemaVersion = null;
-    this.availableSchemaVersions = null;
-    this.schemaSubject = null;
   }
 
   public static TopicWithSchema topicWithSchema(Topic topic, String schema) {
-    return new TopicWithSchema(topic, schema, null, List.of(), null);
+    return new TopicWithSchema(topic, schema);
   }
 
-  public static TopicWithSchema topicWithSchemaAndVersions(
-      Topic topic,
-      String schema,
-      Integer schemaVersion,
-      List<Integer> availableSchemaVersions,
-      String schemaSubject) {
-    return new TopicWithSchema(
-        topic, schema, schemaVersion, availableSchemaVersions, schemaSubject);
-  }
-
-  public static TopicWithSchema topicWithEmptySchema(Topic topic) {
-    return new TopicWithSchema(topic, null, null, List.of(), null);
+  public static TopicWithSchema topicWithSchema(Topic topic) {
+    return new TopicWithSchema(topic, null);
   }
 
   private Topic convertToTopic() {
@@ -145,18 +115,6 @@ public class TopicWithSchema extends Topic {
     return schema;
   }
 
-  public Integer getSchemaVersion() {
-    return schemaVersion;
-  }
-
-  public List<Integer> getAvailableSchemaVersions() {
-    return availableSchemaVersions;
-  }
-
-  public String getSchemaSubject() {
-    return schemaSubject;
-  }
-
   @JsonIgnore
   public Topic getTopic() {
     return topic;
@@ -174,16 +132,11 @@ public class TopicWithSchema extends Topic {
       return false;
     }
     TopicWithSchema that = (TopicWithSchema) o;
-    return Objects.equals(topic, that.topic)
-        && Objects.equals(schema, that.schema)
-        && Objects.equals(schemaVersion, that.schemaVersion)
-        && Objects.equals(availableSchemaVersions, that.availableSchemaVersions)
-        && Objects.equals(schemaSubject, that.schemaSubject);
+    return Objects.equals(topic, that.topic) && Objects.equals(schema, that.schema);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(
-        super.hashCode(), topic, schema, schemaVersion, availableSchemaVersions, schemaSubject);
+    return Objects.hash(super.hashCode(), topic, schema);
   }
 }

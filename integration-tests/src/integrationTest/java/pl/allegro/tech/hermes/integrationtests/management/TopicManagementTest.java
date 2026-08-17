@@ -103,7 +103,7 @@ public class TopicManagementTest {
   @Test
   public void shouldCreateTopic() {
     // given
-    TopicWithSchema topic = TopicWithSchema.topicWithEmptySchema(topicWithRandomName().build());
+    TopicWithSchema topic = TopicWithSchema.topicWithSchema(topicWithRandomName().build());
     hermes.initHelper().createGroup(Group.from(topic.getName().getGroupName()));
 
     // when
@@ -124,19 +124,20 @@ public class TopicManagementTest {
         .saveSchema(
             topic.getQualifiedName(), AvroUserSchemaLoader.load("/schema/user_v2.avsc").toString());
 
-    TopicWithSchema response =
-        hermes
-            .api()
-            .getTopicResponse(topic.getQualifiedName())
-            .expectStatus()
-            .isOk()
-            .expectBody(TopicWithSchema.class)
-            .returnResult()
-            .getResponseBody();
-
-    assertThat(response.getSchemaVersion()).isEqualTo(2);
-    assertThat(response.getAvailableSchemaVersions()).containsExactly(2, 1);
-    assertThat(response.getSchemaSubject()).isEqualTo(topic.getQualifiedName());
+    hermes
+        .api()
+        .getTopicResponse(topic.getQualifiedName())
+        .expectStatus()
+        .isOk()
+        .expectBody()
+        .jsonPath("$.schemaVersion")
+        .isEqualTo(2)
+        .jsonPath("$.availableSchemaVersions[0]")
+        .isEqualTo(2)
+        .jsonPath("$.availableSchemaVersions[1]")
+        .isEqualTo(1)
+        .jsonPath("$.schemaSubject")
+        .isEqualTo(topic.getQualifiedName());
   }
 
   @Test
@@ -144,19 +145,18 @@ public class TopicManagementTest {
     Topic topic =
         hermes.initHelper().createTopic(topicWithRandomName().withContentType(JSON).build());
 
-    TopicWithSchema response =
-        hermes
-            .api()
-            .getTopicResponse(topic.getQualifiedName())
-            .expectStatus()
-            .isOk()
-            .expectBody(TopicWithSchema.class)
-            .returnResult()
-            .getResponseBody();
-
-    assertThat(response.getSchemaVersion()).isNull();
-    assertThat(response.getAvailableSchemaVersions()).isEmpty();
-    assertThat(response.getSchemaSubject()).isNull();
+    hermes
+        .api()
+        .getTopicResponse(topic.getQualifiedName())
+        .expectStatus()
+        .isOk()
+        .expectBody()
+        .jsonPath("$.schemaVersion")
+        .doesNotExist()
+        .jsonPath("$.availableSchemaVersions")
+        .doesNotExist()
+        .jsonPath("$.schemaSubject")
+        .doesNotExist();
   }
 
   @Test
@@ -239,7 +239,7 @@ public class TopicManagementTest {
         hermes
             .api()
             .createTopic(
-                TopicWithSchema.topicWithEmptySchema(
+                TopicWithSchema.topicWithSchema(
                     topic(groupName, "shouldNotCreateInvalidTopic")
                         .withMaxMessageSize(Topic.MAX_MESSAGE_SIZE + 1)
                         .build()));
@@ -682,7 +682,7 @@ public class TopicManagementTest {
         hermes
             .api()
             .createTopic(
-                (TopicWithSchema.topicWithEmptySchema(topic(groupName, topicName).build())));
+                (TopicWithSchema.topicWithSchema(topic(groupName, topicName).build())));
 
     // then
     response.expectStatus().isCreated();
@@ -694,7 +694,7 @@ public class TopicManagementTest {
     // given
     TestSecurityProvider.setUserIsAdmin(false);
     TopicWithSchema topic =
-        TopicWithSchema.topicWithEmptySchema(
+        TopicWithSchema.topicWithSchema(
             topicWithRandomName().withFallbackToRemoteDatacenterEnabled().build());
     hermes.initHelper().createGroup(Group.from(topic.getName().getGroupName()));
 
@@ -712,7 +712,7 @@ public class TopicManagementTest {
     // given
     TestSecurityProvider.setUserIsAdmin(true);
     TopicWithSchema topic =
-        TopicWithSchema.topicWithEmptySchema(
+        TopicWithSchema.topicWithSchema(
             topicWithRandomName().withFallbackToRemoteDatacenterEnabled().build());
     hermes.initHelper().createGroup(Group.from(topic.getName().getGroupName()));
 
@@ -803,7 +803,7 @@ public class TopicManagementTest {
     // given
     TestSecurityProvider.setUserIsAdmin(false);
     TopicWithSchema topic =
-        TopicWithSchema.topicWithEmptySchema(
+        TopicWithSchema.topicWithSchema(
             topicWithRandomName()
                 .withPublishingChaosPolicy(new PublishingChaosPolicy(DATACENTER, null, Map.of()))
                 .build());
@@ -823,7 +823,7 @@ public class TopicManagementTest {
     // given
     TestSecurityProvider.setUserIsAdmin(true);
     TopicWithSchema topic =
-        TopicWithSchema.topicWithEmptySchema(
+        TopicWithSchema.topicWithSchema(
             topicWithRandomName()
                 .withPublishingChaosPolicy(new PublishingChaosPolicy(DATACENTER, null, Map.of()))
                 .build());
@@ -841,7 +841,7 @@ public class TopicManagementTest {
     // given
     TestSecurityProvider.setUserIsAdmin(true);
     TopicWithSchema topic =
-        TopicWithSchema.topicWithEmptySchema(
+        TopicWithSchema.topicWithSchema(
             topicWithRandomName()
                 .withPublishingChaosPolicy(
                     new PublishingChaosPolicy(
