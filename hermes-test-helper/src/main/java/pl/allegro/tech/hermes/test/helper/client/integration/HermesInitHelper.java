@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.test.helper.client.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.waitAtMost;
+import static pl.allegro.tech.hermes.api.TopicWithSchema.topicWithSchema;
 
 import java.time.Duration;
 import pl.allegro.tech.hermes.api.Group;
@@ -25,10 +26,7 @@ public class HermesInitHelper {
 
   public Topic createTopic(Topic topic) {
     createGroupIfMissing(Group.from(topic.getName().getGroupName()));
-    managementTestClient
-        .createTopic(TopicWithSchema.topicWithSchema(topic, null))
-        .expectStatus()
-        .is2xxSuccessful();
+    managementTestClient.createTopic(topicWithSchema(topic, null)).expectStatus().is2xxSuccessful();
     waitUntilTopicCreated(topic.getQualifiedName());
     return topic;
   }

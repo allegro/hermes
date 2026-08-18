@@ -16,7 +16,6 @@ import pl.allegro.tech.hermes.management.infrastructure.console.SpringConfigCons
 @Configuration
 @EnableConfigurationProperties(ConsoleProperties.class)
 public class ConsoleConfiguration {
-
   @Bean
   FilterRegistrationBean<FrontendRoutesFilter> frontendRoutesFilter() {
     FilterRegistrationBean<FrontendRoutesFilter> registrationBean = new FilterRegistrationBean<>();
@@ -30,7 +29,6 @@ public class ConsoleConfiguration {
       ConsoleProperties consoleProperties,
       GroupProperties groupProperties,
       TopicProperties topicProperties) {
-
     // Override group settings from GroupProperties (source of truth)
     // Note: console.group.nonAdminCreationEnabled is IGNORED if configured in application.yaml
     // See JavaDoc on ConsoleProperties.GroupView for details

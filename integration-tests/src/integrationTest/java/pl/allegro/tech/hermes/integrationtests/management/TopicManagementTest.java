@@ -103,7 +103,7 @@ public class TopicManagementTest {
   @Test
   public void shouldCreateTopic() {
     // given
-    TopicWithSchema topic = TopicWithSchema.topicWithSchema(topicWithRandomName().build());
+    TopicWithSchema topic = topicWithSchema(topicWithRandomName().build());
     hermes.initHelper().createGroup(Group.from(topic.getName().getGroupName()));
 
     // when
@@ -115,10 +115,55 @@ public class TopicManagementTest {
   }
 
   @Test
+  public void shouldReturnActiveAndAvailableSchemaVersionsForAvroTopic() {
+    TopicWithSchema topicWithSchema =
+        topicWithSchema(topicWithRandomName().withContentType(AVRO).build(), SCHEMA);
+    Topic topic = hermes.initHelper().createTopicWithSchema(topicWithSchema);
+    hermes
+        .api()
+        .saveSchema(
+            topic.getQualifiedName(), AvroUserSchemaLoader.load("/schema/user_v2.avsc").toString());
+
+    hermes
+        .api()
+        .getTopicResponse(topic.getQualifiedName())
+        .expectStatus()
+        .isOk()
+        .expectBody()
+        .jsonPath("$.schemaVersion")
+        .isEqualTo(2)
+        .jsonPath("$.availableSchemaVersions[0]")
+        .isEqualTo(2)
+        .jsonPath("$.availableSchemaVersions[1]")
+        .isEqualTo(1)
+        .jsonPath("$.schemaSubject")
+        .isEqualTo(topic.getQualifiedName());
+  }
+
+  @Test
+  public void shouldIncludeEmptySchemaVersionMetadataForJsonTopic() {
+    Topic topic =
+        hermes.initHelper().createTopic(topicWithRandomName().withContentType(JSON).build());
+
+    hermes
+        .api()
+        .getTopicResponse(topic.getQualifiedName())
+        .expectStatus()
+        .isOk()
+        .expectBody()
+        .jsonPath("$.schemaVersion")
+        .isEmpty()
+        .jsonPath("$.availableSchemaVersions")
+        .isEmpty()
+        .jsonPath("$.schemaSubject")
+        .isEmpty();
+  }
+
+  @Test
   public void shouldListTopics() {
     // given
     hermes.initHelper().createTopic(topic("listTopicsGroup.topic1").build());
-    hermes.api().createTopic(new TopicWithSchema(topic("listTopicsGroup.topic2").build(), null));
+    hermes.api().createTopic(topicWithSchema(topic("listTopicsGroup.topic2").build(), null));
 
     // when then
     assertThat(getGroupTopicsList("listTopicsGroup"))
@@ -230,8 +275,7 @@ public class TopicManagementTest {
     Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
 
     // when
-    WebTestClient.ResponseSpec response =
-        hermes.api().createTopic(new TopicWithSchema(topic, null));
+    WebTestClient.ResponseSpec response = hermes.api().createTopic(topicWithSchema(topic, null));
 
     // then
     response.expectStatus().isBadRequest();
@@ -349,7 +393,7 @@ public class TopicManagementTest {
         hermes
             .initHelper()
             .createTopicWithSchema(
-                new TopicWithSchema(
+                topicWithSchema(
                     topic(group, "trackedAvroTopic2")
                         .withTrackingEnabled(true)
                         .withContentType(AVRO)
@@ -359,7 +403,7 @@ public class TopicManagementTest {
         hermes
             .initHelper()
             .createTopicWithSchema(
-                new TopicWithSchema(
+                topicWithSchema(
                     topicWithRandomName().withTrackingEnabled(false).withContentType(AVRO).build(),
                     SCHEMA));
     Topic untrackedJsonTopic =
@@ -400,7 +444,7 @@ public class TopicManagementTest {
         hermes
             .initHelper()
             .createTopicWithSchema(
-                new TopicWithSchema(
+                topicWithSchema(
                     topic(group, "trackedAvroTopic3")
                         .withTrackingEnabled(true)
                         .withContentType(AVRO)
@@ -409,7 +453,7 @@ public class TopicManagementTest {
     hermes
         .api()
         .createTopic(
-            new TopicWithSchema(
+            topicWithSchema(
                 topic(group, "untrackedAvroTopic")
                     .withTrackingEnabled(false)
                     .withContentType(AVRO)
@@ -418,7 +462,7 @@ public class TopicManagementTest {
     hermes
         .api()
         .createTopic(
-            new TopicWithSchema(
+            topicWithSchema(
                 topic(group, "untrackedJsonTopic")
                     .withTrackingEnabled(false)
                     .withContentType(JSON)
@@ -427,7 +471,7 @@ public class TopicManagementTest {
     hermes
         .api()
         .createTopic(
-            new TopicWithSchema(
+            topicWithSchema(
                 topic(group, "trackedJsonTopic")
                     .withTrackingEnabled(true)
                     .withContentType(JSON)
@@ -464,9 +508,7 @@ public class TopicManagementTest {
             topicName -> {
               // when
               WebTestClient.ResponseSpec response =
-                  hermes
-                      .api()
-                      .createTopic(new TopicWithSchema(topic(group, topicName).build(), null));
+                  hermes.api().createTopic(topicWithSchema(topic(group, topicName).build(), null));
 
               // then
               response.expectStatus().isBadRequest();
@@ -477,7 +519,7 @@ public class TopicManagementTest {
   public void shouldCreateTopicWithMaxMessageSize() {
     // given
     TopicWithSchema topic =
-        new TopicWithSchema(topicWithRandomName().withMaxMessageSize(2048).build(), null);
+        topicWithSchema(topicWithRandomName().withMaxMessageSize(2048).build(), null);
     hermes.initHelper().createGroup(Group.from(topic.getName().getGroupName()));
 
     // when
@@ -524,7 +566,7 @@ public class TopicManagementTest {
   public void shouldCreateTopicWithRestrictedSubscribing() {
     // given
     TopicWithSchema topic =
-        new TopicWithSchema(topicWithRandomName().withSubscribingRestricted().build(), null);
+        topicWithSchema(topicWithRandomName().withSubscribingRestricted().build(), null);
     hermes.initHelper().createGroup(Group.from(topic.getName().getGroupName()));
 
     // when
@@ -570,7 +612,7 @@ public class TopicManagementTest {
   public void shouldCreateTopicWithOfflineStorageSettings() {
     // given
     TopicWithSchema topic =
-        new TopicWithSchema(topicWithRandomName().withOfflineStorage(2).build(), null);
+        topicWithSchema(topicWithRandomName().withOfflineStorage(2).build(), null);
     hermes.initHelper().createGroup(Group.from(topic.getName().getGroupName()));
 
     // when

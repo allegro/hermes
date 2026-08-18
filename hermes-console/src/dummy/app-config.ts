@@ -35,6 +35,7 @@ export const dummyAppConfig: AppConfiguration = {
   topic: {
     messagePreviewEnabled: true,
     offlineClientsEnabled: true,
+    schemaRegistryUrl: 'https://schema-registry.example.com',
     defaults: {
       ack: 'LEADER',
       contentType: 'AVRO',

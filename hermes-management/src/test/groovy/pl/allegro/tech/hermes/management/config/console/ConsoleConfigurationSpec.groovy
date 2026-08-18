@@ -129,4 +129,18 @@ class ConsoleConfigurationSpec extends Specification {
         and: "repository should be created"
         repository != null
     }
+
+    def "should expose configured schema registry URL"() {
+        given:
+        def consoleProperties = new ConsoleProperties()
+        consoleProperties.topic.schemaRegistryUrl = 'https://schema-registry.example.com/'
+
+        when:
+        def repository = consoleConfiguration.consoleConfigurationRepository(
+                objectMapper, consoleProperties, new GroupProperties(), new TopicProperties())
+
+        then:
+        repository.configuration.contains('"schemaRegistryUrl":"https://schema-registry.example.com/"')
+    }
+
 }

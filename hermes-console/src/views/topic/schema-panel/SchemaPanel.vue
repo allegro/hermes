@@ -1,18 +1,90 @@
 <script setup lang="ts">
+  import { computed, ref } from 'vue';
   import { copyToClipboard } from '@/utils/copy-utils';
-  import { defineProps, ref } from 'vue';
   import AvroViewer from '@/views/topic/schema-panel/avro-viewer/AvroViewer.vue';
   import JsonViewer from '@/components/json-viewer/JsonViewer.vue';
+  import type { ContentType } from '@/api/content-type';
 
   const props = defineProps<{
     schema: string;
+    contentType: ContentType;
+    topicName: string;
+    schemaVersion?: number;
+    availableSchemaVersions?: number[];
+    schemaSubject?: string;
+    schemaRegistryUrl: string;
   }>();
   const showRawSchema = ref(false);
+
+  const sortedSchemaVersions = computed(() =>
+    [...(props.availableSchemaVersions ?? [])].sort(
+      (first, second) => second - first,
+    ),
+  );
+  const shouldShowVersionHistory = computed(
+    () =>
+      props.contentType === 'AVRO' &&
+      props.schemaSubject !== undefined &&
+      sortedSchemaVersions.value.length > 0,
+  );
+
+  function schemaRegistryVersionUrl(version: number): string {
+    const baseUrl = props.schemaRegistryUrl.trim().replace(/\/+$/, '');
+    return `${baseUrl}/subjects/${encodeURIComponent(props.schemaSubject!)}/versions/${version}`;
+  }
 </script>
 
 <template>
-  <div>
-    <div class="d-flex justify-space-between mb-2">
+  <div class="pt-6">
+    <div class="mb-4" data-testid="schema-version-details">
+      <div class="d-flex align-center ga-2">
+        <div>
+          {{ $t('topicView.schema.activeVersion') }}
+          <template v-if="props.contentType === 'JSON'">
+            {{ $t('topicView.schema.notApplicable') }}
+          </template>
+          <template v-else-if="props.schemaVersion !== undefined">
+            <strong>{{ props.schemaVersion }}</strong>
+          </template>
+        </div>
+        <v-menu v-if="shouldShowVersionHistory" location="bottom start">
+          <template #activator="{ props: menuProps }">
+            <v-btn
+              v-bind="menuProps"
+              append-icon="mdi-chevron-down"
+              class="text-none"
+              variant="outlined"
+            >
+              {{
+                $t('topicView.schema.allVersions', {
+                  count: sortedSchemaVersions.length,
+                })
+              }}
+            </v-btn>
+          </template>
+          <v-list
+            data-testid="schema-version-history"
+            class="schema-version-history"
+          >
+            <v-list-item
+              v-for="version in sortedSchemaVersions"
+              :key="version"
+              :href="schemaRegistryVersionUrl(version)"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <v-list-item-title>
+                {{ version }}
+                <span v-if="version === props.schemaVersion" class="ml-2">
+                  {{ $t('topicView.schema.current') }}
+                </span>
+              </v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+      </div>
+    </div>
+    <div class="d-flex justify-space-between mt-6 mb-2">
       <v-btn-toggle
         v-model="showRawSchema"
         group
@@ -51,3 +123,11 @@
     </div>
   </div>
 </template>
+
+<style scoped>
+  .schema-version-history {
+    max-height: 320px;
+    overflow-y: auto;
+    min-width: 160px;
+  }
+</style>

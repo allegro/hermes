@@ -4,6 +4,7 @@ import static pl.allegro.tech.hermes.api.ContentType.AVRO;
 import static pl.allegro.tech.hermes.api.TopicName.fromQualifiedName;
 import static pl.allegro.tech.hermes.common.logging.LoggingFields.TOPIC_NAME;
 
+import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,9 +35,30 @@ public class SchemaService {
   }
 
   public Optional<RawSchema> getSchema(String qualifiedTopicName) {
-    return rawSchemaClient
-        .getLatestRawSchemaWithMetadata(fromQualifiedName(qualifiedTopicName))
-        .map(RawSchemaWithMetadata::getSchema);
+    return getLatestSchema(qualifiedTopicName).map(RawSchemaWithMetadata::getSchema);
+  }
+
+  public Optional<RawSchemaWithMetadata> getLatestSchema(String qualifiedTopicName) {
+    return rawSchemaClient.getLatestRawSchemaWithMetadata(fromQualifiedName(qualifiedTopicName));
+  }
+
+  /**
+   * Retrieves schema versions for UI display. A failed lookup returns an empty list so topic
+   * details remain available; callers requiring schema-version availability guarantees should use
+   * {@link RawSchemaClient} directly and handle its exception.
+   */
+  public List<Integer> getVersionsOrEmptyOnError(String qualifiedTopicName) {
+    try {
+      return rawSchemaClient.getVersions(fromQualifiedName(qualifiedTopicName)).stream()
+          .map(SchemaVersion::value)
+          .toList();
+    } catch (Exception exception) {
+      logger.warn(
+          "Could not retrieve schema versions for topic: {}. Fallback to empty list",
+          qualifiedTopicName,
+          exception);
+      return List.of();
+    }
   }
 
   public Optional<RawSchema> getSchema(String qualifiedTopicName, SchemaVersion version) {

@@ -23,7 +23,7 @@ import pl.allegro.tech.hermes.api.MessageTextPreview;
 import pl.allegro.tech.hermes.api.OwnerId;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Query;
-import pl.allegro.tech.hermes.api.RawSchema;
+import pl.allegro.tech.hermes.api.RawSchemaWithMetadata;
 import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicMetrics;
 import pl.allegro.tech.hermes.api.TopicName;
@@ -50,6 +50,7 @@ import pl.allegro.tech.hermes.management.domain.topic.commands.UpdateTopicReposi
 import pl.allegro.tech.hermes.management.domain.topic.schema.SchemaService;
 import pl.allegro.tech.hermes.management.domain.topic.validator.TopicValidator;
 import pl.allegro.tech.hermes.management.infrastructure.kafka.MultiDCAwareService;
+import pl.allegro.tech.hermes.schema.SubjectNamingStrategy;
 
 public class TopicService implements TopicManagement {
 
@@ -59,6 +60,7 @@ public class TopicService implements TopicManagement {
   private final GroupService groupService;
   private final TopicParameters topicParameters;
   private final SchemaService schemaService;
+  private final SubjectNamingStrategy subjectNamingStrategy;
 
   private final TopicMetricsRepository metricRepository;
   private final MultiDCAwareService multiDCAwareService;
@@ -80,6 +82,7 @@ public class TopicService implements TopicManagement {
       GroupService groupService,
       TopicParameters topicParameters,
       SchemaService schemaService,
+      SubjectNamingStrategy subjectNamingStrategy,
       TopicMetricsRepository metricRepository,
       TopicValidator topicValidator,
       TopicContentTypeMigrationService topicContentTypeMigrationService,
@@ -94,6 +97,7 @@ public class TopicService implements TopicManagement {
     this.groupService = groupService;
     this.topicParameters = topicParameters;
     this.schemaService = schemaService;
+    this.subjectNamingStrategy = subjectNamingStrategy;
     this.metricRepository = metricRepository;
     this.topicValidator = topicValidator;
     this.topicContentTypeMigrationService = topicContentTypeMigrationService;
@@ -241,15 +245,25 @@ public class TopicService implements TopicManagement {
   }
 
   @Override
-  public TopicWithSchema getTopicWithSchema(TopicName topicName) {
+  public TopicWithSchemaDetails getTopicWithSchema(TopicName topicName) {
     Topic topic = getTopicDetails(topicName);
-    Optional<RawSchema> schema = Optional.empty();
-    if (AVRO.equals(topic.getContentType())) {
-      schema = schemaService.getSchema(topicName.qualifiedName());
+    if (!AVRO.equals(topic.getContentType())) {
+      return new TopicWithSchemaDetails(topicWithSchema(topic), null, List.of(), null);
     }
+
+    Optional<RawSchemaWithMetadata> schema =
+        schemaService.getLatestSchema(topicName.qualifiedName());
+    List<Integer> availableSchemaVersions =
+        schemaService.getVersionsOrEmptyOnError(topicName.qualifiedName());
     return schema
-        .map(s -> topicWithSchema(topic, s.value()))
-        .orElseGet(() -> topicWithSchema(topic));
+        .map(
+            metadata ->
+                new TopicWithSchemaDetails(
+                    topicWithSchema(topic, metadata.getSchemaString()),
+                    metadata.getVersion(),
+                    availableSchemaVersions,
+                    subjectNamingStrategy.apply(topicName)))
+        .orElseGet(() -> new TopicWithSchemaDetails(topicWithSchema(topic), null, List.of(), null));
   }
 
   @Override

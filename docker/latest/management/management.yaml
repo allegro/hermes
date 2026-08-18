@@ -4,6 +4,9 @@ spring:
     filter:
       order: 2147483647
 
+server:
+  port: 8090
+
 management:
   zookeeper:
     clusters:

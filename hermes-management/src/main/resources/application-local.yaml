@@ -9,6 +9,9 @@ spring:
     servlet:
       path: /
 
+server:
+  port: 8090
+
 management:
   server:
     servlet:
