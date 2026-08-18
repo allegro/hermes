@@ -33,7 +33,7 @@ public interface TopicManagement {
 
   Topic getTopicDetails(TopicName topicName);
 
-  TopicDetailsWithSchemaDetails getTopicWithSchema(TopicName topicName);
+  TopicWithSchemaDetails getTopicWithSchema(TopicName topicName);
 
   TopicMetrics getTopicMetrics(TopicName topicName);
 

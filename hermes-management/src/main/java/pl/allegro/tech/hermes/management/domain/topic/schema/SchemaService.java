@@ -53,8 +53,10 @@ public class SchemaService {
           .map(SchemaVersion::value)
           .toList();
     } catch (Exception exception) {
-      logger.error(
-          "Could not retrieve schema versions for topic: {}", qualifiedTopicName, exception);
+      logger.warn(
+          "Could not retrieve schema versions for topic: {}. Fallback to empty list",
+          qualifiedTopicName,
+          exception);
       return List.of();
     }
   }

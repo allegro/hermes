@@ -46,8 +46,8 @@ import pl.allegro.tech.hermes.management.domain.owner.OwnerSourceNotFound;
 import pl.allegro.tech.hermes.management.domain.owner.OwnerSources;
 import pl.allegro.tech.hermes.management.domain.topic.CreatorRights;
 import pl.allegro.tech.hermes.management.domain.topic.SingleMessageReaderException;
-import pl.allegro.tech.hermes.management.domain.topic.TopicDetailsWithSchemaDetails;
 import pl.allegro.tech.hermes.management.domain.topic.TopicManagement;
+import pl.allegro.tech.hermes.management.domain.topic.TopicWithSchemaDetails;
 
 @Component
 @Path("/topics")
@@ -146,7 +146,7 @@ public class TopicsEndpoint {
   @Produces(APPLICATION_JSON)
   @Path("/{topicName}")
   @ApiOperation(value = "Topic details", httpMethod = HttpMethod.GET)
-  public TopicDetailsWithSchemaDetails get(@PathParam("topicName") String qualifiedTopicName) {
+  public TopicWithSchemaDetails get(@PathParam("topicName") String qualifiedTopicName) {
     return topicManagement.getTopicWithSchema(TopicName.fromQualifiedName(qualifiedTopicName));
   }
 

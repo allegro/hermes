@@ -80,7 +80,7 @@ public class LoggingTopicService implements TopicManagement {
   }
 
   @Override
-  public TopicDetailsWithSchemaDetails getTopicWithSchema(TopicName topicName) {
+  public TopicWithSchemaDetails getTopicWithSchema(TopicName topicName) {
     return LoggingContext.withLogging(
         TOPIC_NAME, topicName.qualifiedName(), () -> delegate.getTopicWithSchema(topicName));
   }

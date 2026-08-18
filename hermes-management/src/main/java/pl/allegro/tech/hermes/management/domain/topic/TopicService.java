@@ -245,10 +245,10 @@ public class TopicService implements TopicManagement {
   }
 
   @Override
-  public TopicDetailsWithSchemaDetails getTopicWithSchema(TopicName topicName) {
+  public TopicWithSchemaDetails getTopicWithSchema(TopicName topicName) {
     Topic topic = getTopicDetails(topicName);
     if (!AVRO.equals(topic.getContentType())) {
-      return new TopicDetailsWithSchemaDetails(topicWithSchema(topic), null, List.of(), null);
+      return new TopicWithSchemaDetails(topicWithSchema(topic), null, List.of(), null);
     }
 
     Optional<RawSchemaWithMetadata> schema =
@@ -258,13 +258,12 @@ public class TopicService implements TopicManagement {
     return schema
         .map(
             metadata ->
-                new TopicDetailsWithSchemaDetails(
+                new TopicWithSchemaDetails(
                     topicWithSchema(topic, metadata.getSchemaString()),
                     metadata.getVersion(),
                     availableSchemaVersions,
                     subjectNamingStrategy.apply(topicName)))
-        .orElseGet(
-            () -> new TopicDetailsWithSchemaDetails(topicWithSchema(topic), null, List.of(), null));
+        .orElseGet(() -> new TopicWithSchemaDetails(topicWithSchema(topic), null, List.of(), null));
   }
 
   @Override
