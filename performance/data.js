@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1786107428378,
+  "lastUpdate": 1787066053263,
   "repoUrl": "https://github.com/allegro/hermes",
   "entries": {
     "Hermes Benchmark": [
@@ -2033,6 +2033,74 @@ window.BENCHMARK_DATA = {
           {
             "name": "pl.allegro.tech.hermes.benchmark.frontend.HermesServerBenchmark.benchmarkPublishingLatency (sample) - gc.alloc.rate.norm",
             "value": 67541.41099365526,
+            "unit": "B/op"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "faderskd@users.noreply.github.com",
+            "name": "Daniel Fąderski",
+            "username": "faderskd"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2c31ce23cec7895bc28d8d61db9d8e065662a98e",
+          "message": "Schema version visible in console (#2054)\n\n* Initial version of schema version displaying\n\n* Improved UI for displaying hermes schema version\n\n* Improved UI for displaying hermes schema version\n\n* Improved UI for displaying hermes schema version\n\n* Review\n\n* Code polishing\n\n* Code polishing\n\n* Code refactor\n\n* Code refactor\n\n* Code refactor\n\n* Code refactor\n\n* Code lint\n\n* Code review fixes",
+          "timestamp": "2026-08-18T17:08:00+02:00",
+          "tree_id": "af5dae2ac8441ee53842ff0aa3990e2f525d40c6",
+          "url": "https://github.com/allegro/hermes/commit/2c31ce23cec7895bc28d8d61db9d8e065662a98e"
+        },
+        "date": 1787066025857,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.consumer.HermesConsumerBenchmark.benchmarkConsumingThroughput (thrpt)",
+            "value": 7.538722412788449,
+            "range": "0.08268870550628196",
+            "unit": "ops/s"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.consumer.HermesConsumerBenchmark.benchmarkConsumingThroughput (thrpt) - gc.alloc.rate.norm",
+            "value": 171983327.4811828,
+            "unit": "B/op"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.consumer.HermesConsumerFilteringBenchmark.benchmarkConsumingThroughput (thrpt)",
+            "value": 8.24745139431739,
+            "range": "0.08946199492567337",
+            "unit": "ops/s"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.consumer.HermesConsumerFilteringBenchmark.benchmarkConsumingThroughput (thrpt) - gc.alloc.rate.norm",
+            "value": 129153825.15742297,
+            "unit": "B/op"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.frontend.HermesServerBenchmark.benchmarkPublishingThroughput (thrpt)",
+            "value": 11985.643373343266,
+            "range": "824.0900499526882",
+            "unit": "ops/s"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.frontend.HermesServerBenchmark.benchmarkPublishingThroughput (thrpt) - gc.alloc.rate.norm",
+            "value": 67438.7300174856,
+            "unit": "B/op"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.frontend.HermesServerBenchmark.benchmarkPublishingLatency (sample)",
+            "value": 0.16427227435258632,
+            "range": "0.002911283941490274",
+            "unit": "ms/op"
+          },
+          {
+            "name": "pl.allegro.tech.hermes.benchmark.frontend.HermesServerBenchmark.benchmarkPublishingLatency (sample) - gc.alloc.rate.norm",
+            "value": 67188.09870010418,
             "unit": "B/op"
           }
         ]
