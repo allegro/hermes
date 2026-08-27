@@ -3,6 +3,7 @@ package pl.allegro.tech.hermes.consumers.consumer.sender.googlebigquery;
 import com.google.api.core.ApiFutureCallback;
 import com.google.cloud.bigquery.storage.v1.AppendRowsResponse;
 import com.google.cloud.bigquery.storage.v1.Exceptions;
+import io.grpc.Status;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
@@ -16,11 +17,26 @@ public class GoogleBigQueryAppendCompleteCallback implements ApiFutureCallback<A
     this.resultFuture = resultFuture;
   }
 
+  public static int mapToErrorHttpStatus(Throwable cause) {
+    Status.Code grpcCode = Status.fromThrowable(cause).getCode();
+    return switch (grpcCode) {
+      case NOT_FOUND -> 404; // Table does not exist
+      case PERMISSION_DENIED ->
+          403; // Technical user does not have permissions to write to the table
+      case INVALID_ARGUMENT ->
+          400; // Invalid message format i.e. microsecond timestamp value is sent to millisecond
+      // timestamp field
+      default -> 500;
+    };
+  }
+
   @Override
   public void onFailure(Throwable t) {
     Exceptions.StorageException storageException = Exceptions.toStorageException(t);
-    resultFuture.complete(
-        MessageSendingResult.failedResult(Objects.requireNonNullElse(storageException, t)));
+    Throwable cause = Objects.requireNonNullElse(storageException, t);
+
+    Integer httpStatusCode = mapToErrorHttpStatus(cause);
+    resultFuture.complete(MessageSendingResult.failedResult(httpStatusCode, cause));
   }
 
   @Override

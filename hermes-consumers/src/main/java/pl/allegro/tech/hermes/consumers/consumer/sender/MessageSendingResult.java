@@ -36,6 +36,10 @@ public interface MessageSendingResult {
     return new SingleMessageSendingResult(statusCode);
   }
 
+  static SingleMessageSendingResult failedResult(int statusCode, Throwable cause) {
+    return new SingleMessageSendingResult(statusCode, cause);
+  }
+
   static SingleMessageSendingResult ofStatusCode(int statusCode) {
     return new SingleMessageSendingResult(statusCode);
   }
