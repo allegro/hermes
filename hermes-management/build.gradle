@@ -50,7 +50,7 @@ dependencies {
 }
 
 node {
-    version = '22.20.0'
+    version = '22.23.4'
     distBaseUrl = 'https://nodejs.org/dist'
     download = true
     workDir.set(file("${project.buildDir}/nodejs"))
@@ -104,4 +104,3 @@ tasks.named('javadoc') {
 jar.dependsOn(attachHermesConsole, 'prepareIndexTemplate')
 
 run.dependsOn(attachHermesConsole, 'prepareIndexTemplate')
-

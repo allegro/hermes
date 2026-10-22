@@ -3,7 +3,7 @@
   "description": "Console for Hermes Management",
   "license": "Apache-2.0",
   "engines": {
-    "node": ">=22.20.0"
+    "node": "22.23.4"
   },
   "scripts": {
     "dev": "vite",
