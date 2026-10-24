@@ -39,6 +39,7 @@ public class ByteBufferMessageBatchFactory implements MessageBatchFactory {
               "Batching is not supported yet for contentType " + subscription.getContentType());
       }
     } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
       throw new InternalProcessingException(e);
     }
   }
