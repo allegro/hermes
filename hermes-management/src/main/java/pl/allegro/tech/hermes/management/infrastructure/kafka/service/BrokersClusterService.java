@@ -263,7 +263,7 @@ public class BrokersClusterService {
             .map(kafkaTopic -> kafkaTopic.name().asString())
             .collect(Collectors.toList());
 
-    return adminClient.describeTopics(kafkaTopicsNames).all().get().values().stream()
+    return adminClient.describeTopics(kafkaTopicsNames).allTopicNames().get().values().stream()
         .map(v -> v.partitions().size())
         .reduce(0, Integer::sum);
   }

@@ -194,7 +194,7 @@ class LocalDatacenterMessageProducerIntegrationTest extends Specification {
     private def createTopicInKafka(String kafkaTopicName, int partitionsNumber) {
         adminClient.createTopics([new NewTopic(kafkaTopicName, partitionsNumber, 1 as short)]).all().get()
 
-        def describeTopicsResult = adminClient.describeTopics([kafkaTopicName]).all().get().values()
+        def describeTopicsResult = adminClient.describeTopics([kafkaTopicName]).allTopicNames().get().values()
 
         assert describeTopicsResult[0].name() == kafkaTopicName
         assert describeTopicsResult[0].partitions()
