@@ -104,7 +104,7 @@
       :name="$t('subscription.propertiesCard.batchVolume')"
       :value="`${props.subscription.subscriptionPolicy.batchVolume} B`"
       v-if="props.subscription.deliveryType === DeliveryType.BATCH"
-      :toolti="$t('subscription.propertiesCard.tooltips.batchVolume')"
+      :tooltip="$t('subscription.propertiesCard.tooltips.batchVolume')"
     />
     <key-value-card-item
       :name="$t('subscription.propertiesCard.requestTimeout')"
@@ -149,7 +149,7 @@
       :tooltip="$t('subscription.propertiesCard.tooltips.backoffMultiplier')"
     />
     <key-value-card-item
-      :name="$t('subscription.propertiesCard.backoffMaxInterval')"
+      :name="$t('subscription.propertiesCard.backoffMaxIntervalInSec')"
       :value="`${props.subscription.subscriptionPolicy.backoffMaxIntervalInSec} s`"
       v-if="
         props.subscription.deliveryType === DeliveryType.SERIAL &&
