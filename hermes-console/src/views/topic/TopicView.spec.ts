@@ -112,6 +112,7 @@ describe('TopicView', () => {
       'topicView.tabs.offlineClients',
       'topicView.tabs.messages',
       'topicView.tabs.offlineRetransmission',
+      'topicView.tabs.logs',
     ];
 
     // when
@@ -132,6 +133,7 @@ describe('TopicView', () => {
     'topicView.tabs.offlineClients',
     'topicView.tabs.messages',
     'topicView.tabs.offlineRetransmission',
+    'topicView.tabs.logs',
   ])('should activate tab on click', async (tab: string) => {
     // given
     const user = userEvent.setup();
@@ -454,5 +456,49 @@ describe('TopicView', () => {
     expect(
       getByText('topicView.confirmationDialog.remove.text'),
     ).toBeInTheDocument();
+  });
+
+  it('should show logs card on logs tab click', async () => {
+    // given
+    const user = userEvent.setup();
+    const { getByText } = render(TopicView, {
+      testPinia: createTestingPiniaWithState(),
+    });
+
+    // when
+    await user.click(getByText('topicView.tabs.logs'));
+
+    // then
+    expect(getByText('logsCard.title')).toBeVisible();
+    expect(getByText('logsCard.viewLogs')).toBeVisible();
+    expect(getByText('logsCard.description')).toBeVisible();
+  });
+
+  it('should not show logs tab when kibana is disabled in app config', () => {
+    // when
+    const { queryByText } = render(TopicView, {
+      testPinia: createTestingPinia({
+        initialState: {
+          appConfig: {
+            appConfig: {
+              ...dummyAppConfig,
+              logs: {
+                enabled: false,
+                baseUrl: '',
+                topicLogsFilter: '',
+                subscriptionLogsFilter: '',
+              },
+            },
+            loading: false,
+            error: {
+              loadConfig: null,
+            },
+          },
+        },
+      }),
+    });
+
+    // then
+    expect(queryByText('topicView.tabs.logs')).not.toBeInTheDocument();
   });
 });
