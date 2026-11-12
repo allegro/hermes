@@ -244,7 +244,7 @@ describe('PropertiesCard', () => {
       queryByText('subscription.propertiesCard.backoffMultiplier'),
     ).not.toBeInTheDocument();
     expect(
-      queryByText('subscription.propertiesCard.backoffMaxInterval'),
+      queryByText('subscription.propertiesCard.backoffMaxIntervalInSec'),
     ).not.toBeInTheDocument();
   });
 
@@ -408,7 +408,7 @@ describe('PropertiesCard', () => {
 
     // then
     const retryBackoffMaxIntervalRow = getByText(
-      'subscription.propertiesCard.backoffMaxInterval',
+      'subscription.propertiesCard.backoffMaxIntervalInSec',
     ).closest('tr')!;
     expect(within(retryBackoffMaxIntervalRow).getByText('400 s'));
   });
