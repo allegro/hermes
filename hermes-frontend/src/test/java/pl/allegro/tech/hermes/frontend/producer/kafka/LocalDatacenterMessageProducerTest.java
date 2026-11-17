@@ -62,9 +62,9 @@ public class LocalDatacenterMessageProducerTest {
       Executors.newSingleThreadScheduledExecutor();
 
   private final MockProducer<byte[], byte[]> leaderConfirmsProducer =
-      new MockProducer<>(true, serializer, serializer);
+      new MockProducer<>(true, null, serializer, serializer);
   private final MockProducer<byte[], byte[]> everyoneConfirmProducer =
-      new MockProducer<>(true, serializer, serializer);
+      new MockProducer<>(true, null, serializer, serializer);
   private final KafkaMessageSender<byte[], byte[]> leaderConfirmsProduceWrapper =
       new KafkaMessageSender<>(
           leaderConfirmsProducer, brokerLatencyReporter, datacenter, chaosScheduler);

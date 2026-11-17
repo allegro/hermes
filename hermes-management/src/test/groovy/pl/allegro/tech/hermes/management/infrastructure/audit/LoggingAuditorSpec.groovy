@@ -1,12 +1,11 @@
 package pl.allegro.tech.hermes.management.infrastructure.audit
 
+import ch.qos.logback.classic.Logger
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import org.javers.core.Javers
 import org.javers.core.JaversBuilder
 import org.javers.core.metamodel.clazz.EntityDefinitionBuilder
-import org.junit.Before
-import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import pl.allegro.tech.hermes.api.Group
 import pl.allegro.tech.hermes.api.OAuthProvider
@@ -15,8 +14,6 @@ import pl.allegro.tech.hermes.management.utils.MockAppender
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder
 import spock.lang.Specification
 
-import static org.slf4j.Logger.ROOT_LOGGER_NAME
-
 class LoggingAuditorSpec extends Specification {
 
     static final String TEST_USER = "testUser"
@@ -24,13 +21,16 @@ class LoggingAuditorSpec extends Specification {
     static final String UPDATED_CLIENT_SECRET = "UPDATED_CLIENT_SECRET"
 
     MockAppender mockAppender
+    Logger auditLogger = (Logger) LoggerFactory.getLogger(LoggingAuditor)
     LoggingAuditor auditor = new LoggingAuditor(javers(), new ObjectMapper().registerModule(new JavaTimeModule()))
 
-    @Before
-    def createAndAddMockAppenderToLogger() {
-        Logger root = LoggerFactory.getLogger(ROOT_LOGGER_NAME)
+    def setup() {
         mockAppender = new MockAppender()
-        root.addAppender(mockAppender)
+        auditLogger.addAppender(mockAppender)
+    }
+
+    def cleanup() {
+        auditLogger.detachAppender(mockAppender)
     }
 
     def "should log new object creation"() {
@@ -88,6 +88,7 @@ class LoggingAuditorSpec extends Specification {
 
         then:
             with(mockAppender.list.last().toString()) {
+                it.contains(TEST_USER)
                 !it.contains(CLIENT_SECRET)
         }
     }
@@ -102,6 +103,7 @@ class LoggingAuditorSpec extends Specification {
 
         then:
             with(mockAppender.list.last().toString()) {
+                it.contains(TEST_USER)
                 !it.contains(CLIENT_SECRET)
                 !it.contains(UPDATED_CLIENT_SECRET)
         }

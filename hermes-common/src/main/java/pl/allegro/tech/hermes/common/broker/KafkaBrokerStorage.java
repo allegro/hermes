@@ -49,7 +49,7 @@ public class KafkaBrokerStorage implements BrokerStorage {
   private KafkaFuture<TopicDescription> describeTopic(String topic) {
     return kafkaAdminClient
         .describeTopics(Collections.singletonList(topic))
-        .all()
+        .allTopicNames()
         .thenApply(topicsMap -> topicsMap.get(topic));
   }
 

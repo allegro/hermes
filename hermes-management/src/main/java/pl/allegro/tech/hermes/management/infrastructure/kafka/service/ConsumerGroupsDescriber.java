@@ -16,6 +16,7 @@ import org.apache.kafka.clients.admin.MemberDescription;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.ConsumerGroupState;
 import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.errors.GroupIdNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.ConsumerGroup;
@@ -56,6 +57,12 @@ class ConsumerGroupsDescriber {
     KafkaTopics kafkaTopics = kafkaNamesMapper.toKafkaTopics(topic);
     try {
       return describeConsumerGroup(consumerGroupId, kafkaTopics);
+    } catch (ExecutionException e) {
+      if (e.getCause() instanceof GroupIdNotFoundException) {
+        return Optional.empty();
+      }
+      logger.error("Failed to describe group with id: {}", consumerGroupId.asString(), e);
+      throw new BrokersClusterCommunicationException(e);
     } catch (Exception e) {
       logger.error("Failed to describe group with id: {}", consumerGroupId.asString(), e);
       throw new BrokersClusterCommunicationException(e);
