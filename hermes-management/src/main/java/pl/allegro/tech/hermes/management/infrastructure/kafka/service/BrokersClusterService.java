@@ -14,15 +14,15 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.ConsumerGroupDescription;
-import org.apache.kafka.clients.admin.MemberDescription;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
+import org.apache.kafka.common.KafkaFuture;
 import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.errors.GroupIdNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.ConsumerGroup;
@@ -168,8 +168,8 @@ public class BrokersClusterService {
     try {
       int requiredTotalNumberOfAssignments =
           numberOfPartitionsForTopic(topic) * subscriptions.size();
-      return numberOfAssignmentsForConsumersGroups(consumerGroupsForSubscriptions)
-          == requiredTotalNumberOfAssignments;
+      return allConsumerGroupsHaveAssignments(
+          consumerGroupsForSubscriptions, requiredTotalNumberOfAssignments);
     } catch (Exception e) {
       logger.error(
           "Failed to check assignments for topic " + topic.getQualifiedName() + " subscriptions",
@@ -202,16 +202,26 @@ public class BrokersClusterService {
         offsetAndMetadata.toString());
   }
 
-  private int numberOfAssignmentsForConsumersGroups(List<String> consumerGroupsIds)
+  private boolean allConsumerGroupsHaveAssignments(
+      List<String> consumerGroupsIds, int requiredTotalNumberOfAssignments)
       throws ExecutionException, InterruptedException {
-    Collection<ConsumerGroupDescription> consumerGroupsDescriptions =
-        adminClient.describeConsumerGroups(consumerGroupsIds).all().get().values();
-    Stream<MemberDescription> memberDescriptions =
-        consumerGroupsDescriptions.stream().flatMap(desc -> desc.members().stream());
-    return memberDescriptions
-        .flatMap(memberDescription -> memberDescription.assignment().topicPartitions().stream())
-        .collect(Collectors.toList())
-        .size();
+    int assignments = 0;
+    boolean missingGroup = false;
+    for (KafkaFuture<ConsumerGroupDescription> consumerGroupDescription :
+        adminClient.describeConsumerGroups(consumerGroupsIds).describedGroups().values()) {
+      try {
+        assignments +=
+            consumerGroupDescription.get().members().stream()
+                .mapToInt(member -> member.assignment().topicPartitions().size())
+                .sum();
+      } catch (ExecutionException e) {
+        if (!(e.getCause() instanceof GroupIdNotFoundException)) {
+          throw e;
+        }
+        missingGroup = true;
+      }
+    }
+    return !missingGroup && assignments == requiredTotalNumberOfAssignments;
   }
 
   public void validateIfOffsetsCanBeMovedByConsumers(Topic topic, SubscriptionName subscription) {

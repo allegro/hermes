@@ -22,6 +22,7 @@ import pl.allegro.tech.hermes.common.kafka.JsonToAvroMigrationKafkaNamesMapper
 import pl.allegro.tech.hermes.common.kafka.KafkaNamesMapper
 import pl.allegro.tech.hermes.management.config.kafka.KafkaProperties
 import pl.allegro.tech.hermes.management.domain.subscription.consumergroup.ConsumerGroupManager
+import pl.allegro.tech.hermes.management.infrastructure.kafka.MovingSubscriptionOffsetsValidationException
 import pl.allegro.tech.hermes.test.helper.builder.TopicBuilder
 import pl.allegro.tech.hermes.test.helper.containers.ImageTags
 import spock.lang.Shared
@@ -222,6 +223,51 @@ class KafkaConsumerGroupManagerSpec extends Specification {
 
         then:
         noExceptionThrown()
+    }
+
+    def "should handle a missing group when describing and validating offsets"() {
+        given:
+        Topic topic = createAvroTopic("pl.allegro.test.MissingGroup")
+        Subscription subscription = createTestSubscription(topic, "missing-subscription")
+        def service = new BrokersClusterService("dc", "primary", null, null, null, kafkaNamesMapper, null, null, adminClient, consumerGroupManager)
+
+        expect:
+        !service.describeConsumerGroup(topic, subscription.name).present
+
+        when:
+        service.validateIfOffsetsCanBeMovedByConsumers(topic, subscription.qualifiedName)
+
+        then:
+        def e = thrown(MovingSubscriptionOffsetsValidationException)
+        e.message == "No consumer group for subscription ${subscription.qualifiedName.qualifiedName} exists."
+
+        when:
+        service.validateIfOffsetsCanBeMoved(topic, subscription.qualifiedName)
+
+        then:
+        thrown(MovingSubscriptionOffsetsValidationException)
+    }
+
+    def "should describe an existing group"() {
+        given:
+        Topic topic = createAvroTopic("pl.allegro.test.ExistingGroup")
+        Subscription subscription = createTestSubscription(topic, "existing-subscription")
+        String kafkaTopicName = kafkaNamesMapper.toKafkaTopics(topic).primary.name().asString()
+        createTopicInKafka(kafkaTopicName, 1)
+        consumerGroupManager.createConsumerGroup(topic, subscription)
+        def service = new BrokersClusterService("dc", "primary", null, null, null, kafkaNamesMapper, null, null, adminClient, consumerGroupManager)
+
+        when:
+        def group = service.describeConsumerGroup(topic, subscription.name)
+
+        then:
+        group.present
+        group.get().groupId == kafkaNamesMapper.toConsumerGroupId(subscription.qualifiedName).asString()
+        group.get().empty
+
+        cleanup:
+        consumerGroupManager.deleteConsumerGroup(subscription.qualifiedName)
+        deleteKafkaTopic(kafkaTopicName)
     }
 
     private def publishOnPartition(String kafkaTopicName, int partition, int messages) {
