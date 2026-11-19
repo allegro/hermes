@@ -9,6 +9,7 @@ import static pl.allegro.tech.hermes.common.metric.Gauges.CONSUMER_SENDER_HTTP_2
 
 import io.micrometer.core.instrument.MeterRegistry;
 import java.util.function.ToDoubleFunction;
+import pl.allegro.tech.hermes.metrics.HermesTimer;
 
 public class ConsumerSenderMetrics {
 
@@ -58,5 +59,35 @@ public class ConsumerSenderMetrics {
 
   public <T> void registerHttp2SerialClientPendingConnectionsGauge(T obj, ToDoubleFunction<T> f) {
     gaugeRegistrar.registerGauge(CONSUMER_SENDER_HTTP_2_SERIAL_CLIENT_PENDING_CONNECTIONS, obj, f);
+  }
+
+  public HermesTimer http1SerialClientRequestQueueWaitingTimer() {
+    return HermesTimer.from(
+        meterRegistry.timer("http-clients.serial.http1.request-queue-waiting-time"));
+  }
+
+  public HermesTimer http1BatchClientRequestQueueWaitingTimer() {
+    return HermesTimer.from(
+        meterRegistry.timer("http-clients.batch.http1.request-queue-waiting-time"));
+  }
+
+  public HermesTimer http2SerialClientRequestQueueWaitingTimer() {
+    return HermesTimer.from(
+        meterRegistry.timer("http-clients.serial.http2.request-queue-waiting-time"));
+  }
+
+  public HermesTimer http1SerialClientRequestProcessingTimer() {
+    return HermesTimer.from(
+        meterRegistry.timer("http-clients.serial.http1.request-processing-time"));
+  }
+
+  public HermesTimer http1BatchClientRequestProcessingTimer() {
+    return HermesTimer.from(
+        meterRegistry.timer("http-clients.batch.http1.request-processing-time"));
+  }
+
+  public HermesTimer http2SerialClientRequestProcessingTimer() {
+    return HermesTimer.from(
+        meterRegistry.timer("http-clients.serial.http2.request-processing-time"));
   }
 }
