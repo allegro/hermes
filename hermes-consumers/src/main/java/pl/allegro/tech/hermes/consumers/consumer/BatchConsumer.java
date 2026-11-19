@@ -282,7 +282,8 @@ public class BatchConsumer implements Consumer {
         .withStopStrategy(
             attempt ->
                 attempt.getDelaySinceFirstAttempt() > messageTtlMillis
-                    || Thread.currentThread().isInterrupted())
+                    || Thread.currentThread().isInterrupted()
+                    || !consuming)
         .withRetryListener(
             getRetryListener(
                 result -> {
